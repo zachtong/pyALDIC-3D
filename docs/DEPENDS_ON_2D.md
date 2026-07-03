@@ -31,7 +31,8 @@ justification.
 
 | 2D symbol | why we import it | public/internal |
 |---|---|---|
-| _(none yet — Phase 0 scaffold imports nothing from `al_dic`)_ | | |
+| `al_dic.DICMesh` | reference-mesh type in `CorrespondenceStrategy.compute` / `matching` (type-only, `TYPE_CHECKING`) | public |
+| `al_dic.FrameSchedule` | acc/inc schedule fields on `CorrespondenceConfig` (type-only, `TYPE_CHECKING`) | public |
 
 <!--
 Row template (copy when adding a dependency):
