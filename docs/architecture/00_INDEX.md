@@ -63,6 +63,14 @@
 
 ## Changelog
 
+- 2026-07-03 v1.3.2 — **Phase 1 headless MVP 代码完成**（`main` 6 commits，末位 `f09a604`，
+  87 tests green）：calibration/geometry(COORDINATES.md)/sequence/matching(TrackBoth S1，
+  accumulative)/reconstruct(Reconstruction3D, D=P−P[0])/`al-dic-3d run config.toml`→.npz+.mat
+  全部落地并端到端验证。Phase 1 门禁暂以**合成 parity gate** 达标：带真实镜头畸变的倾斜平面
+  会聚立体场景 + 解析真值（单相 `cv2.remap` 渲染，零建模误差），驱动真实 `run_pipeline` 回收
+  3D 位移中位 ~50µm / 2D 对应 ~0.04px / 重投影 ~5e-6px，`reports/phase1_report.pdf` 自校验
+  （门禁不过即退出非零）。**真实 MATLAB-baseline 对位仍延迟**，待用户数据集后按真实数据重调
+  容差闭合。TrackBoth 与 CLI 各经一轮对抗式多维审查（确认项已修）。**未进入 Phase 2。**
 - 2026-07-02 v1.3.1 — 澄清 D9：pyALDIC-3D 的学术身份与 2D **完全独立**——自己的 Zenodo
   concept DOI（区别于 2D DOI 19521061）、自己独立的 SoftwareX 文章（"Part 2" 是 standalone
   article、自己的 paper DOI，仅 cite 2D 为前作）；Phase 5 加 CITATION.cff / DOI badge。
