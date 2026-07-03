@@ -66,8 +66,40 @@ def test_pages_populate_the_draft(qapp):
     win.close()
 
 
-def test_run_page_button_reflects_readiness(qapp):
+def test_run_page_shows_readiness(qapp):
     win = MainWindow3D()
     run_page = win._pages[5]
-    assert not run_page._run_btn.isEnabled()  # empty draft -> not runnable
+    run_page.refresh()
+    assert "Not ready" in run_page._ready.text()  # empty draft explains what's missing
+    win.close()
+
+
+def test_theme_stylesheet_is_applied(qapp):
+    assert len(qapp.styleSheet()) > 100  # the reused pyALDIC dark theme
+
+
+def test_images_display_and_roi_draws(qapp, tmp_path):
+    cv2 = pytest.importorskip("cv2")  # noqa: F841
+    from tests import synth_parity
+
+    scene = synth_parity.build_parity_scene(tmp_path, img=200, n_frames=2, seed=7)
+    left = sorted(str(p) for p in scene["dir"].glob("L_*.png"))
+    right = sorted(str(p) for p in scene["dir"].glob("R_*.png"))
+
+    win = MainWindow3D()
+    draft = win.controller.state.draft
+    draft.left = left
+    draft.right = right
+
+    import_page = win._pages[1]
+    import_page.refresh()
+    assert import_page._left_view.has_image and import_page._right_view.has_image
+
+    roi_page = win._pages[3]
+    roi_page.refresh()
+    assert roi_page._view.has_image
+    # simulate a drawn ROI -> draft + spinboxes update
+    roi_page._view.roi_changed.emit((10, 150, 20, 160))
+    assert draft.roi == (10, 150, 20, 160)
+    assert roi_page._xmax.value() == 150
     win.close()

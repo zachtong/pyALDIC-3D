@@ -17,8 +17,19 @@ def create_app(argv: list[str] | None = None):
     app = QApplication.instance() or QApplication(argv if argv is not None else [])
     app.setApplicationName("pyALDIC-3D")
     app.setOrganizationName("pyALDIC")
+    _apply_theme(app)
     install_translators(app)
     return app
+
+
+def _apply_theme(app) -> None:
+    """Apply the shared pyALDIC dark-navy theme (reused from the 2D repo)."""
+    try:
+        from al_dic.gui.theme import build_stylesheet
+    except ImportError:
+        return  # theme is cosmetic; run un-themed if the 2D theme is unavailable
+    app.setStyle("Fusion")  # QSS renders correctly on the Fusion style
+    app.setStyleSheet(build_stylesheet())
 
 
 def main(argv: list[str] | None = None) -> int:

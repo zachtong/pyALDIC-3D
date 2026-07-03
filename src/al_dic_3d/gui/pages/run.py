@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from al_dic.gui.widgets.console_log import ConsoleLog
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QProgressBar, QPushButton
+from PySide6.QtWidgets import QLabel, QProgressBar, QPushButton
 
 from al_dic_3d.gui.controller import WorkflowController
 from al_dic_3d.gui.pages.base import WorkflowPage
@@ -40,10 +40,13 @@ class RunPage(WorkflowPage):
             self.tr("Execute the pipeline; results open when it finishes."),
         )
         self._run_btn = QPushButton(self.tr("Run pipeline"))
+        self._ready = QLabel(self)
+        self._ready.setWordWrap(True)
         self._progress = QProgressBar()
         self._progress.setRange(0, 100)
         self._console = ConsoleLog()
         self._add(self._run_btn)
+        self._add(self._ready)
         self._add(self._progress)
         self._add(self._console)
 
@@ -52,6 +55,8 @@ class RunPage(WorkflowPage):
         self.refresh()
 
     def _on_run(self) -> None:
+        if self._worker is not None and self._worker.isRunning():
+            return
         if not self.controller.can_run():
             self._console.append_log(
                 self.tr("Not ready: {0}").format("; ".join(self.draft.issues())), "warning"
@@ -81,4 +86,12 @@ class RunPage(WorkflowPage):
         self._console.append_log(self.tr("Failed: {0}").format(msg), "error")
 
     def refresh(self) -> None:
-        self._run_btn.setEnabled(self.controller.can_run())
+        # Keep the button clickable so the user always gets an explanation; the
+        # readiness label spells out exactly what is still missing.
+        running = self._worker is not None and self._worker.isRunning()
+        self._run_btn.setEnabled(not running)
+        issues = self.draft.issues()
+        if issues:
+            self._ready.setText(self.tr("Not ready — {0}").format("; ".join(issues)))
+        else:
+            self._ready.setText(self.tr("Ready to run."))
