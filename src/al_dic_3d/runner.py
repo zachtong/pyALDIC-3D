@@ -50,6 +50,7 @@ class RunConfig:
     left_masks: str | list[str] | None = None
     right_masks: str | list[str] | None = None
     strategy: str = "track_both"
+    reference_mode: str = "accumulative"
     winsize: int = 32
     winstepsize: int = 16
     winsize_min: int = 8
@@ -118,6 +119,7 @@ def load_config(path: str | Path) -> RunConfig:
         left_masks=seq.get("left_mask"),
         right_masks=seq.get("right_mask"),
         strategy=str(match.get("strategy", "track_both")),
+        reference_mode=str(match.get("reference_mode", "accumulative")),
         winsize=int(match.get("winsize", 32)),
         winstepsize=int(match.get("winstepsize", 16)),
         winsize_min=int(match.get("winsize_min", 8)),
@@ -235,7 +237,11 @@ def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResul
     except TypeError:
         strategy = strategy_cls()  # strategy without tunable matching scale
 
-    corr_cfg = CorrespondenceConfig(strategy=cfg.strategy, disparity_offset=cfg.disparity_offset)
+    corr_cfg = CorrespondenceConfig(
+        strategy=cfg.strategy,
+        reference_mode=cfg.reference_mode,
+        disparity_offset=cfg.disparity_offset,
+    )
     cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress)
     rec = reconstruct_correspondence(cs, rig, cam_left=cfg.cam_left, cam_right=cfg.cam_right)
 

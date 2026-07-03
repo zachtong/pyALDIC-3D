@@ -115,6 +115,7 @@ class TrackBothStrategy:
             winstepsize=self.winstepsize,
             winsize_min=self.winsize_min,
             img_ref_mask=mask_L1,
+            reference_mode=cfg.reference_mode,
         )
 
         # (1) frame-1 cross-camera match at the reference mesh nodes.
@@ -150,6 +151,7 @@ class TrackBothStrategy:
             winstepsize=self.winstepsize,
             winsize_min=self.winsize_min,
             img_ref_mask=mask_R1,
+            reference_mode=cfg.reference_mode,
         )
         mesh_R = build_grid_mesh(para_R, img_h, img_w)
         tf_R = temporal_track(right, mesh_R, para_R)

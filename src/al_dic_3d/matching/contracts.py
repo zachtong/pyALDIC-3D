@@ -59,6 +59,7 @@ class CorrespondenceConfig:
     """Strategy-agnostic configuration (02 §5.2)."""
 
     strategy: str = "track_both"
+    reference_mode: Literal["accumulative", "incremental"] = "accumulative"
     schedule_L: FrameSchedule | None = None  # None -> derive from reference_mode
     schedule_R: FrameSchedule | None = None  # track_both only
     stereo_solver: Literal["local_only", "full_aldic"] = "local_only"

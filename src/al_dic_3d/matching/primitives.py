@@ -33,14 +33,17 @@ def make_local_dicpara(
     icgn_max_iter: int = 100,
     tol: float = 1e-2,
     img_ref_mask: NDArray[np.float64] | None = None,
+    reference_mode: str = "accumulative",
 ) -> DICPara:
-    """A validated ``DICPara`` for LOCAL-ONLY IC-GN in accumulative mode.
+    """A validated ``DICPara`` for LOCAL-ONLY IC-GN, accumulative or incremental.
 
     ``use_global_step=False`` is the local-only switch (skips ADMM Sections 5-6);
     ``admm_max_iter`` must stay >=1 to pass validation but never executes here.
     ``roi = (xmin, xmax, ymin, ymax)`` in pixels (x=col, y=row). ``img_ref_mask``
     (``(H, W)`` float, 1=valid) gates reference-subset validity in matching and
     per-frame ROI normalization in ``run_aldic``; ``None`` -> no masking.
+    ``reference_mode`` selects the FrameSchedule (``"accumulative"`` -> every frame
+    vs frame 1; ``"incremental"`` -> frame k vs k-1, engine composes to cumulative).
     """
     from al_dic.core.data_structures import GridxyROIRange
 
@@ -52,7 +55,7 @@ def make_local_dicpara(
         gridxy_roi_range=GridxyROIRange(gridx=(xmin, xmax), gridy=(ymin, ymax)),
         img_size=img_size,
         use_global_step=False,
-        reference_mode="accumulative",
+        reference_mode=reference_mode,
         icgn_max_iter=icgn_max_iter,
         tol=tol,
         admm_max_iter=1,
