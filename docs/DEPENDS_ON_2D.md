@@ -39,6 +39,13 @@ justification.
 | `al_dic.io.image_ops.compute_image_gradient` | reference-image gradients (7-pt central diff) for IC-GN | public |
 | `al_dic.solver.local_icgn.local_icgn_precompute` | build the IC-GN reference context at scattered points (`match_points`) | public (import via full path; not in `solver.__all__`) |
 | `al_dic.solver.local_icgn.local_icgn_solve_subset` | run 6-DOF local IC-GN at scattered points, returns `(U, F, conv_iter)` | public (import via full path; not in `solver.__all__`) |
+| `al_dic.core.pipeline.run_aldic` | drive per-camera accumulative IC-GN tracking in `matching.temporal.temporal_track` (external mesh, `compute_strain=False`) | public |
+| `al_dic.core.data_structures.DICMesh` | reference mesh type built by / passed to `temporal_track` and `build_grid_mesh` (runtime import) | public |
+| `al_dic.core.data_structures.split_uv` | split interleaved `FrameResult.U_accum` into `(u, v)` node arrays | public (module-level; not in `al_dic.__all__`, import via `al_dic.core.data_structures`) |
+| `al_dic.core.data_structures.PipelineResult` | `run_aldic` return; `temporal_track` reads `.dic_mesh` + `.result_disp` (attribute access, not imported) | public |
+| `al_dic.core.data_structures.FrameResult` | per-frame element of `result_disp`; `temporal_track` reads `.U_accum` (cumulative) / `.U` (attribute access, not imported) | public |
+| `al_dic.mesh.mesh_setup.mesh_setup` | build the uniform Q8 reference mesh from grid coords in `build_grid_mesh` | public (re-exported in `al_dic.mesh.__init__`) |
+| `al_dic.solver.seed_prop_pipeline.build_grid_for_roi` | FFT-path `(x0, y0)` grid for the reference mesh (matches `run_aldic`'s internal grid) | public (module-level, no underscore) |
 
 <!--
 Row template (copy when adding a dependency):

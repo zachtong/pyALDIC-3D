@@ -32,17 +32,20 @@ def make_local_dicpara(
     winsize_min: int = 8,
     icgn_max_iter: int = 100,
     tol: float = 1e-2,
+    img_ref_mask: NDArray[np.float64] | None = None,
 ) -> DICPara:
     """A validated ``DICPara`` for LOCAL-ONLY IC-GN in accumulative mode.
 
     ``use_global_step=False`` is the local-only switch (skips ADMM Sections 5-6);
     ``admm_max_iter`` must stay >=1 to pass validation but never executes here.
-    ``roi = (xmin, xmax, ymin, ymax)`` in pixels (x=col, y=row).
+    ``roi = (xmin, xmax, ymin, ymax)`` in pixels (x=col, y=row). ``img_ref_mask``
+    (``(H, W)`` float, 1=valid) gates reference-subset validity in matching and
+    per-frame ROI normalization in ``run_aldic``; ``None`` -> no masking.
     """
     from al_dic.core.data_structures import GridxyROIRange
 
     xmin, xmax, ymin, ymax = roi
-    return dicpara_default(
+    overrides: dict = dict(
         winsize=winsize,
         winstepsize=winstepsize,
         winsize_min=winsize_min,
@@ -54,6 +57,9 @@ def make_local_dicpara(
         tol=tol,
         admm_max_iter=1,
     )
+    if img_ref_mask is not None:
+        overrides["img_ref_mask"] = np.ascontiguousarray(img_ref_mask, dtype=np.float64)
+    return dicpara_default(**overrides)
 
 
 def match_points(

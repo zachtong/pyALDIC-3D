@@ -55,8 +55,25 @@ def register_strategy(cls: type[CorrespondenceStrategy]) -> type[CorrespondenceS
     return cls
 
 
+def _load_builtin_strategies() -> None:
+    """Register the built-in strategies into the CURRENT registry, on demand.
+
+    Kept lazy (not a top-level import) so importing the lightweight
+    ``CorrespondenceSet`` contract never drags in the concrete strategies or the
+    ``al_dic`` runtime they depend on. Registration is done by explicit
+    ``setdefault`` rather than relying on the ``@register_strategy`` import
+    side-effect: a cached strategies module will not re-run its decorators, so if
+    the registry was cleared/monkeypatched this still repopulates it.
+    """
+    from al_dic_3d.matching.strategies.track_both import TrackBothStrategy
+
+    STRATEGY_REGISTRY.setdefault(TrackBothStrategy.name, TrackBothStrategy)
+
+
 def get_strategy(name: str) -> type[CorrespondenceStrategy]:
-    """Resolve a registered strategy class by name."""
+    """Resolve a registered strategy class by name (loading built-ins on demand)."""
+    if name not in STRATEGY_REGISTRY:
+        _load_builtin_strategies()
     if name not in STRATEGY_REGISTRY:
         available = sorted(STRATEGY_REGISTRY) or ["(none registered yet)"]
         raise ValueError(f"unknown strategy {name!r}; available: {available}")

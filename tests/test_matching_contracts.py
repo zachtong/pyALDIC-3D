@@ -99,8 +99,11 @@ def test_strategy_registry(monkeypatch):
         strat_mod.register_strategy(type("Other", (), {"name": "dummy"}))
 
 
-def test_no_strategies_registered_yet():
-    # track_both lands in the next increment; the registry machinery exists now.
+def test_track_both_resolves_via_registry():
+    # track_both self-registers on demand; unknown names still raise.
     assert isinstance(STRATEGY_REGISTRY, dict)
+    cls = get_strategy("track_both")
+    assert cls.name == "track_both"
+    assert hasattr(cls, "compute")
     with pytest.raises(ValueError, match="unknown strategy"):
-        get_strategy("track_both")
+        get_strategy("definitely_not_a_strategy")
