@@ -63,6 +63,16 @@
 
 ## Changelog
 
+- 2026-07-03 v1.3.3 — **Phase 2 对应层完成**（`main` 至 `3474b62`，105 tests green）：
+  (1) inc 模式（`reference_mode` 贯通，引擎组合增量→累积；acc↔inc 自洽差 ~13µm < 噪声底）；
+  (2) S2 `stereo_each_frame`（单左链 + 逐帧散点立体，warm-start，零重采样，source=STEREO_REFRESH）；
+  (3) S3 `ref_direct`（左时序 acc + L1→R_k 直接跨匹配，链式播种，零漂移）；三策略均过合成 parity gate。
+  (4) 鲁棒性：ZNSSD 门 + reproj 门 + 3D 通用外点检验（Westerweel-Scarano 思想），config `[quality]` 开关；
+  (5) 非平面 Lagrangian 定点 warp 合成真值生成器（曲面 + 已知 3D 位移场，投影一致，反投影↔投影 <0.01px）；
+  (6) 三策略对比 harness + `reports/phase2_strategies.pdf`（RMSE/漂移/噪声底/存活/reproj/变形 sweep/耗时，
+  自校验，兼作 SoftwareX Part-2 材料）。策略差异符合 02 §2 预言：小变形 S3 最净、大变形 S3 先失效、S2 长序列胜。
+  两轮对抗式审查（S2/S3/inc 零确认；一条 S3 种子链优化已采纳）。**MATLAB inc-baseline 对位仍延迟**（同 P1，
+  待用户数据集）。**未进入 Phase 3。**
 - 2026-07-03 v1.3.2 — **Phase 1 headless MVP 代码完成**（`main` 6 commits，末位 `f09a604`，
   87 tests green）：calibration/geometry(COORDINATES.md)/sequence/matching(TrackBoth S1，
   accumulative)/reconstruct(Reconstruction3D, D=P−P[0])/`al-dic-3d run config.toml`→.npz+.mat
