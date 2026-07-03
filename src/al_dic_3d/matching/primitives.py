@@ -1,0 +1,177 @@
+"""Pure-function matching primitives (Qt-free) — the FIRST runtime `al_dic` coupling.
+
+These thin wrappers reuse the 2D engine's solver by import only (the 2D repo is
+never modified, decision D11). Every `al_dic` symbol imported here is recorded in
+``docs/DEPENDS_ON_2D.md``.
+
+``match_points`` is the keystone: scattered-point local IC-GN (no mesh, no ADMM),
+the basis for the frame-1 cross-camera match and for strategies S2/S3 (02 §5.3).
+The 2D solver returns only ``(U, F, conv_iter)`` and never a correlation value, so
+ZNSSD is computed here independently (same objective, no dependency on the
+solver's internal precompute dict).
+"""
+
+from __future__ import annotations
+
+import numpy as np
+
+# --- 2D engine (al_dic) imports — see docs/DEPENDS_ON_2D.md -------------------
+from al_dic.core.config import dicpara_default
+from al_dic.core.data_structures import DICPara
+from al_dic.io.image_ops import compute_image_gradient
+from al_dic.solver.local_icgn import local_icgn_precompute, local_icgn_solve_subset
+from numpy.typing import NDArray
+from scipy.ndimage import map_coordinates
+
+
+def make_local_dicpara(
+    img_size: tuple[int, int],
+    roi: tuple[int, int, int, int],
+    winsize: int = 32,
+    winstepsize: int = 16,
+    winsize_min: int = 8,
+    icgn_max_iter: int = 100,
+    tol: float = 1e-2,
+) -> DICPara:
+    """A validated ``DICPara`` for LOCAL-ONLY IC-GN in accumulative mode.
+
+    ``use_global_step=False`` is the local-only switch (skips ADMM Sections 5-6);
+    ``admm_max_iter`` must stay >=1 to pass validation but never executes here.
+    ``roi = (xmin, xmax, ymin, ymax)`` in pixels (x=col, y=row).
+    """
+    from al_dic.core.data_structures import GridxyROIRange
+
+    xmin, xmax, ymin, ymax = roi
+    return dicpara_default(
+        winsize=winsize,
+        winstepsize=winstepsize,
+        winsize_min=winsize_min,
+        gridxy_roi_range=GridxyROIRange(gridx=(xmin, xmax), gridy=(ymin, ymax)),
+        img_size=img_size,
+        use_global_step=False,
+        reference_mode="accumulative",
+        icgn_max_iter=icgn_max_iter,
+        tol=tol,
+        admm_max_iter=1,
+    )
+
+
+def match_points(
+    ref_img: NDArray[np.float64],
+    def_img: NDArray[np.float64],
+    points: NDArray[np.float64],
+    U0: NDArray[np.float64],
+    para: DICPara,
+    tol: float = 1e-3,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.bool_]]:
+    """Local IC-GN at arbitrary scattered points (no mesh, no ADMM).
+
+    Args:
+        ref_img, def_img: ``(H, W)`` float64 images (same intensity scale).
+        points: ``(n, 2)`` ``[x, y]`` (col, row) query points.
+        U0: ``(n, 2)`` ``[u, v]`` initial displacement guess, row-aligned to points.
+        para: local-only ``DICPara`` (see :func:`make_local_dicpara`); ``winsize`` and
+            ``icgn_max_iter`` are read.
+        tol: IC-GN convergence tolerance (``1e-3``, matching StereoMatch_STAQ).
+
+    Returns:
+        ``(U (n,2), znssd (n,), valid (n,))``. Invalid points get ``NaN`` in ``U``
+        and ``znssd``; ``znssd`` is in ``[0, 4]`` (``0`` = perfect, ``2(1-ZNCC)``).
+    """
+    ref = np.ascontiguousarray(ref_img, dtype=np.float64)
+    dfm = np.ascontiguousarray(def_img, dtype=np.float64)
+    h, w = ref.shape
+    mask = getattr(para, "img_ref_mask", None)
+    mask = np.ones((h, w), dtype=np.float64) if mask is None else np.asarray(mask, np.float64)
+
+    grad = compute_image_gradient(ref * mask, mask, img_raw=ref)
+    ctx = local_icgn_precompute(np.ascontiguousarray(points, np.float64), grad, ref, para)
+    u_2d, f_2d, conv_iter = local_icgn_solve_subset(
+        ctx, None, np.ascontiguousarray(U0, np.float64), dfm, tol
+    )
+
+    valid = conv_iter <= para.icgn_max_iter
+    znssd = _znssd(ref, dfm, np.asarray(points, np.float64), u_2d, f_2d, para.winsize, valid, mask)
+
+    out_u = u_2d.astype(np.float64).copy()
+    out_u[~valid] = np.nan
+    znssd[~valid] = np.nan
+    return out_u, znssd, valid
+
+
+def _znssd(
+    ref: NDArray[np.float64],
+    dfm: NDArray[np.float64],
+    points: NDArray[np.float64],
+    u_2d: NDArray[np.float64],
+    f_2d: NDArray[np.float64],
+    winsize: int,
+    valid: NDArray[np.bool_],
+    mask: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    """ZNSSD per point at the converged warp (independent of the solver internals).
+
+    Replicates the IC-GN objective: extract the reference subset, warp+sample the
+    deformed subset with the 6-DOF affine ``(F, U)``, and compare zero-normalized.
+    ``znssd = Σ[(f-f̄)/Δf − (g-ḡ)/Δg]²``.
+    """
+    h, w = ref.shape
+    n = points.shape[0]
+    half = winsize // 2
+    offs = np.arange(-half, half + 1)
+    xx, yy = np.meshgrid(offs.astype(np.float64), offs.astype(np.float64))  # (S, S)
+    s = xx.shape[0]
+    z = np.full(n, np.nan, dtype=np.float64)
+
+    x0 = np.round(points[:, 0])
+    y0 = np.round(points[:, 1])
+    in_bounds = valid & (x0 - half >= 0) & (y0 - half >= 0) & (x0 + half < w) & (y0 + half < h)
+    idx = np.where(in_bounds)[0]
+    if idx.size == 0:
+        return z
+
+    rx = x0[idx].astype(np.int64)
+    ry = y0[idx].astype(np.int64)
+    rows = ry[:, None, None] + offs[None, :, None]
+    cols = rx[:, None, None] + offs[None, None, :]
+    f = ref[rows, cols]  # (m, S, S)
+    msub = mask[rows, cols] > 0.5
+
+    f11, f21, f12, f22 = f_2d[idx, 0], f_2d[idx, 1], f_2d[idx, 2], f_2d[idx, 3]
+    uu, vv = u_2d[idx, 0], u_2d[idx, 1]
+    gu = (
+        (1 + f11[:, None, None]) * xx
+        + f12[:, None, None] * yy
+        + rx[:, None, None]
+        + uu[:, None, None]
+    )
+    gv = (
+        f21[:, None, None] * xx
+        + (1 + f22[:, None, None]) * yy
+        + ry[:, None, None]
+        + vv[:, None, None]
+    )
+    g = map_coordinates(dfm, [gv.ravel(), gu.ravel()], order=3, mode="constant", cval=0.0)
+    g = g.reshape(idx.size, s, s)
+
+    comb = msub & np.isfinite(g)
+    cnt = comb.sum((1, 2))
+    cnt_safe = np.maximum(cnt, 1)
+
+    fm = f * comb
+    meanf = fm.sum((1, 2)) / cnt_safe
+    varf = ((fm - meanf[:, None, None] * comb) ** 2).sum((1, 2)) / cnt_safe
+    bottomf = np.sqrt(np.maximum((cnt - 1) * varf, 1e-30))
+
+    gm = g * comb
+    meang = gm.sum((1, 2)) / cnt_safe
+    varg = ((gm - meang[:, None, None] * comb) ** 2).sum((1, 2)) / cnt_safe
+    bottomg = np.sqrt(np.maximum((cnt - 1) * varg, 1e-30))
+
+    res = (fm - meanf[:, None, None]) / bottomf[:, None, None] - (
+        gm - meang[:, None, None]
+    ) / bottomg[:, None, None]
+    zi = (res * res * comb).sum((1, 2))
+    zi[cnt < 4] = np.nan
+    z[idx] = zi
+    return z

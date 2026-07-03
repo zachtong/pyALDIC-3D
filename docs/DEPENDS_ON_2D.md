@@ -33,6 +33,12 @@ justification.
 |---|---|---|
 | `al_dic.DICMesh` | reference-mesh type in `CorrespondenceStrategy.compute` / `matching` (type-only, `TYPE_CHECKING`) | public |
 | `al_dic.FrameSchedule` | acc/inc schedule fields on `CorrespondenceConfig` (type-only, `TYPE_CHECKING`) | public |
+| `al_dic.core.config.dicpara_default` | build + validate a local-only `DICPara` in `matching.primitives.make_local_dicpara` | public |
+| `al_dic.core.data_structures.DICPara` | parameter container consumed by the IC-GN primitive | public |
+| `al_dic.core.data_structures.GridxyROIRange` | ROI (pixel bounds) for the `DICPara` / mesh build | public |
+| `al_dic.io.image_ops.compute_image_gradient` | reference-image gradients (7-pt central diff) for IC-GN | public |
+| `al_dic.solver.local_icgn.local_icgn_precompute` | build the IC-GN reference context at scattered points (`match_points`) | public (import via full path; not in `solver.__all__`) |
+| `al_dic.solver.local_icgn.local_icgn_solve_subset` | run 6-DOF local IC-GN at scattered points, returns `(U, F, conv_iter)` | public (import via full path; not in `solver.__all__`) |
 
 <!--
 Row template (copy when adding a dependency):
