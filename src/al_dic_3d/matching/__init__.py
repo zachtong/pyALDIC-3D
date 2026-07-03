@@ -19,6 +19,7 @@ from al_dic_3d.matching.contracts import (
     DisparityField,
     QualityGate,
 )
+from al_dic_3d.matching.quality import apply_znssd_gate
 from al_dic_3d.matching.strategy import (
     STRATEGY_REGISTRY,
     CorrespondenceStrategy,
@@ -37,6 +38,7 @@ __all__ = [
     "CorrespondenceStrategy",
     "DisparityField",
     "QualityGate",
+    "apply_znssd_gate",
     "get_strategy",
     "register_strategy",
 ]

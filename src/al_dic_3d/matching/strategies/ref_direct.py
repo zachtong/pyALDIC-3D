@@ -129,13 +129,17 @@ class RefDirectStrategy:
                     left[0], right[k], coords_L, np.nan_to_num(prev_m, nan=0.0), para_L, tol=1e-3
                 )
 
-            good = valid_l & valid_m & np.isfinite(m_k).all(axis=1)
+            m_ok = valid_m & np.isfinite(m_k).all(axis=1)  # cross-match converged
+            good = valid_l & m_ok  # a usable correspondence also needs the left position
             xL[k][good] = xl_k[good]
             xR[k][good] = coords_L[good] + m_k[good]  # x_R^k = X_L + m^k
             quality[k][good] = znssd_k[good]
             source[k][good] = TRACKED  # reference-anchored in both cameras (no drift)
 
-            prev_m = np.where(good[:, None], m_k, prev_m)  # carry last good as next seed
+            # The seed chain follows the cross-match ALONE: m^k solves at the fixed
+            # nodes X_L independent of the left track, so a transient left dropout
+            # must not discard an otherwise-good cross-disparity (review, S3).
+            prev_m = np.where(m_ok[:, None], m_k, prev_m)
 
             if progress is not None:
                 progress((k + 1) / n_frames, f"ref_direct {k + 1}/{n_frames}")

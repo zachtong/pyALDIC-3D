@@ -23,10 +23,15 @@ import tomllib
 from numpy.typing import NDArray
 
 from al_dic_3d.calibration import load_calibration
-from al_dic_3d.matching import CorrespondenceConfig, get_strategy
+from al_dic_3d.matching import CorrespondenceConfig, apply_znssd_gate, get_strategy
 from al_dic_3d.matching.primitives import make_local_dicpara
 from al_dic_3d.matching.temporal import build_grid_mesh
-from al_dic_3d.reconstruct import Reconstruction3D, reconstruct_correspondence
+from al_dic_3d.reconstruct import (
+    Reconstruction3D,
+    apply_reproj_gate,
+    reconstruct_correspondence,
+    remove_3d_outliers,
+)
 from al_dic_3d.sequence import ArrayFrameProvider, StereoSequence
 
 ProgressFn = Callable[[float, str], None]
@@ -56,6 +61,10 @@ class RunConfig:
     winsize_min: int = 8
     stereo_search: int = 48
     disparity_offset: tuple[float, float] | None = None
+    quality_gate: bool = False
+    znssd_max: float = 0.5
+    reproj_max_px: float = 2.0
+    outlier_threshold: float = 3.0
     output_prefix: str = "run"
     cam_left: str = "L"
     cam_right: str = "R"
@@ -108,6 +117,7 @@ def load_config(path: str | Path) -> RunConfig:
     disparity_offset = (float(offset[0]), float(offset[1])) if offset is not None else None
     seq = table.get("sequence", {})
     out = table.get("output", {})
+    qual = table.get("quality", {})
 
     return RunConfig(
         calibration_file=_resolve(str(_require(table, "calibration", "file"))),
@@ -125,6 +135,10 @@ def load_config(path: str | Path) -> RunConfig:
         winsize_min=int(match.get("winsize_min", 8)),
         stereo_search=int(match.get("stereo_search", 48)),
         disparity_offset=disparity_offset,
+        quality_gate=bool(qual.get("enabled", False)),
+        znssd_max=float(qual.get("znssd_max", 0.5)),
+        reproj_max_px=float(qual.get("reproj_max_px", 2.0)),
+        outlier_threshold=float(qual.get("outlier_threshold", 3.0)),
         output_prefix=str(out.get("prefix", "run")),
         cam_left=str(seq.get("cam_left", "L")),
         cam_right=str(seq.get("cam_right", "R")),
@@ -243,15 +257,30 @@ def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResul
         disparity_offset=cfg.disparity_offset,
     )
     cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress)
-    rec = reconstruct_correspondence(cs, rig, cam_left=cfg.cam_left, cam_right=cfg.cam_right)
-
     ref_coords = np.asarray(mesh_L.coordinates_fem, dtype=np.float64)
+
+    # Optional robustness gates: ZNSSD on the correspondence (pre-reconstruction),
+    # then reprojection + 3D-outlier on the reconstruction (post).
+    if cfg.quality_gate:
+        cs = apply_znssd_gate(cs, cfg.znssd_max)
+    rec = reconstruct_correspondence(cs, rig, cam_left=cfg.cam_left, cam_right=cfg.cam_right)
+    if cfg.quality_gate:
+        focals = [
+            f
+            for cam in (cfg.cam_left, cfg.cam_right)
+            for f in (rig.cameras[cam].fx, rig.cameras[cam].fy)
+        ]
+        max_reproj_norm = cfg.reproj_max_px / float(np.mean(focals))  # px -> normalized
+        rec = apply_reproj_gate(rec, max_reproj_norm)
+        rec = remove_3d_outliers(rec, ref_coords, threshold=cfg.outlier_threshold)
+
     tracked = int((rec.source != 3).sum())  # 3 == INVALID
     meta = {
         "strategy": cfg.strategy,
         "n_frames": cs.n_frames,
         "n_pts": cs.n_pts,
         "n_tracked_positions": tracked,
+        "quality_gate": cfg.quality_gate,
         "image_size": (img_h, img_w),
         "base_dir": str(seq_base),
     }
