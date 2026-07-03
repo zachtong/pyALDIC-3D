@@ -63,6 +63,16 @@
 
 ## Changelog
 
+- 2026-07-03 v1.3.5 — **Phase 4 GUI 可验证基础层**（`main` 至 `d1136c7`，128 tests green）。在无显示环境
+  里完成全部**可测**部分（交互式 GUI 与 pyvista 需在有显示的机器上可视化迭代）：`project/`——`AppState3D`
+  + `.aldic3d` 会话 save/load（版本化 zip：session.json 配置/视图 + results.npz 结果，含 strain），**session
+  round-trip 门禁达成**；`gui/`——`WorkflowController`（Qt-free 8 步工作流逻辑，headless 跑通 config→run→
+  results→会话往返）+ `MainWindow3D` 外壳 + 8 页骨架（全 `self.tr()` 字面量）+ `al-dic-3d gui` 入口；
+  `i18n/`——AST 静态扫描（**pseudo-locale-clean 门禁达成**，`tools/i18n.py scan`）+ `install_translators`
+  + lupdate/lrelease 工具链（`tools/i18n.py extract/compile`）。offscreen 冒烟测试验证 MainWindow 构造+走 8 步。
+  **4 门禁：session round-trip ✅ / pseudo-locale ✅ / full-workflow smoke（headless 骨架 ✅，完整 UI 待显示）
+  / phase4_gui.pdf ⏳**。**剩余待显示机器可视化迭代**：页面填充 2D widgets、pyvista 3D tab、8 语言 .ts/.qm
+  填充（字符串定稿后）、走查 PDF。**未进入 Phase 5。**
 - 2026-07-03 v1.3.4 — **Phase 3 3D 表面应变完成**（`main` 至 `00a40d9`，114 tests green）：
   先按规约写 `docs/strain3d_math.md`（从 `PlaneFit3_Quadtree.m`+`computeStrain3D.m`+`GetRTMatrix.m`
   提炼），再实现 `al_dic_3d.strain3d`（**纯 numpy/scipy，零新增 al_dic 依赖**）：局部 VSG 方窗邻域→
