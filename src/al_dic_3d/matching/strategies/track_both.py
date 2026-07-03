@@ -18,12 +18,10 @@ frames. The 3D layer downstream reads only the resulting ``CorrespondenceSet``.
 
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
-from numpy.typing import NDArray
 
 from al_dic_3d.matching.contracts import (
     INVALID,
@@ -33,6 +31,7 @@ from al_dic_3d.matching.contracts import (
 )
 from al_dic_3d.matching.primitives import make_local_dicpara
 from al_dic_3d.matching.stereo import stereo_match_pair
+from al_dic_3d.matching.strategies._common import bbox_roi
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import (
     build_grid_mesh,
@@ -45,24 +44,6 @@ if TYPE_CHECKING:
 
     from al_dic_3d.calibration import StereoRig
     from al_dic_3d.sequence import StereoSequence
-
-
-def _bbox_roi(
-    points: NDArray[np.float64],
-    img_h: int,
-    img_w: int,
-    margin: int,
-) -> tuple[int, int, int, int]:
-    """Axis-aligned pixel ROI ``(xmin, xmax, ymin, ymax)`` around finite points."""
-    p = np.asarray(points, dtype=np.float64).reshape(-1, 2)
-    p = p[np.isfinite(p).all(axis=1)]
-    if p.size == 0:
-        raise ValueError("no finite points to bound an ROI")
-    xmin = max(0, int(math.floor(p[:, 0].min())) - margin)
-    xmax = min(img_w - 1, int(math.ceil(p[:, 0].max())) + margin)
-    ymin = max(0, int(math.floor(p[:, 1].min())) - margin)
-    ymax = min(img_h - 1, int(math.ceil(p[:, 1].max())) + margin)
-    return xmin, xmax, ymin, ymax
 
 
 @register_strategy
@@ -107,7 +88,7 @@ class TrackBothStrategy:
         n_pts = coords_L.shape[0]
 
         mask_L1 = seq.mask("L", 0)
-        roi_L = _bbox_roi(coords_L, img_h, img_w, margin=self.winsize)
+        roi_L = bbox_roi(coords_L, img_h, img_w, margin=self.winsize)
         para_L = make_local_dicpara(
             img_size=(img_h, img_w),
             roi=roi_L,
@@ -142,7 +123,7 @@ class TrackBothStrategy:
 
         # (2b) right temporal track on an INDEPENDENT dense grid over right_pts.
         valid_rp = np.isfinite(right_pts).all(axis=1)
-        roi_R = _bbox_roi(right_pts[valid_rp], img_h, img_w, margin=self.winsize)
+        roi_R = bbox_roi(right_pts[valid_rp], img_h, img_w, margin=self.winsize)
         mask_R1 = seq.mask("R", 0)
         para_R = make_local_dicpara(
             img_size=(img_h, img_w),
