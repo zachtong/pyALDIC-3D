@@ -65,10 +65,11 @@ def _load_builtin_strategies() -> None:
     side-effect: a cached strategies module will not re-run its decorators, so if
     the registry was cleared/monkeypatched this still repopulates it.
     """
+    from al_dic_3d.matching.strategies.ref_direct import RefDirectStrategy
     from al_dic_3d.matching.strategies.stereo_each_frame import StereoEachFrameStrategy
     from al_dic_3d.matching.strategies.track_both import TrackBothStrategy
 
-    for cls in (TrackBothStrategy, StereoEachFrameStrategy):
+    for cls in (TrackBothStrategy, StereoEachFrameStrategy, RefDirectStrategy):
         STRATEGY_REGISTRY.setdefault(cls.name, cls)
 
 

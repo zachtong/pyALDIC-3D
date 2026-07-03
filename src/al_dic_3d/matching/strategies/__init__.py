@@ -7,7 +7,8 @@ they consume only the ``CorrespondenceSet`` contract (architecture invariant,
 enforced by ``tests/test_architecture.py``).
 """
 
+from al_dic_3d.matching.strategies.ref_direct import RefDirectStrategy
 from al_dic_3d.matching.strategies.stereo_each_frame import StereoEachFrameStrategy
 from al_dic_3d.matching.strategies.track_both import TrackBothStrategy
 
-__all__ = ["StereoEachFrameStrategy", "TrackBothStrategy"]
+__all__ = ["RefDirectStrategy", "StereoEachFrameStrategy", "TrackBothStrategy"]
