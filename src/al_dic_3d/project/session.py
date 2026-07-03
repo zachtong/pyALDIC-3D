@@ -29,6 +29,7 @@ import numpy as np
 from al_dic_3d.project.state import AppState3D
 
 if TYPE_CHECKING:
+    from al_dic_3d.project.draft import ProjectDraft
     from al_dic_3d.runner import RunConfig
 
 SCHEMA_VERSION = 1
@@ -47,10 +48,17 @@ class Session3DData:
 
     schema_version: int
     config: RunConfig | None
+    draft: ProjectDraft = field(default_factory=lambda: _new_draft())
     view_state: dict = field(default_factory=dict)
     workflow_step: int = 0
     meta: dict = field(default_factory=dict)
     result_arrays: dict[str, Any] | None = None  # raw npz arrays if results were saved
+
+
+def _new_draft() -> ProjectDraft:
+    from al_dic_3d.project.draft import ProjectDraft
+
+    return ProjectDraft()
 
 
 # --- RunConfig <-> JSON -------------------------------------------------------
@@ -78,6 +86,33 @@ def _config_from_json(d: dict | None) -> RunConfig | None:
     if kw.get("disparity_offset") is not None:
         kw["disparity_offset"] = tuple(kw["disparity_offset"])
     return RunConfig(**kw)
+
+
+_DRAFT_PATH_FIELDS = ("calibration_file", "output_dir")
+
+
+def _draft_to_json(draft: ProjectDraft) -> dict:
+    d = dataclasses.asdict(draft)
+    for name in _DRAFT_PATH_FIELDS:
+        d[name] = str(d[name]) if d[name] is not None else None
+    return d
+
+
+def _draft_from_json(d: dict | None) -> ProjectDraft:
+    from al_dic_3d.project.draft import ProjectDraft
+
+    if not d:
+        return ProjectDraft()
+    valid = {f.name for f in dataclasses.fields(ProjectDraft)}
+    kw = {k: v for k, v in d.items() if k in valid}
+    for name in _DRAFT_PATH_FIELDS:
+        if kw.get(name) is not None:
+            kw[name] = Path(kw[name])
+    if kw.get("roi") is not None:
+        kw["roi"] = tuple(kw["roi"])
+    if kw.get("disparity_offset") is not None:
+        kw["disparity_offset"] = tuple(kw["disparity_offset"])
+    return ProjectDraft(**kw)
 
 
 # --- results <-> npz ----------------------------------------------------------
@@ -150,6 +185,7 @@ def save_session(state: AppState3D, path: str | Path) -> Path:
     session = {
         "schema_version": SCHEMA_VERSION,
         "config": _config_to_json(state.config) if state.config is not None else None,
+        "draft": _draft_to_json(state.draft),
         "view_state": state.view_state,
         "workflow_step": int(state.workflow_step),
         "strategy": state.result.strategy if state.result is not None else None,
@@ -186,6 +222,7 @@ def parse_session(path: str | Path) -> Session3DData:
     return Session3DData(
         schema_version=version,
         config=_config_from_json(session.get("config")),
+        draft=_draft_from_json(session.get("draft")),
         view_state=session.get("view_state", {}),
         workflow_step=int(session.get("workflow_step", 0)),
         meta={**session.get("meta", {}), "_strategy": session.get("strategy")},
@@ -204,6 +241,7 @@ def load_session(path: str | Path) -> AppState3D:
             data.result_arrays, data.result_arrays["ref_coords"], strategy, meta
         )
     return AppState3D(
+        draft=data.draft,
         config=data.config,
         result=result,
         view_state=data.view_state,

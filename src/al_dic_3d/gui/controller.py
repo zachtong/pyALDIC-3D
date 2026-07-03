@@ -66,19 +66,31 @@ class WorkflowController:
         self.state.config = config
         self.state.mark_dirty()
 
+    def build_config(self):
+        """Assemble the frozen RunConfig from the current draft; raise if not ready."""
+        self.state.config = self.state.draft.build()
+        self.state.mark_dirty()
+        return self.state.config
+
     # --- navigation ----------------------------------------------------------
 
     def can_advance(self) -> bool:
-        """Whether the requirements of the CURRENT step are met to move on."""
-        step = self.state.workflow_step
-        cfg = self.state.config
-        if step == STEP_PROJECT:
-            return True
-        if step in (STEP_IMPORT, STEP_CALIBRATION, STEP_ROI, STEP_CORRESPONDENCE, STEP_RUN):
-            return cfg is not None
-        if step in (STEP_RESULTS, STEP_EXPORT):
+        """Whether the 'Next' action may move to the following step.
+
+        Setup transitions (project..run) are free — the draft is filled
+        incrementally and validated at Run. Advancing INTO Results/Export requires
+        a completed run.
+        """
+        nxt = self.state.workflow_step + 1
+        if nxt >= N_STEPS:
+            return False
+        if nxt in (STEP_RESULTS, STEP_EXPORT):
             return self.state.has_results
-        return False
+        return True
+
+    def can_run(self) -> bool:
+        """Whether the draft has everything needed to assemble a RunConfig."""
+        return self.state.draft.is_ready()
 
     def goto(self, step: int) -> None:
         if not 0 <= step < N_STEPS:
@@ -95,9 +107,12 @@ class WorkflowController:
     # --- run -----------------------------------------------------------------
 
     def run(self, progress: ProgressFn | None = None):
-        """Execute the headless pipeline and store the result on the state."""
+        """Execute the headless pipeline and store the result on the state.
+
+        Assembles the RunConfig from the draft first if it has not been built.
+        """
         if self.state.config is None:
-            raise RuntimeError("no configuration to run")
+            self.build_config()
         from al_dic_3d.runner import run_pipeline
 
         self.state.result = run_pipeline(self.state.config, progress=progress)

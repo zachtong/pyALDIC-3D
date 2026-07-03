@@ -43,3 +43,31 @@ def test_menu_new_project_does_not_crash(qapp):
     win._new_project()  # resets state + status bar
     assert win.controller.state.workflow_step == 0
     win.close()
+
+
+def test_pages_populate_the_draft(qapp):
+    win = MainWindow3D()
+    draft = win.controller.state.draft
+
+    roi_page = win._pages[3]
+    roi_page._xmin.setValue(10)
+    roi_page._xmax.setValue(200)
+    roi_page._ymin.setValue(20)
+    roi_page._ymax.setValue(180)
+    assert draft.roi == (10, 200, 20, 180)
+
+    corr_page = win._pages[4]
+    corr_page._strategy.setCurrentText("ref_direct")
+    corr_page._strain.setChecked(False)
+    assert draft.strategy == "ref_direct" and draft.compute_strain is False
+
+    win._new_project()  # a fresh project resets the draft
+    assert win.controller.state.draft.roi is None
+    win.close()
+
+
+def test_run_page_button_reflects_readiness(qapp):
+    win = MainWindow3D()
+    run_page = win._pages[5]
+    assert not run_page._run_btn.isEnabled()  # empty draft -> not runnable
+    win.close()

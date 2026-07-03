@@ -12,7 +12,7 @@ from dataclasses import replace
 import pytest
 
 from al_dic_3d.gui.controller import N_STEPS, WorkflowController
-from al_dic_3d.project.state import STEP_IMPORT, STEP_PROJECT, STEP_RESULTS
+from al_dic_3d.project.state import STEP_PROJECT, STEP_RESULTS, STEP_RUN
 
 cv2 = pytest.importorskip("cv2")
 
@@ -26,12 +26,15 @@ def _config(tmp_path):
     return replace(load_config(synth_parity.write_config(tmp_path, scene)), compute_strain=True)
 
 
-def test_navigation_validation_gates_on_config():
+def test_setup_navigation_free_but_results_gated():
     c = WorkflowController()
     assert c.state.workflow_step == STEP_PROJECT
-    assert c.can_advance() and c.advance()  # project -> import
-    assert c.state.workflow_step == STEP_IMPORT
-    assert not c.can_advance()  # import onward needs a config
+    # setup steps advance freely up to Run
+    while c.state.workflow_step < STEP_RUN:
+        assert c.advance()
+    assert c.state.workflow_step == STEP_RUN
+    assert not c.can_advance()  # Run -> Results needs a completed run
+    assert not c.can_run()  # empty draft is not runnable
     with pytest.raises(ValueError):
         c.goto(N_STEPS)  # out of range
 
@@ -57,6 +60,6 @@ def test_full_workflow_run_then_session_round_trip(tmp_path):
     assert reopened.state.config == cfg
 
 
-def test_run_without_config_raises():
-    with pytest.raises(RuntimeError, match="no configuration"):
-        WorkflowController().run()
+def test_run_with_empty_draft_raises_not_ready():
+    with pytest.raises(ValueError, match="not ready"):
+        WorkflowController().run()  # empty draft -> build() fails before running

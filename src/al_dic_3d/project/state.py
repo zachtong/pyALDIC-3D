@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from al_dic_3d.project.draft import ProjectDraft
+
 if TYPE_CHECKING:
     from al_dic_3d.runner import RunConfig, RunResult
 
@@ -32,7 +34,8 @@ STEP_EXPORT = 7
 class AppState3D:
     """Mutable workflow state (GUI layer; Qt-free)."""
 
-    config: RunConfig | None = None  # reproducible inputs (calibration/sequence/ROI/...)
+    draft: ProjectDraft = field(default_factory=ProjectDraft)  # user-edited inputs (pages fill)
+    config: RunConfig | None = None  # frozen inputs assembled from the draft at run
     result: RunResult | None = None  # computed correspondence/reconstruction/strain
     view_state: dict = field(default_factory=dict)  # UI: current field/frame/colormap/ranges
     workflow_step: int = STEP_PROJECT

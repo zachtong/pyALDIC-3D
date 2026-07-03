@@ -41,6 +41,7 @@ class MainWindow3D(QMainWindow):
         self._pages = []
         for cls in PAGE_CLASSES:
             page = cls(self.controller)
+            page.changed.connect(self._on_page_changed)
             self._pages.append(page)
             self._stack.addWidget(page)
 
@@ -90,13 +91,19 @@ class MainWindow3D(QMainWindow):
             return
         self.controller.goto(row)
         self._stack.setCurrentIndex(row)
-        self._pages[row].on_enter()
+        self._pages[row].refresh()
+
+    def _on_page_changed(self) -> None:
+        """A page mutated the state — re-sync the sidebar and refresh every page."""
+        self._sync_from_state()
+        for page in self._pages:
+            page.refresh()
 
     # --- menu actions --------------------------------------------------------
 
     def _new_project(self) -> None:
         self.controller.new_project()
-        self._sync_from_state()
+        self._on_page_changed()
         self.statusBar().showMessage(self.tr("New project created"))
 
     def _open_project(self) -> None:
@@ -110,7 +117,7 @@ class MainWindow3D(QMainWindow):
         except Exception as exc:  # noqa: BLE001 - surface load errors to the user
             self.statusBar().showMessage(self.tr("Could not open project: {0}").format(exc))
             return
-        self._sync_from_state()
+        self._on_page_changed()
         self.statusBar().showMessage(self.tr("Project opened"))
 
     def _save_project(self) -> None:

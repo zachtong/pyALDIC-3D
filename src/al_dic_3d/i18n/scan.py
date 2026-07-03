@@ -36,6 +36,7 @@ _SINK_METHODS = frozenset(
         "addAction",
         "addMenu",
         "setTabText",
+        "addRow",
         "_set",  # this package's WorkflowPage helper
     }
 )
@@ -69,14 +70,38 @@ def _is_user_facing(s: str) -> bool:
     return any(ch.isalpha() for ch in s)
 
 
+_TR_NAMES = frozenset({"tr", "translate"})
+
+
 def scan_file(path: Path) -> list[Leak]:
-    """Return the untranslated user-facing literals in one Python source file."""
+    """Return the untranslated / non-extractable strings in one Python source file.
+
+    Two kinds of finding:
+      * a bare user-facing string literal reaching a Qt view sink (unwrapped), and
+      * a ``tr()`` / ``translate()`` call whose argument is NOT a literal — lupdate
+        cannot extract it, so it would go untranslated in every locale.
+    """
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     leaks: list[Leak] = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         func = node.func
+
+        # tr()/translate() must take a string literal (lupdate extraction).
+        tr_name = (
+            func.attr
+            if isinstance(func, ast.Attribute)
+            else (func.id if isinstance(func, ast.Name) else None)
+        )
+        if tr_name in _TR_NAMES:
+            first = node.args[-1] if node.args else None  # translate(ctx, text); tr(text)
+            if first is not None and not (
+                isinstance(first, ast.Constant) and isinstance(first.value, str)
+            ):
+                leaks.append(Leak(path, node.lineno, tr_name, "<non-literal tr() argument>"))
+            continue
+
         if isinstance(func, ast.Attribute) and func.attr in _SINK_METHODS:
             sink = func.attr
         elif isinstance(func, ast.Name) and func.id in _SINK_CTORS:

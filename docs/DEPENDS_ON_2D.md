@@ -46,6 +46,7 @@ justification.
 | `al_dic.core.data_structures.FrameResult` | per-frame element of `result_disp`; `temporal_track` reads `.U_accum` (cumulative) / `.U` (attribute access, not imported) | public |
 | `al_dic.mesh.mesh_setup.mesh_setup` | build the uniform Q8 reference mesh from grid coords in `build_grid_mesh` | public (re-exported in `al_dic.mesh.__init__`) |
 | `al_dic.solver.seed_prop_pipeline.build_grid_for_roi` | FFT-path `(x0, y0)` grid for the reference mesh (matches `run_aldic`'s internal grid) | public (module-level, no underscore) |
+| `al_dic.gui.widgets.console_log.ConsoleLog` | reused 2D console widget (`append_log`) on the GUI Run page | internal (GUI widget; import via full path) |
 
 <!--
 Row template (copy when adding a dependency):

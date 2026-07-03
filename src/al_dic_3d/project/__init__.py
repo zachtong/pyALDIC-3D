@@ -7,6 +7,7 @@ the 2D ``.aldic`` design). Qt-free and unit-testable (session round-trip).
 Layer: data (Qt-free).  Lands: Phase 4–5.  Spec: docs/architecture/01 §B.1, §F.
 """
 
+from al_dic_3d.project.draft import ProjectDraft
 from al_dic_3d.project.session import (
     SCHEMA_VERSION,
     Session3DData,
@@ -20,6 +21,7 @@ from al_dic_3d.project.state import AppState3D
 __all__ = [
     "SCHEMA_VERSION",
     "AppState3D",
+    "ProjectDraft",
     "Session3DData",
     "SessionError",
     "load_session",
