@@ -7,6 +7,15 @@ world/specimen-frame transforms. Mode- and strategy-agnostic:
 Layer: compute (**Qt-free**).  Lands: Phase 1.  Spec: docs/architecture/01 §B.1, §E.
 """
 
+from al_dic_3d.reconstruct.reconstruction import (
+    Reconstruction3D,
+    reconstruct_correspondence,
+)
 from al_dic_3d.reconstruct.triangulate import reprojection_error, triangulate_dlt
 
-__all__ = ["reprojection_error", "triangulate_dlt"]
+__all__ = [
+    "Reconstruction3D",
+    "reconstruct_correspondence",
+    "reprojection_error",
+    "triangulate_dlt",
+]

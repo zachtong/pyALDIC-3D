@@ -71,12 +71,22 @@ class TrackBothStrategy:
 
     name: ClassVar[str] = "track_both"
 
-    # Matching scale (mesh_R density + subset/template size). Powers-of-two where
-    # the 2D validator requires it (winstepsize, winsize_min).
-    winsize: ClassVar[int] = 32
-    winstepsize: ClassVar[int] = 16
-    winsize_min: ClassVar[int] = 8
-    stereo_search: ClassVar[int] = 48
+    def __init__(
+        self,
+        *,
+        winsize: int = 32,
+        winstepsize: int = 16,
+        winsize_min: int = 8,
+        stereo_search: int = 48,
+    ) -> None:
+        # Matching scale (mesh_R density + subset/template size). Powers-of-two
+        # where the 2D validator requires it (winstepsize, winsize_min). Overridable
+        # so a run can match a MATLAB baseline's parameters; no-arg construction
+        # (as the registry uses) keeps the defaults.
+        self.winsize = winsize
+        self.winstepsize = winstepsize
+        self.winsize_min = winsize_min
+        self.stereo_search = stereo_search
 
     def compute(
         self,
