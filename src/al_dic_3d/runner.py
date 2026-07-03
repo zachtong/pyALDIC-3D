@@ -33,6 +33,7 @@ from al_dic_3d.reconstruct import (
     remove_3d_outliers,
 )
 from al_dic_3d.sequence import ArrayFrameProvider, StereoSequence
+from al_dic_3d.strain3d import STRAIN_FIELDS, compute_surface_strain
 
 ProgressFn = Callable[[float, str], None]
 
@@ -65,6 +66,9 @@ class RunConfig:
     znssd_max: float = 0.5
     reproj_max_px: float = 2.0
     outlier_threshold: float = 3.0
+    compute_strain: bool = False
+    strain_size: int = 5
+    strain_smooth_sigma: float = 0.0
     output_prefix: str = "run"
     cam_left: str = "L"
     cam_right: str = "R"
@@ -79,6 +83,7 @@ class RunResult:
     ref_coords: NDArray[np.float64]  # (n_pts, 2) frame-1 left mesh nodes
     correspondence: object  # CorrespondenceSet (avoid importing to stay light)
     reconstruction: Reconstruction3D
+    strain: object | None = None  # StrainResult3D if computed, else None
     meta: dict = field(default_factory=dict)
 
 
@@ -118,6 +123,7 @@ def load_config(path: str | Path) -> RunConfig:
     seq = table.get("sequence", {})
     out = table.get("output", {})
     qual = table.get("quality", {})
+    strain = table.get("strain", {})
 
     return RunConfig(
         calibration_file=_resolve(str(_require(table, "calibration", "file"))),
@@ -139,6 +145,9 @@ def load_config(path: str | Path) -> RunConfig:
         znssd_max=float(qual.get("znssd_max", 0.5)),
         reproj_max_px=float(qual.get("reproj_max_px", 2.0)),
         outlier_threshold=float(qual.get("outlier_threshold", 3.0)),
+        compute_strain=bool(strain.get("enabled", False)),
+        strain_size=int(strain.get("strain_size", 5)),
+        strain_smooth_sigma=float(strain.get("smooth_sigma", 0.0)),
         output_prefix=str(out.get("prefix", "run")),
         cam_left=str(seq.get("cam_left", "L")),
         cam_right=str(seq.get("cam_right", "R")),
@@ -274,6 +283,16 @@ def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResul
         rec = apply_reproj_gate(rec, max_reproj_norm)
         rec = remove_3d_outliers(rec, ref_coords, threshold=cfg.outlier_threshold)
 
+    strain = None
+    if cfg.compute_strain:
+        strain = compute_surface_strain(
+            rec,
+            ref_coords,
+            strain_size=cfg.strain_size,
+            winstepsize=cfg.winstepsize,
+            smooth_sigma=cfg.strain_smooth_sigma,
+        )
+
     tracked = int((rec.source != 3).sum())  # 3 == INVALID
     meta = {
         "strategy": cfg.strategy,
@@ -281,6 +300,7 @@ def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResul
         "n_pts": cs.n_pts,
         "n_tracked_positions": tracked,
         "quality_gate": cfg.quality_gate,
+        "compute_strain": cfg.compute_strain,
         "image_size": (img_h, img_w),
         "base_dir": str(seq_base),
     }
@@ -289,6 +309,7 @@ def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResul
         ref_coords=ref_coords,
         correspondence=cs,
         reconstruction=rec,
+        strain=strain,
         meta=meta,
     )
 
@@ -299,7 +320,7 @@ def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResul
 def _arrays(result: RunResult) -> dict:
     cs = result.correspondence
     rec = result.reconstruction
-    return {
+    arrays = {
         "strategy": result.strategy,
         "ref_coords": result.ref_coords,
         "xL": cs.xL,
@@ -312,6 +333,10 @@ def _arrays(result: RunResult) -> dict:
         "n_frames": np.int64(cs.n_frames),
         "n_pts": np.int64(cs.n_pts),
     }
+    if result.strain is not None:
+        for name in STRAIN_FIELDS:
+            arrays[f"strain_{name}"] = getattr(result.strain, name)
+    return arrays
 
 
 def write_results(result: RunResult, cfg: RunConfig) -> dict[str, Path]:

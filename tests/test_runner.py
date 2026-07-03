@@ -158,3 +158,21 @@ def test_cli_run_creates_outputs(tmp_path):
     assert rc == 0
     assert (tmp_path / "out" / "run.npz").exists()
     assert (tmp_path / "out" / "run.mat").exists()
+
+
+def test_run_pipeline_computes_and_writes_strain(tmp_path):
+    from dataclasses import replace
+
+    scene = synth_stereo.build_scene(tmp_path, n_frames=3)
+    cfg = load_config(synth_stereo.write_config(tmp_path, scene))
+    result = run_pipeline(replace(cfg, compute_strain=True, strain_size=5))
+
+    assert result.strain is not None
+    assert result.strain.n_frames == 3 and result.meta["compute_strain"] is True
+    assert np.nanmax(np.abs(result.strain.exx[0])) < 1e-9  # reference frame: zero strain
+    assert np.isfinite(result.strain.exx[1]).any()  # some finite strain later
+
+    paths = write_results(result, replace(cfg, compute_strain=True))
+    npz = np.load(paths["npz"])
+    assert "strain_exx" in npz
+    assert npz["strain_von_mises"].shape == (3, result.correspondence.n_pts)
