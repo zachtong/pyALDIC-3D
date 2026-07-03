@@ -55,6 +55,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Desktop GUI (PySide6/Qt). Optional so the headless compute layer + CLI stay
+# installable without Qt; `al-dic-3d gui` and the gui/ package need this.
+gui = [
+    "PySide6>=6.5",
+]
 # Interactive 3D visualization (heavy: pyvista/VTK). Kept optional and lazily
 # imported so the compute layer stays installable headless.
 viz3d = [
@@ -66,6 +71,7 @@ dev = [
     "pytest-xdist>=3.0",
     "ruff>=0.6",
     "pre-commit>=3.5",
+    "PySide6>=6.5",  # GUI smoke tests (offscreen)
     # Report tooling: tools/phase0_report.py (and later phases' PdfPages reports)
     # import matplotlib. Declared here (not in runtime deps, which stay exactly
     # numpy/scipy/opencv-python-headless/al-dic) so the report workflow does not

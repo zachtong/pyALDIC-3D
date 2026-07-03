@@ -10,6 +10,7 @@ Exposes ``--version`` and the Phase-1 ``run`` sub-command (a headless
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from al_dic_3d import __version__
@@ -60,6 +61,12 @@ def build_parser() -> argparse.ArgumentParser:
         "-q", "--quiet", action="store_true", help="suppress per-frame progress output"
     )
 
+    subparsers.add_parser(
+        "gui",
+        help="launch the graphical workflow (requires PySide6)",
+        description="Open the pyALDIC-3D desktop application.",
+    )
+
     return parser
 
 
@@ -101,5 +108,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if command == "run":
         return _run_command(args)
+    if command == "gui":
+        try:
+            from al_dic_3d.gui.app import main as gui_main
+        except ImportError as exc:  # PySide6 missing
+            print(f"the GUI requires PySide6: {exc}", file=sys.stderr)
+            return 2
+        return gui_main([])
     parser.error(f"unknown command: {command}")
     return 2
