@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Test / coverage / tool caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# Phase reports: matplotlib PdfPages output. `reports/` holds ONLY PDFs, is
+# gitignored, and is NEVER referenced from README (see CLAUDE.md engineering
+# rules). Regenerate with `python tools/phase0_report.py`.
+reports/
+
+# Session / dataset artifacts
+*.aldic3d
+datasets/
+test_data/
+
+# IDE / editor
+.vscode/
+.idea/
+.cspell/
+
+# OS junk
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Git worktrees
+.worktrees/
+
+# Claude Code: the settings.json (cross-repo read-only boundary + permissions)
+# and CLAUDE.md (session bootstrap / invariants) ARE versioned on purpose — they
+# are this repo's operating contract. Ignore only transient local .claude state.
+.claude/*
+!.claude/settings.json

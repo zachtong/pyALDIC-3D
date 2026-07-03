@@ -1,0 +1,134 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "al-dic-3d"
+dynamic = ["version"]  # read from src/al_dic_3d/__init__.py (see [tool.hatch.version])
+description = "pyALDIC-3D: stereo / multi-camera Digital Image Correlation built on the pyALDIC-2D engine"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+authors = [
+    { name = "Zixiang (Zach) Tong", email = "zachtong@utexas.edu" },
+]
+keywords = [
+    "digital-image-correlation",
+    "stereo-DIC",
+    "3D-DIC",
+    "DIC",
+    "experimental-mechanics",
+    "strain-measurement",
+    "photogrammetry",
+    "triangulation",
+    "surface-strain",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    # License metadata lives once in the SPDX `license` field above (PEP 639);
+    # no `License ::` trove classifier, which PEP 639 discourages duplicating.
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    # Headless OpenCV: the 3D compute layer and CLI must run on machines with no
+    # display / Qt (CI, servers). NOTE: al-dic pulls the full `opencv-python`;
+    # both provide the `cv2` module and will coexist. Harmless in Phase 0 (we do
+    # not import cv2 yet); revisit if a conflict ever surfaces.
+    "opencv-python-headless>=4.7",
+    # pyALDIC-2D consumed as a PINNED, READ-ONLY library (decision D11). Resolves
+    # from PyPI in CI / for users. During development, satisfy the same `==0.6.*`
+    # constraint with an editable install of the sibling repo instead:
+    #     pip install -e ../pyALDIC
+    # docs/DEPENDS_ON_2D.md is the ledger of exactly which al_dic symbols we use.
+    "al-dic==0.6.*",
+]
+
+[project.optional-dependencies]
+# Interactive 3D visualization (heavy: pyvista/VTK). Kept optional and lazily
+# imported so the compute layer stays installable headless.
+viz3d = [
+    "pyvista>=0.43",
+    "pyvistaqt>=0.11",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-xdist>=3.0",
+    "ruff>=0.6",
+    "pre-commit>=3.5",
+    # Report tooling: tools/phase0_report.py (and later phases' PdfPages reports)
+    # import matplotlib. Declared here (not in runtime deps, which stay exactly
+    # numpy/scipy/opencv-python-headless/al-dic) so the report workflow does not
+    # rely on al-dic transitively pulling matplotlib.
+    "matplotlib>=3.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/zachtong/pyALDIC-3D"
+Repository = "https://github.com/zachtong/pyALDIC-3D"
+Issues = "https://github.com/zachtong/pyALDIC-3D/issues"
+
+[project.scripts]
+al-dic-3d = "al_dic_3d.cli:main"
+
+[tool.hatch.version]
+# Single source of truth for the version — no pyproject/__init__ drift.
+path = "src/al_dic_3d/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/al_dic_3d"]
+
+[tool.hatch.build.targets.sdist]
+# Explicit allowlist (hatchling's default "everything not gitignored" would sweep
+# in local docs/data). Keep the sdist to what a consumer needs to install + test.
+include = [
+    "/src",
+    "/tests",
+    "/pyproject.toml",
+    "/README.md",
+    "/LICENSE",
+    "/docs/architecture",
+    "/docs/DEPENDS_ON_2D.md",
+    "/.github/workflows",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "perf: performance/throughput tests -- excluded from CI (runner CPU varies)",
+]
+
+[tool.coverage.run]
+source = ["al_dic_3d"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Lean, high-signal rule set for the scaffold; tighten as modules land.
+#   E,W pycodestyle · F pyflakes · I isort · UP pyupgrade · B bugbear
+select = ["E", "W", "F", "I", "UP", "B"]
+
+[tool.ruff.format]
+# ruff's Black-compatible formatter with defaults.

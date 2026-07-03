@@ -1,0 +1,14 @@
+# Normalize all text to LF in the repo AND the working tree. This keeps the
+# `mixed-line-ending --fix=lf` pre-commit hook, Linux CI, and Windows checkouts
+# consistent — without it, autocrlf=true would check out CRLF on Windows and the
+# LF hook would rewrite every file on first commit (spurious churn).
+* text=auto eol=lf
+
+# Binary assets: no EOL conversion, no textual diffs.
+*.png  binary
+*.jpg  binary
+*.pdf  binary
+*.qm   binary
+*.mat  binary
+*.npz  binary
+*.aldic3d binary

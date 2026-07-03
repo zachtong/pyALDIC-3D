@@ -1,0 +1,30 @@
+# Pre-commit hooks for pyALDIC-3D.
+#
+# Mirrors the 2D repo's tooling (ruff + standard hygiene). The i18n extract /
+# fill / stats hooks are intentionally ABSENT until the GUI phase (01 §G, P4)
+# introduces the first tr() strings — there is nothing to translate in the
+# headless scaffold.
+#
+# Setup:   pip install -e ".[dev]" && pre-commit install
+# Run all: pre-commit run --all-files
+# Bump:    pre-commit autoupdate
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20  # pinned to the ruff the scaffold was verified with
+    hooks:
+      - id: ruff          # lint
+        args: ["--fix"]
+      - id: ruff-format   # format

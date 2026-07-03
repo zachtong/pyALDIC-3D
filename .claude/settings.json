@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "../pyALDIC",
+      "../3D-Stereo-ALDIC"
+    ],
+    "allow": [
+      "Bash(pytest:*)",
+      "Bash(python:*)",
+      "Bash(python -m:*)",
+      "Bash(pip install:*)",
+      "Bash(pip show:*)",
+      "Bash(ruff:*)",
+      "Bash(mypy:*)",
+      "Bash(git init)",
+      "Bash(git status)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git restore:*)",
+      "Bash(ls:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Edit(../pyALDIC/**)",
+      "Write(../pyALDIC/**)",
+      "Edit(../3D-Stereo-ALDIC/**)",
+      "Write(../3D-Stereo-ALDIC/**)"
+    ]
+  }
+}
