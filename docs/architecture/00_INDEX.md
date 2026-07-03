@@ -63,6 +63,15 @@
 
 ## Changelog
 
+- 2026-07-03 v1.3.4 — **Phase 3 3D 表面应变完成**（`main` 至 `00a40d9`，114 tests green）：
+  先按规约写 `docs/strain3d_math.md`（从 `PlaneFit3_Quadtree.m`+`computeStrain3D.m`+`GetRTMatrix.m`
+  提炼），再实现 `al_dic_3d.strain3d`（**纯 numpy/scipy，零新增 al_dic 依赖**）：局部 VSG 方窗邻域→
+  切平面拟合→局部位移梯度→F=I+coef^T→E=½(FᵀF−I)→exx/eyy/exy/e1/e2/maxShear/vonMises/dwdx/dwdy；
+  可选位移平滑 + specimen 变换（GetRTMatrix，凸包外最近邻兜底对齐 MATLAB 外推）。runner `[strain]`
+  开关使 `al-dic-3d run` 产出 `strain_*`。门禁：**解析场全过**——刚体旋转→应变 5.5e-16、平面/柱面
+  单轴拉伸→ε+ε²/2=0.0202（6 位精确）；`reports/phase3_strain.pdf`（解析门禁+非平面应变图+VSG 敏感性
+  U 曲线，自校验，最优 strain_size=7）。对抗审查：核心数学零确认，1 条 specimen 凸包外解析差已修。
+  **MATLAB strainPerFrame 对位仍延迟**（同 P1/P2，待用户数据集）。**未进入 Phase 4。**
 - 2026-07-03 v1.3.3 — **Phase 2 对应层完成**（`main` 至 `3474b62`，105 tests green）：
   (1) inc 模式（`reference_mode` 贯通，引擎组合增量→累积；acc↔inc 自洽差 ~13µm < 噪声底）；
   (2) S2 `stereo_each_frame`（单左链 + 逐帧散点立体，warm-start，零重采样，source=STEREO_REFRESH）；
