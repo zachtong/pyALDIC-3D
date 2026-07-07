@@ -133,6 +133,33 @@ def test_coded_detector_requires_fiducials(rig):
     assert not det.ok and "fiducial" in det.reason
 
 
+def test_coded_border_clipped_dots_recovered_by_arc_fit(rig):
+    # Column 9 of the board is cut by the image border with ~2/3 of each rim
+    # visible: the partial-arc ellipse fit must recover those centers instead
+    # of dropping them (edge points constrain distortion the most) — and must
+    # NOT hand back biased clipped-blob centroids.
+    pose = (np.eye(3), np.array([52.0, 0.0, 500.0]) - np.array([60.0, 48.0, 0.0]))
+    lefts, _ = sc.render_stereo_set(CODED, rig, [pose])
+    det = detect_board(lefts[0], CODED)
+    assert det.ok, det.reason
+    gt = sc.gt_pixels(CODED, pose, rig, "L")
+    err = np.linalg.norm(det.image_points - gt[det.ids], axis=1)
+    border = gt[det.ids][:, 0] > sc.IMG_W - 18
+    assert border.sum() >= 6  # the clipped column was recovered
+    assert err[border].max() < 0.3
+    assert err.max() < 0.3
+
+
+def test_coded_retry_ladder_survives_illumination_gradient(rig):
+    poses = sc.board_poses(_extent(CODED), n=1)
+    lefts, _ = sc.render_stereo_set(CODED, rig, poses)
+    ramp = np.linspace(0.15, 1.0, sc.IMG_W)[None, :]
+    det = detect_board(lefts[0] * ramp, CODED)
+    assert det.ok, det.reason
+    assert det.method != "coded"  # a later ladder rung (e.g. +adaptive) ran
+    assert det.n_points == CODED.cols * CODED.rows
+
+
 # --------------------------------------------------------------------------- #
 # Stereo solve parity
 # --------------------------------------------------------------------------- #

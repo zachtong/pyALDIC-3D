@@ -258,14 +258,122 @@ def _weighted_center(
     return (x + float((weight * jj).sum() / total), y + float((weight * ii).sum() / total))
 
 
+def _binarizations(gray: NDArray[np.uint8], dark: bool):
+    """Yield (tag, binary) candidates: Otsu -> adaptive mean -> threshold sweep.
+
+    The retry ladder (MMC's gray-search idea, condensed): global Otsu handles
+    clean lab images; the adaptive threshold survives illumination gradients;
+    the coarse sweep is the brute-force last resort for odd exposures. Only
+    failures pay for later rungs.
+    """
+    import cv2
+
+    tt = cv2.THRESH_BINARY_INV if dark else cv2.THRESH_BINARY
+    _t, binary = cv2.threshold(gray, 0, 255, tt + cv2.THRESH_OTSU)
+    yield "", binary
+    block = max(31, (min(gray.shape) // 8) | 1)
+    yield "+adaptive", cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, tt, block, 5)
+    for thr in (60, 100, 140, 180, 220):
+        _t, binary = cv2.threshold(gray, float(thr), 255, tt)
+        yield f"+thr{thr}", binary
+
+
+def _arc_ellipse_center(
+    gray: NDArray[np.uint8], cnt: NDArray, a_max: float
+) -> tuple[float, float] | None:
+    """Recover a border-clipped dot's center from its VISIBLE arc (MMC idiom).
+
+    A clipped blob's intensity centroid is biased by several px (the old
+    failure mode), but the visible rim still determines the ellipse: drop
+    contour points on the border, fit ``fitEllipseAMS``, and accept only when
+    the radial residual is small and >= 240 deg of arc was seen. Edge-of-frame
+    points constrain distortion the most, so recovering them matters.
+    """
+    import cv2
+
+    h, w = gray.shape
+    pts = cnt.reshape(-1, 2).astype(np.float64)
+    keep = (pts[:, 0] > 2) & (pts[:, 0] < w - 3) & (pts[:, 1] > 2) & (pts[:, 1] < h - 3)
+    pts = pts[keep]
+    if len(pts) < 6:
+        return None
+    (cx, cy), (da, db), ang = cv2.fitEllipseAMS(np.float32(pts).reshape(-1, 1, 2))
+    if not np.all(np.isfinite([cx, cy, da, db])) or min(da, db) < 3:
+        return None
+    a, b = da / 2.0, db / 2.0
+    if not 9.0 <= np.pi * a * b <= a_max:
+        return None
+    th = np.deg2rad(ang)
+    rot = np.array([[np.cos(th), np.sin(th)], [-np.sin(th), np.cos(th)]])
+    q = (pts - (cx, cy)) @ rot.T
+    rr = np.sqrt((q[:, 0] / a) ** 2 + (q[:, 1] / b) ** 2)
+    if np.abs(rr - 1.0).mean() * min(a, b) > 1.0:  # px-scale radial residual
+        return None
+    angles = np.sort(np.arctan2(q[:, 1], q[:, 0]))
+    gaps = np.diff(np.concatenate([angles, [angles[0] + 2.0 * np.pi]]))
+    if 360.0 - np.degrees(gaps.max()) < 240.0:
+        return None
+    refined = _refine_rim_and_refit(gray, (cx, cy), (a, b), th, angles)
+    return refined if refined is not None else (float(cx), float(cy))
+
+
+def _refine_rim_and_refit(
+    gray: NDArray[np.uint8],
+    center: tuple[float, float],
+    axes: tuple[float, float],
+    theta: float,
+    arc_angles: NDArray[np.float64],
+) -> tuple[float, float] | None:
+    """Sub-pixel rim refit for a partial arc: 50%-crossing along radial rays.
+
+    The binary contour of a blurred dot sits at the threshold level — a
+    uniform radius offset that a FULL ellipse fit cancels but a partial arc
+    turns into a center bias toward the gap (high leverage on distortion at
+    the image border). The 50% intensity crossing of a symmetric blurred edge
+    is the true rim, so per visible-arc angle we sample a radial profile,
+    locate the crossing sub-pixel, and refit the ellipse on those rim points.
+    """
+    import cv2
+    from scipy.ndimage import map_coordinates
+
+    (cx, cy), (a, b) = center, axes
+    h, w = gray.shape
+    cos_t, sin_t = np.cos(theta), np.sin(theta)
+    fractions = np.linspace(0.55, 1.45, 19)
+    rim: list[tuple[float, float]] = []
+    for phi in arc_angles:
+        # Ray through the ellipse point at parametric angle phi (image frame).
+        ex, ey = a * np.cos(phi), b * np.sin(phi)
+        dx, dy = ex * cos_t - ey * sin_t, ex * sin_t + ey * cos_t
+        xs, ys = cx + fractions * dx, cy + fractions * dy
+        if xs.min() < 1 or xs.max() > w - 2 or ys.min() < 1 or ys.max() > h - 2:
+            continue
+        prof = map_coordinates(gray.astype(np.float64), [ys, xs], order=1)
+        lo, hi = prof[:4].mean(), prof[-4:].mean()  # inside vs outside levels
+        if abs(hi - lo) < 20:
+            continue
+        mid = 0.5 * (lo + hi)
+        crossing = np.nonzero(np.diff(np.sign(prof - mid)))[0]
+        if crossing.size == 0:
+            continue
+        j = int(crossing[0])
+        t = (mid - prof[j]) / (prof[j + 1] - prof[j])
+        f = fractions[j] + t * (fractions[j + 1] - fractions[j])
+        rim.append((cx + f * dx, cy + f * dy))
+    if len(rim) < 8:
+        return None
+    (rcx, rcy), (rda, rdb), _ang = cv2.fitEllipseAMS(np.float32(rim).reshape(-1, 1, 2))
+    if not np.all(np.isfinite([rcx, rcy, rda, rdb])):
+        return None
+    return float(rcx), float(rcy)
+
+
 def _find_dots_and_fiducials(
-    gray: NDArray[np.uint8], spec: CodedCircleGridSpec
+    gray: NDArray[np.uint8], binary: NDArray[np.uint8], spec: CodedCircleGridSpec
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], str]:
     """Segment the target: return (dot_centers (n,2), fiducial_centers (m,2), err)."""
     import cv2
 
-    thresh_type = cv2.THRESH_BINARY_INV if spec.dark_dots else cv2.THRESH_BINARY
-    _t, binary = cv2.threshold(gray, 0, 255, thresh_type + cv2.THRESH_OTSU)
     contours, hierarchy = cv2.findContours(binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
     if hierarchy is None or len(contours) < spec.rows:  # far too few blobs
         return _EMPTY2, _EMPTY2, "too few blobs after thresholding"
@@ -283,7 +391,13 @@ def _find_dots_and_fiducials(
             continue
         bx, by, bw, bh = cv2.boundingRect(cnt)
         if bx <= 1 or by <= 1 or bx + bw >= w_img - 1 or by + bh >= h_img - 1:
-            continue  # clipped by the image border — centroid would be biased
+            # Border-clipped: NEVER centroid it (biased by the missing part) —
+            # recover the center from the visible arc instead, or drop it.
+            if hierarchy[i][2] == -1:  # plain dot only; clipped rings are dropped
+                center = _arc_ellipse_center(gray, cnt, a_max)
+                if center is not None:
+                    blobs.append((center[0], center[1], area))
+            continue
         child = hierarchy[i][2]
         hole_area = cv2.contourArea(contours[child]) if child != -1 else 0.0
         if child != -1 and hole_area > 0.25 * area:  # annulus -> fiducial ring
@@ -337,15 +451,33 @@ def _match_lattice(
 
 
 def _detect_coded_grid(gray: NDArray[np.uint8], spec: CodedCircleGridSpec) -> BoardDetection:
+
+    last = "no binarization attempted"
+    attempts = 0
+    for tag, binary in _binarizations(gray, spec.dark_dots):
+        attempts += 1
+        det = _coded_attempt(gray, binary, spec, "coded" + tag)
+        if det.ok:
+            return det
+        last = det.reason
+    return _fail(f"{last} (after {attempts} binarizations)", "coded")
+
+
+def _coded_attempt(
+    gray: NDArray[np.uint8],
+    binary: NDArray[np.uint8],
+    spec: CodedCircleGridSpec,
+    method: str,
+) -> BoardDetection:
     from itertools import permutations
 
     import cv2
 
-    dots, fid, err = _find_dots_and_fiducials(gray, spec)
+    dots, fid, err = _find_dots_and_fiducials(gray, binary, spec)
     if err:
-        return _fail(err, "coded")
+        return _fail(err, method)
     if fid.shape[0] != 3:
-        return _fail(f"found {fid.shape[0]} ring fiducials (need exactly 3)", "coded")
+        return _fail(f"found {fid.shape[0]} ring fiducials (need exactly 3)", method)
 
     grid_rc = np.array(spec.fiducials, dtype=np.float64)  # (3, 2) (row, col)
     grid_xy = grid_rc[:, ::-1].copy()  # (col, row) grid units
@@ -375,7 +507,7 @@ def _detect_coded_grid(gray: NDArray[np.uint8], spec: CodedCircleGridSpec) -> Bo
 
     if best is None or best[0] < 6:
         got = 0 if best is None else best[0]
-        return _fail(f"fiducial assignment failed (best lattice match {got} dots)", "coded")
+        return _fail(f"fiducial assignment failed (best lattice match {got} dots)", method)
 
     # Homography refine: re-predict every node projectively, re-match twice.
     _score, node_ids, dot_ids = best
@@ -388,7 +520,7 @@ def _detect_coded_grid(gray: NDArray[np.uint8], spec: CodedCircleGridSpec) -> Bo
         node_ids, dot_ids = _match_lattice(dots, pred, 0.3 * pitch_px)
 
     if len(node_ids) < 6:
-        return _fail("lattice indexing collapsed during homography refine", "coded")
+        return _fail("lattice indexing collapsed during homography refine", method)
 
     cols_f = all_nodes[node_ids, 0]
     rows_f = all_nodes[node_ids, 1]
@@ -401,5 +533,5 @@ def _detect_coded_grid(gray: NDArray[np.uint8], spec: CodedCircleGridSpec) -> Bo
         image_points=dots[dot_ids],
         object_points=obj,
         ids=ids,
-        method="coded",
+        method=method,
     )
