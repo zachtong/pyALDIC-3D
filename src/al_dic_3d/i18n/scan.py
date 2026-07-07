@@ -108,7 +108,11 @@ def scan_file(path: Path) -> list[Leak]:
             sink = func.id
         else:
             continue
-        for arg in node.args:
+        # Only the FIRST argument is the user-visible text (later args are
+        # userData / widgets, e.g. addItem(tr("Label"), "id")); the WorkflowPage
+        # helper ``_set(title, body)`` takes two user strings.
+        check_args = node.args if sink == "_set" else node.args[:1]
+        for arg in check_args:
             if (
                 isinstance(arg, ast.Constant)
                 and isinstance(arg.value, str)

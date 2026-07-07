@@ -1,0 +1,594 @@
+"""Left sidebar — dual-camera import, calibration, workflow type, ROI, parameters.
+
+The 2D sidebar idiom (fixed 320 px, uppercase section headers with badges, a drop
+zone, a file table, collapsible settings in a scroll area) applied to the 3D-DIC
+workflow: TWO camera streams that must pair, a stereo calibration that must be
+sane before anything else, the correspondence strategy, and the matching scale.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import numpy as np
+from al_dic.gui.theme import COLORS
+from al_dic.gui.widgets.collapsible_section import CollapsibleSection
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QFileDialog,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QSpinBox,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+from al_dic_3d.calibration import IMPORTERS, load_calibration
+from al_dic_3d.gui.state import GuiSignals
+
+if TYPE_CHECKING:
+    from al_dic_3d.gui.controller import WorkflowController
+
+_IMAGE_EXTS = {".png", ".tif", ".tiff", ".jpg", ".jpeg", ".bmp"}
+
+
+def _natural_key(name: str) -> list:
+    import re
+
+    return [int(t) if t.isdigit() else t.lower() for t in re.findall(r"\d+|\D+", name)]
+
+
+def _list_images(folder: str, natural: bool) -> list[str]:
+    paths = [p for p in Path(folder).iterdir() if p.suffix.lower() in _IMAGE_EXTS]
+    key = (lambda p: _natural_key(p.name)) if natural else (lambda p: p.name)
+    return [str(p) for p in sorted(paths, key=key)]
+
+
+class _SectionHeader(QWidget):
+    """Uppercase 11px bold letter-spaced title + optional count badge."""
+
+    def __init__(self, title: str, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(12, 8, 12, 4)
+        layout.setSpacing(6)
+        label = QLabel(title)
+        label.setStyleSheet(
+            f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px; "
+            f"font-weight: bold; letter-spacing: 1px;"
+        )
+        layout.addWidget(label)
+        self._badge = QLabel("")
+        self._badge.setStyleSheet(
+            f"color: {COLORS.TEXT_MUTED}; font-size: 10px; "
+            f"background: {COLORS.BG_INPUT}; border-radius: 7px; padding: 1px 6px;"
+        )
+        self._badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._badge.hide()
+        layout.addWidget(self._badge)
+        layout.addStretch()
+
+    def set_badge(self, text: str) -> None:
+        if text:
+            self._badge.setText(text)
+            self._badge.show()
+        else:
+            self._badge.hide()
+
+
+class _CameraDropZone(QWidget):
+    """Compact drop zone for ONE camera folder (dashed border, hover accent)."""
+
+    folder_selected = Signal(str)
+
+    def __init__(self, caption: str, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setAcceptDrops(True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setMinimumHeight(64)
+        # Custom QWidget subclasses do not paint QSS background/border without this.
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setStyleSheet(
+            f"""
+            _CameraDropZone {{
+                background: {COLORS.BG_PANEL};
+                border: 1px dashed {COLORS.BORDER};
+                border-radius: 6px;
+            }}
+            _CameraDropZone:hover {{
+                border-color: {COLORS.ACCENT};
+                background: {COLORS.BG_INPUT};
+            }}
+            """
+        )
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setSpacing(2)
+        icon = QLabel("\U0001f4c2")
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon.setStyleSheet("font-size: 16px; background: transparent;")
+        layout.addWidget(icon)
+        text = QLabel(caption)
+        text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        text.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px; background: transparent;")
+        layout.addWidget(text)
+
+    def mousePressEvent(self, _event) -> None:  # noqa: N802 (Qt override)
+        folder = QFileDialog.getExistingDirectory(self, self.tr("Select image folder"), "")
+        if folder:
+            self.folder_selected.emit(folder)
+
+    def dragEnterEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+    def dropEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        urls = event.mimeData().urls()
+        if not urls:
+            return
+        path = Path(urls[0].toLocalFile())
+        self.folder_selected.emit(str(path if path.is_dir() else path.parent))
+
+
+class LeftSidebar3D(QWidget):
+    """Fixed-width sidebar: IMAGES (L/R) + CALIBRATION + WORKFLOW + ROI + PARAMETERS."""
+
+    def __init__(
+        self,
+        controller: WorkflowController,
+        signals: GuiSignals,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.controller = controller
+        self.signals = signals
+        self.setObjectName("leftSidebar")
+        self.setFixedWidth(320)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        # ---- IMAGES ----------------------------------------------------------
+        self._images_header = _SectionHeader(self.tr("IMAGES"))
+        layout.addWidget(self._images_header)
+
+        drop_row = QWidget()
+        drop_layout = QHBoxLayout(drop_row)
+        drop_layout.setContentsMargins(8, 0, 8, 0)
+        drop_layout.setSpacing(6)
+        self._left_drop = _CameraDropZone(self.tr("Drop LEFT camera\nfolder or click"))
+        self._right_drop = _CameraDropZone(self.tr("Drop RIGHT camera\nfolder or click"))
+        drop_layout.addWidget(self._left_drop)
+        drop_layout.addWidget(self._right_drop)
+        layout.addWidget(drop_row)
+
+        self._natural_sort = QCheckBox(self.tr("Natural Sort (1, 2, …, 10)"))
+        self._natural_sort.setChecked(True)
+        self._natural_sort.setStyleSheet(
+            f"QCheckBox {{ color: {COLORS.TEXT_SECONDARY}; font-size: 11px; margin: 2px 12px; }}"
+        )
+        layout.addWidget(self._natural_sort)
+
+        self._pair_list = QTreeWidget()
+        self._pair_list.setHeaderLabels(["#", self.tr("Left"), self.tr("Right")])
+        self._pair_list.setRootIsDecorated(False)
+        self._pair_list.setColumnWidth(0, 30)
+        self._pair_list.setColumnWidth(1, 128)
+        self._pair_list.setMinimumHeight(80)
+        self._pair_list.setMaximumHeight(200)
+        self._pair_list.setStyleSheet(
+            f"""
+            QTreeWidget {{
+                background: {COLORS.BG_SIDEBAR};
+                border: none;
+                font-size: 11px;
+            }}
+            QTreeWidget::item {{ height: 22px; }}
+            QTreeWidget::item:selected {{ background: {COLORS.BG_HOVER}; }}
+            QHeaderView::section {{
+                background: {COLORS.BG_PANEL};
+                color: {COLORS.TEXT_MUTED};
+                border: none;
+                border-bottom: 1px solid {COLORS.BORDER};
+                padding: 3px 6px;
+                font-size: 10px;
+                font-weight: bold;
+            }}
+            """
+        )
+        self._pair_list.currentItemChanged.connect(self._on_row_selected)
+        layout.addWidget(self._pair_list)
+
+        self._pairing_status = QLabel(self.tr("No images loaded"))
+        self._pairing_status.setStyleSheet(
+            f"color: {COLORS.TEXT_MUTED}; font-size: 10px; margin: 2px 12px;"
+        )
+        layout.addWidget(self._pairing_status)
+
+        divider = QFrame()
+        divider.setFrameShape(QFrame.Shape.HLine)
+        divider.setStyleSheet(f"color: {COLORS.BORDER}; background: {COLORS.BORDER};")
+        divider.setFixedHeight(1)
+        layout.addSpacing(6)
+        layout.addWidget(divider)
+        layout.addSpacing(6)
+
+        # ---- Collapsible settings in a scroll area ---------------------------
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+
+        container = QWidget()
+        container.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        sections = QVBoxLayout(container)
+        sections.setContentsMargins(0, 0, 0, 0)
+        sections.setSpacing(0)
+
+        self._calib_section = CollapsibleSection(self.tr("CALIBRATION"), expanded=True)
+        self._calib_section.add_widget(self._build_calibration())
+        sections.addWidget(self._calib_section)
+
+        self._workflow_section = CollapsibleSection(self.tr("WORKFLOW TYPE"), expanded=True)
+        self._workflow_section.add_widget(self._build_workflow())
+        sections.addWidget(self._workflow_section)
+
+        self._roi_section = CollapsibleSection(self.tr("REGION OF INTEREST"), expanded=True)
+        self._roi_section.add_widget(self._build_roi())
+        sections.addWidget(self._roi_section)
+
+        self._params_section = CollapsibleSection(self.tr("PARAMETERS"), expanded=True)
+        self._params_section.add_widget(self._build_params())
+        sections.addWidget(self._params_section)
+
+        sections.addStretch()
+        scroll.setWidget(container)
+        layout.addWidget(scroll, stretch=1)
+
+        # ---- wiring ----------------------------------------------------------
+        self._left_drop.folder_selected.connect(lambda f: self._load_camera("L", f))
+        self._right_drop.folder_selected.connect(lambda f: self._load_camera("R", f))
+        self.signals.images_changed.connect(self.refresh_images)
+        self.signals.roi_changed.connect(self._sync_roi_spins)
+
+    # ---- CALIBRATION ---------------------------------------------------------
+
+    def _build_calibration(self) -> QWidget:
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        layout.setContentsMargins(12, 4, 12, 8)
+        layout.setSpacing(6)
+
+        row = QHBoxLayout()
+        row.setSpacing(4)
+        lbl = QLabel(self.tr("Format"))
+        lbl.setFixedWidth(88)
+        lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
+        row.addWidget(lbl)
+        self._calib_format = QComboBox()
+        self._calib_format.addItems(sorted(IMPORTERS))
+        self._calib_format.setCurrentText("opencv_yaml")
+        self._calib_format.currentTextChanged.connect(self._on_calib_format)
+        row.addWidget(self._calib_format, stretch=1)
+        layout.addLayout(row)
+
+        self._calib_btn = QPushButton(self.tr("Import calibration…"))
+        self._calib_btn.clicked.connect(self._on_calib_browse)
+        layout.addWidget(self._calib_btn)
+
+        self._calib_status = QLabel(self.tr("No calibration loaded"))
+        self._calib_status.setWordWrap(True)
+        self._calib_status.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
+        layout.addWidget(self._calib_status)
+        return host
+
+    def _on_calib_format(self, fmt: str) -> None:
+        self.controller.state.draft.calibration_format = fmt
+        self.controller.state.mark_dirty()
+        self.signals.calibration_changed.emit()
+
+    def _on_calib_browse(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Choose calibration file"),
+            "",
+            self.tr("Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)"),
+        )
+        if not path:
+            return
+        self.controller.state.draft.calibration_file = Path(path)
+        self.controller.state.mark_dirty()
+        self._preview_calibration()
+        self.signals.calibration_changed.emit()
+
+    def _preview_calibration(self) -> None:
+        draft = self.controller.state.draft
+        try:
+            rig = load_calibration(draft.calibration_file, draft.calibration_format)
+        except Exception as exc:  # noqa: BLE001 - calibration errors must die HERE
+            self._calib_status.setText(self.tr("Error: {0}").format(exc))
+            self._calib_status.setStyleSheet(f"color: {COLORS.DANGER}; font-size: 11px;")
+            self.signals.log.emit(str(exc), "error")
+            return
+        left = rig.cameras["L"]
+        _, t = rig.pose("R")
+        baseline = float(np.linalg.norm(t))
+        self._calib_status.setText(
+            self.tr("{0}\nfx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm").format(
+                Path(str(draft.calibration_file)).name, left.fx, left.fy, baseline
+            )
+        )
+        self._calib_status.setStyleSheet(f"color: {COLORS.SUCCESS}; font-size: 11px;")
+        self.signals.log.emit(f"calibration loaded: baseline {baseline:.1f} mm", "success")
+
+    # ---- WORKFLOW TYPE ---------------------------------------------------------
+
+    def _build_workflow(self) -> QWidget:
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        layout.setContentsMargins(12, 4, 12, 8)
+        layout.setSpacing(6)
+
+        self._strategy_combo = QComboBox()
+        self._strategy_combo.addItem(self.tr("Track Both"), "track_both")
+        self._strategy_combo.addItem(self.tr("Stereo Each Frame"), "stereo_each_frame")
+        self._strategy_combo.addItem(self.tr("Reference Direct"), "ref_direct")
+        layout.addLayout(self._combo_row(self.tr("Strategy"), self._strategy_combo))
+
+        self._mode_combo = QComboBox()
+        self._mode_combo.addItem(self.tr("Accumulative"), "accumulative")
+        self._mode_combo.addItem(self.tr("Incremental"), "incremental")
+        layout.addLayout(self._combo_row(self.tr("Tracking Mode"), self._mode_combo))
+
+        self._strain_cb = QCheckBox(self.tr("Compute surface strain"))
+        self._strain_cb.setChecked(True)
+        layout.addWidget(self._strain_cb)
+
+        self._quality_cb = QCheckBox(self.tr("Quality gates (ZNSSD / outliers)"))
+        layout.addWidget(self._quality_cb)
+
+        self._strategy_combo.currentIndexChanged.connect(self._apply_workflow)
+        self._mode_combo.currentIndexChanged.connect(self._apply_workflow)
+        self._strain_cb.toggled.connect(self._apply_workflow)
+        self._quality_cb.toggled.connect(self._apply_workflow)
+        return host
+
+    def _combo_row(self, text: str, combo: QComboBox) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(4)
+        lbl = QLabel(text)
+        lbl.setFixedWidth(88)
+        lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
+        row.addWidget(lbl)
+        row.addWidget(combo, stretch=1)
+        return row
+
+    def _apply_workflow(self, *_a) -> None:
+        draft = self.controller.state.draft
+        draft.strategy = self._strategy_combo.currentData()
+        draft.reference_mode = self._mode_combo.currentData()
+        draft.compute_strain = self._strain_cb.isChecked()
+        draft.quality_gate = self._quality_cb.isChecked()
+        self.controller.state.mark_dirty()
+        self.signals.params_changed.emit()
+
+    # ---- REGION OF INTEREST ------------------------------------------------------
+
+    def _build_roi(self) -> QWidget:
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        layout.setContentsMargins(12, 4, 12, 8)
+        layout.setSpacing(6)
+
+        hint = QLabel(
+            self.tr(
+                "Draw on the LEFT camera, frame 1 — all later frames and the "
+                "right camera follow from it."
+            )
+        )
+        hint.setWordWrap(True)
+        hint.setStyleSheet(
+            f"background: {COLORS.BG_PANEL}; border: 1px solid {COLORS.BORDER}; "
+            f"border-radius: 4px; color: {COLORS.TEXT_SECONDARY}; "
+            f"font-size: 11px; padding: 6px;"
+        )
+        layout.addWidget(hint)
+
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(4)
+        self._roi_draw_btn = QPushButton(self.tr("+ Draw"))
+        self._roi_draw_btn.setCheckable(True)
+        self._roi_clear_btn = QPushButton(self.tr("Clear"))
+        btn_row.addWidget(self._roi_draw_btn)
+        btn_row.addWidget(self._roi_clear_btn)
+        layout.addLayout(btn_row)
+
+        spin_grid = QHBoxLayout()
+        spin_grid.setSpacing(4)
+        self._roi_spins: list[QSpinBox] = []
+        for _ in range(4):
+            spin = QSpinBox()
+            spin.setRange(0, 100000)
+            spin.valueChanged.connect(self._on_roi_spin)
+            self._roi_spins.append(spin)
+            spin_grid.addWidget(spin)
+        layout.addLayout(spin_grid)
+        roi_caption = QLabel(self.tr("x min / x max / y min / y max (px)"))
+        roi_caption.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
+        layout.addWidget(roi_caption)
+
+        self._roi_clear_btn.clicked.connect(self._on_roi_clear)
+        return host
+
+    @property
+    def roi_draw_button(self) -> QPushButton:
+        """The canvas wires this toggle to its rubber-band ROI mode."""
+        return self._roi_draw_btn
+
+    def _on_roi_spin(self, _v: int) -> None:
+        vals = [s.value() for s in self._roi_spins]
+        self.controller.state.draft.roi = (vals[0], vals[1], vals[2], vals[3])
+        self.controller.state.mark_dirty()
+        self.signals.roi_changed.emit()
+
+    def _on_roi_clear(self) -> None:
+        self.controller.state.draft.roi = None
+        self.controller.state.mark_dirty()
+        self.signals.roi_changed.emit()
+
+    def _sync_roi_spins(self) -> None:
+        roi = self.controller.state.draft.roi
+        if roi is None:
+            return
+        for spin, val in zip(self._roi_spins, roi, strict=True):
+            spin.blockSignals(True)
+            spin.setValue(int(val))
+            spin.blockSignals(False)
+
+    # ---- PARAMETERS ---------------------------------------------------------------
+
+    def _build_params(self) -> QWidget:
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        layout.setContentsMargins(12, 4, 12, 8)
+        layout.setSpacing(6)
+
+        self._subset_spin = QSpinBox()
+        self._subset_spin.setRange(8, 200)
+        self._subset_spin.setSingleStep(2)
+        self._subset_spin.setValue(32)
+        layout.addLayout(self._param_row(self.tr("Subset Size"), self._subset_spin))
+
+        self._step_combo = QComboBox()
+        self._step_combo.addItems(["4", "8", "16", "32"])
+        self._step_combo.setCurrentText("16")
+        layout.addLayout(self._param_row(self.tr("Subset Step"), self._step_combo))
+
+        self._search_spin = QSpinBox()
+        self._search_spin.setRange(4, 400)
+        self._search_spin.setValue(48)
+        self._search_spin.setSuffix(" px")
+        layout.addLayout(self._param_row(self.tr("Stereo Search"), self._search_spin))
+
+        self._subset_spin.valueChanged.connect(self._apply_params)
+        self._step_combo.currentTextChanged.connect(self._apply_params)
+        self._search_spin.valueChanged.connect(self._apply_params)
+        return host
+
+    def _param_row(self, text: str, widget: QWidget) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(4)
+        lbl = QLabel(text)
+        lbl.setFixedWidth(96)
+        lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
+        row.addWidget(lbl)
+        row.addWidget(widget, stretch=1)
+        return row
+
+    def _apply_params(self, *_a) -> None:
+        draft = self.controller.state.draft
+        draft.winsize = int(self._subset_spin.value())
+        draft.winstepsize = int(self._step_combo.currentText())
+        draft.stereo_search = int(self._search_spin.value())
+        self.controller.state.mark_dirty()
+        self.signals.params_changed.emit()
+
+    # ---- IMAGES --------------------------------------------------------------------
+
+    def _load_camera(self, cam: str, folder: str) -> None:
+        files = _list_images(folder, self._natural_sort.isChecked())
+        if not files:
+            self.signals.log.emit(f"no images found in {folder}", "warning")
+            return
+        draft = self.controller.state.draft
+        if cam == "L":
+            draft.left = files
+        else:
+            draft.right = files
+        self.controller.state.mark_dirty()
+        self.signals.log.emit(f"{cam}: {len(files)} images from {folder}", "info")
+        self.signals.images_changed.emit()
+
+    def refresh_images(self) -> None:
+        draft = self.controller.state.draft
+        self._pair_list.clear()
+        n = max(len(draft.left), len(draft.right))
+        from PySide6.QtGui import QBrush, QColor
+
+        name_brush = QBrush(QColor(COLORS.ACCENT_HOVER))  # indigo filenames (2D idiom)
+        muted_brush = QBrush(QColor(COLORS.TEXT_MUTED))
+        for i in range(n):
+            left = Path(draft.left[i]).name if i < len(draft.left) else "—"
+            right = Path(draft.right[i]).name if i < len(draft.right) else "—"
+            item = QTreeWidgetItem([f"{i:02d}", left, right])
+            item.setForeground(0, muted_brush)
+            item.setForeground(1, name_brush)
+            item.setForeground(2, name_brush)
+            self._pair_list.addTopLevelItem(item)
+        self._images_header.set_badge(str(n) if n else "")
+
+        n_l, n_r = len(draft.left), len(draft.right)
+        if n_l == 0 and n_r == 0:
+            self._pairing_status.setText(self.tr("No images loaded"))
+            self._pairing_status.setStyleSheet(
+                f"color: {COLORS.TEXT_MUTED}; font-size: 10px; margin: 2px 12px;"
+            )
+        elif n_l == n_r and n_l >= 2:
+            self._pairing_status.setText(self.tr("Paired: {0} frames per camera").format(n_l))
+            self._pairing_status.setStyleSheet(
+                f"color: {COLORS.SUCCESS}; font-size: 10px; margin: 2px 12px;"
+            )
+        else:
+            self._pairing_status.setText(
+                self.tr("Mismatch: {0} left vs {1} right").format(n_l, n_r)
+            )
+            self._pairing_status.setStyleSheet(
+                f"color: {COLORS.DANGER}; font-size: 10px; margin: 2px 12px;"
+            )
+
+    def _on_row_selected(self, current, _previous) -> None:
+        if current is not None:
+            idx = self._pair_list.indexOfTopLevelItem(current)
+            n = max(len(self.controller.state.draft.left), 1)
+            self.signals.set_current_frame(idx, n)
+
+    def refresh_all(self) -> None:
+        """Full resync from the state (project open / new)."""
+        draft = self.controller.state.draft
+        widgets = (
+            self._strategy_combo,
+            self._mode_combo,
+            self._strain_cb,
+            self._quality_cb,
+            self._subset_spin,
+            self._step_combo,
+            self._search_spin,
+            self._calib_format,
+        )
+        for w in widgets:
+            w.blockSignals(True)
+        self._strategy_combo.setCurrentIndex(max(0, self._strategy_combo.findData(draft.strategy)))
+        self._mode_combo.setCurrentIndex(max(0, self._mode_combo.findData(draft.reference_mode)))
+        self._strain_cb.setChecked(draft.compute_strain)
+        self._quality_cb.setChecked(draft.quality_gate)
+        self._subset_spin.setValue(draft.winsize)
+        self._step_combo.setCurrentText(str(draft.winstepsize))
+        self._search_spin.setValue(draft.stereo_search)
+        self._calib_format.setCurrentText(draft.calibration_format)
+        for w in widgets:
+            w.blockSignals(False)
+        if draft.calibration_file is not None:
+            self._preview_calibration()
+        self.refresh_images()
+        self._sync_roi_spins()
