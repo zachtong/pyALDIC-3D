@@ -66,6 +66,40 @@ runner / session schema v1 untouched).
   implemented analytically (projected-disc centroid).
 - OPEN: tune coded-target detector on the user's real target photos.
 
+## MMC-study adoption batch (user go-ahead 2026-07-07, "直接按顺序开工")
+Source: reference/Multi_Camera_Calibration study (3 reports in scratchpad
+MMC_{detect,solve,workflow}.md). Importer fix already shipped (afe5ec9).
+- [ ] P1-1 bundle.py board morphology (optional flag `board_morphology`):
+      per-point delta blocks obj = obj0 + delta over the UNION of ids; gauge =
+      2 farthest points fully fixed + 1 off-axis point z-fixed (7 constraints,
+      MMC scheme); sparsity += per-view observed-point delta blocks; info +=
+      board_z_range/board_max_dev + board_points array. Tests: (a) flat board
+      + morphology -> deltas~0, accuracy kept; (b) ANALYTIC detections from a
+      warped board (project GT warped points, no rendering) -> morphology
+      recovers z-warp, rigid BA shows bias.
+- [ ] P1-2 stability jackknife (verify.py: stability_jackknife, drop_fraction,
+      n_samples, seeded rng, returns per-param arrays + std/min/max) +
+      report.py point_residuals(result, left, right) via solvePnP-composed
+      reprojection; calib_report.py: residual (dx,dy) scatter panel + stability
+      spread panel. Tests: shapes, small stds on clean synth, scatter finite.
+- [ ] P2-3 detect.py coded path: retry ladder (Otsu -> adaptive -> threshold
+      sweep 60..200/35) + border-clipped dot recovery via partial-arc
+      fitEllipseAMS (drop border-adjacent contour pts, need >=6 pts + arc span
+      >=240deg + small radial residual; ellipse center == area center for
+      full ellipses so consistent w/ ecc correction). Never centroid a clipped
+      blob (old 7.7px bug class). Tests: synthetic clipped-edge pose recovers
+      border ids <0.3px; solve stays accurate; retry ladder on low-contrast.
+- [ ] P2-4 GUI: "Optimize board shape" checkbox (needs bundle checked; worker
+      passes board_morphology; result line shows z-range); Save/Load
+      detections… buttons (npz via report.py save_detections/load_detections;
+      re-solve w/o re-detect); pair-table adds Max-E column (from
+      point_residuals); BA telemetry: bundle_refine(progress=cb) emits
+      rms every ~25 nfev -> Working… line; info['cost_history'].
+- [ ] i18n new strings x7; full suite; commits per item; INDEX changelog;
+      memory update.
+- [ ] P3-5 subpixel-edge vs centroid comparison: BLOCKED on user's real target
+      photos (note only).
+
 ## C3 enhancements (user go-ahead 2026-07-07)  [DONE 98198b3, 189 tests]
 - [x] calibration/printout.py — 1:1 PDF + scale-check legend + page-fit guard
 - [x] calibration/verify.py — known-distance verification (scale error catches
