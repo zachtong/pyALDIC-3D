@@ -54,3 +54,6 @@ Row template (copy when adding a dependency):
 | `al_dic.core.pipeline.run_aldic` | drive per-camera IC-GN+ADMM tracking | public |
 | `al_dic.solver.local_icgn`       | scattered-point local IC-GN for strategy S2/S3 | internal |
 -->
+| `al_dic.mesh.refinement.build_refinement_policy` | runner quadtree mesh levers (inner/outer/brush + level), 2D-app parity |
+| `al_dic.mesh.refinement.refine_mesh` | one-shot static frame-1 mesh refinement in `_build_reference_mesh` |
+| `al_dic.mesh.refinement.RefinementContext` | context for the refinement criteria (mesh + frame-1 mask) |

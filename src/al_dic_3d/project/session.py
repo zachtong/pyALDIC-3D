@@ -93,6 +93,9 @@ _DRAFT_PATH_FIELDS = ("calibration_file", "output_dir")
 
 def _draft_to_json(draft: ProjectDraft) -> dict:
     d = dataclasses.asdict(draft)
+    # The brush-painted refinement mask is an ndarray — not JSON-serializable
+    # and rebuildable from the canvas; it is materialized to a PNG at build().
+    d.pop("refinement_mask_array", None)
     for name in _DRAFT_PATH_FIELDS:
         d[name] = str(d[name]) if d[name] is not None else None
     return d

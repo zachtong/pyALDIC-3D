@@ -36,6 +36,13 @@ class ProjectDraft:
     stereo_search: int = 48
     disparity_offset: tuple[float, float] | None = None
     quality_gate: bool = False
+    use_global_step: bool = True  # AL-DIC global step (ADMM), audit default
+    admm_max_iter: int = 3
+    refine_inner: bool = False  # quadtree: refine mask-boundary elements
+    refine_outer: bool = False  # quadtree: refine ROI-edge elements
+    refinement_level: int = 1  # 1=light .. 3=heavy (min elem = step // 2**level)
+    refinement_mask_array: object | None = field(default=None, repr=False)
+    # ^ brush-painted (H, W) array from the canvas; written to a PNG at build()
     compute_strain: bool = True
     strain_size: int = 5
     output_dir: Path | None = None
@@ -60,6 +67,19 @@ class ProjectDraft:
 
     def is_ready(self) -> bool:
         return not self.issues()
+
+    def _write_refinement_mask(self, out_dir: Path) -> Path | None:
+        """Persist the brush-painted refinement mask (if any) next to the run."""
+        if self.refinement_mask_array is None:
+            return None
+        import cv2
+        import numpy as np
+
+        arr = (np.asarray(self.refinement_mask_array) > 0).astype("uint8") * 255
+        out_dir.mkdir(parents=True, exist_ok=True)
+        path = out_dir / "refinement_mask.png"
+        cv2.imwrite(str(path), arr)
+        return path
 
     def build(self) -> RunConfig:
         """Assemble a validated :class:`RunConfig`; raise if requirements are unmet."""
@@ -87,6 +107,12 @@ class ProjectDraft:
             stereo_search=self.stereo_search,
             disparity_offset=self.disparity_offset,
             quality_gate=self.quality_gate,
+            use_global_step=self.use_global_step,
+            admm_max_iter=self.admm_max_iter,
+            refine_inner=self.refine_inner,
+            refine_outer=self.refine_outer,
+            refinement_level=self.refinement_level,
+            refinement_mask=self._write_refinement_mask(out_dir),
             compute_strain=self.compute_strain,
             strain_size=self.strain_size,
             output_prefix=self.output_prefix,

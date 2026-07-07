@@ -24,7 +24,7 @@ from numpy.typing import NDArray
 from scipy.ndimage import map_coordinates
 
 
-def make_local_dicpara(
+def make_dicpara(
     img_size: tuple[int, int],
     roi: tuple[int, int, int, int],
     winsize: int = 32,
@@ -34,11 +34,21 @@ def make_local_dicpara(
     tol: float = 1e-2,
     img_ref_mask: NDArray[np.float64] | None = None,
     reference_mode: str = "accumulative",
+    use_global_step: bool = True,
+    admm_max_iter: int = 3,
 ) -> DICPara:
-    """A validated ``DICPara`` for LOCAL-ONLY IC-GN, accumulative or incremental.
+    """A validated ``DICPara`` for the 3D layer's temporal-tracking runs.
 
-    ``use_global_step=False`` is the local-only switch (skips ADMM Sections 5-6);
-    ``admm_max_iter`` must stay >=1 to pass validation but never executes here.
+    ``use_global_step=True`` (DEFAULT — matches the MATLAB trusted path's
+    ``UseGlobal``) enables the Augmented-Lagrangian global step: Subproblem 2
+    (FEM) + the ADMM loop capped at ``admm_max_iter`` (engine default 3).
+    ``use_global_step=False`` gives local-only IC-GN. NOTE the frame-1 STEREO
+    match never consumes these flags: it is scattered-point local IC-GN by
+    design — the MATLAB anchor is also ICGN-only there, because the L->R
+    disparity field carries projective viewpoint geometry rather than material
+    deformation, so the FEM displacement-compatibility regularizer does not
+    apply to it.
+
     ``roi = (xmin, xmax, ymin, ymax)`` in pixels (x=col, y=row). ``img_ref_mask``
     (``(H, W)`` float, 1=valid) gates reference-subset validity in matching and
     per-frame ROI normalization in ``run_aldic``; ``None`` -> no masking.
@@ -54,15 +64,21 @@ def make_local_dicpara(
         winsize_min=winsize_min,
         gridxy_roi_range=GridxyROIRange(gridx=(xmin, xmax), gridy=(ymin, ymax)),
         img_size=img_size,
-        use_global_step=False,
+        use_global_step=use_global_step,
         reference_mode=reference_mode,
         icgn_max_iter=icgn_max_iter,
         tol=tol,
-        admm_max_iter=1,
+        admm_max_iter=max(1, admm_max_iter),
     )
     if img_ref_mask is not None:
         overrides["img_ref_mask"] = np.ascontiguousarray(img_ref_mask, dtype=np.float64)
     return dicpara_default(**overrides)
+
+
+# Pre-audit name kept as an alias: the 2026-07-07 core-algorithm audit flipped
+# the default to the full AL-DIC global step, so "local" no longer describes
+# what this factory builds.
+make_local_dicpara = make_dicpara
 
 
 def match_points(

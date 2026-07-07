@@ -30,7 +30,7 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceConfig,
     CorrespondenceSet,
 )
-from al_dic_3d.matching.primitives import make_local_dicpara, match_points
+from al_dic_3d.matching.primitives import make_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import bbox_roi, mask_stream
 from al_dic_3d.matching.strategy import register_strategy
@@ -56,11 +56,15 @@ class RefDirectStrategy:
         winstepsize: int = 16,
         winsize_min: int = 8,
         stereo_search: int = 48,
+        use_global_step: bool = True,
+        admm_max_iter: int = 3,
     ) -> None:
         self.winsize = winsize
         self.winstepsize = winstepsize
         self.winsize_min = winsize_min
         self.stereo_search = stereo_search
+        self.use_global_step = use_global_step
+        self.admm_max_iter = admm_max_iter
 
     def compute(
         self,
@@ -84,7 +88,7 @@ class RefDirectStrategy:
         roi_L = bbox_roi(coords_L, img_h, img_w, margin=self.winsize)
         # S3 is reference-direct by definition, so the left chain is forced
         # accumulative (frame 1 is the anchor for BOTH cameras).
-        para_L = make_local_dicpara(
+        para_L = make_dicpara(
             img_size=(img_h, img_w),
             roi=roi_L,
             winsize=self.winsize,
@@ -92,6 +96,8 @@ class RefDirectStrategy:
             winsize_min=self.winsize_min,
             img_ref_mask=mask_L1,
             reference_mode="accumulative",
+            use_global_step=self.use_global_step,
+            admm_max_iter=self.admm_max_iter,
         )
 
         tf_L = temporal_track(left, mesh_L, para_L, masks=mask_stream(seq, "L"), stop=stop)

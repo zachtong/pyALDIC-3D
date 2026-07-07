@@ -183,3 +183,36 @@ def test_run_pipeline_computes_and_writes_strain(tmp_path):
     npz = np.load(paths["npz"])
     assert "strain_exx" in npz
     assert npz["strain_von_mises"].shape == (3, result.correspondence.n_pts)
+
+
+def test_reference_mesh_quadtree_refinement():
+    # 2D-app levers (inner/outer/brush + level): default OFF -> uniform grid;
+    # inner refinement splits hole-boundary elements down to step // 2**level.
+    from pathlib import Path
+
+    import numpy as np
+
+    from al_dic_3d.runner import RunConfig, _build_reference_mesh
+
+    base = dict(
+        calibration_file=Path("x"),
+        calibration_format="opencv_yaml",
+        left="",
+        right="",
+        roi=(40, 360, 40, 260),
+        output_dir=Path("."),
+        winstepsize=16,
+    )
+    mask = np.ones((300, 400))
+    mask[120:180, 150:250] = 0  # a hole the mesh must refine around
+
+    uniform = _build_reference_mesh(RunConfig(**base), 300, 400, [mask])
+    refined = _build_reference_mesh(
+        RunConfig(**base, refine_inner=True, refinement_level=2), 300, 400, [mask]
+    )
+    n_u = np.asarray(uniform.coordinates_fem).shape[0]
+    n_r = np.asarray(refined.coordinates_fem).shape[0]
+    assert n_r > 1.5 * n_u  # boundary elements got quadtree-split
+    # refined nodes appear BETWEEN uniform grid lines (finer than winstepsize)
+    xs = np.unique(np.asarray(refined.coordinates_fem)[:, 0])
+    assert np.diff(np.sort(xs)).min() < 16

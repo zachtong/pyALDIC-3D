@@ -28,7 +28,7 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceConfig,
     CorrespondenceSet,
 )
-from al_dic_3d.matching.primitives import make_local_dicpara, match_points
+from al_dic_3d.matching.primitives import make_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import bbox_roi, mask_stream
 from al_dic_3d.matching.strategy import register_strategy
@@ -54,11 +54,15 @@ class StereoEachFrameStrategy:
         winstepsize: int = 16,
         winsize_min: int = 8,
         stereo_search: int = 48,
+        use_global_step: bool = True,
+        admm_max_iter: int = 3,
     ) -> None:
         self.winsize = winsize
         self.winstepsize = winstepsize
         self.winsize_min = winsize_min
         self.stereo_search = stereo_search
+        self.use_global_step = use_global_step
+        self.admm_max_iter = admm_max_iter
 
     def compute(
         self,
@@ -80,7 +84,7 @@ class StereoEachFrameStrategy:
 
         mask_L1 = seq.mask("L", 0)
         roi_L = bbox_roi(coords_L, img_h, img_w, margin=self.winsize)
-        para_L = make_local_dicpara(
+        para_L = make_dicpara(
             img_size=(img_h, img_w),
             roi=roi_L,
             winsize=self.winsize,
@@ -88,6 +92,8 @@ class StereoEachFrameStrategy:
             winsize_min=self.winsize_min,
             img_ref_mask=mask_L1,
             reference_mode=cfg.reference_mode,
+            use_global_step=self.use_global_step,
+            admm_max_iter=self.admm_max_iter,
         )
 
         # The ONLY temporal chain: the left camera.

@@ -17,6 +17,7 @@ import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import tomllib
@@ -24,7 +25,7 @@ from numpy.typing import NDArray
 
 from al_dic_3d.calibration import load_calibration
 from al_dic_3d.matching import CorrespondenceConfig, apply_znssd_gate, get_strategy
-from al_dic_3d.matching.primitives import make_local_dicpara
+from al_dic_3d.matching.primitives import make_dicpara
 from al_dic_3d.matching.temporal import build_grid_mesh
 from al_dic_3d.reconstruct import (
     Reconstruction3D,
@@ -34,6 +35,9 @@ from al_dic_3d.reconstruct import (
 )
 from al_dic_3d.sequence import ArrayFrameProvider, StereoSequence
 from al_dic_3d.strain3d import STRAIN_FIELDS, compute_surface_strain
+
+if TYPE_CHECKING:
+    from al_dic.core.data_structures import DICMesh
 
 ProgressFn = Callable[[float, str], None]
 
@@ -61,6 +65,12 @@ class RunConfig:
     winstepsize: int = 16
     winsize_min: int = 8
     stereo_search: int = 48
+    use_global_step: bool = True
+    admm_max_iter: int = 3
+    refine_inner: bool = False
+    refine_outer: bool = False
+    refinement_level: int = 1
+    refinement_mask: Path | None = None
     disparity_offset: tuple[float, float] | None = None
     quality_gate: bool = False
     znssd_max: float = 0.5
@@ -140,6 +150,14 @@ def load_config(path: str | Path) -> RunConfig:
         winstepsize=int(match.get("winstepsize", 16)),
         winsize_min=int(match.get("winsize_min", 8)),
         stereo_search=int(match.get("stereo_search", 48)),
+        use_global_step=bool(match.get("use_global_step", True)),
+        admm_max_iter=int(match.get("admm_max_iter", 3)),
+        refine_inner=bool(match.get("refine_inner", False)),
+        refine_outer=bool(match.get("refine_outer", False)),
+        refinement_level=int(match.get("refinement_level", 1)),
+        refinement_mask=(
+            _resolve(str(match["refinement_mask"])) if "refinement_mask" in match else None
+        ),
         disparity_offset=disparity_offset,
         quality_gate=bool(qual.get("enabled", False)),
         znssd_max=float(qual.get("znssd_max", 0.5)),
@@ -207,6 +225,65 @@ def _load_stream(
 # --- pipeline ----------------------------------------------------------------
 
 
+def _build_reference_mesh(cfg: RunConfig, img_h: int, img_w: int, left_masks) -> DICMesh:
+    """The frame-1 LEFT reference mesh: uniform grid, optionally quadtree-refined.
+
+    Refinement follows the 2D app's levers verbatim (build_refinement_policy):
+    inner mask-boundary / outer ROI-edge / user-painted brush criteria with
+    min element size ``max(2, winstepsize // 2**level)``. The refined mesh is
+    built ONCE here and passed to the strategies as the external mesh — the
+    engine's per-frame refinement hook is deliberately NOT used (the mesh-
+    built-once invariant; MATLAB's acc-mode per-frame quadtree is identical
+    per frame anyway).
+    """
+    para = make_dicpara(
+        img_size=(img_h, img_w),
+        roi=cfg.roi,
+        winsize=cfg.winsize,
+        winstepsize=cfg.winstepsize,
+        winsize_min=cfg.winsize_min,
+    )
+    mesh = build_grid_mesh(para, img_h, img_w)
+
+    brush = None
+    if cfg.refinement_mask is not None:
+        import cv2
+
+        img = cv2.imread(str(cfg.refinement_mask), cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            raise ValueError(f"cannot read refinement mask: {cfg.refinement_mask}")
+        brush = (img > 0).astype(np.float64)
+    if not (cfg.refine_inner or cfg.refine_outer or brush is not None):
+        return mesh
+
+    # See docs/DEPENDS_ON_2D.md for these engine imports.
+    from al_dic.mesh.refinement import (
+        RefinementContext,
+        build_refinement_policy,
+        refine_mesh,
+    )
+
+    mask_l1 = None
+    if left_masks is not None:
+        mask_l1 = np.ascontiguousarray(np.asarray(left_masks[0], dtype=np.float64))
+    min_size = max(2, cfg.winstepsize // (2 ** max(1, cfg.refinement_level)))
+    policy = build_refinement_policy(
+        refine_inner_boundary=cfg.refine_inner,
+        refine_outer_boundary=cfg.refine_outer,
+        refinement_mask=brush,
+        min_element_size=min_size,
+        half_win=cfg.winsize // 2,
+    )
+    if policy is None:
+        return mesh
+    ctx = RefinementContext(mesh=mesh, mask=mask_l1)
+    u0 = np.zeros(2 * np.asarray(mesh.coordinates_fem).shape[0], dtype=np.float64)
+    refined, _u0 = refine_mesh(
+        mesh, policy.pre_solve, ctx, u0, mask=mask_l1, img_size=(img_h, img_w)
+    )
+    return refined
+
+
 def run_pipeline(
     cfg: RunConfig,
     progress: ProgressFn | None = None,
@@ -248,14 +325,7 @@ def run_pipeline(
     seq.validate()
 
     img_h, img_w = seq.providers[cfg.cam_left].shape
-    para = make_local_dicpara(
-        img_size=(img_h, img_w),
-        roi=cfg.roi,
-        winsize=cfg.winsize,
-        winstepsize=cfg.winstepsize,
-        winsize_min=cfg.winsize_min,
-    )
-    mesh_L = build_grid_mesh(para, img_h, img_w)
+    mesh_L = _build_reference_mesh(cfg, img_h, img_w, masks.get(cfg.cam_left))
 
     strategy_cls = get_strategy(cfg.strategy)
     try:
@@ -264,6 +334,8 @@ def run_pipeline(
             winstepsize=cfg.winstepsize,
             winsize_min=cfg.winsize_min,
             stereo_search=cfg.stereo_search,
+            use_global_step=cfg.use_global_step,
+            admm_max_iter=cfg.admm_max_iter,
         )
     except TypeError:
         strategy = strategy_cls()  # strategy without tunable matching scale

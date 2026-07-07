@@ -113,3 +113,16 @@ def test_various_subset_sizes(winsize: int):
     U, _, valid = match_points(ref, dfm, pts, np.zeros_like(pts), para)
     assert valid.mean() > 0.9
     assert np.nanmedian(np.abs(U[:, 0] - 1.2)) < 0.05
+
+
+def test_dicpara_default_enables_al_global_step():
+    # Audit contract (2026-07-07): the 3D layer runs the FULL AL-DIC global
+    # step by default, mirroring the MATLAB trusted path's UseGlobal=true.
+    from al_dic_3d.matching.primitives import make_dicpara
+
+    para = make_dicpara(img_size=(128, 128), roi=(16, 112, 16, 112))
+    assert para.use_global_step is True
+    assert para.admm_max_iter == 3
+
+    local = make_dicpara(img_size=(128, 128), roi=(16, 112, 16, 112), use_global_step=False)
+    assert local.use_global_step is False

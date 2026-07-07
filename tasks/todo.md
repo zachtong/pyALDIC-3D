@@ -1,3 +1,61 @@
+# EXECUTION (user 2026-07-07 approved): A) AL global step DEFAULT ON
+# (stereo stays local ICGN = MATLAB anchor); B) quadtree refinement wired
+# 2D-pyALDIC style: default OFF, checkable refine_inner / refine_outer /
+# BRUSH-drawn mask / refinement level (min_elem = max(2, step//2**level)).
+# Static frame-1 refined mesh at RUNNER level (no per-frame policy into
+# run_aldic — drift guard + mesh-built-once invariant).
+- [ ] A1 primitives: make_dicpara(use_global_step=True, admm_max_iter=3)
+- [ ] A2 RunConfig [matching] use_global_step/admm_max_iter + strategies
+      pass-through + contract test (para flags asserted)
+- [ ] A3 GUI PARAMETERS: 'AL-DIC global step' checkbox (default on) +
+      ADMM iterations spin (1-10, default 3) + draft/session + i18n
+- [ ] B1 runner: if any refine option on -> al_dic build_refinement_policy
+      + refine_mesh ONCE on frame-1 mask/ROI -> static refined mesh
+- [ ] B2 RunConfig [matching] refine_inner/refine_outer/refinement_level
+      (+ refinement_mask path option); draft fields; session round-trip
+- [ ] B3 GUI: two checkboxes + level spin + BRUSH paint mode on canvas
+      (paint strokes -> mask overlay -> draft.refinement_mask)
+- [ ] C re-gate: full pytest, S3 parity (ADMM ON + refined mesh),
+      runtime delta measured; INDEX changelog; memory
+
+# INVESTIGATION (user 2026-07-07): do our 3D backend calls exercise the
+# ALDIC core features — Augmented-Lagrangian/ADMM solver, window
+# splitting, adaptive mesh refinement — all ported to Python in al_dic?
+# Suspicion: make_local_dicpara runs LOCAL-ONLY ICGN (no AL global step),
+# no refinement_policy (established), window-splitting unknown.
+# Deliverable: feature matrix (MATLAB trusted path | al_dic availability |
+# our 3D usage | gap) + adoption plan. Workflow: 3 parallel readers.
+#
+# AUDIT VERDICT (2026-07-07, 3 reports in scratchpad AUDIT_{ours,engine,matlab}.md):
+# 1) AL/ADMM: MATLAB temporal = FULL ALDIC (Subpb1+Subpb2 FEM, max 2 ADMM iters,
+#    UseGlobal default true; STEREO is ICGN-only even in MATLAB). al_dic: fully
+#    implemented, ON by default (use_global_step=True, admm_max_iter=3, beta
+#    auto-tune). OURS: OFF — make_local_dicpara hardcodes use_global_step=False;
+#    admm_max_iter=1 is a validator placebo (memory note '0=local-only' is
+#    OUTDATED: 0 fails validation; real switch = use_global_step).
+#    => GAP: temporal tracks must run the global step. Stereo stays local (OK).
+# 2) WINDOW SPLITTING: subset SUBDIVISION exists in NEITHER port. MATLAB
+#    actually GROWS subsets near mask (funICGNQuadtree; abandon >=40% masked,
+#    hole-mark >60%); winsizeMin is a MESH param. al_dic equivalent = always-on
+#    masked-subset CC gating (coverage<50% -> mark_hole; winsize_list per-node
+#    infra exists but always uniform). => our layer already inherits the
+#    Python guard; true per-node winsize adaptation = 2D-repo feature (D11).
+# 3) QUADTREE REFINEMENT: MATLAB refines mask-boundary elements to winsizeMin
+#    (stereo once; temporal per-frame but identical in acc mode). al_dic:
+#    IMPLEMENTED (RefinementPolicy/build_refinement_policy/qrefine_r), OFF by
+#    default. OURS: unused + bbox uniform grid wastes 2/3 nodes.
+#    => GAP: build refined STATIC frame-1 mesh at runner level (mask criteria,
+#    min_element_size=winsize_min) — keeps our mesh-built-once invariant and
+#    our strategies' 'corr points ARE mesh nodes' contract; do NOT pass
+#    refinement_policy into run_aldic (per-frame re-trim would trip
+#    temporal_track's drift guard); inc-mode per-frame remesh deferred.
+# PLAN (pending user green light — changes results/runtime, full re-gate):
+#  P0-a config [matching] use_global_step=true(default)/admm_max_iter=3 ->
+#       make_dicpara; strategies pass through; stereo unchanged; contract test.
+#  P0-b runner mesh: quadtree-refined in-mask mesh (al_dic refine_mesh) ->
+#       denser boundary-conforming points (parity w/ MATLAB 3987-node style).
+#  Re-run ALL gates (S3 parity, synthetic suites); measure runtime delta.
+
 # MATLAB real-data parity gates (user 2026-07-07: "自己去搜索我的电脑里的
 # 3d aldic MATLAB版本里面的案例来测试" — user away from computer, full autonomy)
 
