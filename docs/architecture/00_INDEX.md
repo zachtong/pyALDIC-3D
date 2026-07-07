@@ -63,6 +63,20 @@
 
 ## Changelog
 
+- 2026-07-07 v1.3.6 — **Phase 4 GUI 重建为 pyALDIC 同款 + 四门禁全过**（`main` 至 `6a3592e`，146 tests
+  green）。深研 2D 前端源码（app/panels/window_chrome/theme/icons/widgets）+ `assets/` 参考截图后，
+  **废除分页式 8 步工作流**，重建为 pyALDIC 单窗三栏语法：左侧栏 320px（双相机拖放导入+配对表+标定
+  实时质检+策略/模式+ROI 画布绘制+参数，复用 2D CollapsibleSection/区段头/badge 范式）、中央画布
+  （工具条+分层缩放画布+配置卡+复用 2D ColorbarOverlay+播放条；结果=追踪点 colormap 散点，跨帧稳定
+  色域；**3D View 切换**=pyvista 曲面+相机锥台，lazy 降级）、右侧栏 280px（Run 3D Analysis btn-primary
+  +Cancel btn-danger+Export 对话框+进度/已用/剩余+FIELD U/V/W/|D|+应变网格+相机切换+可视化+日志）。
+  后端不变（WorkflowController/ProjectDraft/RunResult，3D-DIC 逻辑）；`GuiSignals` 信号枢纽替代 2D
+  AppState 单例。**离屏截图自检环**（tools/gui_screenshot.py，QT_QPA_FONTDIR 修 tofu）3 轮迭代对齐
+  assets/main_page.png。Export 对话框（格式+字段选择）+ Qt-free `export/tables.py`（npz/mat/逐帧 CSV）。
+  **i18n 契约完成**：118 串 ×8 语言 100% 填充（术语对齐 2D 目录）、.qm 编译入库、运行时加载验证
+  （zh_CN 截图实证）、tools/fill_translations.py 自校验。**四门禁全过**（session round-trip / i18n scan+
+  8 locale 100% / full-workflow smoke / phase4_gui.pdf，自校验报告）。pyvista 已装（[viz3d]）；GL 渲染
+  待有显示机器目检。**未进入 Phase 5。**
 - 2026-07-03 v1.3.5 — **Phase 4 GUI 可验证基础层**（`main` 至 `d1136c7`，128 tests green）。在无显示环境
   里完成全部**可测**部分（交互式 GUI 与 pyvista 需在有显示的机器上可视化迭代）：`project/`——`AppState3D`
   + `.aldic3d` 会话 save/load（版本化 zip：session.json 配置/视图 + results.npz 结果，含 strain），**session
