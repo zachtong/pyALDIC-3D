@@ -36,6 +36,8 @@ from al_dic_3d.calibration import (
     calibrate_stereo,
     detect_board,
     from_opencv_yaml,
+    point_residuals,
+    stability_jackknife,
     summarize,
     to_opencv_yaml,
 )
@@ -176,6 +178,24 @@ def main() -> int:
     chess = _solve(CHESS, rig)
     coded = _solve(CODED, rig, dot_radius_mm=CODED.dot_mm / 2)
 
+    print("stability jackknife (6 leave-25%-out recalibrations)...")
+    dl_c, dr_c, res_chess, _st = chess
+    stab = stability_jackknife(
+        dl_c, dr_c, (sc.IMG_W, sc.IMG_H), res_chess, drop_fraction=0.25, n_samples=6, seed=1
+    )
+    residuals = point_residuals(res_chess, dl_c, dr_c)
+
+    def _stability_gate() -> tuple[str, bool, str]:
+        std_fx = stab.spread("fx")[0]
+        std_base = stab.spread("baseline")[0]
+        ok = std_fx / stab.reference["fx"] < 2e-3 and std_base < 0.2
+        return (
+            "Stability jackknife (leave-25%-out)",
+            ok,
+            f"std fx {std_fx:.3f}px, baseline {std_base:.4f}mm over "
+            f"{len(stab.samples['fx'])} subsets",
+        )
+
     print("rendering dialog screenshots...")
     with tempfile.TemporaryDirectory() as td:
         import cv2
@@ -188,6 +208,7 @@ def main() -> int:
             cv2.imwrite(str(tmp / f"R_{k:02d}.png"), np.clip(im_r * 256, 0, 65535).astype("u2"))
         _screenshot_dialogs(tmp)
         gates = _gates(rig, chess, coded, tmp)
+    gates.insert(4, _stability_gate())
 
     out = REPO / "reports"
     out.mkdir(exist_ok=True)
@@ -301,7 +322,40 @@ def main() -> int:
         pdf.savefig(fig)
         plt.close(fig)
 
-        # pages 3-4: dialog screenshots
+        # page 3: residual scatter + stability spread (MMC-inspired QC)
+        fig, axes = plt.subplots(2, 2, figsize=(11, 8.5))
+        fig.suptitle("Residual structure + parameter stability", fontsize=13)
+        for ax, cam in ((axes[0, 0], "L"), (axes[0, 1], "R")):
+            r = residuals[cam]
+            ax.scatter(r[:, 0], r[:, 1], s=2, alpha=0.4, c="#6366f1")
+            mean_rad = float(np.sqrt((r**2).sum(axis=1)).mean())
+            circle = plt.Circle(r.mean(axis=0), mean_rad, fill=False, color="red", ls="--", lw=1.2)
+            ax.add_patch(circle)
+            ax.axhline(0, c="0.6", lw=0.5)
+            ax.axvline(0, c="0.6", lw=0.5)
+            ax.set_aspect("equal")
+            ax.set_title(f"{cam} residuals (n={len(r)}, mean |r| {mean_rad:.3f} px)")
+            ax.set_xlabel("dx (px)")
+            ax.set_ylabel("dy (px)")
+        for ax, (kx, ky) in ((axes[1, 0], ("fx", "fy")), (axes[1, 1], ("cx", "cy"))):
+            ax.scatter(stab.samples[kx], stab.samples[ky], c="#6366f1", label="subsets")
+            ax.scatter(
+                [stab.reference[kx]],
+                [stab.reference[ky]],
+                c="red",
+                marker="x",
+                s=80,
+                label="full set",
+            )
+            ax.set_xlabel(f"{kx} (std {stab.spread(kx)[0]:.3f})")
+            ax.set_ylabel(f"{ky} (std {stab.spread(ky)[0]:.3f})")
+            ax.set_title(f"leave-{stab.n_dropped}-of-{stab.n_views}-out domain of solution")
+            ax.legend(fontsize=8)
+        fig.tight_layout(rect=(0, 0, 1, 0.95))
+        pdf.savefig(fig)
+        plt.close(fig)
+
+        # pages 4+: dialog screenshots
         for name, title in (
             ("shot_calib_dialog.png", "Stereo Calibration dialog (populated by a live solve)"),
             ("shot_manual_params.png", "Manual Camera Parameters dialog (fallback entry)"),

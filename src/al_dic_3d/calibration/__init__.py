@@ -33,6 +33,7 @@ from al_dic_3d.calibration.printout import save_board_pdf, spec_summary
 from al_dic_3d.calibration.report import (
     coverage_fraction,
     euler_to_rotation,
+    point_residuals,
     summarize,
     to_opencv_yaml,
 )
@@ -45,6 +46,8 @@ from al_dic_3d.calibration.solve import (
 )
 from al_dic_3d.calibration.verify import (
     DistanceVerification,
+    StabilityResult,
+    stability_jackknife,
     triangulate_pair,
     verify_known_distance,
 )
@@ -60,6 +63,7 @@ __all__ = [
     "CodedCircleGridSpec",
     "DistanceVerification",
     "MonoCalibration",
+    "StabilityResult",
     "PairQC",
     "StereoResult",
     "StereoRig",
@@ -76,8 +80,10 @@ __all__ = [
     "from_opencorr_csv",
     "from_opencv_yaml",
     "load_calibration",
+    "point_residuals",
     "project_points",
     "save_board_pdf",
+    "stability_jackknife",
     "spec_summary",
     "summarize",
     "to_opencv_yaml",

@@ -32,6 +32,92 @@ from al_dic_3d.calibration.model import StereoRig
 
 
 @dataclass(frozen=True)
+class StabilityResult:
+    """Leave-p-out resampling spread of the calibration parameters.
+
+    Analytic std-devs assume the chosen views ARE the population; resampling
+    exposes view-selection sensitivity and overfitting they cannot see (the
+    MMC 'domain of solution' idea). ``samples[key]`` holds one value per
+    successful subset re-calibration; ``reference[key]`` is the full-set value.
+    Keys: ``fx, fy, cx, cy, k1, baseline, rms`` (left camera).
+    """
+
+    samples: dict[str, NDArray[np.float64]]
+    reference: dict[str, float]
+    n_views: int
+    n_dropped: int
+
+    def spread(self, key: str) -> tuple[float, float, float]:
+        """(std, min, max) of one parameter's subset ensemble."""
+        s = self.samples[key]
+        return float(s.std(ddof=1)), float(s.min()), float(s.max())
+
+
+def _rig_stats(result) -> dict[str, float]:
+    left = result.rig.cameras["L"]
+    return {
+        "fx": left.fx,
+        "fy": left.fy,
+        "cx": left.cx,
+        "cy": left.cy,
+        "k1": left.k1,
+        "baseline": result.baseline,
+        "rms": result.rms,
+    }
+
+
+def stability_jackknife(
+    left: list[BoardDetection],
+    right: list[BoardDetection],
+    image_size: tuple[int, int],
+    reference,
+    *,
+    drop_fraction: float = 0.2,
+    n_samples: int = 10,
+    seed: int = 0,
+    min_pairs: int = 6,
+    **solve_kwargs,
+) -> StabilityResult:
+    """Re-calibrate on random leave-p-out view subsets and collect the spread.
+
+    ``reference`` is the full-set :class:`~al_dic_3d.calibration.solve.StereoResult`.
+    Subsets that become infeasible (too few usable pairs) are skipped; fewer
+    than 3 successful subsets raises.
+    """
+    from al_dic_3d.calibration.solve import calibrate_stereo
+
+    n = len(left)
+    n_drop = max(1, round(drop_fraction * n))
+    if n - n_drop < min_pairs:
+        raise ValueError(f"dropping {n_drop} of {n} views leaves fewer than min_pairs={min_pairs}")
+    rng = np.random.default_rng(seed)
+    collected: dict[str, list[float]] = {k: [] for k in _rig_stats(reference)}
+    for _s in range(n_samples):
+        keep = sorted(rng.choice(n, n - n_drop, replace=False).tolist())
+        try:
+            res = calibrate_stereo(
+                [left[i] for i in keep],
+                [right[i] for i in keep],
+                image_size,
+                min_pairs=min_pairs,
+                **solve_kwargs,
+            )
+        except ValueError:
+            continue  # infeasible subset — skipped, not fatal
+        for k, v in _rig_stats(res).items():
+            collected[k].append(v)
+    n_ok = len(collected["fx"])
+    if n_ok < 3:
+        raise ValueError(f"only {n_ok} of {n_samples} subset calibrations succeeded (need >= 3)")
+    return StabilityResult(
+        samples={k: np.asarray(v, dtype=np.float64) for k, v in collected.items()},
+        reference=_rig_stats(reference),
+        n_views=n,
+        n_dropped=n_drop,
+    )
+
+
+@dataclass(frozen=True)
 class DistanceVerification:
     """Known-distance verification metrics of one stereo pair."""
 

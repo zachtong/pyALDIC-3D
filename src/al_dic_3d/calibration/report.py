@@ -87,6 +87,39 @@ def coverage_fraction(
     return float((hist > 0).mean())
 
 
+def point_residuals(
+    result: StereoResult,
+    left: Sequence[BoardDetection],
+    right: Sequence[BoardDetection],
+) -> dict[str, NDArray[np.float64]]:
+    """Per-point reprojection residual vectors ``(dx, dy)`` px over used pairs.
+
+    Per camera, each used view's board pose is re-estimated by ``solvePnP``
+    with that camera's final intrinsics and the points reprojected — the
+    residual SCATTER exposes systematic (decentering / model-mismatch)
+    structure that per-pair RMS bars cannot show: healthy residuals point
+    chaotically in all directions.
+    """
+    import cv2
+
+    used = {p.index for p in result.pairs if p.used}
+    out: dict[str, NDArray[np.float64]] = {}
+    for cam, dets in (("L", left), ("R", right)):
+        intr = result.rig.cameras[cam]
+        chunks = []
+        for i in used:
+            det = dets[i]
+            if not (det.ok and det.n_points >= 6):
+                continue
+            _ok, rvec, tvec = cv2.solvePnP(
+                det.object_points, det.image_points, intr.K, intr.dist_coeffs
+            )
+            proj, _ = cv2.projectPoints(det.object_points, rvec, tvec, intr.K, intr.dist_coeffs)
+            chunks.append(proj.reshape(-1, 2) - det.image_points)
+        out[cam] = np.vstack(chunks) if chunks else np.empty((0, 2), dtype=np.float64)
+    return out
+
+
 def summarize(
     result: StereoResult,
     left: Sequence[BoardDetection],

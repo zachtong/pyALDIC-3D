@@ -229,3 +229,43 @@ def test_bundle_progress_callback(chess_set, base_result):
     lines: list[str] = []
     bundle_refine(dl, dr, base_result, progress=lines.append)
     assert lines and all("rms" in ln for ln in lines)
+
+
+# --------------------------------------------------------------------------- #
+# stability jackknife + residual scatter (MMC-inspired QC)
+# --------------------------------------------------------------------------- #
+
+
+def test_stability_jackknife_tight_on_clean_data(chess_set, base_result):
+    from al_dic_3d.calibration import stability_jackknife
+
+    dl, dr = chess_set
+    st = stability_jackknife(
+        dl, dr, (sc.IMG_W, sc.IMG_H), base_result, drop_fraction=0.25, n_samples=4, seed=3
+    )
+    assert len(st.samples["fx"]) >= 3
+    std_fx, lo, hi = st.spread("fx")
+    assert std_fx / st.reference["fx"] < 2e-3  # clean synthetic: subsets agree
+    assert lo <= st.reference["fx"] <= hi or std_fx < 1.0
+    assert st.spread("baseline")[0] < 0.2  # mm
+
+
+def test_stability_jackknife_validates_drop(chess_set, base_result):
+    from al_dic_3d.calibration import stability_jackknife
+
+    dl, dr = chess_set
+    with pytest.raises(ValueError, match="min_pairs"):
+        stability_jackknife(dl, dr, (sc.IMG_W, sc.IMG_H), base_result, drop_fraction=0.9)
+
+
+def test_point_residuals_scatter(chess_set, base_result):
+    from al_dic_3d.calibration import point_residuals
+
+    dl, dr = chess_set
+    res = point_residuals(base_result, dl, dr)
+    for cam in ("L", "R"):
+        r = res[cam]
+        assert r.shape[1] == 2 and len(r) >= 63 * 15
+        assert np.isfinite(r).all()
+        assert np.abs(r.mean(axis=0)).max() < 0.05  # unbiased
+        assert np.sqrt((r**2).sum(axis=1)).mean() < 0.1  # px, clean synthetic
