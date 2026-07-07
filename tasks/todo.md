@@ -66,24 +66,15 @@ runner / session schema v1 untouched).
   implemented analytically (projected-disc centroid).
 - OPEN: tune coded-target detector on the user's real target photos.
 
-## C3 enhancements (user go-ahead 2026-07-07)
-- [ ] calibration/printout.py — save_board_pdf(spec, path): 1:1 physical-scale
-      PDF (exact mm sizing via matplotlib figsize) + spec legend + scale-check
-      caption; ValueError if board exceeds the page
-- [ ] calibration/verify.py — verify_known_distance(rig, det_l, det_r, spec):
-      triangulate common board points (undistort P=K -> triangulatePoints),
-      neighbor-distance vs true pitch -> scale error %, distance RMSE, plane
-      RMS (iDICs independent-verification idiom)
-- [ ] calibration/bundle.py — bundle_refine(left, right, base, image_size):
-      scipy least_squares joint BA over intr L/R + stereo R,T + per-view board
-      poses; robust soft_l1 per-POINT loss; uses single-camera views (mono
-      residuals); sparse jacobian; concept credit aniposelib (BSD-2), original
-      code
-- [ ] GUI: pair-table selection -> L|R overlay preview w/ detected points;
-      Print board… button; Verify with board images… button; Joint bundle
-      adjustment checkbox (worker runs BA after solve, reports rms before/after)
-- [ ] CLI: --bundle, --verify-left/--verify-right on calibrate
-- [ ] tests: printout, verify (synthetic scale error < 0.1%), bundle gate
-      (accuracy >= base; robust to injected per-point outliers; uses mono-only
-      views), dialog additions
-- [ ] i18n: new strings x 7 locales; full suite green; commit
+## C3 enhancements (user go-ahead 2026-07-07)  [DONE 98198b3, 189 tests]
+- [x] calibration/printout.py — 1:1 PDF + scale-check legend + page-fit guard
+- [x] calibration/verify.py — known-distance verification (scale error catches
+      what reprojection RMS cannot: gate proves 2% baseline error -> 2% scale
+      error flagged); plane RMS flatness
+- [x] calibration/bundle.py — scipy joint BA, robust per-point soft_l1, uses
+      mono-only views, sparse jacobian; gates: parity accuracy kept, survives
+      8px point outliers, 4 blinded right views still contribute
+- [x] GUI: L|R overlay preview on row selection (auto-selects row 0 after
+      solve), Print board…, Verify with board images…, BA checkbox
+- [x] CLI --bundle / --verify-left / --verify-right
+- [x] 11 new tests; i18n 204 x 7 100%; calib_builtin.pdf regenerated (5 PASS)

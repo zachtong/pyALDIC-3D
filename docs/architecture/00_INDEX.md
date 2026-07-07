@@ -64,6 +64,16 @@
 
 ## Changelog
 
+- 2026-07-07 v1.4.2 — **标定 C3 增强四件套落地**（`98198b3`，189 tests green）：①对话框
+  **检测叠加预览**（选中图像对即显示 L|R 并排图 + 绿色检测点）；②**打印标定板 1:1 PDF**
+  （`calibration/printout.py`，精确毫米尺寸 + 卡尺校核腿注 + 页面超限守卫）；③**iDICs 已知
+  距离独立验证**（`calibration/verify.py`，三角化验证板对 → 邻距 vs 真实间距的尺度误差 +
+  平面 RMS——重投影 RMS 抓不到的错标度在这里现形，门禁：2% 基线误差→2% 尺度误差被捕获）；
+  ④**scipy 联合光束平差**（`calibration/bundle.py`，内参×2+立体外参+全部板位姿一体优化，
+  逐点 soft_l1 鲁棒损失，**可利用仅单相机可见的视图**（单目残差约束内参），稀疏雅可比；
+  概念致谢 aniposelib(BSD-2)/multical，实现原创；门禁：精度保持 parity 水平、单视图 5 点
+  ×8px 外点不动摇、右目致盲 4 视图仍贡献左目残差）。GUI 四控件 + CLI `--bundle`/
+  `--verify-left/right` + i18n 204 串 ×7 语种 100%。报告重生成五门禁 PASS。
 - 2026-07-07 v1.4.1 — **内置标定（D12）C1+C2 实施完成，五门禁全 PASS**（`main` 至
   `60bb641`，178 tests green）。计算层 `calibration/boards|detect|solve|report`（纯 OpenCV，
   Qt-free）：四板型检测（棋盘 SB+cornerSubPix 精化、ChArUco 4.7 OO API、圆点阵列、**编码圆点靶
