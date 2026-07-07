@@ -32,27 +32,42 @@
 <context>
     <name>ConfigOverlay3D</name>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="45"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="39"/>
         <source>Strategy</source>
         <translation>전략</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="46"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="40"/>
         <source>Mode</source>
         <translation>모드</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="47"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="41"/>
         <source>Subset</source>
         <translation>서브셋</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="73"/>
+        <source>Track Both</source>
+        <translation>양쪽 카메라 추적</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <source>Stereo Each Frame</source>
+        <translation>프레임별 스테레오 매칭</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
+        <source>Reference Direct</source>
+        <translation>기준 프레임 직접 매칭</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Accumulative</source>
         <translation>누적형</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Incremental</source>
         <translation>증분형</translation>
     </message>

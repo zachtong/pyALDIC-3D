@@ -32,27 +32,42 @@
 <context>
     <name>ConfigOverlay3D</name>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="45"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="39"/>
         <source>Strategy</source>
         <translation>戦略</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="46"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="40"/>
         <source>Mode</source>
         <translation>モード</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="47"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="41"/>
         <source>Subset</source>
         <translation>サブセット</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="73"/>
+        <source>Track Both</source>
+        <translation>両カメラ追跡</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <source>Stereo Each Frame</source>
+        <translation>毎フレームステレオマッチング</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
+        <source>Reference Direct</source>
+        <translation>参照フレーム直接マッチング</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Accumulative</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Incremental</source>
         <translation>逐次式</translation>
     </message>

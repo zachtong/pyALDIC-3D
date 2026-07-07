@@ -32,27 +32,42 @@
 <context>
     <name>ConfigOverlay3D</name>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="45"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="39"/>
         <source>Strategy</source>
         <translation>Stratégie</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="46"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="40"/>
         <source>Mode</source>
         <translation>Mode</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="47"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="41"/>
         <source>Subset</source>
         <translation>Imagette</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="73"/>
+        <source>Track Both</source>
+        <translation>Suivre les deux caméras</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <source>Stereo Each Frame</source>
+        <translation>Stéréo à chaque image</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
+        <source>Reference Direct</source>
+        <translation>Référence directe</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Accumulative</source>
         <translation>Cumulatif</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Incremental</source>
         <translation>Incrémental</translation>
     </message>

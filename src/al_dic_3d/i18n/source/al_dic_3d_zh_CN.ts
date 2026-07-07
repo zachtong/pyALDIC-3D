@@ -32,27 +32,42 @@
 <context>
     <name>ConfigOverlay3D</name>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="45"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="39"/>
         <source>Strategy</source>
         <translation>策略</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="46"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="40"/>
         <source>Mode</source>
         <translation>模式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="47"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="41"/>
         <source>Subset</source>
         <translation>子集</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="73"/>
+        <source>Track Both</source>
+        <translation>双相机追踪</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <source>Stereo Each Frame</source>
+        <translation>逐帧立体匹配</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
+        <source>Reference Direct</source>
+        <translation>参考帧直接匹配</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Accumulative</source>
         <translation>累积式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Incremental</source>
         <translation>增量式</translation>
     </message>

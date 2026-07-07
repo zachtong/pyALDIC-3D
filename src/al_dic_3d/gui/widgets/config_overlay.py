@@ -17,12 +17,6 @@ from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout, QWidget
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
 
-_STRATEGY_LABELS = {
-    "track_both": "Track Both",
-    "stereo_each_frame": "Stereo / Frame",
-    "ref_direct": "Ref Direct",
-}
-
 
 class ConfigOverlay3D(QFrame):
     """Labelled STRATEGY / MODE / SUBSET rows pinned to the canvas top-left."""
@@ -75,7 +69,12 @@ class ConfigOverlay3D(QFrame):
         if len(draft.left) < 2:
             self.setVisible(False)
             return
-        self._strategy_lbl.setText(_STRATEGY_LABELS.get(draft.strategy, draft.strategy))
+        strategy_labels = {
+            "track_both": self.tr("Track Both"),
+            "stereo_each_frame": self.tr("Stereo Each Frame"),
+            "ref_direct": self.tr("Reference Direct"),
+        }
+        self._strategy_lbl.setText(strategy_labels.get(draft.strategy, draft.strategy))
         mode = draft.reference_mode
         self._mode_lbl.setText(
             self.tr("Accumulative") if mode == "accumulative" else self.tr("Incremental")

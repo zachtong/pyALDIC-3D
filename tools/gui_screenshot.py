@@ -71,6 +71,21 @@ def main(outdir: str | None = None) -> int:
     win.signals.set_current_frame(min(2, len(draft.left) - 1), len(draft.left))
     win._canvas_area.render()
     _grab(win, out / "shot_results.png")
+
+    # --- state 4: zh_CN localized window (i18n proof; new window, new translator) ---
+    from al_dic_3d.i18n import install_translators
+
+    install_translators(app, locale="zh_CN")
+    win_zh = MainWindow3D()
+    win_zh.show()
+    win_zh.controller.state.draft = win.controller.state.draft
+    win_zh.controller.state.result = win.controller.state.result
+    win_zh._left.refresh_all()
+    win_zh.signals.images_changed.emit()
+    win_zh.signals.roi_changed.emit()
+    win_zh._right._on_done()
+    win_zh._canvas_area.render()
+    _grab(win_zh, out / "shot_zh_cn.png")
     return 0
 
 
