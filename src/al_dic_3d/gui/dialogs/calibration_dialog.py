@@ -74,8 +74,28 @@ class _CalibWorker(QThread):
             first = cv2.imread(str(self._files_l[0]), cv2.IMREAD_UNCHANGED)
             image_size = (first.shape[1], first.shape[0])
             self.progress.emit("solving")
-            result = calibrate_stereo(dl, dr, image_size, **self._options)
+            options = dict(self._options)
+            bundle = options.pop("bundle", False)
+            result = calibrate_stereo(dl, dr, image_size, **options)
+            if bundle:
+                import dataclasses
+
+                from al_dic_3d.calibration import bundle_refine
+
+                self.progress.emit("bundle adjustment")
+                new_rig, info = bundle_refine(
+                    dl,
+                    dr,
+                    result,
+                    zero_tangent=options["zero_tangent"],
+                    fix_k3=options["fix_k3"],
+                )
+                result = dataclasses.replace(result, rig=new_rig)
             stats = summarize(result, dl, dr, image_size)
+            if bundle:
+                stats["ba_rms_before"] = info["rms_before"]
+                stats["ba_rms_after"] = info["rms_after"]
+                stats["ba_mono_views"] = info["n_mono_views"]
             self.finished_ok.emit((dl, dr, result, stats))
         except Exception as exc:  # noqa: BLE001 - surfaced verbatim in the dialog
             self.failed.emit(str(exc))
@@ -132,7 +152,7 @@ class CalibrationDialog(QDialog):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.tr("Stereo Calibration"))
-        self.setMinimumSize(860, 560)
+        self.setMinimumSize(900, 690)
         self.saved_path = None  # Path once the user accepts a solve
 
         self._files_l: list[str] = []
@@ -185,7 +205,17 @@ class CalibrationDialog(QDialog):
         self._table.setColumnWidth(0, 32)
         self._table.setColumnWidth(3, 60)
         self._table.setColumnWidth(4, 90)
+        self._table.currentItemChanged.connect(self._on_row_selected)
         col.addWidget(self._table, stretch=1)
+
+        col.addWidget(_section(self.tr("SELECTED PAIR (L | R)"), self))
+        self._preview = QLabel(self.tr("select a pair to preview detected points"))
+        self._preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preview.setFixedHeight(150)
+        self._preview.setStyleSheet(
+            f"background: {COLORS.BG_PANEL}; color: {COLORS.TEXT_MUTED}; font-size: 11px;"
+        )
+        col.addWidget(self._preview)
 
         col.addWidget(_section(self.tr("PER-PAIR REPROJECTION ERROR"), self))
         self._bars = _PairBars()
@@ -263,6 +293,10 @@ class CalibrationDialog(QDialog):
         grid.addWidget(self._legacy, 7, 1)
         col.addWidget(grid_host)
 
+        self._print_btn = QPushButton(self.tr("Print board… (1:1 PDF)"))
+        self._print_btn.clicked.connect(self._on_print_board)
+        col.addWidget(self._print_btn)
+
         col.addWidget(_section(self.tr("SOLVER OPTIONS"), self))
         self._joint = QCheckBox(self.tr("Jointly refine intrinsics (advanced)"))
         self._tangential = QCheckBox(self.tr("Estimate tangential distortion p1/p2"))
@@ -270,7 +304,15 @@ class CalibrationDialog(QDialog):
         self._release = QCheckBox(self.tr("Release-object method (printed boards)"))
         self._ecc = QCheckBox(self.tr("Dot eccentricity correction"))
         self._ecc.setChecked(True)
-        for cb in (self._joint, self._tangential, self._fix_k3, self._release, self._ecc):
+        self._bundle = QCheckBox(self.tr("Joint bundle adjustment (robust, uses mono views)"))
+        for cb in (
+            self._joint,
+            self._tangential,
+            self._fix_k3,
+            self._release,
+            self._ecc,
+            self._bundle,
+        ):
             col.addWidget(cb)
 
         self._calib_btn = QPushButton(self.tr("Calibrate"))
@@ -289,6 +331,15 @@ class CalibrationDialog(QDialog):
         self._result_lbl.setWordWrap(True)
         self._result_lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY}; font-size: 12px;")
         col.addWidget(self._result_lbl)
+
+        self._verify_btn = QPushButton(self.tr("Verify with board images…"))
+        self._verify_btn.setEnabled(False)
+        self._verify_btn.clicked.connect(self._on_verify)
+        col.addWidget(self._verify_btn)
+        self._verify_lbl = QLabel("")
+        self._verify_lbl.setWordWrap(True)
+        self._verify_lbl.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
+        col.addWidget(self._verify_lbl)
         col.addStretch()
 
         buttons = QHBoxLayout()
@@ -420,6 +471,7 @@ class CalibrationDialog(QDialog):
             release_object=self._release.isChecked(),
             reject_rms=self._thr_spin.value(),
             dot_radius_mm=(dot_mm / 2.0 if dot_mm and self._ecc.isChecked() else None),
+            bundle=self._bundle.isChecked(),
         )
         cached = self._detections if recalibrate else None
         self._calib_btn.setEnabled(False)
@@ -468,6 +520,12 @@ class CalibrationDialog(QDialog):
             for c in range(6):
                 item.setForeground(c, color)
 
+        self._verify_btn.setEnabled(True)
+        if self._table.currentItem() is None and self._table.topLevelItemCount():
+            self._table.setCurrentItem(self._table.topLevelItem(0))
+        else:
+            self._on_row_selected(self._table.currentItem())
+
         self._bars.set_data(result.pairs, self._thr_spin.value())
         left = result.rig.cameras["L"]
         lines = [
@@ -487,6 +545,12 @@ class CalibrationDialog(QDialog):
                 stats["tilt_max_deg"],
             ),
         ]
+        if "ba_rms_after" in stats:
+            lines.append(
+                self.tr("Bundle adjustment: RMS {0:.3f} -> {1:.3f} px ({2:.0f} mono views)").format(
+                    stats["ba_rms_before"], stats["ba_rms_after"], stats["ba_mono_views"]
+                )
+            )
         for w in result.warnings:
             lines.append(self.tr("Warning: {0}").format(w))
         self._result_lbl.setText("\n".join(lines))
@@ -496,6 +560,99 @@ class CalibrationDialog(QDialog):
         self._status.setText(text)
         color = COLORS.WARNING if warn else COLORS.TEXT_MUTED
         self._status.setStyleSheet(f"color: {color}; font-size: 11px;")
+
+    # ---- preview / print / verify ----------------------------------------------
+
+    def _on_row_selected(self, current, _previous=None) -> None:
+        if current is None:
+            return
+        k = self._table.indexOfTopLevelItem(current)
+        if 0 <= k < min(len(self._files_l), len(self._files_r)):
+            self._render_preview(k)
+
+    def _render_preview(self, k: int) -> None:
+        """Side-by-side L|R panel of pair ``k`` with detected points overlaid."""
+        import cv2
+        from PySide6.QtGui import QImage, QPixmap
+
+        dl, dr = self._detections if self._detections else (None, None)
+        panels = []
+        for files, dets in ((self._files_l, dl), (self._files_r, dr)):
+            det = dets[k] if dets is not None and k < len(dets) else None
+            panels.append(_overlay_panel(files[k], det, height=142))
+        h = max(p.shape[0] for p in panels)
+        gap = np.full((h, 6, 3), 20, dtype=np.uint8)
+        padded = [
+            cv2.copyMakeBorder(p, 0, h - p.shape[0], 0, 0, cv2.BORDER_CONSTANT, value=(20, 20, 20))
+            for p in panels
+        ]
+        strip = np.ascontiguousarray(np.hstack([padded[0], gap, padded[1]]))
+        image = QImage(
+            strip.data, strip.shape[1], strip.shape[0], 3 * strip.shape[1], QImage.Format_RGB888
+        )
+        self._preview.setPixmap(QPixmap.fromImage(image.copy()))
+
+    def _on_print_board(self) -> None:
+        try:
+            spec = self._board_spec()
+        except ValueError as exc:
+            self._set_status(str(exc), warn=True)
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Save board PDF"), "board.pdf", self.tr("PDF (*.pdf)")
+        )
+        if not path:
+            return
+        from al_dic_3d.calibration import save_board_pdf
+
+        try:
+            out = save_board_pdf(spec, path)
+        except ValueError as exc:  # board exceeds the page
+            self._set_status(str(exc), warn=True)
+            return
+        self._set_status(self.tr("Board PDF written: {0}").format(out))
+
+    def _on_verify(self) -> None:
+        """iDICs independent check: known distances on a fresh board pair."""
+        import cv2
+
+        from al_dic_3d.calibration import detect_board, verify_known_distance
+
+        if self._result is None:
+            return
+        try:
+            spec = self._board_spec()
+        except ValueError as exc:
+            self._set_status(str(exc), warn=True)
+            return
+        filt = self.tr("Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)")
+        path_l, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Choose LEFT verification image"), "", filt
+        )
+        if not path_l:
+            return
+        path_r, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Choose RIGHT verification image"), "", filt
+        )
+        if not path_r:
+            return
+        try:
+            det_l = detect_board(cv2.imread(path_l, cv2.IMREAD_UNCHANGED), spec)
+            det_r = detect_board(cv2.imread(path_r, cv2.IMREAD_UNCHANGED), spec)
+            v = verify_known_distance(self._result.rig, det_l, det_r, spec)
+        except (ValueError, TypeError) as exc:
+            self._verify_lbl.setText(self.tr("Verification failed: {0}").format(exc))
+            self._verify_lbl.setStyleSheet(f"color: {COLORS.DANGER}; font-size: 11px;")
+            return
+        good = abs(v.scale_error) < 1e-3
+        self._verify_lbl.setText(
+            self.tr(
+                "Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm"
+            ).format(v.pitch_measured, v.pitch_true, v.scale_error, v.plane_rms)
+        )
+        self._verify_lbl.setStyleSheet(
+            f"color: {COLORS.SUCCESS if good else COLORS.WARNING}; font-size: 11px;"
+        )
 
     # ---- accept ---------------------------------------------------------------
 
@@ -519,6 +676,27 @@ class CalibrationDialog(QDialog):
         }
         self.saved_path = to_opencv_yaml(self._result.rig, path, meta=meta)
         self.accept()
+
+
+def _overlay_panel(path: str, det, height: int = 142) -> np.ndarray:
+    """RGB panel of one image scaled to ``height`` with detected points drawn."""
+    import cv2
+
+    from al_dic_3d.calibration.detect import to_gray_u8
+
+    img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+    if img is None:
+        return np.full((height, height, 3), 20, dtype=np.uint8)
+    gray = to_gray_u8(img)
+    scale = height / gray.shape[0]
+    small = cv2.resize(
+        gray, (max(1, int(gray.shape[1] * scale)), height), interpolation=cv2.INTER_AREA
+    )
+    rgb = cv2.cvtColor(small, cv2.COLOR_GRAY2RGB)
+    if det is not None and det.ok:
+        for x, y in det.image_points * scale:
+            cv2.circle(rgb, (int(round(x)), int(round(y))), 3, (74, 222, 128), 1, cv2.LINE_AA)
+    return rgb
 
 
 def _section(text: str, parent: QWidget) -> QLabel:

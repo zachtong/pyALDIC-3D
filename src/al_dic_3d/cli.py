@@ -123,6 +123,17 @@ def build_parser() -> argparse.ArgumentParser:
     cal_p.add_argument(
         "--min-pairs", type=int, default=6, help="minimum usable stereo pairs (default 6)"
     )
+    cal_p.add_argument(
+        "--bundle",
+        action="store_true",
+        help="joint scipy bundle adjustment after the solve (robust loss, uses mono views)",
+    )
+    cal_p.add_argument(
+        "--verify-left", metavar="FILE", help="LEFT image of a verification board pair"
+    )
+    cal_p.add_argument(
+        "--verify-right", metavar="FILE", help="RIGHT image of a verification board pair"
+    )
 
     return parser
 
@@ -254,6 +265,20 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     except ValueError as exc:
         fail(str(exc))
 
+    if args.bundle:
+        from dataclasses import replace as _replace
+
+        from al_dic_3d.calibration import bundle_refine
+
+        new_rig, info = bundle_refine(
+            dl, dr, res, zero_tangent=not args.tangential, fix_k3=args.fix_k3
+        )
+        res = _replace(res, rig=new_rig)
+        print(
+            f"bundle adjustment: rms {info['rms_before']:.4f} -> {info['rms_after']:.4f} px "
+            f"({info['n_views']:.0f} views, {info['n_mono_views']:.0f} mono-only)"
+        )
+
     print("\npair QC (rms px, left/right):")
     for p in res.pairs:
         mark = "used" if p.used else f"DROPPED: {p.note}"
@@ -277,6 +302,23 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     }
     path = to_opencv_yaml(res.rig, args.output, meta=meta)
     print(f"wrote {path}")
+
+    if bool(args.verify_left) != bool(args.verify_right):
+        fail("--verify-left and --verify-right must be given together")
+    if args.verify_left:
+        from al_dic_3d.calibration import verify_known_distance
+
+        det_vl = detect_board(cv2.imread(args.verify_left, cv2.IMREAD_UNCHANGED), spec)
+        det_vr = detect_board(cv2.imread(args.verify_right, cv2.IMREAD_UNCHANGED), spec)
+        try:
+            v = verify_known_distance(res.rig, det_vl, det_vr, spec)
+        except ValueError as exc:
+            fail(f"verification failed: {exc}")
+        print(
+            f"verify: pitch {v.pitch_measured:.4f} mm vs {v.pitch_true:g} mm | "
+            f"scale error {v.scale_error:+.4%} | distance rmse {v.distance_rmse:.4f} mm | "
+            f"plane rms {v.plane_rms:.4f} mm"
+        )
     return 0
 
 

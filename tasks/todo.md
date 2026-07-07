@@ -64,6 +64,26 @@ runner / session schema v1 untouched).
   (zero_tangent default); pose corner-coverage + strong tilts required or cx
   degenerate; clipped border dots must be rejected; eccentricity correction
   implemented analytically (projected-disc centroid).
-- OPEN: tune coded-target detector on the user's real target photos; optional
-  future: detection overlay thumbnails, board PDF printer button, iDICs
-  known-distance verification tool, aniposelib-style joint BA (C3).
+- OPEN: tune coded-target detector on the user's real target photos.
+
+## C3 enhancements (user go-ahead 2026-07-07)
+- [ ] calibration/printout.py — save_board_pdf(spec, path): 1:1 physical-scale
+      PDF (exact mm sizing via matplotlib figsize) + spec legend + scale-check
+      caption; ValueError if board exceeds the page
+- [ ] calibration/verify.py — verify_known_distance(rig, det_l, det_r, spec):
+      triangulate common board points (undistort P=K -> triangulatePoints),
+      neighbor-distance vs true pitch -> scale error %, distance RMSE, plane
+      RMS (iDICs independent-verification idiom)
+- [ ] calibration/bundle.py — bundle_refine(left, right, base, image_size):
+      scipy least_squares joint BA over intr L/R + stereo R,T + per-view board
+      poses; robust soft_l1 per-POINT loss; uses single-camera views (mono
+      residuals); sparse jacobian; concept credit aniposelib (BSD-2), original
+      code
+- [ ] GUI: pair-table selection -> L|R overlay preview w/ detected points;
+      Print board… button; Verify with board images… button; Joint bundle
+      adjustment checkbox (worker runs BA after solve, reports rms before/after)
+- [ ] CLI: --bundle, --verify-left/--verify-right on calibrate
+- [ ] tests: printout, verify (synthetic scale error < 0.1%), bundle gate
+      (accuracy >= base; robust to injected per-point outliers; uses mono-only
+      views), dialog additions
+- [ ] i18n: new strings x 7 locales; full suite green; commit

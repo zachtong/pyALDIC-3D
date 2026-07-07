@@ -15,6 +15,7 @@ from al_dic_3d.calibration.boards import (
     CircleGridSpec,
     CodedCircleGridSpec,
 )
+from al_dic_3d.calibration.bundle import bundle_refine
 from al_dic_3d.calibration.detect import BoardDetection, detect_board
 from al_dic_3d.calibration.geometry import project_points, undistort_points
 from al_dic_3d.calibration.importers import (
@@ -28,6 +29,7 @@ from al_dic_3d.calibration.importers import (
     load_calibration,
 )
 from al_dic_3d.calibration.model import CameraIntrinsics, StereoRig
+from al_dic_3d.calibration.printout import save_board_pdf, spec_summary
 from al_dic_3d.calibration.report import (
     coverage_fraction,
     euler_to_rotation,
@@ -41,6 +43,11 @@ from al_dic_3d.calibration.solve import (
     calibrate_mono,
     calibrate_stereo,
 )
+from al_dic_3d.calibration.verify import (
+    DistanceVerification,
+    triangulate_pair,
+    verify_known_distance,
+)
 
 __all__ = [
     "IMPORTERS",
@@ -51,10 +58,12 @@ __all__ = [
     "ChessboardSpec",
     "CircleGridSpec",
     "CodedCircleGridSpec",
+    "DistanceVerification",
     "MonoCalibration",
     "PairQC",
     "StereoResult",
     "StereoRig",
+    "bundle_refine",
     "calibrate_mono",
     "calibrate_stereo",
     "coverage_fraction",
@@ -68,7 +77,11 @@ __all__ = [
     "from_opencv_yaml",
     "load_calibration",
     "project_points",
+    "save_board_pdf",
+    "spec_summary",
     "summarize",
     "to_opencv_yaml",
+    "triangulate_pair",
     "undistort_points",
+    "verify_known_distance",
 ]

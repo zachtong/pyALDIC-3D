@@ -152,7 +152,7 @@ def _screenshot_dialogs(imgdir: Path) -> None:
     SHOTS.mkdir(parents=True, exist_ok=True)
 
     dlg = CalibrationDialog()
-    dlg.resize(980, 640)
+    dlg.resize(1000, 700)
     dlg._files_l = sorted(str(p) for p in imgdir.glob("L_*.png"))
     dlg._files_r = sorted(str(p) for p in imgdir.glob("R_*.png"))
     dlg._refresh_table()

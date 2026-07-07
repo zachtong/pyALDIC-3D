@@ -60,6 +60,38 @@ def test_calibrate_command_writes_valid_yaml(dataset, tmp_path, capsys):
     assert abs(np.linalg.norm(t) - np.linalg.norm(tg)) < 1.0
 
 
+def test_calibrate_command_bundle_and_verify(dataset, tmp_path, capsys):
+    imgdir, _rig = dataset
+    code = main(
+        [
+            "calibrate",
+            "--left",
+            str(imgdir / "L_*.png"),
+            "--right",
+            str(imgdir / "R_*.png"),
+            "--board",
+            "chessboard",
+            "--cols",
+            "9",
+            "--rows",
+            "7",
+            "--square",
+            "12.0",
+            "--bundle",
+            "--verify-left",
+            str(imgdir / "L_00.png"),
+            "--verify-right",
+            str(imgdir / "R_00.png"),
+            "-o",
+            str(tmp_path / "cal_ba.yml"),
+        ]
+    )
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "bundle adjustment: rms" in out
+    assert "verify: pitch" in out and "scale error" in out
+
+
 def test_calibrate_command_validates_args(dataset, tmp_path):
     imgdir, _rig = dataset
     with pytest.raises(SystemExit):  # missing --square for chessboard

@@ -152,6 +152,40 @@ def test_manual_dialog_blocks_zero_baseline(qapp, monkeypatch):
     assert called["n"] == 0 and dlg.saved_path is None
 
 
+def test_preview_and_bundle_and_verify(qapp, dataset, tmp_path, monkeypatch):
+    imgdir, rig = dataset
+    dlg = CalibrationDialog()
+    dlg._files_l = sorted(str(p) for p in imgdir.glob("L_*.png"))
+    dlg._files_r = sorted(str(p) for p in imgdir.glob("R_*.png"))
+    dlg._refresh_table()
+    dlg._bundle.setChecked(True)
+    _run_solve(dlg)
+    assert dlg._result is not None, dlg._status.text()
+    assert "Bundle adjustment" in dlg._result_lbl.text()
+
+    # row selection renders the L|R overlay preview
+    dlg._table.setCurrentItem(dlg._table.topLevelItem(0))
+    assert dlg._preview.pixmap() is not None and not dlg._preview.pixmap().isNull()
+
+    # known-distance verification against the first (in-set) pair
+    picks = iter([dlg._files_l[0], dlg._files_r[0]])
+    monkeypatch.setattr(
+        "PySide6.QtWidgets.QFileDialog.getOpenFileName",
+        staticmethod(lambda *_a, **_k: (next(picks), "")),
+    )
+    dlg._on_verify()
+    assert "scale error" in dlg._verify_lbl.text()
+
+    # 1:1 board PDF
+    target = tmp_path / "board.pdf"
+    monkeypatch.setattr(
+        "PySide6.QtWidgets.QFileDialog.getSaveFileName",
+        staticmethod(lambda *_a, **_k: (str(target), "")),
+    )
+    dlg._on_print_board()
+    assert target.exists() and target.stat().st_size > 5_000
+
+
 def test_sidebar_has_three_entry_buttons(qapp):
     from al_dic_3d.gui.main_window import MainWindow3D
 
