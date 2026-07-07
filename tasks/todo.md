@@ -12,34 +12,32 @@ runner / session schema v1 untouched).
 - [x] D12 in 00_INDEX decision log (amends D2 import-only) + changelog entry
 - [x] 01 §B.1 calibration scope line + §F workflow step 3 three-entry wording
 
-## 1. Qt-free compute layer (src/al_dic_3d/calibration/)
-- [ ] boards.py — frozen specs: ChessboardSpec / CharucoSpec / CircleGridSpec /
-      CodedCircleGridSpec; object-point builders; board image generators
-      (print + synthetic rendering)
-- [ ] detect.py — detect_board(image, spec) -> BoardDetection(image_points,
-      object_points, ids, ok, reason, sharpness); SB detector w/ classic
-      fallback (never mixed per set), CharucoDetector (4.7+ OO API,
-      setLegacyPattern option), findCirclesGrid + tuned blob detector,
-      custom coded-target detector (blob -> ring fiducials via contour
-      hierarchy -> lattice indexing -> subpixel refine)
-- [ ] solve.py — calibrate_mono (calibrateCameraExtended | ROExtended for
-      printed boards; model flag policy), calibrate_stereo (per-cam intrinsics
-      -> stereoCalibrateExtended CALIB_FIX_INTRINSIC default, joint refine
-      optional), auto worst-view rejection loop (k*median), epipolar-distance
-      validation -> (StereoRig, CalibrationReport)
-      NOTE stdDeviationsIntrinsics order: fx,fy,cx,cy,k1,k2,p1,p2,k3..k6,s1..s4,tx,ty
-- [ ] report.py — CalibrationReport (per-view RMS, coverage, pose diversity,
-      std devs, dropped views + reasons, epipolar err) + to_opencv_yaml writer
-      (provenance as extra YAML nodes) round-tripping via from_opencv_yaml
+## 1. Qt-free compute layer (src/al_dic_3d/calibration/)  [DONE ccc8bbc]
+- [x] boards.py — 4 frozen specs + object lattices + board image generators
+- [x] detect.py — SB+classic w/ cornerSubPix refine (14x on band-limited
+      edges), ChArUco 4.7+ OO API, findCirclesGrid, coded-target detector
+      (ring fiducials via contour hierarchy -> affine hypothesis -> homography
+      lattice refine; clipped-blob rejection at borders)
+- [x] solve.py — mono Extended/ROExtended (zero_tangent DEFAULT True: planar
+      cx<->p1p2 coupling amplifies noise ~3x), stereo FIX_INTRINSIC default +
+      joint option, rejection loop w/ 1px absolute floor, epipolar validation,
+      disc-centroid eccentricity correction (dot_radius_mm, fixed-point on
+      ORIGINAL measurements). stdDev order fx,fy,cx,cy,k1,k2,p1,p2,k3...
+- [x] report.py — to_opencv_yaml (meta_* provenance nodes, round-trips),
+      coverage_fraction, summarize
+- Measured gate: chessboard rms 0.015px fx 0.003% cx 0.07px base 1.8um
+  R 0.002deg; coded 18/18 rms 0.036; charuco cx 0.009; tangential p1 exact
 
-## 2. Synthetic parity gate (tests/)
-- [ ] synth_calib.py — render calib image sets via planar homography, known
-      K/dist/R/T ground truth, all four board types
-- [ ] test_calib_boards / test_calib_detect / test_calib_solve — recover truth
-      within tolerance; rejection behavior; failure paths; YAML round-trip
+## 2. Synthetic parity gate (tests/)  [DONE ccc8bbc]
+- [x] synth_calib.py — exact back-projection renderer (undistort rays cached
+      per camera), 18 coverage-designed poses (corners low-tilt, center +/-32deg),
+      sigma=3 texture band-limiting, half-pixel origins (charuco origin = OUTER
+      corner!)
+- [x] test_calib_boards (10) + test_calibration_gate (13): all four boards,
+      solve gates, rejection, RO, tangential, YAML round-trip, failure paths
 
-## 3. CLI
-- [ ] `al-dic-3d calibrate` subcommand (reserved seam in cli.py) -> YAML + report
+## 3. CLI  [DONE]
+- [x] `al-dic-3d calibrate` + tests/test_cli_calibrate.py (2)
 
 ## 4. GUI (pyALDIC style, i18n contract)
 - [ ] gui/dialogs/calibration_dialog.py — pair list w/ per-image status +

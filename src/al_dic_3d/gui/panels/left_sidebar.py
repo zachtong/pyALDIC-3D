@@ -270,6 +270,14 @@ class LeftSidebar3D(QWidget):
         layout.setContentsMargins(12, 4, 12, 8)
         layout.setSpacing(6)
 
+        # Three entry modes (D12): built-in calibrator (primary), file import
+        # (alternative), manual parameters (fallback). All converge on an
+        # opencv_yaml file previewed by the same QC funnel below.
+        self._calibrate_btn = QPushButton(self.tr("Calibrate from images…"))
+        self._calibrate_btn.setProperty("class", "btn-primary")
+        self._calibrate_btn.clicked.connect(self._on_calibrate_dialog)
+        layout.addWidget(self._calibrate_btn)
+
         row = QHBoxLayout()
         row.setSpacing(4)
         lbl = QLabel(self.tr("Format"))
@@ -287,11 +295,39 @@ class LeftSidebar3D(QWidget):
         self._calib_btn.clicked.connect(self._on_calib_browse)
         layout.addWidget(self._calib_btn)
 
+        self._manual_btn = QPushButton(self.tr("Manual parameters…"))
+        self._manual_btn.clicked.connect(self._on_manual_dialog)
+        layout.addWidget(self._manual_btn)
+
         self._calib_status = QLabel(self.tr("No calibration loaded"))
         self._calib_status.setWordWrap(True)
         self._calib_status.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
         layout.addWidget(self._calib_status)
         return host
+
+    def _on_calibrate_dialog(self) -> None:
+        from al_dic_3d.gui.dialogs.calibration_dialog import CalibrationDialog
+
+        dlg = CalibrationDialog(self)
+        if dlg.exec() and dlg.saved_path:
+            self._adopt_calibration_file(dlg.saved_path)
+
+    def _on_manual_dialog(self) -> None:
+        from al_dic_3d.gui.dialogs.manual_params_dialog import ManualParamsDialog
+
+        dlg = ManualParamsDialog(self)
+        if dlg.exec() and dlg.saved_path:
+            self._adopt_calibration_file(dlg.saved_path)
+
+    def _adopt_calibration_file(self, path) -> None:
+        """Route a freshly written opencv_yaml through the shared QC funnel."""
+        draft = self.controller.state.draft
+        draft.calibration_file = Path(path)
+        draft.calibration_format = "opencv_yaml"
+        self._calib_format.setCurrentText("opencv_yaml")
+        self.controller.state.mark_dirty()
+        self._preview_calibration()
+        self.signals.calibration_changed.emit()
 
     def _on_calib_format(self, fmt: str) -> None:
         self.controller.state.draft.calibration_format = fmt
