@@ -125,8 +125,17 @@ def calibrate_mono(
     fix_aspect: bool = False,
     release_object: bool = False,
     min_points: int = 6,
+    reject_view_rms: float = 1.0,
+    reject_view_factor: float = 3.0,
+    max_reject_rounds: int = 3,
 ) -> MonoCalibration:
     """Solve one camera's intrinsics from its usable board detections.
+
+    Views whose per-view reprojection RMS exceeds
+    ``max(reject_view_rms, reject_view_factor * median)`` are dropped and the
+    solve repeats (up to ``max_reject_rounds`` rounds, never below 3 views):
+    one catastrophically misdetected view otherwise biases fx by percents
+    while the pooled RMS still looks merely mediocre.
 
     ``image_size`` is ``(width, height)``. ``zero_tangent`` defaults to True:
     on planar targets the principal point and the decentering (tangential)
@@ -145,8 +154,6 @@ def calibrate_mono(
     if len(usable) < 3:
         raise ValueError(f"need >= 3 usable views to calibrate, got {len(usable)}")
 
-    obj = [np.float32(detections[i].object_points).reshape(-1, 1, 3) for i in usable]
-    img = [np.float32(detections[i].image_points).reshape(-1, 1, 2) for i in usable]
     flags = _mono_flags(fix_k3=fix_k3, zero_tangent=zero_tangent, fix_aspect=fix_aspect)
     size = (int(image_size[0]), int(image_size[1]))
 
@@ -158,26 +165,41 @@ def calibrate_mono(
             method = "release_object"
         # else: partial/mismatched views — RO is undefined, use the standard solve.
 
-    if method == "release_object":
-        # Recommended fixed point = last point of the first board row; derive the
-        # row length from the object lattice (spec-agnostic, non-square safe).
-        obj0 = detections[usable[0]].object_points
-        row_len = int(np.sum(np.isclose(obj0[:, 1], obj0[0, 1])))
-        ret = cv2.calibrateCameraROExtended(
-            obj, img, size, max(1, row_len - 1), None, None, flags=flags
-        )
-        rms, K, dist, rvecs, tvecs, _new_obj, std_i, _std_e, _std_o, per_view = ret
-    else:
-        rms, K, dist, rvecs, tvecs, std_i, _std_e, per_view = cv2.calibrateCameraExtended(
-            obj, img, size, None, None, flags=flags
-        )
+    def _solve(view_ids: list[int]):
+        obj = [np.float32(detections[i].object_points).reshape(-1, 1, 3) for i in view_ids]
+        img = [np.float32(detections[i].image_points).reshape(-1, 1, 2) for i in view_ids]
+        if method == "release_object":
+            # Recommended fixed point = last point of the first board row; the
+            # row length derives from the object lattice (non-square safe).
+            obj0 = detections[view_ids[0]].object_points
+            row_len = int(np.sum(np.isclose(obj0[:, 1], obj0[0, 1])))
+            ret = cv2.calibrateCameraROExtended(
+                obj, img, size, max(1, row_len - 1), None, None, flags=flags
+            )
+            rms, K, dist, rvecs, tvecs, _new_obj, std_i, _std_e, _std_o, per_view = ret
+        else:
+            rms, K, dist, rvecs, tvecs, std_i, _std_e, per_view = cv2.calibrateCameraExtended(
+                obj, img, size, None, None, flags=flags
+            )
+        return rms, K, dist, rvecs, tvecs, std_i, np.asarray(per_view, np.float64).ravel()
+
+    rms, K, dist, rvecs, tvecs, std_i, per_view = _solve(usable)
+    for _round in range(max_reject_rounds):
+        if len(usable) <= 3:
+            break
+        cut = max(reject_view_rms, reject_view_factor * float(np.median(per_view)))
+        keep = per_view <= cut
+        if keep.all():
+            break
+        usable = [i for i, k in zip(usable, keep, strict=True) if k]
+        rms, K, dist, rvecs, tvecs, std_i, per_view = _solve(usable)
 
     std = np.asarray(std_i, np.float64).ravel()
     std_devs = {k: float(std[j]) if j < std.size else 0.0 for j, k in enumerate(_STD_KEYS)}
     return MonoCalibration(
         intrinsics=_intrinsics_from(K, dist, size),
         rms=float(rms),
-        per_view_rms=np.asarray(per_view, np.float64).ravel(),
+        per_view_rms=per_view,
         view_indices=np.asarray(usable, dtype=np.int64),
         std_devs=std_devs,
         method=method,

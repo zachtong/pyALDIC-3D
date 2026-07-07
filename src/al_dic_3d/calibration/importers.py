@@ -185,6 +185,7 @@ def _matchid_table(path: str | Path) -> dict[str, float]:
             continue
         value = float(nums[-1])
         label = line[: line.rfind(nums[-1])]
+        label = re.sub(r"\[[^\]]*\]", "", label)  # 'Cam0_Fx [pixels]' -> 'Cam0_Fx '
         key = re.sub(r"\s+", "", label).strip("=:,;\t ")  # 'Cam0_Kappa 1' -> 'Cam0_Kappa1'
         if key:
             table[key] = value
@@ -203,6 +204,11 @@ def _matchid_camera(t: dict[str, float], prefix: str) -> CameraIntrinsics:
 def from_matchid_caldat(path: str | Path) -> StereoRig:
     """Import a MatchID ``*.caldat`` calibration export (Cam0=Left, Cam1=Right)."""
     t = _matchid_table(path)
+    for cam in ("Cam0_", "Cam1_"):
+        if t.get(f"{cam}Fx", 0.0) <= 0.0:
+            raise ValueError(
+                f"MatchID caldat missing {cam}Fx — unrecognized key layout in {path}"
+            )
     left = _matchid_camera(t, "Cam0_")
     right = _matchid_camera(t, "Cam1_")
     R = _euler_zyx_deg(t.get("Theta", 0.0), t.get("Phi", 0.0), t.get("Psi", 0.0))

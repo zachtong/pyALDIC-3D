@@ -383,6 +383,7 @@ def _find_dots_and_fiducials(
     h_img, w_img = gray.shape
     rings: list[tuple[float, float, float]] = []  # (cx, cy, hole_area)
     blobs: list[tuple[float, float, float]] = []  # (cx, cy, area)
+    fid_direct: list[tuple[float, float]] = []  # donut-style fiducials (see below)
     for i, cnt in enumerate(contours):
         if hierarchy[i][3] != -1:  # holes are handled through their parents
             continue
@@ -405,6 +406,21 @@ def _find_dots_and_fiducials(
             if m["m00"] > 0:
                 rings.append((m["m10"] / m["m00"], m["m01"] / m["m00"], hole_area))
             continue
+        if child != -1 and hole_area >= 0.015 * area:
+            # DONUT fiducial (VIC-3D-style targets): a solid dot with a SMALL
+            # concentric hole — no separate inner dot. The dot itself is both a
+            # calibration point and a fiducial. Require concentricity so a
+            # threshold nick at the rim can't masquerade as a marker.
+            m_out = cv2.moments(cnt)
+            m_in = cv2.moments(contours[child])
+            if m_out["m00"] > 0 and m_in["m00"] > 0:
+                cx, cy = m_out["m10"] / m_out["m00"], m_out["m01"] / m_out["m00"]
+                hx, hy = m_in["m10"] / m_in["m00"], m_in["m01"] / m_in["m00"]
+                r_eq = np.sqrt(area / np.pi)
+                if (hx - cx) ** 2 + (hy - cy) ** 2 <= (0.35 * r_eq) ** 2:
+                    blobs.append((cx, cy, area))
+                    fid_direct.append((cx, cy))
+                    continue
         hull = cv2.convexHull(cnt)
         hull_area = cv2.contourArea(hull)
         if hull_area <= 0 or area / hull_area < 0.8:  # not a solid dot
@@ -417,8 +433,9 @@ def _find_dots_and_fiducials(
         return _EMPTY2, _EMPTY2, "no dot-like blobs found"
     dots = np.array([(x, y) for x, y, _a in blobs], dtype=np.float64)
 
-    # A fiducial center is the dot inside a ring's hole (nearest dot to ring center).
-    fid: list[tuple[float, float]] = []
+    # A fiducial center is the dot inside a ring's hole (nearest dot to ring
+    # center) — synthetic ring-around-dot style; donut fiducials are direct.
+    fid: list[tuple[float, float]] = list(fid_direct)
     for rx, ry, hole_area in rings:
         d2 = ((dots - (rx, ry)) ** 2).sum(axis=1)
         j = int(np.argmin(d2))
@@ -521,6 +538,15 @@ def _coded_attempt(
 
     if len(node_ids) < 6:
         return _fail("lattice indexing collapsed during homography refine", method)
+    if len(node_ids) < 0.5 * len(dots):
+        # A correct correspondence explains nearly every detected dot (partial
+        # views included — off-board dots don't exist). A low matched fraction
+        # means the fiducial triangle was misassigned (e.g. a false donut from
+        # a speck): the sheared lattice still snags some dots by accident, and
+        # such a view would poison the mono solve with a huge silent bias.
+        return _fail(
+            f"lattice match fraction too low ({len(node_ids)}/{len(dots)} dots)", method
+        )
 
     cols_f = all_nodes[node_ids, 0]
     rows_f = all_nodes[node_ids, 1]
