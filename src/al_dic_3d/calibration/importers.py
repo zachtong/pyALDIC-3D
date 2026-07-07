@@ -263,22 +263,59 @@ def from_opencorr_csv(path: str | Path) -> StereoRig:
 
 
 def from_mmc_mat(path: str | Path) -> StereoRig:
-    """Import an MMC (Multi_Camera_Calibration) ``.mat`` (Camera_0001=L, _0002=R)."""
+    """Import an MMC (Multi_Camera_Calibration / MMCL, YIN Zhuoyi) ``.mat`` result.
+
+    Verified against the MMC source (``save_CalibrationeResult_file_mat``):
+    variables are ``Camera_XXXX_Group_YYYY_*`` where the camera digits are the
+    tool's GUI *slot* index (1..36 — not necessarily 1/2) and the group digits
+    come from the group combobox — so both are DISCOVERED by pattern, never
+    hardcoded. The lowest group is used; its two lowest camera slots become
+    L/R. The first camera is the world (MMC writes R=I, T=0 for it); the
+    second carries the stereo ``_R``/``_T`` (premultiply, already our target
+    convention). MMC can export up to six rational radial coefficients and a
+    ``ThinPrismDistortion`` — both exceed our 5-coefficient Brown-Conrady
+    model, so NONZERO higher-order terms raise (re-export from MMC with
+    radial count 3 and thin-prism 0) instead of being silently dropped.
+    """
     from scipy.io import loadmat
 
     mat = loadmat(str(path))
+    prefixes: dict[tuple[int, int], str] = {}
+    for key in mat:
+        m = re.fullmatch(r"(Camera_(\d+)_Group_(\d+)_)IntrinsicMatrix", key)
+        if m:
+            prefixes[(int(m.group(3)), int(m.group(2)))] = m.group(1)
+    if not prefixes:
+        raise ValueError("MMC .mat has no Camera_*_Group_*_IntrinsicMatrix variables")
+    group = min(g for g, _c in prefixes)
+    cams = sorted(c for g, c in prefixes if g == group)
+    if len(cams) < 2:
+        raise ValueError(f"MMC .mat group {group} has {len(cams)} camera(s); need 2 for stereo")
 
-    def cam(idx: int) -> CameraIntrinsics:
-        p = f"Camera_{idx:04d}_Group_0001_"
-        K = np.asarray(mat[p + "IntrinsicMatrix"], np.float64)
-        rad = np.asarray(mat[p + "RadialDistortion"], np.float64).ravel()
-        tan = np.asarray(mat[p + "TangentialDistortion"], np.float64).ravel()
+    def cam(prefix: str) -> CameraIntrinsics:
+        K = np.asarray(mat[prefix + "IntrinsicMatrix"], np.float64)
+        rad = np.asarray(mat[prefix + "RadialDistortion"], np.float64).ravel()
+        tan = np.asarray(mat[prefix + "TangentialDistortion"], np.float64).ravel()
+        if rad.size > 3 and np.abs(rad[3:]).max() > 1e-12:
+            raise ValueError(
+                f"MMC export {prefix}RadialDistortion uses rational coefficients "
+                f"k4..k6 = {rad[3:6].tolist()} — unsupported by the 5-coefficient "
+                "Brown-Conrady model; re-export from MMC with radial count 3."
+            )
+        prism = mat.get(prefix + "ThinPrismDistortion")
+        if prism is not None and np.abs(np.asarray(prism, np.float64)).max() > 1e-12:
+            raise ValueError(
+                f"MMC export {prefix}ThinPrismDistortion is nonzero — unsupported; "
+                "re-export from MMC with thin-prism count 0."
+            )
         dist = [rad[0], rad[1], tan[0], tan[1], rad[2] if rad.size >= 3 else 0.0]
         return _K_matrix_to_intrinsics(K, np.array(dist))
 
-    R = np.asarray(mat["Camera_0002_Group_0001_R"], np.float64).reshape(3, 3)
-    T = np.asarray(mat["Camera_0002_Group_0001_T"], np.float64).ravel()
-    return _rig(cam(1), cam(2), R, T)
+    p_left = prefixes[(group, cams[0])]
+    p_right = prefixes[(group, cams[1])]
+    R = np.asarray(mat[p_right + "R"], np.float64).reshape(3, 3)
+    T = np.asarray(mat[p_right + "T"], np.float64).ravel()
+    return _rig(cam(p_left), cam(p_right), R, T)
 
 
 # --------------------------------------------------------------------------- #

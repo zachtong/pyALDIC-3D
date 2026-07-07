@@ -50,3 +50,6 @@ desktop.ini
 # are this repo's operating contract. Ignore only transient local .claude state.
 .claude/*
 !.claude/settings.json
+
+# Read-only reference clones of third-party repos (never committed)
+reference/

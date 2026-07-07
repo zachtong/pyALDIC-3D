@@ -237,10 +237,71 @@ def test_mmc_synthetic(tmp_path: Path):
     )
     rig = from_mmc_mat(tmp_path / "mmc.mat")
     assert rig.cameras["L"].fx == 1200.0
-    assert rig.cameras["L"].k3 == 0.001  # third radial kept, k4..k6 dropped
+    assert rig.cameras["L"].k3 == 0.001  # third radial kept; ZERO k4..k6 tolerated
     assert rig.cameras["L"].p1 == 0.0005
     assert np.allclose(rig.extrinsics[("L", "R")][1], [-120.0, 1.5, 20.0])
     _assert_left_is_world(rig)
+
+
+def test_mmc_discovers_slots_and_groups(tmp_path: Path):
+    # MMC camera digits = GUI slot index (1..36), group = combobox value; a rig
+    # loaded in slots 3/4 of group 2 must import without hardcoded assumptions.
+    from scipy.io import savemat
+
+    R = _euler_zyx_deg(0.0, 15.0, 0.0)
+    savemat(
+        str(tmp_path / "mmc_slots.mat"),
+        {
+            "Camera_0003_Group_0002_IntrinsicMatrix": _K(1200, 1205, 640, 512),
+            "Camera_0003_Group_0002_RadialDistortion": np.array([-0.12, 0.03, 0.001]),
+            "Camera_0003_Group_0002_TangentialDistortion": np.array([0.0005, -0.0003]),
+            "Camera_0003_Group_0002_ThinPrismDistortion": np.zeros(4),  # zero: OK
+            "Camera_0004_Group_0002_IntrinsicMatrix": _K(1180, 1185, 650, 505),
+            "Camera_0004_Group_0002_RadialDistortion": np.array([-0.10, 0.02, 0.0]),
+            "Camera_0004_Group_0002_TangentialDistortion": np.array([0.0, 0.0]),
+            "Camera_0004_Group_0002_R": R,
+            "Camera_0004_Group_0002_T": np.array([-120.0, 1.5, 20.0]),
+        },
+    )
+    rig = from_mmc_mat(tmp_path / "mmc_slots.mat")
+    assert rig.cameras["L"].fx == 1200.0  # lowest slot = left/world
+    assert rig.cameras["R"].fx == 1180.0
+    assert np.allclose(rig.extrinsics[("L", "R")][1], [-120.0, 1.5, 20.0])
+    _assert_left_is_world(rig)
+
+
+def test_mmc_rejects_unrepresentable_distortion(tmp_path: Path):
+    # Nonzero rational k4..k6 or thin-prism cannot fit the 5-coeff model and
+    # must die loudly at import instead of silently mis-modeling distortion.
+    import pytest
+    from scipy.io import savemat
+
+    base = {
+        "Camera_0001_Group_0001_IntrinsicMatrix": _K(1200, 1205, 640, 512),
+        "Camera_0001_Group_0001_TangentialDistortion": np.zeros(2),
+        "Camera_0002_Group_0001_IntrinsicMatrix": _K(1180, 1185, 650, 505),
+        "Camera_0002_Group_0001_RadialDistortion": np.array([-0.10, 0.02, 0.0]),
+        "Camera_0002_Group_0001_TangentialDistortion": np.zeros(2),
+        "Camera_0002_Group_0001_R": np.eye(3),
+        "Camera_0002_Group_0001_T": np.array([-120.0, 0.0, 0.0]),
+    }
+    savemat(
+        str(tmp_path / "rational.mat"),
+        {**base, "Camera_0001_Group_0001_RadialDistortion": np.array([-0.1, 0.02, 0, 0.05, 0, 0])},
+    )
+    with pytest.raises(ValueError, match="k4..k6"):
+        from_mmc_mat(tmp_path / "rational.mat")
+
+    savemat(
+        str(tmp_path / "prism.mat"),
+        {
+            **base,
+            "Camera_0001_Group_0001_RadialDistortion": np.array([-0.1, 0.02, 0.0]),
+            "Camera_0001_Group_0001_ThinPrismDistortion": np.array([1e-4, 0, 0, 0]),
+        },
+    )
+    with pytest.raises(ValueError, match="ThinPrism"):
+        from_mmc_mat(tmp_path / "prism.mat")
 
 
 def test_matlabcv_synthetic(tmp_path: Path):
