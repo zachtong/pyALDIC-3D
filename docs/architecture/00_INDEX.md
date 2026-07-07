@@ -64,6 +64,23 @@
 
 ## Changelog
 
+- 2026-07-07 v1.4.5 — **核心算法审计整改落地：AL 全局步默认开启 + 四叉树网格加密接入**
+  （`0252bff` 后端 + `3e92e82` GUI/i18n，204 tests，P1 门禁复验 PASS）。①`make_dicpara`
+  （原 make_local_dicpara，保留别名）默认 `use_global_step=True, admm_max_iter=3`——时序
+  追踪跑完整 AL-DIC ADMM（Subpb2 FEM + ADMM 环），对齐 MATLAB 信任路径的 UseGlobal；
+  立体匹配保持散点局部 ICGN（MATLAB 锚点同样 ICGN-only：视差场是投影视点几何而非材料
+  变形，FEM 位移相容正则不适用）。②`runner._build_reference_mesh` 用 al_dic
+  `refine_mesh` 在第 1 帧一次性构建四叉树加密网格（引擎逐帧 policy 故意不用——会触发
+  temporal_track 网格漂移守卫；MATLAB acc 模式逐帧网格本就相同）。加密杠杆完全复刻 2D：
+  内边界/外边界勾选 + 画刷 PNG + 级别 1-3（min_elem = max(2, step//2^level)），**默认不加密**。
+  ③GUI：参数区新增 AL 勾选+ADMM 迭代 spin、网格加密组（双勾选+级别+画刷绘制/清除），
+  画布 z1.5 画刷层（cv2.line 同步写 uint8 真值掩膜与 RGBA 显示层，与 ROI 绘制互斥），
+  draft 在 build() 时把画刷数组物化为 `<out>/refinement_mask.png`。④i18n +8 串，
+  222/222 × 7 locales（术语对齐 2D 目录），zh_CN 截图验证。⑤S3 复验：ADMM ON 指标与
+  local-only 逐位一致（U 1.2µm/V 1.0µm/W 5.8µm，斜率 +0.999/+1.005/+0.850），耗时
+  3.4s vs 2.5s（+36%，533 点×3 帧）。窗口分裂澄清：子集"细分"在两个移植中都不存在——
+  MATLAB 是掩膜附近子集增大/放弃（funICGNQuadtree），al_dic 等价物为常开的掩膜子集
+  覆盖率门控；winsizeMin 是网格参数，由本次接入的四叉树单元分裂实现。
 - 2026-07-07 v1.4.4 — **P1 真实数据 MATLAB 对位门禁 PASSED**（`19d61a8`，202 tests）。用户不在场，
   自主搜寻机器数据：MATLAB 仓 S3 数据集缺失的 Left 图像在 `../3D_ALDIC_unused` 找回（Right 帧
   字节相同），全程只读就地引用；`tools/matlab_parity.py` 复刻 MATLAB 回归配置对比

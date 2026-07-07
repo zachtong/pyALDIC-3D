@@ -18,7 +18,9 @@ differenced on the common support. Run:  python tools/matlab_parity.py
 
 from __future__ import annotations
 
+import os
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -82,6 +84,7 @@ ymax = {roi[3]}
 [matching]
 strategy = "track_both"
 reference_mode = "{mode}"
+use_global_step = {"true" if os.environ.get("PARITY_GLOBAL", "1") != "0" else "false"}
 winsize = 32
 winstepsize = 32
 winsize_min = 8
@@ -183,8 +186,11 @@ def main() -> int:
     import os
 
     mode = os.environ.get("PARITY_MODE", "incremental")
-    print(f"reference_mode = {mode}")
+    global_on = os.environ.get("PARITY_GLOBAL", "1") != "0"
+    print(f"reference_mode = {mode}  |  AL global step = {'ON' if global_on else 'OFF'}")
+    t0 = time.perf_counter()
     result = run_ours(work, mode)
+    print(f"pipeline wall time: {time.perf_counter() - t0:.1f} s")
     base = load_baseline()
     m = compare(result, base, work)
 
