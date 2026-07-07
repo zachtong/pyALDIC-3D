@@ -3,9 +3,27 @@
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from al_dic_3d.sequence import StereoSequence
+
+
+def mask_stream(seq: StereoSequence, cam: str) -> list[NDArray[np.float64]] | None:
+    """Per-frame masks for ``cam`` as float64 arrays, or None when absent.
+
+    Strategies MUST forward these into :func:`temporal_track`: tracking a
+    background-heavy bounding-box mesh without masks lets textureless nodes
+    poison the FFT seed search (escalating search zones break even the good
+    nodes) — the failure mode found on the Stereo DIC Challenge S3 dataset,
+    where the 2D engine then silently zero-filled an all-NaN field.
+    """
+    if seq.masks.get(cam) is None:
+        return None
+    return [np.asarray(seq.mask(cam, k), dtype=np.float64) for k in range(seq.n_frames)]
 
 
 def bbox_roi(

@@ -1,3 +1,74 @@
+# MATLAB real-data parity gates (user 2026-07-07: "自己去搜索我的电脑里的
+# 3d aldic MATLAB版本里面的案例来测试" — user away from computer, full autonomy)
+
+FINDINGS (../3D-Stereo-ALDIC, READ-ONLY):
+- tests/run_pipeline_test.m = NON-INTERACTIVE regression harness on
+  examples/Stereo_DIC_Challenge_1.0_S3 (3 frames 0000-0002, DICe calib,
+  winsize=32 winstepsize=32, DICIncOrNot=1 INCREMENTAL, quadtree+masks,
+  ClusterNo=1, NewFFTSearchDistance=[60,60], images loaded TRANSPOSED ');
+  baseline at tests/baseline/baseline.mat (v7.3 -> needs h5py).
+- PROBLEM: S3 Images_Stereo_Sample3_images/ has only Right/ — Left/ MISSING
+  (masks L+R both present). Search machine for the Left set; else fall back.
+- Complete datasets: tests/D_shape (One_folder + Seperate_folders, images+
+  masks+calibration_DICe.xml+results), examples/pig_heart (Left/Right+masks+
+  DICe calib), Stereo_DIC_Challenge_2.1_Bespoke.
+- MATLAB R2023b installed at /c/Program Files/MATLAB/R2023b — can run
+  `matlab -batch` with OUR driver script (addpath their repo READ-ONLY,
+  save outputs to OUR side; mexw64 already compiled).
+
+PROGRESS 2026-07-07 (tools/matlab_parity.py; PARITY_MODE env acc|inc):
+- [x] h5py installed; baseline.mat read (3987 pts; disp: U med 0.095/0.179mm,
+      V 0.408/0.832, W 0.076/0.132 for frames 1/2; reproj 0.104/0.085/0.503)
+- [x] S3 Left images FOUND: ../3D_ALDIC_unused/Examples/Image_Stereo_Sample3/
+      (right frames byte-identical to 3D repo); consumed read-only in place
+- [x] runner already supports masks; FIXED sequence pairing validator (DICe
+      naming 0000_0/0000_1: trailing digits = CAMERA; now leading-index
+      fallback; sequence tests 10 pass) — NOT YET COMMITTED
+- [x] harness runs end-to-end; our raw fields saved reports/parity_s3/s3_ours.npz;
+      config reports/parity_s3/s3_parity.toml
+- MEASURED (533 finite pts vs their 3987; scale ~0.06mm/px):
+  frame0 static Z: 30um median vs MATLAB — STEREO+CALIB+TRIANGULATION GOOD
+  frame1 (identical acc & inc, as expected): U slope -0.13, V +0.61, W +11.9
+    -> FIRST TEMPORAL STEP WRONG in both modes; W x12 amplification =
+    left/right temporal pairing inconsistency (disparity error -> depth blow)
+  frame2 inc: U med 1.95mm slopes +13 (INC COMPOSITION BLOWS UP — bug #2);
+  frame2 acc: U 0.14 V 0.64 W 0.37 (better but still >> signal)
+  our reproj 0.000/0.001/0.001 px (two-view DLT self-consistency, not a QC)
+- [x] NEXT-1 DONE — ROOT CAUSE LOCALIZED: xL/xR tracks saved; LEFT camera
+      temporal displacement is EXACTLY ZERO (uL frame1 med/std = 0.000/0.000)
+      while RIGHT tracks fine (uR = (+0.93,-6.95)px, physically right).
+      One frozen ray => V halved, W x12 blow-up = the observed 3D signature.
+      Inputs verified distinct (per-frame sums differ). track_both code is
+      correct (xl_k = coords_L + tf_L.u_accum[k]); so run_aldic returned
+      all-zero U_accum for the LEFT call only. L vs R call difference:
+      LEFT uses EXTERNAL mesh_L (runner-built) + para_L(img_ref_mask=L1 mask,
+      roi=bbox(coords_L)+margin); RIGHT uses its own build_grid_mesh(para_R).
+      Suspect: engine degenerate branch for external-mesh + img_ref_mask.
+      NOTE ALSO frame2-acc: uR only -7.35px (should be ~2x -6.95) => right
+      acc tracking also lags at frame 3; and inc composition blow-up = bug #2.
+- [x] ROOT CAUSE #1 FIXED: strategies never forwarded per-frame masks into
+      temporal_track -> background-heavy bbox mesh -> FFT garbage-peak zone
+      escalation (20->600px) poisoned in-mask nodes -> ICGN all-NaN -> 2D
+      engine SILENTLY ZERO-FILLED (UserWarning only) -> frozen left camera.
+      Fix: _common.mask_stream() + masks= in all 3 strategies' temporal_track
+      calls; temporal.py promotes the engine's 'All nodes are NaN' warning to
+      RuntimeError (never trust a frozen camera again).
+- [x] P1 GATE ACHIEVED (frame 0->1, real data): U med 1.2um p95 3.2 slope
+      +0.999 | V 1.0um/3.1 +1.005 | W 5.8um/18 +0.850 | Z 30um — the
+      promised um-level MATLAB parity on real data. Gate assertions added to
+      tools/matlab_parity.py (exits nonzero on fail).
+- [x] FRAME-3 ARBITRATED INVALID AS BASELINE: template matching (multi-
+      location, both cameras) shows the TRUE 0->2 motion is ~(-8..-95,
+      -52..-64)px, heavily deforming/decorrelating (scores 0.16-0.76), i.e.
+      ~10x the MATLAB baseline's claim (-13px = suspicious exact 2x of
+      frame 2) and their own frame-3 reproj jumps to 0.503px -> the MATLAB
+      run failed that frame too. Frame index 2 reported but NOT gated.
+- [ ] OPEN NEXT: inc-mode composition (bug #2, blows up on real data even
+      frame 2); frame-3 challenge = the test target (true increment ~-56px
+      fits inside 60px search in inc mode -> fixed inc could BEAT the MATLAB
+      baseline there). Template-truth anchors: L0[380,800]->L2 (-8,-64)@0.76.
+- [ ] commit fixes + harness; INDEX changelog; memory; parity report PDF
+
 # Built-in stereo calibration (C1+C2, approved 2026-07-07)
 
 User decisions: targets = chessboard + coded dot target (3 concentric locating

@@ -65,6 +65,18 @@ def _trailing_index(name: str) -> str | None:
     return matches[-1] if matches else None
 
 
+def _leading_index(name: str) -> str | None:
+    """Return the first run of digits in a file name, or None.
+
+    DICe-style datasets (e.g. the Stereo DIC Challenge) name frames
+    ``0000_0.tif`` / ``0000_1.tif``: the TRAILING digits are the camera id and
+    the LEADING digits are the frame index — the opposite of the plain
+    ``frame_0001.tif`` convention the trailing check assumes.
+    """
+    matches = _INDEX_RE.findall(name)
+    return matches[0] if matches else None
+
+
 @dataclass(frozen=True)
 class StereoSequence:
     """Dual-camera image streams with mask streams and pairing validation.
@@ -125,16 +137,21 @@ class StereoSequence:
                     )
                     break
 
-        # Name-pattern check: the per-frame trailing indices must line up across
-        # cameras (a common mispair is L/R lists sorted differently).
+        # Name-pattern check: per-frame indices must line up across cameras (a
+        # common mispair is L/R lists sorted differently). Two conventions are
+        # accepted: trailing digits = frame (``frame_0001.tif``) OR leading
+        # digits = frame with a camera-id suffix (DICe ``0000_0.tif`` /
+        # ``0000_1.tif``) — a mismatch is flagged only when NEITHER lines up.
         named = {cam: list(v) for cam, v in self.names.items() if v is not None}
         if len(named) >= 2:
-            index_lists = {cam: [_trailing_index(x) for x in v] for cam, v in named.items()}
-            ref_cam, ref_idx = next(iter(index_lists.items()))
-            for cam, idx_list in index_lists.items():
-                if idx_list != ref_idx:
-                    problems.append(f"name-pattern mismatch between {ref_cam!r} and {cam!r}")
+            for extract in (_trailing_index, _leading_index):
+                index_lists = {cam: [extract(x) for x in v] for cam, v in named.items()}
+                ref_idx = next(iter(index_lists.values()))
+                if all(idx_list == ref_idx for idx_list in index_lists.values()):
                     break
+            else:
+                cams = sorted(named)
+                problems.append(f"name-pattern mismatch between {cams[0]!r} and {cams[1]!r}")
         return problems
 
     def validate(self) -> None:

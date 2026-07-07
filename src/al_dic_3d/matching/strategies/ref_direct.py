@@ -32,7 +32,7 @@ from al_dic_3d.matching.contracts import (
 )
 from al_dic_3d.matching.primitives import make_local_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
-from al_dic_3d.matching.strategies._common import bbox_roi
+from al_dic_3d.matching.strategies._common import bbox_roi, mask_stream
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import temporal_track
 
@@ -94,7 +94,7 @@ class RefDirectStrategy:
             reference_mode="accumulative",
         )
 
-        tf_L = temporal_track(left, mesh_L, para_L, stop=stop)
+        tf_L = temporal_track(left, mesh_L, para_L, masks=mask_stream(seq, "L"), stop=stop)
         if not np.allclose(tf_L.ref_coords, coords_L, atol=1e-6):
             raise RuntimeError("left temporal mesh drifted from mesh_L (masked track = Phase 2b)")
 

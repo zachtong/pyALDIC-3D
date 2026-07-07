@@ -89,22 +89,38 @@ def temporal_track(
     if len(masks) != len(frames):
         raise ValueError(f"masks ({len(masks)}) must match frames ({len(frames)})")
 
+    import warnings
+
     try:
-        result = run_aldic(
-            para,
-            [np.ascontiguousarray(f, dtype=np.float64) for f in frames],
-            [np.ascontiguousarray(m, dtype=np.float64) for m in masks],
-            stop_fn=stop,
-            compute_strain=False,
-            mesh=mesh,
-            U0=u0,
-        )
+        # The 2D engine zero-fills an ALL-NaN ICGN field with only a UserWarning
+        # ("All nodes are NaN, cannot interpolate. Returning zeros.") — silent
+        # zeros would flow downstream as a perfectly "valid" frozen camera (the
+        # S3 real-data failure). Promote that warning to a hard error below.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            result = run_aldic(
+                para,
+                [np.ascontiguousarray(f, dtype=np.float64) for f in frames],
+                [np.ascontiguousarray(m, dtype=np.float64) for m in masks],
+                stop_fn=stop,
+                compute_strain=False,
+                mesh=mesh,
+                U0=u0,
+            )
     except RuntimeError:
         # The engine raises its own abort message when stop_fn trips; normalise
         # to the uniform cooperative-cancel contract. Genuine errors re-raise.
         if stop is not None and stop():
             raise RuntimeError("cancelled") from None
         raise
+    for w in caught:
+        if "All nodes are NaN" in str(w.message):
+            raise RuntimeError(
+                "2D engine solved NO nodes (all-NaN field silently zero-filled): "
+                "the temporal track failed outright — check masks/ROI/texture "
+                "instead of trusting a frozen zero-displacement camera."
+            )
+        warnings.warn_explicit(w.message, w.category, w.filename, w.lineno)
     if stop is not None and stop():
         raise RuntimeError("cancelled")
 
