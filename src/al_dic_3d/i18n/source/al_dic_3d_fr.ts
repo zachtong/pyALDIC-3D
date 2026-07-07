@@ -4,338 +4,389 @@
 <context>
     <name>CalibrationDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="154"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="170"/>
         <source>Stereo Calibration</source>
         <translation>Étalonnage stéréo</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="175"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="192"/>
         <source>CALIBRATION IMAGE PAIRS</source>
         <translation>PAIRES D'IMAGES D'ÉTALONNAGE</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="178"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="195"/>
         <source>Add left images…</source>
         <translation>Ajouter des images gauches…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="180"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="197"/>
         <source>Add right images…</source>
         <translation>Ajouter des images droites…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="182"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="199"/>
         <source>Clear</source>
         <translation>Effacer</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="189"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="201"/>
+        <source>Save detections…</source>
+        <translation>Enregistrer les détections…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="204"/>
+        <source>Load detections…</source>
+        <translation>Charger les détections…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="211"/>
         <source>No images loaded</source>
         <translation>Aucune image chargée</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="197"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="219"/>
         <source>Left</source>
         <translation>Gauche</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="198"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="220"/>
         <source>Right</source>
         <translation>Droite</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="199"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="221"/>
         <source>Points</source>
         <translation>Points</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="200"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="222"/>
         <source>RMS L/R</source>
         <translation>RMS G/D</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="201"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="223"/>
+        <source>Max E</source>
+        <translation>Erreur max</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="224"/>
         <source>Status</source>
         <translation>Statut</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="211"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="235"/>
         <source>SELECTED PAIR (L | R)</source>
         <translation>PAIRE SÉLECTIONNÉE (G | D)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="212"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="236"/>
         <source>select a pair to preview detected points</source>
         <translation>sélectionnez une paire pour prévisualiser les points détectés</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="220"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="244"/>
         <source>PER-PAIR REPROJECTION ERROR</source>
         <translation>ERREUR DE REPROJECTION PAR PAIRE</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="225"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="249"/>
         <source>Reject threshold (px)</source>
         <translation>Seuil de rejet (px)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="234"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="258"/>
         <source>Recalibrate</source>
         <translation>Réétalonner</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="246"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="270"/>
         <source>CALIBRATION BOARD</source>
         <translation>MIRE D'ÉTALONNAGE</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="254"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="278"/>
         <source>Chessboard</source>
         <translation>Damier</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="255"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="279"/>
         <source>ChArUco</source>
         <translation>ChArUco</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="256"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="280"/>
         <source>Circle grid</source>
         <translation>Grille de points</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="257"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="281"/>
         <source>Coded dot target (3 ring markers)</source>
         <translation>Cible à points codée (3 marqueurs annulaires)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="259"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="283"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="264"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="288"/>
         <source>Columns x Rows</source>
         <translation>Colonnes × Lignes</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="271"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="295"/>
         <source>Square size (mm)</source>
         <translation>Taille de case (mm)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="276"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="300"/>
         <source>Marker size (mm)</source>
         <translation>Taille de marqueur (mm)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="281"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="305"/>
         <source>Dot pitch (mm)</source>
         <translation>Pas des points (mm)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="286"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="310"/>
         <source>Dot diameter (mm)</source>
         <translation>Diamètre des points (mm)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="290"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="314"/>
         <source>Asymmetric grid</source>
         <translation>Grille asymétrique</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="292"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="316"/>
         <source>Board printed with OpenCV &lt; 4.7</source>
         <translation>Mire imprimée avec OpenCV &lt; 4.7</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="296"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="320"/>
         <source>Print board… (1:1 PDF)</source>
         <translation>Imprimer la mire… (PDF 1:1)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="300"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="324"/>
         <source>SOLVER OPTIONS</source>
         <translation>OPTIONS DU SOLVEUR</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="301"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="325"/>
         <source>Jointly refine intrinsics (advanced)</source>
         <translation>Raffiner conjointement les intrinsèques (avancé)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="302"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="326"/>
         <source>Estimate tangential distortion p1/p2</source>
         <translation>Estimer la distorsion tangentielle p1/p2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="303"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="327"/>
         <source>Fix k3 = 0 (low-distortion lens)</source>
         <translation>Fixer k3 = 0 (objectif à faible distorsion)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="304"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="328"/>
         <source>Release-object method (printed boards)</source>
         <translation>Méthode release-object (mires imprimées)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="305"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="329"/>
         <source>Dot eccentricity correction</source>
         <translation>Correction d'excentricité des points</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="307"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="331"/>
         <source>Joint bundle adjustment (robust, uses mono views)</source>
         <translation>Ajustement de faisceaux (robuste, exploite les vues mono)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="318"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="332"/>
+        <source>Optimize board shape (printed boards)</source>
+        <translation>Optimiser la forme de la mire (mires imprimées)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="347"/>
         <source>Calibrate</source>
         <translation>Étalonner</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="329"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="358"/>
         <source>RESULT</source>
         <translation>RÉSULTAT</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="330"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="359"/>
         <source>No calibration yet</source>
         <translation>Pas encore d'étalonnage</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="335"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="364"/>
         <source>Verify with board images…</source>
         <translation>Vérifier avec des images de mire…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="347"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="376"/>
         <source>Accept &amp;&amp; Save…</source>
         <translation>Accepter &amp;&amp; Enregistrer…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="353"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="382"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="412"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="441"/>
         <source>Choose {0} calibration images</source>
         <translation>Choisir les images d'étalonnage {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="414"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="628"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="443"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="726"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="449"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="481"/>
         <source>{0} left / {1} right images</source>
         <translation>{0} images gauches / {1} droites</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="459"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="491"/>
         <source>Load equal, &gt;= 3 left/right image sets first.</source>
         <translation>Chargez d'abord des jeux gauche/droite égaux (au moins 3).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="483"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="522"/>
         <source>Working… {0}</source>
         <translation>Traitement… {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="492"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="531"/>
         <source>Calibration failed: {0}</source>
         <translation>Échec de l'étalonnage : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="513"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="555"/>
         <source>used</source>
         <translation>utilisée</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="515"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="557"/>
         <source>L: {0}</source>
         <translation>G : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="517"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="559"/>
         <source>R: {0}</source>
         <translation>D : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="532"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="575"/>
         <source>Stereo RMS {0:.3f} px | epipolar {1:.3f} px</source>
         <translation>RMS stéréo {0:.3f} px | épipolaire {1:.3f} px</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="535"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="578"/>
         <source>Baseline {0:.2f} mm | pairs {1}/{2}</source>
         <translation>Ligne de base {0:.2f} mm | paires {1}/{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="538"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="581"/>
         <source>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</source>
         <translation>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="541"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="584"/>
         <source>Coverage L {0:.0%} / R {1:.0%} | tilt {2:.0f}-{3:.0f}°</source>
         <translation>Couverture G {0:.0%} / D {1:.0%} | inclinaison {2:.0f}-{3:.0f}°</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="550"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="593"/>
         <source>Bundle adjustment: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} mono views)</source>
         <translation>Ajustement de faisceaux : RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} vues mono)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="555"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="599"/>
+        <source>Board flatness: z-range {0:.3f} mm</source>
+        <translation>Planéité de la mire : plage z {0:.3f} mm</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="602"/>
         <source>Warning: {0}</source>
         <translation>Avertissement : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="602"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="617"/>
+        <source>Save detections</source>
+        <translation>Enregistrer les détections</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="617"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="636"/>
+        <source>NumPy detections (*.npz)</source>
+        <translation>Détections NumPy (*.npz)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="632"/>
+        <source>Detections saved: {0}</source>
+        <translation>Détections enregistrées : {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="636"/>
+        <source>Load detections</source>
+        <translation>Charger les détections</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="658"/>
+        <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
+        <translation>{0} paires de détections chargées — Réétalonner résout sans redétection</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="700"/>
         <source>Save board PDF</source>
         <translation>Enregistrer le PDF de la mire</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="602"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="700"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="613"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="711"/>
         <source>Board PDF written: {0}</source>
         <translation>PDF de la mire écrit : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="630"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="728"/>
         <source>Choose LEFT verification image</source>
         <translation>Choisir l'image de vérification GAUCHE</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="635"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="733"/>
         <source>Choose RIGHT verification image</source>
         <translation>Choisir l'image de vérification DROITE</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="644"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="742"/>
         <source>Verification failed: {0}</source>
         <translation>Échec de la vérification : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="650"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="748"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>Vérification : pas {0:.4f} mm contre {1:g} mm — erreur d'échelle {2:.3%}, RMS plan {3:.4f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="664"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="762"/>
         <source>Save calibration as</source>
         <translation>Enregistrer l'étalonnage sous</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="666"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="764"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
     </message>
@@ -1060,12 +1111,12 @@ fx {1:.0f}  fy {2:.0f}  |  base {3:.1f} mm</translation>
 <context>
     <name>_PairBars</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="123"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="139"/>
         <source>no solve yet</source>
         <translation>pas encore de solution</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="145"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="161"/>
         <source>worst-camera RMS per pair; dashed = reject threshold</source>
         <translation>RMS caméra la plus défavorable par paire ; pointillés = seuil de rejet</translation>
     </message>

@@ -186,6 +186,40 @@ def test_preview_and_bundle_and_verify(qapp, dataset, tmp_path, monkeypatch):
     assert target.exists() and target.stat().st_size > 5_000
 
 
+def test_morphology_and_detection_persistence(qapp, dataset, tmp_path, monkeypatch):
+    imgdir, _rig = dataset
+    dlg = CalibrationDialog()
+    dlg._files_l = sorted(str(p) for p in imgdir.glob("L_*.png"))
+    dlg._files_r = sorted(str(p) for p in imgdir.glob("R_*.png"))
+    dlg._refresh_table()
+    dlg._bundle.setChecked(True)
+    assert dlg._morph.isEnabled()  # gated on the bundle checkbox
+    dlg._morph.setChecked(True)
+    _run_solve(dlg)
+    assert dlg._result is not None, dlg._status.text()
+    assert "z-range" in dlg._result_lbl.text()  # board flatness reported
+    assert dlg._table.topLevelItem(0).text(5)  # Max E column filled
+
+    # save detections, load them into a FRESH dialog, re-solve without images
+    det_file = tmp_path / "det.npz"
+    monkeypatch.setattr(
+        "PySide6.QtWidgets.QFileDialog.getSaveFileName",
+        staticmethod(lambda *_a, **_k: (str(det_file), "")),
+    )
+    dlg._on_save_detections()
+    assert det_file.exists()
+
+    dlg2 = CalibrationDialog()
+    monkeypatch.setattr(
+        "PySide6.QtWidgets.QFileDialog.getOpenFileName",
+        staticmethod(lambda *_a, **_k: (str(det_file), "")),
+    )
+    dlg2._on_load_detections()
+    assert dlg2._detections is not None and dlg2._recal_btn.isEnabled()
+    _run_solve_recal(dlg2)
+    assert dlg2._result is not None and dlg2._result.n_pairs_used >= 6
+
+
 def test_sidebar_has_three_entry_buttons(qapp):
     from al_dic_3d.gui.main_window import MainWindow3D
 

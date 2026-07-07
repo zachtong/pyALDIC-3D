@@ -1400,9 +1400,99 @@ _CALIB_C3: dict[str, dict[str, str]] = {
     },
 }
 
+# MMC-study adoption batch: morphology / detections persistence / Max-E column.
+_CALIB_MMC: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Save detections…": "保存检测结果…",
+        "Load detections…": "加载检测结果…",
+        "Max E": "最大误差",
+        "Optimize board shape (printed boards)": "优化标定板形貌（打印板）",
+        "Board flatness: z-range {0:.3f} mm": "标定板平整度：z 范围 {0:.3f} mm",
+        "Save detections": "保存检测结果",
+        "NumPy detections (*.npz)": "NumPy 检测结果 (*.npz)",
+        "Detections saved: {0}": "检测结果已保存：{0}",
+        "Load detections": "加载检测结果",
+        "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting": "已加载 {0} 组检测结果——点击重新标定即可免检测重解",
+    },
+    "zh_TW": {
+        "Save detections…": "儲存偵測結果…",
+        "Load detections…": "載入偵測結果…",
+        "Max E": "最大誤差",
+        "Optimize board shape (printed boards)": "最佳化校正板形貌（列印板）",
+        "Board flatness: z-range {0:.3f} mm": "校正板平整度：z 範圍 {0:.3f} mm",
+        "Save detections": "儲存偵測結果",
+        "NumPy detections (*.npz)": "NumPy 偵測結果 (*.npz)",
+        "Detections saved: {0}": "偵測結果已儲存：{0}",
+        "Load detections": "載入偵測結果",
+        "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting": "已載入 {0} 組偵測結果——點擊重新校正即可免偵測重解",
+    },
+    "ja": {
+        "Save detections…": "検出結果を保存…",
+        "Load detections…": "検出結果を読み込み…",
+        "Max E": "最大誤差",
+        "Optimize board shape (printed boards)": "ボード形状を最適化（印刷ボード）",
+        "Board flatness: z-range {0:.3f} mm": "ボード平面度：z 範囲 {0:.3f} mm",
+        "Save detections": "検出結果を保存",
+        "NumPy detections (*.npz)": "NumPy 検出結果 (*.npz)",
+        "Detections saved: {0}": "検出結果を保存しました：{0}",
+        "Load detections": "検出結果を読み込み",
+        "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting": "{0} ペアの検出結果を読み込みました — 再キャリブレーションで検出なしに再計算できます",
+    },
+    "ko": {
+        "Save detections…": "검출 결과 저장…",
+        "Load detections…": "검출 결과 불러오기…",
+        "Max E": "최대 오차",
+        "Optimize board shape (printed boards)": "보드 형상 최적화(인쇄 보드)",
+        "Board flatness: z-range {0:.3f} mm": "보드 평탄도: z 범위 {0:.3f} mm",
+        "Save detections": "검출 결과 저장",
+        "NumPy detections (*.npz)": "NumPy 검출 결과 (*.npz)",
+        "Detections saved: {0}": "검출 결과 저장됨: {0}",
+        "Load detections": "검출 결과 불러오기",
+        "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting": "검출 결과 {0}쌍을 불러왔습니다 — 재캘리브레이션으로 재검출 없이 다시 풉니다",
+    },
+    "de": {
+        "Save detections…": "Detektionen speichern…",
+        "Load detections…": "Detektionen laden…",
+        "Max E": "Max. Fehler",
+        "Optimize board shape (printed boards)": "Tafelform optimieren (gedruckte Tafeln)",
+        "Board flatness: z-range {0:.3f} mm": "Tafelebenheit: z-Bereich {0:.3f} mm",
+        "Save detections": "Detektionen speichern",
+        "NumPy detections (*.npz)": "NumPy-Detektionen (*.npz)",
+        "Detections saved: {0}": "Detektionen gespeichert: {0}",
+        "Load detections": "Detektionen laden",
+        "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting": "{0} Detektionspaare geladen — Neu kalibrieren löst ohne erneute Detektion",
+    },
+    "fr": {
+        "Save detections…": "Enregistrer les détections…",
+        "Load detections…": "Charger les détections…",
+        "Max E": "Erreur max",
+        "Optimize board shape (printed boards)": "Optimiser la forme de la mire (mires imprimées)",
+        "Board flatness: z-range {0:.3f} mm": "Planéité de la mire : plage z {0:.3f} mm",
+        "Save detections": "Enregistrer les détections",
+        "NumPy detections (*.npz)": "Détections NumPy (*.npz)",
+        "Detections saved: {0}": "Détections enregistrées : {0}",
+        "Load detections": "Charger les détections",
+        "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting": "{0} paires de détections chargées — Réétalonner résout sans redétection",
+    },
+    "es": {
+        "Save detections…": "Guardar detecciones…",
+        "Load detections…": "Cargar detecciones…",
+        "Max E": "Error máx",
+        "Optimize board shape (printed boards)": "Optimizar la forma del tablero (tableros impresos)",
+        "Board flatness: z-range {0:.3f} mm": "Planitud del tablero: rango z {0:.3f} mm",
+        "Save detections": "Guardar detecciones",
+        "NumPy detections (*.npz)": "Detecciones NumPy (*.npz)",
+        "Detections saved: {0}": "Detecciones guardadas: {0}",
+        "Load detections": "Cargar detecciones",
+        "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting": "{0} pares de detecciones cargados — Recalibrar resuelve sin volver a detectar",
+    },
+}
+
 for _loc, _entries in _CALIB.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_C3.items():
+    TRANSLATIONS[_loc].update(_entries)
+for _loc, _entries in _CALIB_MMC.items():
     TRANSLATIONS[_loc].update(_entries)
 
 

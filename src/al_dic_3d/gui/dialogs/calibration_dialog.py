@@ -48,13 +48,16 @@ class _CalibWorker(QThread):
     finished_ok = Signal(object)  # (detections_l, detections_r, StereoResult, stats)
     failed = Signal(str)
 
-    def __init__(self, files_l, files_r, spec, options, detections=None, parent=None) -> None:
+    def __init__(
+        self, files_l, files_r, spec, options, detections=None, image_size=None, parent=None
+    ) -> None:
         super().__init__(parent)
         self._files_l = files_l
         self._files_r = files_r
         self._spec = spec
         self._options = options
         self._detections = detections  # (dl, dr) to skip re-detection
+        self._image_size = image_size  # known size lets us skip reading images
 
     def run(self) -> None:  # noqa: N802 (Qt override)
         import cv2
@@ -71,11 +74,17 @@ class _CalibWorker(QThread):
                         out.append(detect_board(img, self._spec))
             else:
                 dl, dr = self._detections
-            first = cv2.imread(str(self._files_l[0]), cv2.IMREAD_UNCHANGED)
-            image_size = (first.shape[1], first.shape[0])
+            if self._image_size is not None:
+                image_size = self._image_size
+            else:
+                first = cv2.imread(str(self._files_l[0]), cv2.IMREAD_UNCHANGED)
+                if first is None:
+                    raise ValueError(f"cannot read image: {self._files_l[0]}")
+                image_size = (first.shape[1], first.shape[0])
             self.progress.emit("solving")
             options = dict(self._options)
             bundle = options.pop("bundle", False)
+            morphology = options.pop("board_morphology", False)
             result = calibrate_stereo(dl, dr, image_size, **options)
             if bundle:
                 import dataclasses
@@ -89,6 +98,8 @@ class _CalibWorker(QThread):
                     result,
                     zero_tangent=options["zero_tangent"],
                     fix_k3=options["fix_k3"],
+                    board_morphology=morphology,
+                    progress=self.progress.emit,
                 )
                 result = dataclasses.replace(result, rig=new_rig)
             stats = summarize(result, dl, dr, image_size)
@@ -96,6 +107,11 @@ class _CalibWorker(QThread):
                 stats["ba_rms_before"] = info["rms_before"]
                 stats["ba_rms_after"] = info["rms_after"]
                 stats["ba_mono_views"] = info["n_mono_views"]
+                if "board_z_range" in info:
+                    stats["ba_board_z_range"] = info["board_z_range"]
+            from al_dic_3d.calibration import pair_max_errors
+
+            stats["pair_max"] = pair_max_errors(result, dl, dr)
             self.finished_ok.emit((dl, dr, result, stats))
         except Exception as exc:  # noqa: BLE001 - surfaced verbatim in the dialog
             self.failed.emit(str(exc))
@@ -158,6 +174,7 @@ class CalibrationDialog(QDialog):
         self._files_l: list[str] = []
         self._files_r: list[str] = []
         self._detections = None  # (dl, dr) cache for fast recalibrate
+        self._cached_size = None  # (w, h) from loaded detections (images optional)
         self._result = None
         self._stats = None
         self._worker: _CalibWorker | None = None
@@ -181,7 +198,12 @@ class CalibrationDialog(QDialog):
         right_btn.clicked.connect(lambda: self._pick_files("R"))
         clear_btn = QPushButton(self.tr("Clear"))
         clear_btn.clicked.connect(self._clear_files)
-        for b in (left_btn, right_btn, clear_btn):
+        self._save_det_btn = QPushButton(self.tr("Save detections…"))
+        self._save_det_btn.setEnabled(False)
+        self._save_det_btn.clicked.connect(self._on_save_detections)
+        load_det_btn = QPushButton(self.tr("Load detections…"))
+        load_det_btn.clicked.connect(self._on_load_detections)
+        for b in (left_btn, right_btn, clear_btn, self._save_det_btn, load_det_btn):
             pick.addWidget(b)
         pick.addStretch()
         col.addLayout(pick)
@@ -198,6 +220,7 @@ class CalibrationDialog(QDialog):
                 self.tr("Right"),
                 self.tr("Points"),
                 self.tr("RMS L/R"),
+                self.tr("Max E"),
                 self.tr("Status"),
             ]
         )
@@ -205,6 +228,7 @@ class CalibrationDialog(QDialog):
         self._table.setColumnWidth(0, 32)
         self._table.setColumnWidth(3, 60)
         self._table.setColumnWidth(4, 90)
+        self._table.setColumnWidth(5, 60)
         self._table.currentItemChanged.connect(self._on_row_selected)
         col.addWidget(self._table, stretch=1)
 
@@ -305,6 +329,10 @@ class CalibrationDialog(QDialog):
         self._ecc = QCheckBox(self.tr("Dot eccentricity correction"))
         self._ecc.setChecked(True)
         self._bundle = QCheckBox(self.tr("Joint bundle adjustment (robust, uses mono views)"))
+        self._morph = QCheckBox(self.tr("Optimize board shape (printed boards)"))
+        self._morph.setEnabled(False)
+        self._bundle.toggled.connect(self._morph.setEnabled)
+        self._bundle.toggled.connect(lambda on: not on and self._morph.setChecked(False))
         for cb in (
             self._joint,
             self._tangential,
@@ -312,6 +340,7 @@ class CalibrationDialog(QDialog):
             self._release,
             self._ecc,
             self._bundle,
+            self._morph,
         ):
             col.addWidget(cb)
 
@@ -424,6 +453,7 @@ class CalibrationDialog(QDialog):
         self._files_l.clear()
         self._files_r.clear()
         self._detections = None
+        self._cached_size = None
         self._result = None
         self._refresh_table()
 
@@ -441,9 +471,11 @@ class CalibrationDialog(QDialog):
                     "",
                     "",
                     "",
+                    "",
                 ]
             )
             self._table.addTopLevelItem(item)
+        self._save_det_btn.setEnabled(self._detections is not None)
         ok = len(self._files_l) == len(self._files_r) and self._files_l
         self._pairs_lbl.setText(
             self.tr("{0} left / {1} right images").format(len(self._files_l), len(self._files_r))
@@ -472,12 +504,19 @@ class CalibrationDialog(QDialog):
             reject_rms=self._thr_spin.value(),
             dot_radius_mm=(dot_mm / 2.0 if dot_mm and self._ecc.isChecked() else None),
             bundle=self._bundle.isChecked(),
+            board_morphology=self._morph.isChecked(),
         )
         cached = self._detections if recalibrate else None
         self._calib_btn.setEnabled(False)
         self._recal_btn.setEnabled(False)
         self._worker = _CalibWorker(
-            list(self._files_l), list(self._files_r), spec, options, cached, parent=self
+            list(self._files_l),
+            list(self._files_r),
+            spec,
+            options,
+            cached,
+            image_size=(self._cached_size if recalibrate else None),
+            parent=self,
         )
         self._worker.progress.connect(
             lambda msg: self._set_status(self.tr("Working… {0}").format(msg))
@@ -501,6 +540,7 @@ class CalibrationDialog(QDialog):
         self._accept_btn.setEnabled(True)
         self._set_status("")
 
+        pair_max = stats.get("pair_max", {})
         for k, pair in enumerate(result.pairs):
             item = self._table.topLevelItem(k)
             if item is None:
@@ -510,15 +550,18 @@ class CalibrationDialog(QDialog):
             item.setText(3, pts)
             if pair.n_common and np.isfinite(pair.rms_left):
                 item.setText(4, f"{pair.rms_left:.3f}/{pair.rms_right:.3f}")
+            if pair.index in pair_max:
+                item.setText(5, f"{pair_max[pair.index]:.3f}")
             status = self.tr("used") if pair.used else pair.note
             if not det_l.ok:
                 status = self.tr("L: {0}").format(det_l.reason)
             elif not det_r.ok:
                 status = self.tr("R: {0}").format(det_r.reason)
-            item.setText(5, status)
+            item.setText(6, status)
             color = QColor(COLORS.TEXT_PRIMARY if pair.used else COLORS.DANGER)
-            for c in range(6):
+            for c in range(7):
                 item.setForeground(c, color)
+        self._save_det_btn.setEnabled(True)
 
         self._verify_btn.setEnabled(True)
         if self._table.currentItem() is None and self._table.topLevelItemCount():
@@ -551,6 +594,10 @@ class CalibrationDialog(QDialog):
                     stats["ba_rms_before"], stats["ba_rms_after"], stats["ba_mono_views"]
                 )
             )
+        if "ba_board_z_range" in stats:
+            lines.append(
+                self.tr("Board flatness: z-range {0:.3f} mm").format(stats["ba_board_z_range"])
+            )
         for w in result.warnings:
             lines.append(self.tr("Warning: {0}").format(w))
         self._result_lbl.setText("\n".join(lines))
@@ -560,6 +607,57 @@ class CalibrationDialog(QDialog):
         self._status.setText(text)
         color = COLORS.WARNING if warn else COLORS.TEXT_MUTED
         self._status.setStyleSheet(f"color: {color}; font-size: 11px;")
+
+    # ---- detections persistence ------------------------------------------------
+
+    def _on_save_detections(self) -> None:
+        if self._detections is None:
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Save detections"), "detections.npz", self.tr("NumPy detections (*.npz)")
+        )
+        if not path:
+            return
+        import cv2
+
+        from al_dic_3d.calibration import save_detections
+
+        dl, dr = self._detections
+        size = self._cached_size
+        if size is None:
+            first = cv2.imread(str(self._files_l[0]), cv2.IMREAD_UNCHANGED)
+            if first is not None:
+                size = (first.shape[1], first.shape[0])
+        out = save_detections(path, self._files_l, self._files_r, dl, dr, image_size=size)
+        self._set_status(self.tr("Detections saved: {0}").format(out))
+
+    def _on_load_detections(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self, self.tr("Load detections"), "", self.tr("NumPy detections (*.npz)")
+        )
+        if not path:
+            return
+        from al_dic_3d.calibration import load_detections
+
+        try:
+            files_l, files_r, dl, dr, size = load_detections(path)
+        except (ValueError, OSError) as exc:
+            self._set_status(str(exc), warn=True)
+            return
+        self._files_l, self._files_r = files_l, files_r
+        self._detections = (dl, dr)
+        self._cached_size = size
+        self._refresh_table()
+        for k, (det_l, det_r) in enumerate(zip(dl, dr, strict=True)):
+            item = self._table.topLevelItem(k)
+            if item is not None:
+                item.setText(3, f"{det_l.n_points}/{det_r.n_points}")
+        self._recal_btn.setEnabled(True)
+        self._set_status(
+            self.tr(
+                "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting"
+            ).format(len(dl))
+        )
 
     # ---- preview / print / verify ----------------------------------------------
 

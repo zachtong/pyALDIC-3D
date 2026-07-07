@@ -120,6 +120,101 @@ def point_residuals(
     return out
 
 
+def pair_max_errors(
+    result: StereoResult,
+    left: Sequence[BoardDetection],
+    right: Sequence[BoardDetection],
+) -> dict[int, float]:
+    """Worst single-point reprojection error (px) per pair index.
+
+    The max is the best one-number indicator of a mislabeled corner — a view
+    can carry a bad point yet still show an innocent RMS.
+    """
+    import cv2
+
+    out: dict[int, float] = {}
+    for pair in result.pairs:
+        worst = 0.0
+        seen = False
+        for cam, dets in (("L", left), ("R", right)):
+            det = dets[pair.index]
+            if not (det.ok and det.n_points >= 6):
+                continue
+            intr = result.rig.cameras[cam]
+            _ok, rvec, tvec = cv2.solvePnP(
+                det.object_points, det.image_points, intr.K, intr.dist_coeffs
+            )
+            proj, _ = cv2.projectPoints(det.object_points, rvec, tvec, intr.K, intr.dist_coeffs)
+            residual = proj.reshape(-1, 2) - det.image_points
+            worst = max(worst, float(np.linalg.norm(residual, axis=1).max()))
+            seen = True
+        if seen:
+            out[pair.index] = worst
+    return out
+
+
+def save_detections(
+    path: str | Path,
+    files_l: Sequence[str],
+    files_r: Sequence[str],
+    left: Sequence[BoardDetection],
+    right: Sequence[BoardDetection],
+    image_size: tuple[int, int] | None = None,
+) -> Path:
+    """Persist detections as an ``.npz`` so a solve can be re-run without
+    re-detecting (corner data as a first-class artifact — the MMC idea).
+    ``image_size`` (w, h) lets a later solve run without the original images."""
+    arrays: dict[str, np.ndarray] = {
+        "files_l": np.asarray(list(files_l), dtype=object),
+        "files_r": np.asarray(list(files_r), dtype=object),
+        "n": np.asarray([len(left)], dtype=np.int64),
+    }
+    if image_size is not None:
+        arrays["image_size"] = np.asarray(image_size, dtype=np.int64)
+    for cam, dets in (("L", left), ("R", right)):
+        for i, det in enumerate(dets):
+            p = f"{cam}{i:04d}_"
+            arrays[p + "ok"] = np.asarray([det.ok])
+            arrays[p + "pts"] = det.image_points
+            arrays[p + "obj"] = det.object_points
+            arrays[p + "ids"] = det.ids
+            arrays[p + "meta"] = np.asarray([det.method, det.reason], dtype=object)
+    path = Path(path)
+    np.savez_compressed(path, **arrays)
+    return path
+
+
+def load_detections(
+    path: str | Path,
+) -> tuple[
+    list[str], list[str], list[BoardDetection], list[BoardDetection], tuple[int, int] | None
+]:
+    """Inverse of :func:`save_detections` (last element = stored image size)."""
+    data = np.load(str(path), allow_pickle=True)
+    if "n" not in data or "files_l" not in data:
+        raise ValueError(f"not a pyALDIC-3D detections file: {path}")
+    n = int(data["n"][0])
+    files_l = [str(s) for s in data["files_l"]]
+    files_r = [str(s) for s in data["files_r"]]
+    size = tuple(int(v) for v in data["image_size"]) if "image_size" in data else None
+    out: dict[str, list[BoardDetection]] = {"L": [], "R": []}
+    for cam in ("L", "R"):
+        for i in range(n):
+            p = f"{cam}{i:04d}_"
+            method, reason = (str(s) for s in data[p + "meta"])
+            out[cam].append(
+                BoardDetection(
+                    ok=bool(data[p + "ok"][0]),
+                    image_points=np.asarray(data[p + "pts"], np.float64),
+                    object_points=np.asarray(data[p + "obj"], np.float64),
+                    ids=np.asarray(data[p + "ids"], np.int64),
+                    method=method,
+                    reason=reason,
+                )
+            )
+    return files_l, files_r, out["L"], out["R"], size
+
+
 def summarize(
     result: StereoResult,
     left: Sequence[BoardDetection],

@@ -258,6 +258,37 @@ def test_stability_jackknife_validates_drop(chess_set, base_result):
         stability_jackknife(dl, dr, (sc.IMG_W, sc.IMG_H), base_result, drop_fraction=0.9)
 
 
+def test_detections_npz_round_trip(tmp_path, chess_set):
+    from al_dic_3d.calibration import load_detections, save_detections
+
+    dl, dr = chess_set
+    files_l = [f"L_{k:02d}.png" for k in range(len(dl))]
+    files_r = [f"R_{k:02d}.png" for k in range(len(dr))]
+    path = save_detections(
+        tmp_path / "det.npz", files_l, files_r, dl, dr, image_size=(sc.IMG_W, sc.IMG_H)
+    )
+    fl, fr, dl2, dr2, size = load_detections(path)
+    assert fl == files_l and fr == files_r
+    assert size == (sc.IMG_W, sc.IMG_H)
+    assert len(dl2) == len(dl)
+    for a, b in zip(dl + dr, dl2 + dr2, strict=True):
+        assert a.ok == b.ok and a.method == b.method
+        assert np.array_equal(a.image_points, b.image_points)
+        assert np.array_equal(a.ids, b.ids)
+    # the reloaded detections re-solve identically without any images on disk
+    res = calibrate_stereo(dl2, dr2, size)
+    assert res.n_pairs_used == 18
+
+
+def test_pair_max_errors(chess_set, base_result):
+    from al_dic_3d.calibration import pair_max_errors
+
+    dl, dr = chess_set
+    mx = pair_max_errors(base_result, dl, dr)
+    assert len(mx) == 18
+    assert all(0.0 < v < 0.2 for v in mx.values())  # clean synthetic
+
+
 def test_point_residuals_scatter(chess_set, base_result):
     from al_dic_3d.calibration import point_residuals
 

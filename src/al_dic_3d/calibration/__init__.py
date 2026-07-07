@@ -33,7 +33,10 @@ from al_dic_3d.calibration.printout import save_board_pdf, spec_summary
 from al_dic_3d.calibration.report import (
     coverage_fraction,
     euler_to_rotation,
+    load_detections,
+    pair_max_errors,
     point_residuals,
+    save_detections,
     summarize,
     to_opencv_yaml,
 )
@@ -80,9 +83,12 @@ __all__ = [
     "from_opencorr_csv",
     "from_opencv_yaml",
     "load_calibration",
+    "load_detections",
+    "pair_max_errors",
     "point_residuals",
     "project_points",
     "save_board_pdf",
+    "save_detections",
     "stability_jackknife",
     "spec_summary",
     "summarize",
