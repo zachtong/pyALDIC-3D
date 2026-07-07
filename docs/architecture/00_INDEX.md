@@ -64,6 +64,18 @@
 
 ## Changelog
 
+- 2026-07-07 v1.4.4 — **P1 真实数据 MATLAB 对位门禁 PASSED**（`19d61a8`，202 tests）。用户不在场，
+  自主搜寻机器数据：MATLAB 仓 S3 数据集缺失的 Left 图像在 `../3D_ALDIC_unused` 找回（Right 帧
+  字节相同），全程只读就地引用；`tools/matlab_parity.py` 复刻 MATLAB 回归配置对比
+  `tests/baseline/baseline.mat`。**结果（frame 0→1）：U 1.2µm / V 1.0µm / W 5.8µm 中位差
+  （斜率 +0.999/+1.005/+0.85），静态表面 Z 30µm——"µm 量级"承诺在真实数据兑现**。真实数据揪出
+  并修复两个产品 bug：①配对校验拒绝 DICe 命名（尾数字=相机号；现回退比较首数字）；②**三个策略
+  均未把逐帧掩膜转发进时序追踪**——背景无纹理节点的 FFT 垃圾峰使搜索区级联膨胀（20→600px）毒化
+  掩膜内节点→ICGN 全灭→2D 引擎"全 NaN 静默填零"→冻结相机（面内位移减半、W 因视差误差放大
+  12 倍）；新增 `mask_stream()` 转发 + `temporal.py` 把该引擎警告升格为硬错误。**第三帧经多点
+  模板匹配仲裁为基线本身失效**（真实运动 ~60px 强去相关跳变，MATLAB 声称的 −13px 恰为 frame 2
+  的 2 倍、其自身重投影跳至 0.503px）——已报告但不纳入门禁。OPEN：inc 模式合成 bug（frame 3
+  真实增量 ~−56px 落在 60px 搜索区内，修好 inc 有望反超 MATLAB 基线）。
 - 2026-07-07 v1.4.3 — **MMC 研读采纳批次全落地**（`afe5ec9`..`+P2-4`，202 tests，六门禁 PASS）。
   研读 reference/Multi_Camera_Calibration（尹卓异/东南大学，即 MMC 导入格式源头）产出三份逐行
   报告后按序采纳：①**标定板形貌优化**（`bundle_refine(board_morphology=True)`：板点成为
