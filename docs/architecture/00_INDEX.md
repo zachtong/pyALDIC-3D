@@ -64,6 +64,17 @@
 
 ## Changelog
 
+- 2026-07-07 v1.4.3 — **MMC 研读采纳批次全落地**（`afe5ec9`..`+P2-4`，202 tests，六门禁 PASS）。
+  研读 reference/Multi_Camera_Calibration（尹卓异/东南大学，即 MMC 导入格式源头）产出三份逐行
+  报告后按序采纳：①**标定板形貌优化**（`bundle_refine(board_morphology=True)`：板点成为
+  `obj0+delta` 未知量，MMC 式 7 约束规范固定[最远点对全固定+离轴点 z 固定]；门禁：0.5mm 正弦
+  翘曲板去趋势恢复 <0.08mm RMS、平板无虚假翘曲）；②**leave-p-out 稳定性 jackknife**
+  （`stability_jackknife`，子集重标定参数系综；实测 std fx 0.124px/基线 3µm）+ **逐点残差散点**
+  （`point_residuals`，报告新页）；③编码靶**二值化重试梯子**（Otsu→自适应→阈值扫描）+ **触边
+  圆点弧恢复**（部分弧 AMS 椭圆拟合 + 径向 50% 交叉亚像素轮缘重拟合——二值弧的阈值偏置曾把 k1
+  推偏 10 倍，精化后触边点 0.036px）；④GUI：形貌复选框、**检测结果 npz 存取**（免图免检测重解）、
+  Max-E 列、BA 遥测。另修 `from_mmc_mat` 真 bug（槽位/组号硬编码 + K4-K6/薄棱镜静默丢弃）。
+  i18n 214 串 ×7。P3（亚像素边缘 vs 质心对比）待用户真实靶照片。
 - 2026-07-07 v1.4.2 — **标定 C3 增强四件套落地**（`98198b3`，189 tests green）：①对话框
   **检测叠加预览**（选中图像对即显示 L|R 并排图 + 绿色检测点）；②**打印标定板 1:1 PDF**
   （`calibration/printout.py`，精确毫米尺寸 + 卡尺校核腿注 + 页面超限守卫）；③**iDICs 已知
