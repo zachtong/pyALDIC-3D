@@ -42,6 +42,7 @@
 | D9 | 2026-07-02（2026-07-02 澄清修订） | pyALDIC-3D 有**自己独立的学术身份**，与 2D **不共用、不挂靠**：① 自己的 **Zenodo 记录 → 自己的 concept DOI**（独立于 2D 的 concept DOI `19521061`），每次发版铸自己的 version DOI；② 自己独立的 **SoftwareX 文章**（"Part 2" 是一篇 standalone article、有自己的 paper DOI，**不是** 2D 论文的续章/附录，仅在引言里 cite 2D 作为前作）。许可证**类型**可沿用 2D（GPL 等，许可 ≠ DOI）。验证/示例材料从 P2 起按 SoftwareX 体例积累 | 用户拍板（原 Q2）+ 用户澄清：独立应用 → 独立 DOI + 独立论文 |
 | D10 | 2026-07-02 | N 相机（>2）= **post-v1**；v1 数据结构 N 相机就绪（相机 dict + (i,j) 外参对）但只实现双目 | 用户拍板（原 Q3），确认 D4 默认方案 |
 | D11 | 2026-07-02 | **2D 仓 `al-dic` 作为【只读锁定库】消费——默认零改动。** 撤销原"Phase 0A 改 2D 5 条缝"；那 5 项降级为 §C.1 的**延迟可选 backlog**，每项有 3D 侧替代（多为 import 2D 内部 + 锁版本），仅在将来真被绊到时于**单独的 2D 会话**里按需做，绝不在 3D 会话跨仓写。3D 侧维护 `docs/DEPENDS_ON_2D.md` 耦合清单；`al-dic==0.6.*` 锁定。Phase 0 = 仅脚手架 | 用户质询"2D 为何要写权限"→ 库消费者本不应改库；保护成熟的 2D 主线、缩小范围与风险 |
+| D12 | 2026-07-07 | **修订 D2：新增原生内置标定，成为标定步骤的主入口**；六格式导入降为备选；手动参数输入为兜底。技术底座 = 纯 OpenCV（`opencv-python-headless>=4.7` 既有依赖，零新增二进制依赖）：棋盘格 `findChessboardCornersSB(WithMeta)`、ChArUco 4.7+ OO API（`CharucoDetector.detectBoard`+`matchImagePoints`）、圆点板 `findCirclesGrid` + **三同心定位圆编码靶自研检测器**（用户实际靶型）；单目 `calibrateCameraExtended`（家用打印板可选 RO 法）→ 立体 `stereoCalibrateExtended`（默认 `CALIB_FIX_INTRINSIC`，联合精化为高级选项）+ 坏图剔除循环（k·中位数）+ 极线距离验证。产物 = `StereoRig` 写出 `opencv_yaml`（含出处元数据节点）回流既有 `calibration_file` 路径——RunConfig/runner/session schema v1 **零改动**。QC（逐图误差柱+阈值剔除重标+覆盖率/位姿多样性诊断）为对 MATLAB 参考（仅打印 frame-1 误差、无门禁）的明确超越点 | 用户 2026-07-07 拍板（靶型=棋盘+编码圆点靶；范围 C1+C2 一次做完）；5 路调研 workflow（OpenCV SOTA / DIC 领域 / 第三方库 / 本仓接入点 / MATLAB 约定）44 条关键事实 42 条对抗核查确认：mrcal/Kalibr/MC-Calib/PyBoof 平台不可用、multical LGPL 不可移植；OpenCV 本体覆盖全部所需；aniposelib(BSD-2) 联合光束平差留作后续移植候选 |
 
 ## 开放问题
 
@@ -63,6 +64,12 @@
 
 ## Changelog
 
+- 2026-07-07 v1.4.0 — **立项内置标定（D12，修订 D2）**：5 路并行调研 workflow + 对抗核查（44 条
+  关键事实 42 条确认）确定纯 OpenCV 底座；三层入口（内置标定主 / 六格式导入备 / 手动参数兜底），
+  三者统一收敛为 `StereoRig`→`opencv_yaml`→既有质检漏斗；靶型 = 棋盘格 + ChArUco + 编码圆点靶
+  （三同心定位圆，用户靶型，自研检测器）；范围 C1+C2 一次实施（boards/detect/solve/report 计算层
+  + 合成 parity 门禁 + CLI `calibrate` + 标定/手动两对话框 + i18n）。同步修订 01 §B.1 与 §F 步骤 3。
+  实施计划 `tasks/todo.md`。
 - 2026-07-07 v1.3.6 — **Phase 4 GUI 重建为 pyALDIC 同款 + 四门禁全过**（`main` 至 `6a3592e`，146 tests
   green）。深研 2D 前端源码（app/panels/window_chrome/theme/icons/widgets）+ `assets/` 参考截图后，
   **废除分页式 8 步工作流**，重建为 pyALDIC 单窗三栏语法：左侧栏 320px（双相机拖放导入+配对表+标定

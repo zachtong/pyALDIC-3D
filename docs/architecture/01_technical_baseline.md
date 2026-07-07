@@ -54,7 +54,7 @@ AI 辅助下总工期 **16–26 人周**（§G 分解）。市场空窗（"现�
 pyALDIC-3D/                      # 本仓库
 └── src/al_dic_3d/
     ├── project/        # StereoProject、.aldic3d 会话包（沿用 2D 的 dedup-npz + json 信封设计）
-    ├── calibration/    # CameraIntrinsics/StereoRig、6 格式导入器、undistort          [Qt-free]
+    ├── calibration/    # CameraIntrinsics/StereoRig、内置标定 boards/detect/solve/report（D12）、6 格式导入器、手动参数、undistort [Qt-free]
     ├── sequence/       # StereoSequence：双 FrameProvider + 双掩膜流 + 配对校验        [Qt-free]
     ├── matching/       # CorrespondenceStrategy 协议 + 各策略实现 + 重采样工具        [Qt-free]
     │                   #   （策略设计见 02_correspondence_strategies.md）
@@ -267,8 +267,10 @@ CorrespondenceSet → Reconstruction3D → StrainResult3D`。
 1. **New/Open Project** — `.aldic3d` 会话，双击关联，续载直达原页面（沿用 2D 已验证方案）；
 2. **Import L/R sequences** — 双图像列表（复用 `image_list`），自动配对校验
    （数量/尺寸/文件名模式），错配即时红标；
-3. **Calibration** — 六格式导入向导 + 立即质检页：内外参摘要、基线距、极线几何叠加
-   预览——**标定错误必须死在这一步**；
+3. **Calibration** — 三入口（D12）：**内置标定向导（主）**（棋盘/ChArUco/编码圆点靶
+   检测 → 单目→立体求解 → 逐图误差柱+阈值剔除重标 QC）、六格式导入（备选）、手动
+   参数（兜底）；三者统一产出 `StereoRig`→`opencv_yaml`→同一质检页：内外参摘要、
+   基线距、极线几何叠加预览——**标定错误必须死在这一步**；
 4. **ROI** — 左相机帧 1 上绘制，复用 2D 全套 ROI 工具（circle3、掩膜导入、批量 ROI）；
 5. **Correspondence 设置与预检** — 策略下拉（默认 `track_both`）+ 各策略参数子面板；
    单独按钮先跑帧 1 立体匹配，显示视差场 + ZNSSD 质量图，提交全量计算前暴露退相关
