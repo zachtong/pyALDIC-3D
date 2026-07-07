@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
     QPushButton,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -30,6 +31,7 @@ from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
 from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
+from al_dic_3d.gui.widgets.view3d import View3D
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
@@ -93,19 +95,30 @@ class CanvasArea3D(QWidget):
             tb.addWidget(b)
         tb.addStretch()
 
+        self._view3d_btn = QPushButton(self.tr("3D View"))
+        self._view3d_btn.setCheckable(True)
+        self._view3d_btn.setFixedWidth(76)
+        self._view3d_btn.toggled.connect(self._on_view_mode)
+        tb.addWidget(self._view3d_btn)
+
         self._show_points_cb = QCheckBox(self.tr("Show Points"))
         self._show_points_cb.setChecked(True)
         self._show_points_cb.toggled.connect(lambda _c: self.render())
         tb.addWidget(self._show_points_cb)
         layout.addWidget(toolbar)
 
-        # ---- canvas + overlays ----
+        # ---- canvas (2D) / 3D view stack + overlays ----
         self._canvas = ImageCanvas3D()
-        layout.addWidget(self._canvas, stretch=1)
+        self._view3d = View3D()
+        self._stack = QStackedWidget()
+        self._stack.addWidget(self._canvas)
+        self._stack.addWidget(self._view3d)
+        layout.addWidget(self._stack, stretch=1)
 
         self._colorbar = ColorbarOverlay(self._canvas.viewport())
         self._config_overlay = ConfigOverlay3D(controller, self._canvas.viewport())
         self._canvas.viewport().installEventFilter(self)
+        self._rig_cache = None  # loaded lazily for the 3D frusta
 
         # ---- frame navigator ----
         self._frame_nav = FrameNavigator3D(signals)
@@ -125,6 +138,7 @@ class CanvasArea3D(QWidget):
         signals.images_changed.connect(self._on_images)
         signals.roi_changed.connect(self._sync_roi)
         signals.params_changed.connect(self._config_overlay.refresh)
+        signals.calibration_changed.connect(self._invalidate_rig)
 
     @property
     def canvas(self) -> ImageCanvas3D:
@@ -142,6 +156,30 @@ class CanvasArea3D(QWidget):
 
     def _sync_roi(self) -> None:
         self._canvas.set_roi(self.controller.state.draft.roi)
+
+    # ---- view mode ---------------------------------------------------------------
+
+    def _on_view_mode(self, use_3d: bool) -> None:
+        self._stack.setCurrentIndex(1 if use_3d else 0)
+        self.render()
+
+    def _invalidate_rig(self) -> None:
+        self._rig_cache = None
+
+    def _load_rig(self):
+        """Lazily load the stereo rig for the 3D frusta (None if unavailable)."""
+        if self._rig_cache is not None:
+            return self._rig_cache
+        draft = self.controller.state.draft
+        if draft.calibration_file is None:
+            return None
+        try:
+            from al_dic_3d.calibration import load_calibration
+
+            self._rig_cache = load_calibration(draft.calibration_file, draft.calibration_format)
+        except Exception:  # noqa: BLE001 - frusta are decoration only
+            self._rig_cache = None
+        return self._rig_cache
 
     # ---- data-driven refresh ------------------------------------------------------
 
@@ -161,7 +199,11 @@ class CanvasArea3D(QWidget):
     # ---- rendering ------------------------------------------------------------------
 
     def render(self) -> None:
-        """Redraw the background frame and the result overlay for the current view."""
+        """Redraw the current view (2D frame + overlay, or the 3D surface)."""
+        if self._stack.currentIndex() == 1:
+            self._render_3d()
+            return
+
         draft = self.controller.state.draft
         cam = self.signals.current_camera
         files = draft.left if cam == "L" else draft.right
@@ -180,6 +222,32 @@ class CanvasArea3D(QWidget):
 
         self._render_overlay(k)
         self._sync_roi()
+
+    def _render_3d(self) -> None:
+        result = self.controller.state.result
+        if result is None:
+            self._view3d.show_message(
+                self.tr("3D view — run an analysis to see the reconstructed surface.")
+            )
+            return
+        k = min(self.signals.current_frame, result.reconstruction.n_frames - 1)
+        vals = self._field_values(result, k)
+        if vals is None:
+            self._view3d.show_message(self.tr("Selected field is not available."))
+            return
+        if self.signals.color_auto:
+            vmin, vmax = self._field_range(result)
+        else:
+            vmin, vmax = self.signals.color_min, self.signals.color_max
+        self._view3d.update_view(
+            result.reconstruction.points[k],
+            vals,
+            field_label=_FIELD_LABELS.get(self.signals.display_field, self.signals.display_field),
+            cmap=self.signals.colormap,
+            vmin=vmin,
+            vmax=vmax,
+            rig=self._load_rig(),
+        )
 
     def _field_values(self, result, k: int) -> np.ndarray | None:
         field = self.signals.display_field
