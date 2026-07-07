@@ -64,6 +64,17 @@
 
 ## Changelog
 
+- 2026-07-07 v1.4.1 — **内置标定（D12）C1+C2 实施完成，五门禁全 PASS**（`main` 至
+  `60bb641`，178 tests green）。计算层 `calibration/boards|detect|solve|report`（纯 OpenCV，
+  Qt-free）：四板型检测（棋盘 SB+cornerSubPix 精化、ChArUco 4.7 OO API、圆点阵列、**编码圆点靶
+  自研检测器**：轮廓层级找三环形定位圆→仿射假设打分→单应格点精化，支持部分出视场+触边点剔除）；
+  求解（默认 zero-tangent[平面靶 cx↔p1p2 耦合实测放大噪声 3 倍]+FIX_INTRINSIC，联合精化/RO 法/
+  切向可选，坏图对剔除循环带 1px 绝对下限，极线验证，**圆点偏心解析修正**）；`to_opencv_yaml`
+  回流既有导入漏斗。合成 parity 门禁（tests/synth_calib.py 精确逆投影渲染 + 18 覆盖设计位姿）：
+  棋盘 rms 0.014px / fx 0.003% / cx 0.07px / 基线 1.8µm / R 0.002°；编码靶 18/18 对 rms 0.036px；
+  切向恢复分毫不差。CLI `al-dic-3d calibrate`。GUI：标定对话框（逐对状态表+误差条形图+阈值剔除
+  重标+QThread）与手动参数对话框，左栏三入口（内置主/导入备/手动兜底）。i18n 191 串 ×7 语种
+  100%。`reports/calib_builtin.pdf`（tools/calib_report.py 自校验）。待办：真实编码靶照片调参。
 - 2026-07-07 v1.4.0 — **立项内置标定（D12，修订 D2）**：5 路并行调研 workflow + 对抗核查（44 条
   关键事实 42 条确认）确定纯 OpenCV 底座；三层入口（内置标定主 / 六格式导入备 / 手动参数兜底），
   三者统一收敛为 `StereoRig`→`opencv_yaml`→既有质检漏斗；靶型 = 棋盘格 + ChArUco + 编码圆点靶

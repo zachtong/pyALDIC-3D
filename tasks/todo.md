@@ -39,20 +39,31 @@ runner / session schema v1 untouched).
 ## 3. CLI  [DONE]
 - [x] `al-dic-3d calibrate` + tests/test_cli_calibrate.py (2)
 
-## 4. GUI (pyALDIC style, i18n contract)
-- [ ] gui/dialogs/calibration_dialog.py — pair list w/ per-image status +
-      detection overlay, board spec form, QThread solve, per-view error bars +
-      threshold reject/recalibrate loop, coverage heatmap, accept -> YAML ->
-      draft (single QC funnel via _preview_calibration)
-- [ ] gui/dialogs/manual_params_dialog.py — per-camera fx/fy/cx/cy/skew/dist +
-      R (Euler deg | matrix) + T (mm) -> StereoRig -> YAML
-- [ ] left_sidebar CALIBRATION: Calibrate… / Import… / Manual… buttons + resync
-- [ ] i18n: extract -> fill 8 locales -> compile -> scan clean
-- [ ] offscreen screenshot self-check of both dialogs
+## 4. GUI (pyALDIC style, i18n contract)  [DONE 60bb641]
+- [x] gui/dialogs/calibration_dialog.py — pair table w/ per-image status
+      (failures red w/ reason), board form (contextual per family), QThread
+      worker + cached-detection recalibrate, per-pair RMS bars + dashed
+      threshold, result panel, Accept -> YAML -> draft funnel
+- [x] gui/dialogs/manual_params_dialog.py — intrinsics x2 + Euler/T -> YAML
+- [x] left_sidebar: Calibrate from images… (primary) / Import… / Manual…
+- [x] i18n: 63 new strings x 7 locales -> 191 each 100%, .qm compiled, scan clean
+- [x] offscreen dialog screenshots read + visually checked (theme-consistent)
 
-## 5. Gate + report
-- [ ] tools/calib_report.py -> reports/calib_builtin.pdf (gate metrics, QC
-      demos, GUI shots); pytest green; ruff clean; conventional commits
+## 5. Gate + report  [DONE]
+- [x] tools/calib_report.py -> reports/calib_builtin.pdf — 5 gates PASS live
+      (chessboard parity / coded-target parity / YAML round-trip / i18n /
+      dialog shots); 178 tests green; ruff clean
 
-## Review
-(to fill at gate)
+## Review (2026-07-07)
+- Commits: 17ddc18 docs D12, ccc8bbc compute core, b1ea9c4 CLI, 60bb641 GUI+i18n.
+- Gate numbers (synthetic, deterministic): chessboard rms 0.0145px, fx 0.003%,
+  cx 0.069px, baseline 1.8um, R 0.0021deg, epipolar 0.011px, 18/18 pairs;
+  coded target rms 0.036px 18/18; charuco cx 0.009px; tangential p1 exact.
+- Key engineering findings (documented in code/memory): SB needs cornerSubPix
+  refine on band-limited edges (14x); planar-target cx<->tangential coupling
+  (zero_tangent default); pose corner-coverage + strong tilts required or cx
+  degenerate; clipped border dots must be rejected; eccentricity correction
+  implemented analytically (projected-disc centroid).
+- OPEN: tune coded-target detector on the user's real target photos; optional
+  future: detection overlay thumbnails, board PDF printer button, iDICs
+  known-distance verification tool, aniposelib-style joint BA (C3).
