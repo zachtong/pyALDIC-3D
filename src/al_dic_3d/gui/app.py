@@ -18,7 +18,11 @@ def create_app(argv: list[str] | None = None):
     app.setApplicationName("pyALDIC-3D")
     app.setOrganizationName("pyALDIC")
     _apply_theme(app)
-    install_translators(app)
+
+    from PySide6.QtCore import QSettings
+
+    saved = QSettings("pyALDIC", "pyALDIC-3D").value("language", None)
+    install_translators(app, locale=str(saved) if saved else None)
     return app
 
 

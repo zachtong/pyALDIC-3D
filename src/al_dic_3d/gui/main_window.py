@@ -99,7 +99,9 @@ class MainWindow3D(QMainWindow):
             "fr": "Français",
             "es": "Español",
         }
-        current = self.controller.state.view_state.get("language", "en")
+        from PySide6.QtCore import QSettings
+
+        current = str(QSettings("pyALDIC", "pyALDIC-3D").value("language", "en"))
         for code in LOCALES:
             act = QAction(names.get(code, code), self)
             act.setCheckable(True)
@@ -109,8 +111,9 @@ class MainWindow3D(QMainWindow):
 
     def _on_language(self, code: str) -> None:
         """Persist the language preference; applied on next launch (2D phase-1 strategy)."""
-        self.controller.state.view_state["language"] = code
-        self.controller.state.mark_dirty()
+        from PySide6.QtCore import QSettings
+
+        QSettings("pyALDIC", "pyALDIC-3D").setValue("language", code)
         self.signals.log.emit(f"language preference: {code} (applies on restart)", "info")
 
     # ---- project lifecycle -------------------------------------------------------
