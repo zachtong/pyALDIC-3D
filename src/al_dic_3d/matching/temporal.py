@@ -12,6 +12,7 @@ Every ``al_dic`` symbol imported here is recorded in ``docs/DEPENDS_ON_2D.md``.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -59,6 +60,7 @@ def temporal_track(
     para: DICPara,
     masks: list[NDArray[np.float64]] | None = None,
     u0: NDArray[np.float64] | None = None,
+    stop: Callable[[], bool] | None = None,
 ) -> TemporalField:
     """Track one camera's frames from a fixed reference mesh (accumulative).
 
@@ -87,14 +89,24 @@ def temporal_track(
     if len(masks) != len(frames):
         raise ValueError(f"masks ({len(masks)}) must match frames ({len(frames)})")
 
-    result = run_aldic(
-        para,
-        [np.ascontiguousarray(f, dtype=np.float64) for f in frames],
-        [np.ascontiguousarray(m, dtype=np.float64) for m in masks],
-        compute_strain=False,
-        mesh=mesh,
-        U0=u0,
-    )
+    try:
+        result = run_aldic(
+            para,
+            [np.ascontiguousarray(f, dtype=np.float64) for f in frames],
+            [np.ascontiguousarray(m, dtype=np.float64) for m in masks],
+            stop_fn=stop,
+            compute_strain=False,
+            mesh=mesh,
+            U0=u0,
+        )
+    except RuntimeError:
+        # The engine raises its own abort message when stop_fn trips; normalise
+        # to the uniform cooperative-cancel contract. Genuine errors re-raise.
+        if stop is not None and stop():
+            raise RuntimeError("cancelled") from None
+        raise
+    if stop is not None and stop():
+        raise RuntimeError("cancelled")
 
     ref_coords = np.asarray(result.dic_mesh.coordinates_fem, dtype=np.float64)
     n = ref_coords.shape[0]

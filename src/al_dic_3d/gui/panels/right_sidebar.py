@@ -38,22 +38,34 @@ _COLORMAPS = ["turbo", "viridis", "jet", "coolwarm", "plasma", "inferno", "RdBu_
 
 
 class RunWorker(QThread):
-    """Runs the pipeline off the UI thread, relaying progress."""
+    """Runs the pipeline off the UI thread, relaying progress; cancellable."""
 
     progress = Signal(float, str)
     finished_ok = Signal()
     failed = Signal(str)
+    cancelled = Signal()
 
     def __init__(self, controller: WorkflowController) -> None:
         super().__init__()
         self._controller = controller
+        self._stop_requested = False
+
+    def request_stop(self) -> None:
+        """Ask the pipeline to stop at the next cooperative checkpoint."""
+        self._stop_requested = True
 
     def run(self) -> None:  # QThread entry point (worker thread)
         try:
-            self._controller.run(progress=lambda f, m: self.progress.emit(f, m))
+            self._controller.run(
+                progress=lambda f, m: self.progress.emit(f, m),
+                stop=lambda: self._stop_requested,
+            )
             self.finished_ok.emit()
         except Exception as exc:  # noqa: BLE001 - report any failure to the UI
-            self.failed.emit(str(exc))
+            if self._stop_requested:
+                self.cancelled.emit()
+            else:
+                self.failed.emit(str(exc))
 
 
 class RightSidebar3D(QWidget):
@@ -90,6 +102,7 @@ class RightSidebar3D(QWidget):
         self._cancel_btn.setFixedHeight(30)
         self._cancel_btn.setEnabled(False)
         self._cancel_btn.setIcon(icon_stop())
+        self._cancel_btn.clicked.connect(self._on_cancel)
         layout.addWidget(self._cancel_btn)
 
         self._export_btn = QPushButton(self.tr("Export Results"))
@@ -253,7 +266,7 @@ class RightSidebar3D(QWidget):
             return
         self.signals.set_run_state("running")
         self._run_btn.setEnabled(False)
-        self._cancel_btn.setEnabled(False)  # cooperative cancel lands next
+        self._cancel_btn.setEnabled(True)
         self._progress_bar.setValue(0)
         self._run_started = time.perf_counter()
         self._timer.start()
@@ -264,7 +277,14 @@ class RightSidebar3D(QWidget):
         self._worker.progress.connect(self._on_progress)
         self._worker.finished_ok.connect(self._on_done)
         self._worker.failed.connect(self._on_fail)
+        self._worker.cancelled.connect(self._on_cancelled)
         self._worker.start()
+
+    def _on_cancel(self) -> None:
+        if self._worker is not None and self._worker.isRunning():
+            self._worker.request_stop()
+            self._cancel_btn.setEnabled(False)
+            self._console.append_log(self.tr("Cancelling…"), "warn")
 
     def _on_progress(self, fraction: float, message: str) -> None:
         self._progress_bar.setValue(int(fraction * 1000))
@@ -275,6 +295,7 @@ class RightSidebar3D(QWidget):
         self._timer.stop()
         self._progress_bar.setValue(1000)
         self._run_btn.setEnabled(True)
+        self._cancel_btn.setEnabled(False)
         result = self.controller.state.result
         self._field_selector.set_strain_available(result is not None and result.strain is not None)
         self._console.append_log(self.tr("Analysis complete"), "success")
@@ -285,8 +306,18 @@ class RightSidebar3D(QWidget):
     def _on_fail(self, message: str) -> None:
         self._timer.stop()
         self._run_btn.setEnabled(True)
+        self._cancel_btn.setEnabled(False)
         self._console.append_log(self.tr("Failed: {0}").format(message), "error")
         self.signals.set_run_state("failed")
+        self.refresh_readiness()
+
+    def _on_cancelled(self) -> None:
+        self._timer.stop()
+        self._run_btn.setEnabled(True)
+        self._cancel_btn.setEnabled(False)
+        self._progress_bar.setValue(0)
+        self._console.append_log(self.tr("Run cancelled"), "warn")
+        self.signals.set_run_state("idle")
         self.refresh_readiness()
 
     def _update_elapsed(self) -> None:

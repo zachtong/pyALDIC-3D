@@ -186,7 +186,10 @@ def _page_summary(pdf, main: dict):
 
 def _page_accuracy(pdf, main: dict):
     fig, axes = plt.subplots(1, 2, figsize=(11, 5.2))
-    fig.suptitle("Displacement accuracy vs frame (log scale; error grows with deformation/drift)", fontsize=12)
+    fig.suptitle(
+        "Displacement accuracy vs frame (log scale; error grows with deformation/drift)",
+        fontsize=12,
+    )
     for s in STRATEGIES:
         m = main[s]
         fr = np.arange(len(m["rmse"]))[1:]  # frame 0 has zero displacement error

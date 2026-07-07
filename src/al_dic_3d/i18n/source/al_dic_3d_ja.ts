@@ -484,127 +484,137 @@ fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
 <context>
     <name>RightSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="81"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="93"/>
         <source>Run 3D Analysis</source>
         <translation>3D 解析を実行</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="88"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="100"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="95"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
         <source>Export Results</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="121"/>
         <source>PROGRESS</source>
         <translation>進捗</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="115"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="128"/>
         <source>Ready</source>
         <translation>準備完了</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="120"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="133"/>
         <source>ELAPSED  --:--</source>
         <translation>経過  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="123"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="136"/>
         <source>REMAINING  --:--</source>
         <translation>残り  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="129"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="142"/>
         <source>FIELD</source>
         <translation>表示項目</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="135"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="148"/>
         <source>Camera</source>
         <translation>カメラ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="139"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="152"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="140"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="153"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="155"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="168"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="158"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="171"/>
         <source>Colormap</source>
         <translation>カラーマップ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="168"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="181"/>
         <source>Auto range</source>
         <translation>自動レンジ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="175"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="201"/>
         <source>LOG</source>
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="195"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="208"/>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="240"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="253"/>
         <source>Not ready — {0}</source>
         <translation>未準備 — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="242"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="255"/>
         <source>Ready to run.</source>
         <translation>実行できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="252"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="265"/>
         <source>Not ready: {0}</source>
         <translation>未準備：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="260"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="273"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 解析を開始しています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="280"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="287"/>
+        <source>Cancelling…</source>
+        <translation>キャンセルしています…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="301"/>
         <source>Analysis complete</source>
         <translation>解析が完了しました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="288"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="310"/>
         <source>Failed: {0}</source>
         <translation>失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="295"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="319"/>
+        <source>Run cancelled</source>
+        <translation>実行をキャンセルしました</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
         <source>ELAPSED  {0}</source>
         <translation>経過  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="301"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="332"/>
         <source>REMAINING  {0}</source>
         <translation>残り  {0}</translation>
     </message>

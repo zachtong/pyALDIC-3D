@@ -106,16 +106,19 @@ class WorkflowController:
 
     # --- run -----------------------------------------------------------------
 
-    def run(self, progress: ProgressFn | None = None):
+    def run(self, progress: ProgressFn | None = None, stop: Callable[[], bool] | None = None):
         """Execute the headless pipeline and store the result on the state.
 
-        Assembles the RunConfig from the draft first if it has not been built.
+        Rebuilds the RunConfig from the draft when the draft is ready (so sidebar
+        edits after a previous run take effect); an explicitly set config (the
+        headless path) is used as-is when the draft is untouched. ``stop`` polls
+        for cooperative cancel.
         """
-        if self.state.config is None:
+        if self.state.draft.is_ready() or self.state.config is None:
             self.build_config()
         from al_dic_3d.runner import run_pipeline
 
-        self.state.result = run_pipeline(self.state.config, progress=progress)
+        self.state.result = run_pipeline(self.state.config, progress=progress, stop=stop)
         self.state.mark_dirty()
         self.state.workflow_step = STEP_RESULTS
         return self.state.result

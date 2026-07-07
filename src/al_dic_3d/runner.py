@@ -207,8 +207,16 @@ def _load_stream(
 # --- pipeline ----------------------------------------------------------------
 
 
-def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResult:
-    """Execute the full headless correspondence + reconstruction pipeline."""
+def run_pipeline(
+    cfg: RunConfig,
+    progress: ProgressFn | None = None,
+    stop: Callable[[], bool] | None = None,
+) -> RunResult:
+    """Execute the full headless correspondence + reconstruction pipeline.
+
+    ``stop`` is a cooperative-cancel poll: when it returns True the strategy
+    aborts between stages/frames and the run raises ``RuntimeError("cancelled")``.
+    """
     seq_base = cfg.base_dir  # image/mask specs resolve against the config-file dir
 
     rig = load_calibration(cfg.calibration_file, cfg.calibration_format)
@@ -265,7 +273,9 @@ def run_pipeline(cfg: RunConfig, progress: ProgressFn | None = None) -> RunResul
         reference_mode=cfg.reference_mode,
         disparity_offset=cfg.disparity_offset,
     )
-    cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress)
+    cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress, stop=stop)
+    if stop is not None and stop():
+        raise RuntimeError("cancelled")
     ref_coords = np.asarray(mesh_L.coordinates_fem, dtype=np.float64)
 
     # Optional robustness gates: ZNSSD on the correspondence (pre-reconstruction),

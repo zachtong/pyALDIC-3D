@@ -76,10 +76,18 @@ def _check_gates() -> list[tuple[str, bool, str]]:
 
         from al_dic_3d.project import AppState3D, ProjectDraft, load_session, save_session
 
-        draft = ProjectDraft(calibration_file=Path("c.yml"), left=["a", "b"], right=["c", "d"], roi=(0, 10, 0, 10))
+        draft = ProjectDraft(
+            calibration_file=Path("c.yml"), left=["a", "b"], right=["c", "d"], roi=(0, 10, 0, 10)
+        )
         with tempfile.TemporaryDirectory() as td:
             loaded = load_session(save_session(AppState3D(draft=draft), Path(td) / "t.aldic3d"))
-        gates.append(("Session round-trip (.aldic3d)", loaded.draft == draft, "save -> load preserves the draft"))
+        gates.append(
+            (
+                "Session round-trip (.aldic3d)",
+                loaded.draft == draft,
+                "save -> load preserves the draft",
+            )
+        )
     except Exception as exc:  # noqa: BLE001
         gates.append(("Session round-trip (.aldic3d)", False, str(exc)[:60]))
 
@@ -88,14 +96,27 @@ def _check_gates() -> list[tuple[str, bool, str]]:
 
     leaks = scan_tree(REPO / "src" / "al_dic_3d" / "gui")
     complete = all(
-        source_ts(loc).exists() and 'type="unfinished"' not in source_ts(loc).read_text(encoding="utf-8")
+        source_ts(loc).exists()
+        and 'type="unfinished"' not in source_ts(loc).read_text(encoding="utf-8")
         for loc in TARGET_LOCALES
     )
-    gates.append(("i18n scan clean + 8 locales 100%", not leaks and complete, f"{len(leaks)} leaks; catalogs complete={complete}"))
+    gates.append(
+        (
+            "i18n scan clean + 8 locales 100%",
+            not leaks and complete,
+            f"{len(leaks)} leaks; catalogs complete={complete}",
+        )
+    )
 
     # 3. full-workflow smoke = the screenshot harness ran a real end-to-end
     #    pipeline (import -> calibrate -> ROI -> run -> render) to produce shot 3.
-    gates.append(("Full-workflow smoke (offscreen run)", (SHOTS / "shot_results.png").exists(), "screenshot harness executed the pipeline"))
+    gates.append(
+        (
+            "Full-workflow smoke (offscreen run)",
+            (SHOTS / "shot_results.png").exists(),
+            "screenshot harness executed the pipeline",
+        )
+    )
 
     # 4. this walkthrough PDF itself
     gates.append(("Walkthrough report (this PDF)", True, "reports/phase4_gui.pdf"))
@@ -121,30 +142,47 @@ def main() -> int:
         ax0 = fig.add_axes([0.08, 0.84, 0.84, 0.05])
         ax0.axis("off")
         ax0.text(
-            0.5, 0.5, "ALL GATES PASSED" if passed else "GATE FAILURES", ha="center", va="center",
-            fontsize=18, fontweight="bold", color="white",
+            0.5,
+            0.5,
+            "ALL GATES PASSED" if passed else "GATE FAILURES",
+            ha="center",
+            va="center",
+            fontsize=18,
+            fontweight="bold",
+            color="white",
             bbox=dict(boxstyle="round,pad=0.5", fc=("#2e7d32" if passed else "#c62828"), ec="none"),
         )
         fig.text(
-            0.08, 0.78,
+            0.08,
+            0.78,
             f"al_dic_3d {__version__} - single-window pyALDIC-style GUI over the 3D-DIC backend\n"
             "(WorkflowController / ProjectDraft / RunResult). Frontend idioms reused from the 2D\n"
             "app: theme, icons, window chrome, collapsible sections, colorbar, console.",
-            fontsize=9.5, va="top",
+            fontsize=9.5,
+            va="top",
         )
         ax = fig.add_axes([0.06, 0.42, 0.88, 0.30])
         ax.axis("off")
         cells = [[n, "PASS" if ok else "FAIL", d] for n, ok, d in gates]
         colors = [["#f5f5f5", "#c8e6c9" if ok else "#ffcdd2", "#f5f5f5"] for _n, ok, _d in gates]
-        table = ax.table(cellText=cells, colLabels=["gate", "result", "evidence"], cellColours=colors, colWidths=[0.40, 0.12, 0.48], loc="upper center")
+        table = ax.table(
+            cellText=cells,
+            colLabels=["gate", "result", "evidence"],
+            cellColours=colors,
+            colWidths=[0.40, 0.12, 0.48],
+            loc="upper center",
+        )
         table.auto_set_font_size(False)
         table.set_fontsize(8.5)
         table.scale(1, 1.7)
         fig.text(
-            0.08, 0.36,
+            0.08,
+            0.36,
             "Remaining (visual polish on a display): pyvista 3D render check (needs OpenGL),\n"
             "interactive fine-tuning, and the MATLAB-parity gates (await the user's dataset).",
-            fontsize=9, va="top", family="monospace",
+            fontsize=9,
+            va="top",
+            family="monospace",
         )
         pdf.savefig(fig)
         plt.close(fig)

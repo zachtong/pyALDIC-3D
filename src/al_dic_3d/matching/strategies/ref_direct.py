@@ -94,7 +94,7 @@ class RefDirectStrategy:
             reference_mode="accumulative",
         )
 
-        tf_L = temporal_track(left, mesh_L, para_L)
+        tf_L = temporal_track(left, mesh_L, para_L, stop=stop)
         if not np.allclose(tf_L.ref_coords, coords_L, atol=1e-6):
             raise RuntimeError("left temporal mesh drifted from mesh_L (masked track = Phase 2b)")
 

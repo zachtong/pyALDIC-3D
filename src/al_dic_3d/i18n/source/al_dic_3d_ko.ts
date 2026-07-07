@@ -484,127 +484,137 @@ fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
 <context>
     <name>RightSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="81"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="93"/>
         <source>Run 3D Analysis</source>
         <translation>3D 분석 실행</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="88"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="100"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="95"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="121"/>
         <source>PROGRESS</source>
         <translation>진행률</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="115"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="128"/>
         <source>Ready</source>
         <translation>준비 완료</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="120"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="133"/>
         <source>ELAPSED  --:--</source>
         <translation>경과  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="123"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="136"/>
         <source>REMAINING  --:--</source>
         <translation>남음  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="129"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="142"/>
         <source>FIELD</source>
         <translation>표시 필드</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="135"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="148"/>
         <source>Camera</source>
         <translation>카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="139"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="152"/>
         <source>Left</source>
         <translation>왼쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="140"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="153"/>
         <source>Right</source>
         <translation>오른쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="155"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="168"/>
         <source>VISUALIZATION</source>
         <translation>시각화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="158"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="171"/>
         <source>Colormap</source>
         <translation>색상 맵</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="168"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="181"/>
         <source>Auto range</source>
         <translation>자동 범위</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="175"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
         <source>Opacity</source>
         <translation>불투명도</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="201"/>
         <source>LOG</source>
         <translation>로그</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="195"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="208"/>
         <source>Clear</source>
         <translation>지우기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="240"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="253"/>
         <source>Not ready — {0}</source>
         <translation>준비되지 않음 — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="242"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="255"/>
         <source>Ready to run.</source>
         <translation>실행할 준비가 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="252"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="265"/>
         <source>Not ready: {0}</source>
         <translation>준비되지 않음: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="260"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="273"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 분석을 시작하는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="280"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="287"/>
+        <source>Cancelling…</source>
+        <translation>취소하는 중…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="301"/>
         <source>Analysis complete</source>
         <translation>분석 완료</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="288"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="310"/>
         <source>Failed: {0}</source>
         <translation>실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="295"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="319"/>
+        <source>Run cancelled</source>
+        <translation>실행이 취소되었습니다</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
         <source>ELAPSED  {0}</source>
         <translation>경과  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="301"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="332"/>
         <source>REMAINING  {0}</source>
         <translation>남음  {0}</translation>
     </message>

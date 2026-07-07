@@ -27,6 +27,8 @@ SRC_DIR = REPO / "src" / "al_dic_3d" / "i18n" / "source"
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "zh_CN": {
+        "Cancelling…": "正在取消…",
+        "Run cancelled": "运行已取消",
         "&File": "文件(&F)",
         "&Settings": "设置(&S)",
         "+ Draw": "+ 绘制",
@@ -135,6 +137,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} 个 CSV 帧文件",
     },
     "zh_TW": {
+        "Cancelling…": "正在取消…",
+        "Run cancelled": "執行已取消",
         "&File": "檔案(&F)",
         "&Settings": "設定(&S)",
         "+ Draw": "+ 繪製",
@@ -243,6 +247,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} 個 CSV 幀檔案",
     },
     "ja": {
+        "Cancelling…": "キャンセルしています…",
+        "Run cancelled": "実行をキャンセルしました",
         "&File": "ファイル(&F)",
         "&Settings": "設定(&S)",
         "+ Draw": "+ 描画",
@@ -351,6 +357,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} 件の CSV フレーム",
     },
     "ko": {
+        "Cancelling…": "취소하는 중…",
+        "Run cancelled": "실행이 취소되었습니다",
         "&File": "파일(&F)",
         "&Settings": "설정(&S)",
         "+ Draw": "+ 그리기",
@@ -459,6 +467,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "CSV 프레임 {0}개",
     },
     "de": {
+        "Cancelling…": "Wird abgebrochen…",
+        "Run cancelled": "Lauf abgebrochen",
         "&File": "&Datei",
         "&Settings": "&Einstellungen",
         "+ Draw": "+ Zeichnen",
@@ -567,6 +577,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} CSV-Frames",
     },
     "fr": {
+        "Cancelling…": "Annulation…",
+        "Run cancelled": "Exécution annulée",
         "&File": "&Fichier",
         "&Settings": "&Paramètres",
         "+ Draw": "+ Dessiner",
@@ -675,6 +687,8 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} images CSV",
     },
     "es": {
+        "Cancelling…": "Cancelando…",
+        "Run cancelled": "Ejecución cancelada",
         "&File": "&Archivo",
         "&Settings": "&Configuración",
         "+ Draw": "+ Dibujar",

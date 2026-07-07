@@ -160,6 +160,13 @@ def test_cli_run_creates_outputs(tmp_path):
     assert (tmp_path / "out" / "run.mat").exists()
 
 
+def test_run_pipeline_cooperative_cancel(tmp_path):
+    scene = synth_stereo.build_scene(tmp_path, n_frames=3)
+    cfg = load_config(synth_stereo.write_config(tmp_path, scene))
+    with pytest.raises(RuntimeError, match="cancelled"):
+        run_pipeline(cfg, stop=lambda: True)  # stop trips at the first checkpoint
+
+
 def test_run_pipeline_computes_and_writes_strain(tmp_path):
     from dataclasses import replace
 

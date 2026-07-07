@@ -114,7 +114,7 @@ class TrackBothStrategy:
             raise RuntimeError("frame-1 stereo match found no valid correspondences")
 
         # (2a) left temporal track — corr points ARE the mesh_L nodes (no resample).
-        tf_L = temporal_track(left, mesh_L, para_L)
+        tf_L = temporal_track(left, mesh_L, para_L, stop=stop)
         if not np.allclose(tf_L.ref_coords, coords_L, atol=1e-6):
             raise RuntimeError(
                 "left temporal mesh drifted from mesh_L (node re-trim); xL alignment "
@@ -135,7 +135,7 @@ class TrackBothStrategy:
             reference_mode=cfg.reference_mode,
         )
         mesh_R = build_grid_mesh(para_R, img_h, img_w)
-        tf_R = temporal_track(right, mesh_R, para_R)
+        tf_R = temporal_track(right, mesh_R, para_R, stop=stop)
 
         # (3) assemble the CorrespondenceSet frame by frame.
         xL = np.full((n_frames, n_pts, 2), np.nan, dtype=np.float64)
