@@ -409,12 +409,12 @@
         <translation>측정점 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="230"/>
+        <location filename="../../gui/panels/canvas_area.py" line="248"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="236"/>
+        <location filename="../../gui/panels/canvas_area.py" line="254"/>
         <source>Selected field is not available.</source>
         <translation>선택한 필드를 사용할 수 없습니다.</translation>
     </message>
@@ -660,7 +660,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="579"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
         <source>No images loaded</source>
         <translation>이미지가 로드되지 않았습니다</translation>
     </message>
@@ -812,12 +812,52 @@ fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
         <translation>스테레오 탐색</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="584"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <source>AL-DIC global step (ADMM)</source>
+        <translation>AL-DIC 전역 단계(ADMM)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <source>ADMM Iterations</source>
+        <translation>ADMM 반복 횟수</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <source>Mesh refinement</source>
+        <translation>메시 세분화</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <source>Refine at mask boundaries (holes)</source>
+        <translation>마스크 경계(구멍)에서 세분화</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <source>Refine at ROI edges</source>
+        <translation>ROI 가장자리에서 세분화</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <source>Refinement Level</source>
+        <translation>세분화 레벨</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <source>Paint region…</source>
+        <translation>세분화 영역 그리기…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <source>Clear paint</source>
+        <translation>그리기 지우기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Paired: {0} frames per camera</source>
         <translation>페어링됨: 카메라당 {0} 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="590"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>불일치: 왼쪽 {0} / 오른쪽 {1} 프레임</translation>
     </message>
@@ -830,53 +870,53 @@ fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="64"/>
+        <location filename="../../gui/main_window.py" line="77"/>
         <source>&amp;File</source>
         <translation>파일(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="66"/>
+        <location filename="../../gui/main_window.py" line="79"/>
         <source>New Project</source>
         <translation>새 프로젝트</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="71"/>
+        <location filename="../../gui/main_window.py" line="84"/>
         <source>Open Project…</source>
         <translation>프로젝트 열기…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="76"/>
+        <location filename="../../gui/main_window.py" line="89"/>
         <source>Save Project…</source>
         <translation>프로젝트 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="82"/>
+        <location filename="../../gui/main_window.py" line="95"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="88"/>
+        <location filename="../../gui/main_window.py" line="101"/>
         <source>&amp;Settings</source>
         <translation>설정(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="89"/>
+        <location filename="../../gui/main_window.py" line="102"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
+        <location filename="../../gui/main_window.py" line="152"/>
         <source>Open Project</source>
         <translation>프로젝트 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
-        <location filename="../../gui/main_window.py" line="156"/>
+        <location filename="../../gui/main_window.py" line="152"/>
+        <location filename="../../gui/main_window.py" line="169"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 프로젝트 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="154"/>
+        <location filename="../../gui/main_window.py" line="167"/>
         <source>Save Project</source>
         <translation>프로젝트 저장</translation>
     </message>

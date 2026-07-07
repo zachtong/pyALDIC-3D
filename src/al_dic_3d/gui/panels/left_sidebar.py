@@ -517,10 +517,62 @@ class LeftSidebar3D(QWidget):
         self._search_spin.setSuffix(" px")
         layout.addLayout(self._param_row(self.tr("Stereo Search"), self._search_spin))
 
+        # ---- AL-DIC solver (audit 2026-07-07: global step ON is the default) ----
+        self._global_cb = QCheckBox(self.tr("AL-DIC global step (ADMM)"))
+        self._global_cb.setChecked(True)
+        layout.addWidget(self._global_cb)
+
+        self._admm_spin = QSpinBox()
+        self._admm_spin.setRange(1, 10)
+        self._admm_spin.setValue(3)
+        layout.addLayout(self._param_row(self.tr("ADMM Iterations"), self._admm_spin))
+        self._global_cb.toggled.connect(self._admm_spin.setEnabled)
+
+        # ---- quadtree mesh refinement (2D-app levers; default = uniform grid) ----
+        refine_lbl = QLabel(self.tr("Mesh refinement"))
+        refine_lbl.setStyleSheet(
+            f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px; font-weight: bold;"
+        )
+        layout.addSpacing(4)
+        layout.addWidget(refine_lbl)
+
+        self._refine_inner_cb = QCheckBox(self.tr("Refine at mask boundaries (holes)"))
+        layout.addWidget(self._refine_inner_cb)
+        self._refine_outer_cb = QCheckBox(self.tr("Refine at ROI edges"))
+        layout.addWidget(self._refine_outer_cb)
+
+        self._refine_level_spin = QSpinBox()
+        self._refine_level_spin.setRange(1, 3)
+        self._refine_level_spin.setValue(1)
+        layout.addLayout(self._param_row(self.tr("Refinement Level"), self._refine_level_spin))
+
+        brush_row = QHBoxLayout()
+        brush_row.setSpacing(4)
+        self._brush_btn = QPushButton(self.tr("Paint region…"))
+        self._brush_btn.setCheckable(True)
+        self._brush_clear_btn = QPushButton(self.tr("Clear paint"))
+        brush_row.addWidget(self._brush_btn)
+        brush_row.addWidget(self._brush_clear_btn)
+        layout.addLayout(brush_row)
+
         self._subset_spin.valueChanged.connect(self._apply_params)
         self._step_combo.currentTextChanged.connect(self._apply_params)
         self._search_spin.valueChanged.connect(self._apply_params)
+        self._global_cb.toggled.connect(self._apply_params)
+        self._admm_spin.valueChanged.connect(self._apply_params)
+        self._refine_inner_cb.toggled.connect(self._apply_params)
+        self._refine_outer_cb.toggled.connect(self._apply_params)
+        self._refine_level_spin.valueChanged.connect(self._apply_params)
         return host
+
+    @property
+    def brush_button(self) -> QPushButton:
+        """The canvas wires this toggle to its refinement-brush paint mode."""
+        return self._brush_btn
+
+    @property
+    def brush_clear_button(self) -> QPushButton:
+        return self._brush_clear_btn
 
     def _param_row(self, text: str, widget: QWidget) -> QHBoxLayout:
         row = QHBoxLayout()
@@ -537,6 +589,11 @@ class LeftSidebar3D(QWidget):
         draft.winsize = int(self._subset_spin.value())
         draft.winstepsize = int(self._step_combo.currentText())
         draft.stereo_search = int(self._search_spin.value())
+        draft.use_global_step = self._global_cb.isChecked()
+        draft.admm_max_iter = int(self._admm_spin.value())
+        draft.refine_inner = self._refine_inner_cb.isChecked()
+        draft.refine_outer = self._refine_outer_cb.isChecked()
+        draft.refinement_level = int(self._refine_level_spin.value())
         self.controller.state.mark_dirty()
         self.signals.params_changed.emit()
 
@@ -610,6 +667,11 @@ class LeftSidebar3D(QWidget):
             self._subset_spin,
             self._step_combo,
             self._search_spin,
+            self._global_cb,
+            self._admm_spin,
+            self._refine_inner_cb,
+            self._refine_outer_cb,
+            self._refine_level_spin,
             self._calib_format,
         )
         for w in widgets:
@@ -621,6 +683,12 @@ class LeftSidebar3D(QWidget):
         self._subset_spin.setValue(draft.winsize)
         self._step_combo.setCurrentText(str(draft.winstepsize))
         self._search_spin.setValue(draft.stereo_search)
+        self._global_cb.setChecked(draft.use_global_step)
+        self._admm_spin.setValue(draft.admm_max_iter)
+        self._admm_spin.setEnabled(draft.use_global_step)
+        self._refine_inner_cb.setChecked(draft.refine_inner)
+        self._refine_outer_cb.setChecked(draft.refine_outer)
+        self._refine_level_spin.setValue(draft.refinement_level)
         self._calib_format.setCurrentText(draft.calibration_format)
         for w in widgets:
             w.blockSignals(False)

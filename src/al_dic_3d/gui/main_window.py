@@ -55,8 +55,21 @@ class MainWindow3D(QMainWindow):
             lambda _roi: self._left.roi_draw_button.setChecked(False)
         )
 
+        # Refinement brush toggle — mutually exclusive with ROI drawing (both
+        # claim the left mouse button on the canvas).
+        self._left.brush_button.toggled.connect(self._on_brush_toggled)
+        self._left.roi_draw_button.toggled.connect(
+            lambda on: on and self._left.brush_button.setChecked(False)
+        )
+        self._left.brush_clear_button.clicked.connect(self._canvas_area.clear_brush)
+
         self._build_menu()
         self.signals.log.emit("pyALDIC-3D ready", "info")
+
+    def _on_brush_toggled(self, active: bool) -> None:
+        if active:
+            self._left.roi_draw_button.setChecked(False)
+        self._canvas_area.set_brush_mode(active)
 
     # ---- menu ----------------------------------------------------------------
 

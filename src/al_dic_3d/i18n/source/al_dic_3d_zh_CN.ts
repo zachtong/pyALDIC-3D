@@ -409,12 +409,12 @@
         <translation>显示测点</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="230"/>
+        <location filename="../../gui/panels/canvas_area.py" line="248"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 视图 — 运行分析后即可查看重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="236"/>
+        <location filename="../../gui/panels/canvas_area.py" line="254"/>
         <source>Selected field is not available.</source>
         <translation>所选场变量不可用。</translation>
     </message>
@@ -660,7 +660,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="579"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
         <source>No images loaded</source>
         <translation>尚未加载图像</translation>
     </message>
@@ -812,12 +812,52 @@ fx {1:.0f}  fy {2:.0f}  |  基线 {3:.1f} mm</translation>
         <translation>立体搜索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="584"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <source>AL-DIC global step (ADMM)</source>
+        <translation>AL-DIC 全局步（ADMM）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <source>ADMM Iterations</source>
+        <translation>ADMM 迭代次数</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <source>Mesh refinement</source>
+        <translation>网格加密</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <source>Refine at mask boundaries (holes)</source>
+        <translation>在掩膜边界（孔洞）处加密</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <source>Refine at ROI edges</source>
+        <translation>在 ROI 边缘处加密</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <source>Refinement Level</source>
+        <translation>加密级别</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <source>Paint region…</source>
+        <translation>绘制加密区域…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <source>Clear paint</source>
+        <translation>清除绘制</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Paired: {0} frames per camera</source>
         <translation>已配对：每相机 {0} 帧</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="590"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>数量不匹配：左 {0} 帧，右 {1} 帧</translation>
     </message>
@@ -830,53 +870,53 @@ fx {1:.0f}  fy {2:.0f}  |  基线 {3:.1f} mm</translation>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="64"/>
+        <location filename="../../gui/main_window.py" line="77"/>
         <source>&amp;File</source>
         <translation>文件(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="66"/>
+        <location filename="../../gui/main_window.py" line="79"/>
         <source>New Project</source>
         <translation>新建项目</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="71"/>
+        <location filename="../../gui/main_window.py" line="84"/>
         <source>Open Project…</source>
         <translation>打开项目…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="76"/>
+        <location filename="../../gui/main_window.py" line="89"/>
         <source>Save Project…</source>
         <translation>保存项目…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="82"/>
+        <location filename="../../gui/main_window.py" line="95"/>
         <source>Quit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="88"/>
+        <location filename="../../gui/main_window.py" line="101"/>
         <source>&amp;Settings</source>
         <translation>设置(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="89"/>
+        <location filename="../../gui/main_window.py" line="102"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
+        <location filename="../../gui/main_window.py" line="152"/>
         <source>Open Project</source>
         <translation>打开项目</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
-        <location filename="../../gui/main_window.py" line="156"/>
+        <location filename="../../gui/main_window.py" line="152"/>
+        <location filename="../../gui/main_window.py" line="169"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 项目 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="154"/>
+        <location filename="../../gui/main_window.py" line="167"/>
         <source>Save Project</source>
         <translation>保存项目</translation>
     </message>

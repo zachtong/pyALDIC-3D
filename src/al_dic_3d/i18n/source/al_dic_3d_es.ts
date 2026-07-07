@@ -409,12 +409,12 @@
         <translation>Mostrar puntos</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="230"/>
+        <location filename="../../gui/panels/canvas_area.py" line="248"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>Vista 3D — ejecute un análisis para ver la superficie reconstruida.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="236"/>
+        <location filename="../../gui/panels/canvas_area.py" line="254"/>
         <source>Selected field is not available.</source>
         <translation>El campo seleccionado no está disponible.</translation>
     </message>
@@ -660,7 +660,7 @@ DERECHA o haga clic</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="579"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
         <source>No images loaded</source>
         <translation>Ninguna imagen cargada</translation>
     </message>
@@ -812,12 +812,52 @@ fx {1:.0f}  fy {2:.0f}  |  línea base {3:.1f} mm</translation>
         <translation>Búsqueda estéreo</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="584"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <source>AL-DIC global step (ADMM)</source>
+        <translation>Paso global AL-DIC (ADMM)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <source>ADMM Iterations</source>
+        <translation>Iteraciones ADMM</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <source>Mesh refinement</source>
+        <translation>Refinamiento de malla</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <source>Refine at mask boundaries (holes)</source>
+        <translation>Refinar en bordes de máscara (huecos)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <source>Refine at ROI edges</source>
+        <translation>Refinar en bordes de la ROI</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <source>Refinement Level</source>
+        <translation>Nivel de refinamiento</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <source>Paint region…</source>
+        <translation>Pintar región…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <source>Clear paint</source>
+        <translation>Borrar pintura</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Paired: {0} frames per camera</source>
         <translation>Emparejado: {0} fotogramas por cámara</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="590"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>Discrepancia: {0} izquierda frente a {1} derecha</translation>
     </message>
@@ -830,53 +870,53 @@ fx {1:.0f}  fy {2:.0f}  |  línea base {3:.1f} mm</translation>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="64"/>
+        <location filename="../../gui/main_window.py" line="77"/>
         <source>&amp;File</source>
         <translation>&amp;Archivo</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="66"/>
+        <location filename="../../gui/main_window.py" line="79"/>
         <source>New Project</source>
         <translation>Nuevo proyecto</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="71"/>
+        <location filename="../../gui/main_window.py" line="84"/>
         <source>Open Project…</source>
         <translation>Abrir proyecto…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="76"/>
+        <location filename="../../gui/main_window.py" line="89"/>
         <source>Save Project…</source>
         <translation>Guardar proyecto…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="82"/>
+        <location filename="../../gui/main_window.py" line="95"/>
         <source>Quit</source>
         <translation>Salir</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="88"/>
+        <location filename="../../gui/main_window.py" line="101"/>
         <source>&amp;Settings</source>
         <translation>&amp;Configuración</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="89"/>
+        <location filename="../../gui/main_window.py" line="102"/>
         <source>Language</source>
         <translation>Idioma</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
+        <location filename="../../gui/main_window.py" line="152"/>
         <source>Open Project</source>
         <translation>Abrir proyecto</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
-        <location filename="../../gui/main_window.py" line="156"/>
+        <location filename="../../gui/main_window.py" line="152"/>
+        <location filename="../../gui/main_window.py" line="169"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>Proyecto pyALDIC-3D (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="154"/>
+        <location filename="../../gui/main_window.py" line="167"/>
         <source>Save Project</source>
         <translation>Guardar proyecto</translation>
     </message>

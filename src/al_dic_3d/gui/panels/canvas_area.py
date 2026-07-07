@@ -131,6 +131,7 @@ class CanvasArea3D(QWidget):
         btn_out.clicked.connect(self._canvas.zoom_out)
 
         self._canvas.roi_changed.connect(self._on_canvas_roi)
+        self._canvas.brush_changed.connect(self._on_brush_changed)
         signals.frame_changed.connect(lambda _i: self.render())
         signals.camera_changed.connect(lambda _c: self.render())
         signals.display_changed.connect(self.render)
@@ -148,6 +149,23 @@ class CanvasArea3D(QWidget):
 
     def set_roi_edit_mode(self, active: bool) -> None:
         self._canvas.set_roi_editable(active)
+
+    # ---- refinement brush ---------------------------------------------------------
+
+    def set_brush_mode(self, active: bool) -> None:
+        # Brush radius tracks the subset step so one stroke covers ~2 elements.
+        radius = max(4, int(self.controller.state.draft.winstepsize))
+        self._canvas.set_brush_mode(active, radius=radius)
+
+    def clear_brush(self) -> None:
+        self._canvas.clear_brush()
+
+    def _on_brush_changed(self) -> None:
+        mask = self._canvas.brush_mask()
+        draft = self.controller.state.draft
+        draft.refinement_mask_array = None if mask is None or not mask.any() else mask
+        self.controller.state.mark_dirty()
+        self.signals.params_changed.emit()
 
     def _on_canvas_roi(self, roi: tuple) -> None:
         self.controller.state.draft.roi = tuple(int(v) for v in roi)

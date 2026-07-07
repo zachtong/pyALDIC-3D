@@ -4,16 +4,16 @@
 # BRUSH-drawn mask / refinement level (min_elem = max(2, step//2**level)).
 # Static frame-1 refined mesh at RUNNER level (no per-frame policy into
 # run_aldic — drift guard + mesh-built-once invariant).
-- [ ] A1 primitives: make_dicpara(use_global_step=True, admm_max_iter=3)
-- [ ] A2 RunConfig [matching] use_global_step/admm_max_iter + strategies
+- [x] A1 primitives: make_dicpara(use_global_step=True, admm_max_iter=3)
+- [x] A2 RunConfig [matching] use_global_step/admm_max_iter + strategies
       pass-through + contract test (para flags asserted)
-- [ ] A3 GUI PARAMETERS: 'AL-DIC global step' checkbox (default on) +
+- [x] A3 GUI PARAMETERS: 'AL-DIC global step' checkbox (default on) +
       ADMM iterations spin (1-10, default 3) + draft/session + i18n
-- [ ] B1 runner: if any refine option on -> al_dic build_refinement_policy
+- [x] B1 runner: if any refine option on -> al_dic build_refinement_policy
       + refine_mesh ONCE on frame-1 mask/ROI -> static refined mesh
-- [ ] B2 RunConfig [matching] refine_inner/refine_outer/refinement_level
+- [x] B2 RunConfig [matching] refine_inner/refine_outer/refinement_level
       (+ refinement_mask path option); draft fields; session round-trip
-- [ ] B3 GUI: two checkboxes + level spin + BRUSH paint mode on canvas
+- [x] B3 GUI: two checkboxes + level spin + BRUSH paint mode on canvas
       (paint strokes -> mask overlay -> draft.refinement_mask)
 - [ ] C re-gate: full pytest, S3 parity (ADMM ON + refined mesh),
       runtime delta measured; INDEX changelog; memory

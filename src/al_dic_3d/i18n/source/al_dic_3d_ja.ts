@@ -409,12 +409,12 @@
         <translation>測定点を表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="230"/>
+        <location filename="../../gui/panels/canvas_area.py" line="248"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="236"/>
+        <location filename="../../gui/panels/canvas_area.py" line="254"/>
         <source>Selected field is not available.</source>
         <translation>選択した項目は利用できません。</translation>
     </message>
@@ -660,7 +660,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="579"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
         <source>No images loaded</source>
         <translation>画像が読み込まれていません</translation>
     </message>
@@ -812,12 +812,52 @@ fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
         <translation>ステレオ探索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="584"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <source>AL-DIC global step (ADMM)</source>
+        <translation>AL-DIC グローバルステップ（ADMM）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <source>ADMM Iterations</source>
+        <translation>ADMM 反復回数</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <source>Mesh refinement</source>
+        <translation>メッシュ細分化</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <source>Refine at mask boundaries (holes)</source>
+        <translation>マスク境界（穴）で細分化</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <source>Refine at ROI edges</source>
+        <translation>ROI の縁で細分化</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <source>Refinement Level</source>
+        <translation>細分化レベル</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <source>Paint region…</source>
+        <translation>細分化領域を描画…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <source>Clear paint</source>
+        <translation>描画をクリア</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Paired: {0} frames per camera</source>
         <translation>ペアリング済み：各カメラ {0} フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="590"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>不一致：左 {0} フレーム、右 {1} フレーム</translation>
     </message>
@@ -830,53 +870,53 @@ fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="64"/>
+        <location filename="../../gui/main_window.py" line="77"/>
         <source>&amp;File</source>
         <translation>ファイル(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="66"/>
+        <location filename="../../gui/main_window.py" line="79"/>
         <source>New Project</source>
         <translation>新規プロジェクト</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="71"/>
+        <location filename="../../gui/main_window.py" line="84"/>
         <source>Open Project…</source>
         <translation>プロジェクトを開く…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="76"/>
+        <location filename="../../gui/main_window.py" line="89"/>
         <source>Save Project…</source>
         <translation>プロジェクトを保存…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="82"/>
+        <location filename="../../gui/main_window.py" line="95"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="88"/>
+        <location filename="../../gui/main_window.py" line="101"/>
         <source>&amp;Settings</source>
         <translation>設定(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="89"/>
+        <location filename="../../gui/main_window.py" line="102"/>
         <source>Language</source>
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
+        <location filename="../../gui/main_window.py" line="152"/>
         <source>Open Project</source>
         <translation>プロジェクトを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="139"/>
-        <location filename="../../gui/main_window.py" line="156"/>
+        <location filename="../../gui/main_window.py" line="152"/>
+        <location filename="../../gui/main_window.py" line="169"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D プロジェクト (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="154"/>
+        <location filename="../../gui/main_window.py" line="167"/>
         <source>Save Project</source>
         <translation>プロジェクトを保存</translation>
     </message>

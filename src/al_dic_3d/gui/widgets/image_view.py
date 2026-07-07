@@ -41,9 +41,10 @@ def gray_to_qpixmap(arr: np.ndarray) -> QPixmap:
 
 
 class ImageCanvas3D(QGraphicsView):
-    """Layered, zoomable canvas: image + field overlay + drawable ROI."""
+    """Layered, zoomable canvas: image + field overlay + brush layer + ROI."""
 
     roi_changed = Signal(tuple)  # (xmin, xmax, ymin, ymax) in image pixels
+    brush_changed = Signal()  # a brush stroke finished (read brush_mask())
     view_changed = Signal()  # zoom / pan / resize (overlays reposition on this)
 
     def __init__(self, *, editable_roi: bool = False, parent=None) -> None:
@@ -59,6 +60,16 @@ class ImageCanvas3D(QGraphicsView):
         self._overlay_item.setZValue(1)
         self._overlay_item.setOpacity(0.85)
         self._scene.addItem(self._overlay_item)
+
+        # Brush layer (z1.5): refinement-mask strokes over frame 1, under the ROI.
+        self._brush_item = QGraphicsPixmapItem()
+        self._brush_item.setZValue(1.5)
+        self._scene.addItem(self._brush_item)
+        self._brush_active = False
+        self._brush_radius = 16
+        self._brush_mask: np.ndarray | None = None  # (H, W) uint8, 255 = refine
+        self._brush_rgba: np.ndarray | None = None  # premixed display buffer
+        self._brush_last: tuple[int, int] | None = None
 
         self._roi_item = None  # created lazily (z2, cosmetic red pen)
 
@@ -114,6 +125,52 @@ class ImageCanvas3D(QGraphicsView):
 
     def set_overlay_opacity(self, alpha: float) -> None:
         self._overlay_item.setOpacity(max(0.0, min(1.0, alpha)))
+
+    # --- refinement brush -------------------------------------------------------
+
+    def set_brush_mode(self, active: bool, radius: int | None = None) -> None:
+        """Paint mode for the quadtree refinement mask (left-drag = stroke)."""
+        self._brush_active = active
+        if radius is not None:
+            self._brush_radius = max(2, int(radius))
+        self.setCursor(Qt.CursorShape.CrossCursor if active else Qt.CursorShape.ArrowCursor)
+
+    def brush_mask(self) -> np.ndarray | None:
+        """The painted ``(H, W)`` uint8 mask (255 = refine here), or None."""
+        return self._brush_mask
+
+    def clear_brush(self) -> None:
+        self._brush_mask = None
+        self._brush_rgba = None
+        self._brush_item.setPixmap(QPixmap())
+        self.brush_changed.emit()
+
+    def _ensure_brush_buffers(self) -> bool:
+        if not self.has_image:
+            return False
+        size = self._bg_item.pixmap().size()
+        h, w = size.height(), size.width()
+        if self._brush_mask is None or self._brush_mask.shape != (h, w):
+            self._brush_mask = np.zeros((h, w), dtype=np.uint8)
+            self._brush_rgba = np.zeros((h, w, 4), dtype=np.uint8)
+        return True
+
+    def _brush_stroke_to(self, scene_pos: QPointF) -> None:
+        import cv2
+
+        pt = (int(round(scene_pos.x())), int(round(scene_pos.y())))
+        p0 = self._brush_last or pt
+        thickness = 2 * self._brush_radius
+        cv2.line(self._brush_mask, p0, pt, 255, thickness=thickness)
+        # Display buffer: translucent accent over the painted region (BGRA order
+        # is irrelevant for a single-hue fill; alpha channel carries the look).
+        color = QColor(COLORS.ACCENT)
+        fill = (color.red(), color.green(), color.blue(), 90)
+        cv2.line(self._brush_rgba, p0, pt, fill, thickness=thickness)
+        self._brush_last = pt
+        h, w = self._brush_mask.shape
+        img = QImage(self._brush_rgba.data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
+        self._brush_item.setPixmap(QPixmap.fromImage(img.copy()))
 
     # --- ROI -----------------------------------------------------------------
 
@@ -187,6 +244,11 @@ class ImageCanvas3D(QGraphicsView):
             self._pan_anchor = event.position()
             self.setCursor(Qt.CursorShape.ClosedHandCursor)
             return
+        if self._brush_active and event.button() == Qt.MouseButton.LeftButton:
+            if self._ensure_brush_buffers():
+                self._brush_last = None
+                self._brush_stroke_to(self.mapToScene(event.position().toPoint()))
+            return
         if self._editable and self.has_image and event.button() == Qt.MouseButton.LeftButton:
             self._drag_start = self.mapToScene(event.position().toPoint())
             self._ensure_roi_item()
@@ -202,6 +264,9 @@ class ImageCanvas3D(QGraphicsView):
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() - int(delta.y()))
             self.view_changed.emit()
             return
+        if self._brush_active and self._brush_last is not None:
+            self._brush_stroke_to(self.mapToScene(event.position().toPoint()))
+            return
         if self._editable and self._drag_start is not None:
             current = self.mapToScene(event.position().toPoint())
             self._roi_item.setRect(QRectF(self._drag_start, current).normalized())
@@ -211,9 +276,14 @@ class ImageCanvas3D(QGraphicsView):
     def mouseReleaseEvent(self, event) -> None:  # noqa: N802 (Qt override)
         if self._panning and event.button() == Qt.MouseButton.MiddleButton:
             self._panning = False
+            crosshair = self._editable or self._brush_active
             self.setCursor(
-                Qt.CursorShape.CrossCursor if self._editable else Qt.CursorShape.ArrowCursor
+                Qt.CursorShape.CrossCursor if crosshair else Qt.CursorShape.ArrowCursor
             )
+            return
+        if self._brush_active and self._brush_last is not None:
+            self._brush_last = None
+            self.brush_changed.emit()
             return
         if self._editable and self._drag_start is not None:
             self._drag_start = None
