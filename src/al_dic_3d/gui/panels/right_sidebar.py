@@ -10,8 +10,6 @@ world-frame displacement components or surface-strain invariants.
 from __future__ import annotations
 
 import time
-from dataclasses import replace
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from al_dic.gui.icons import icon_download, icon_play, icon_stop
@@ -21,7 +19,6 @@ from PySide6.QtCore import Qt, QThread, QTimer, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QFileDialog,
     QHBoxLayout,
     QLabel,
     QProgressBar,
@@ -331,16 +328,9 @@ class RightSidebar3D(QWidget):
 
     def _on_export(self) -> None:
         state = self.controller.state
-        if state.result is None or state.config is None:
+        if state.result is None:
             return
-        directory = QFileDialog.getExistingDirectory(self, self.tr("Choose output folder"))
-        if not directory:
-            return
-        from al_dic_3d.runner import write_results
+        from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
 
-        cfg = replace(state.config, output_dir=Path(directory))
-        paths = write_results(state.result, cfg)
-        self._console.append_log(
-            self.tr("Wrote {0} and {1}").format(paths["npz"].name, paths["mat"].name),
-            "success",
-        )
+        dialog = ExportDialog(state.result, parent=self)
+        dialog.exec()
