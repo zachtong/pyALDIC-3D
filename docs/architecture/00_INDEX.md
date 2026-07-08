@@ -64,6 +64,16 @@
 
 ## Changelog
 
+- 2026-07-08 v1.6.0 — **导出套件三批全落地（E1/E2/E3，Phase-5 核心交付）**（`24a4ede`+`8c3b8fc`+E3，
+  298 tests，i18n 100%×7）。**E1 数据**：PLY 逐帧点云（纯 numpy 二进制/ASCII）、VTU+PVD 网格时间
+  序列（ParaView；quad 连通性从 view3d 抽出共享，NaN 单元剔除）、参数 JSON 恒写、时间戳防覆盖、
+  runner/GUI 存档统一为 SUPERSET、CLI --formats。**E2 渲染**：viz3d/fieldmap.py Qt-free 场渲染核
+  （画布/应变窗/导出三方共享=真 WYSIWYG）；逐帧场图（相机×字段、长边分辨率预设、色条烧录 mm 标签）；
+  流式动画 MP4/GIF（2D StreamingAnimWriter 移植，frame_step 保真时长）；3D 视图离屏导出（序列+
+  360° 转台，2D 没有的新能力）；对话框重构为 Data/Images/Animation/3D View 页签 + QThread worker
+  + 协作取消 + 逐页进度。**E3**：Preview & Colorbar 页签——走导出同路径的 512px 实时预览（220ms
+  防抖），色条样式直通导出，字段外观与 Images 页双向同步。修掉 2D 三瑕疵：配置数据类入 Qt-free 包、
+  对话框拆文件守 800 行、Data 导出下线程。
 - 2026-07-08 v1.5.1 — **结果场稠密连续渲染（2D VizController 移植）**（`f9fd4e4`，249 tests）。
   散点圆退役为可选 "Show Points" 小标记（默认关）；主渲染 = Delaunay+CloughTocher C1 插值到
   step/4 网格 → colormap RGBA（NaN 透明）→ 双层缓存（插值网格/pixmap）+ warp 掩膜缓存；左相机
