@@ -660,7 +660,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>No images loaded</source>
         <translation>이미지가 로드되지 않았습니다</translation>
     </message>
@@ -812,52 +812,57 @@ fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
         <translation>스테레오 탐색</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="527"/>
+        <source>Temporal Search</source>
+        <translation>시간 탐색</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>AL-DIC global step (ADMM)</source>
         <translation>AL-DIC 전역 단계(ADMM)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="537"/>
         <source>ADMM Iterations</source>
         <translation>ADMM 반복 횟수</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
         <source>Mesh refinement</source>
         <translation>메시 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="548"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>마스크 경계(구멍)에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="550"/>
         <source>Refine at ROI edges</source>
         <translation>ROI 가장자리에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="556"/>
         <source>Refinement Level</source>
         <translation>세분화 레벨</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="560"/>
         <source>Paint region…</source>
         <translation>세분화 영역 그리기…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="562"/>
         <source>Clear paint</source>
         <translation>그리기 지우기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="652"/>
         <source>Paired: {0} frames per camera</source>
         <translation>페어링됨: 카메라당 {0} 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="658"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>불일치: 왼쪽 {0} / 오른쪽 {1} 프레임</translation>
     </message>

@@ -67,6 +67,8 @@ class RunConfig:
     stereo_search: int = 48
     use_global_step: bool = True
     admm_max_iter: int = 3
+    fft_search: int = 20  # temporal FFT integer-search half-width (px)
+    temporal_gate_znssd: float = 1.0  # honesty gate on cumulative tracks; <=0 off
     refine_inner: bool = False
     refine_outer: bool = False
     refinement_level: int = 1
@@ -152,6 +154,8 @@ def load_config(path: str | Path) -> RunConfig:
         stereo_search=int(match.get("stereo_search", 48)),
         use_global_step=bool(match.get("use_global_step", True)),
         admm_max_iter=int(match.get("admm_max_iter", 3)),
+        fft_search=int(match.get("fft_search", 20)),
+        temporal_gate_znssd=float(match.get("temporal_gate_znssd", 1.0)),
         refine_inner=bool(match.get("refine_inner", False)),
         refine_outer=bool(match.get("refine_outer", False)),
         refinement_level=int(match.get("refinement_level", 1)),
@@ -336,6 +340,8 @@ def run_pipeline(
             stereo_search=cfg.stereo_search,
             use_global_step=cfg.use_global_step,
             admm_max_iter=cfg.admm_max_iter,
+            fft_search=cfg.fft_search,
+            temporal_gate_znssd=cfg.temporal_gate_znssd,
         )
     except TypeError:
         strategy = strategy_cls()  # strategy without tunable matching scale

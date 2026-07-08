@@ -38,6 +38,7 @@ class ProjectDraft:
     quality_gate: bool = False
     use_global_step: bool = True  # AL-DIC global step (ADMM), audit default
     admm_max_iter: int = 3
+    fft_search: int = 20  # temporal FFT integer-search half-width (px)
     refine_inner: bool = False  # quadtree: refine mask-boundary elements
     refine_outer: bool = False  # quadtree: refine ROI-edge elements
     refinement_level: int = 1  # 1=light .. 3=heavy (min elem = step // 2**level)
@@ -109,6 +110,7 @@ class ProjectDraft:
             quality_gate=self.quality_gate,
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,
+            fft_search=self.fft_search,
             refine_inner=self.refine_inner,
             refine_outer=self.refine_outer,
             refinement_level=self.refinement_level,

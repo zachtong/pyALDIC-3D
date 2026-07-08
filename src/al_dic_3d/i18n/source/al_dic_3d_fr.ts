@@ -660,7 +660,7 @@ DROITE ou cliquez</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>No images loaded</source>
         <translation>Aucune image chargée</translation>
     </message>
@@ -812,52 +812,57 @@ fx {1:.0f}  fy {2:.0f}  |  base {3:.1f} mm</translation>
         <translation>Recherche stéréo</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="527"/>
+        <source>Temporal Search</source>
+        <translation>Recherche temporelle</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>AL-DIC global step (ADMM)</source>
         <translation>Étape globale AL-DIC (ADMM)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="537"/>
         <source>ADMM Iterations</source>
         <translation>Itérations ADMM</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
         <source>Mesh refinement</source>
         <translation>Raffinement du maillage</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="548"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>Raffiner aux limites du masque (trous)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="550"/>
         <source>Refine at ROI edges</source>
         <translation>Raffiner aux bords de la ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="556"/>
         <source>Refinement Level</source>
         <translation>Niveau de raffinage</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="560"/>
         <source>Paint region…</source>
         <translation>Peindre une région…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="562"/>
         <source>Clear paint</source>
         <translation>Effacer la peinture</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="652"/>
         <source>Paired: {0} frames per camera</source>
         <translation>Appairé : {0} images par caméra</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="658"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>Discordance : {0} à gauche contre {1} à droite</translation>
     </message>

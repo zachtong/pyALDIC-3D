@@ -660,7 +660,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>No images loaded</source>
         <translation>画像が読み込まれていません</translation>
     </message>
@@ -812,52 +812,57 @@ fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
         <translation>ステレオ探索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="527"/>
+        <source>Temporal Search</source>
+        <translation>時系列探索</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>AL-DIC global step (ADMM)</source>
         <translation>AL-DIC グローバルステップ（ADMM）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="537"/>
         <source>ADMM Iterations</source>
         <translation>ADMM 反復回数</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
         <source>Mesh refinement</source>
         <translation>メッシュ細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="548"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>マスク境界（穴）で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="550"/>
         <source>Refine at ROI edges</source>
         <translation>ROI の縁で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="556"/>
         <source>Refinement Level</source>
         <translation>細分化レベル</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="560"/>
         <source>Paint region…</source>
         <translation>細分化領域を描画…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="562"/>
         <source>Clear paint</source>
         <translation>描画をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="652"/>
         <source>Paired: {0} frames per camera</source>
         <translation>ペアリング済み：各カメラ {0} フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="658"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>不一致：左 {0} フレーム、右 {1} フレーム</translation>
     </message>

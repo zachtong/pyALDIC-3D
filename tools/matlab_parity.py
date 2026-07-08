@@ -85,6 +85,7 @@ ymax = {roi[3]}
 strategy = "track_both"
 reference_mode = "{mode}"
 use_global_step = {"true" if os.environ.get("PARITY_GLOBAL", "1") != "0" else "false"}
+fft_search = 60
 winsize = 32
 winstepsize = 32
 winsize_min = 8
@@ -141,6 +142,11 @@ def compare(result, base: dict, work: Path) -> dict:
             mine = ours_d[finite0, ax]
             good = np.isfinite(ref) & np.isfinite(mine)
             diff = mine[good] - ref[good]
+            if diff.size == 0:
+                # e.g. the honesty gate invalidated the whole frame (frozen /
+                # untrackable) — report NaN metrics instead of crashing.
+                rows[name] = (float("nan"), float("nan"), 0, float("nan"), float("nan"))
+                continue
             # regression mine ~ slope*ref + b: slope 1 = agreement, -1 = sign
             # flip, ~0 = we track nothing, wild = blow-up
             if good.sum() > 10 and np.nanstd(ref[good]) > 1e-9:
@@ -159,6 +165,8 @@ def compare(result, base: dict, work: Path) -> dict:
         z_ref = interp_z(ours0[finite0, 0], ours0[finite0, 1])
         z_diff = np.asarray(rec.points[k], dtype=np.float64)[finite0, 2] - z_ref
         z_diff = z_diff[np.isfinite(z_diff)]
+        if z_diff.size == 0:
+            z_diff = np.array([np.nan])
         rows["Z"] = (
             float(np.median(np.abs(z_diff))),
             float(np.percentile(np.abs(z_diff), 95)),
@@ -242,7 +250,64 @@ def main() -> int:
         print(f"  [{'PASS' if good else 'FAIL'}] {name}")
         ok = ok and good
     print("P1 GATE " + ("PASSED" if ok else "FAILED"))
+
+    if mode == "incremental":
+        ok = _p2_template_gate(result) and ok
     return 0 if ok else 1
+
+
+def _p2_template_gate(result) -> bool:
+    """P2 gate (inc mode): frame-3 cumulative track vs template-matching truth.
+
+    The MATLAB baseline for this frame is arbitrated invalid, so arbitration is
+    fully independent: 80x80 template matching L0 -> L2 at scattered anchors,
+    compared POINTWISE against our tracked left-camera shift at the nearest
+    valid node (median support differs — a field-median comparison is a trap on
+    this strongly non-uniform motion). Also asserts the honesty gate left a
+    usable valid fraction rather than laundering the decorrelated regions.
+    """
+    import cv2
+    from scipy.spatial import cKDTree
+
+    lefts = sorted((LEFT_IMGS / "Images_Stereo_Sample3_images").glob("*_0.tif"))
+    L0 = cv2.imread(str(lefts[0]), 0).astype(np.float32)
+    L2 = cv2.imread(str(lefts[2]), 0).astype(np.float32)
+    h, w = L0.shape
+    anchors = []
+    for y in range(150, h - 150, 80):
+        for x in range(250, w - 250, 120):
+            tpl = L0[y - 40 : y + 40, x - 40 : x + 40]
+            if tpl.std() < 8:
+                continue
+            res = cv2.matchTemplate(L2, tpl, cv2.TM_CCOEFF_NORMED)
+            _mn, mx, _l, loc = cv2.minMaxLoc(res)
+            if mx > 0.62:
+                anchors.append((x, y, loc[0] + 40 - x, loc[1] + 40 - y))
+    anc = np.asarray(anchors, dtype=np.float64)
+
+    xL = np.asarray(result.correspondence.xL, dtype=np.float64)
+    d = xL[2] - xL[0]
+    fin = np.isfinite(d).all(axis=1)
+    tree = cKDTree(xL[0][fin])
+    dist, idx = tree.query(anc[:, :2], k=1)
+    near = dist < 24
+    diff = np.abs(d[fin][idx[near]] - anc[near, 2:4])
+    med = np.median(diff, axis=0)
+    n_pt = int(near.sum())
+    checks = [
+        (f"anchors with valid node nearby >= 10 (got {n_pt})", n_pt >= 10),
+        (f"pointwise dx median <= 1.0 px (got {med[0]:.2f})", bool(med[0] <= 1.0)),
+        (f"pointwise dy median <= 1.0 px (got {med[1]:.2f})", bool(med[1] <= 1.0)),
+        (f"valid fraction frame 2 >= 20% (got {fin.mean():.0%})", bool(fin.mean() >= 0.2)),
+    ]
+    print()
+    print("P2 INC-COMPOSITION GATE (frame 0->2 vs template-matching truth):")
+    ok = True
+    for name, good in checks:
+        print(f"  [{'PASS' if good else 'FAIL'}] {name}")
+        ok = ok and good
+    print("P2 GATE " + ("PASSED" if ok else "FAILED"))
+    return ok
 
 
 if __name__ == "__main__":

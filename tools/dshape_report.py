@@ -38,8 +38,8 @@ SCALE = json.loads((DSH / "scale_verify.json").read_text())
 GTD = json.loads((DSH / "gt_compare_dice.json").read_text())
 GTO = json.loads((DSH / "gt_compare_ours.json").read_text())
 DET = np.load(DSH / "calib_detections.npz")
-RUN_DICE = np.load(DSH / "reports" / "dshape" / "run_dice" / "dshape.npz")
-RUN_OURS = np.load(DSH / "reports" / "dshape" / "run_ours" / "dshape.npz")
+RUN_DICE = np.load(DSH / "reports" / "dshape" / "run_dice_inc" / "dshape.npz")
+RUN_OURS = np.load(DSH / "reports" / "dshape" / "run_ours_inc" / "dshape.npz")
 
 
 def _fig(title: str) -> plt.Figure:
@@ -66,7 +66,13 @@ def page_title(pdf: PdfPages) -> None:
         f"(true 7.0000, error {SCALE['ours']['scale_err']*100:+.3f} %)",
         "  - MatchID/Yin baselines are 10/7 larger: they assumed a 10 mm pitch",
         "    (Yin's own .mat object points have median spacing 10.0066 mm)",
-        "  - 34-frame 3D-DIC: 6372 nodes, 42-44 s wall (AL global step ON)",
+        "  - 34-frame 3D-DIC in INCREMENTAL mode (fft_search 60): the sequence",
+        "    is NOT static — template truth 0->33 = (+365, -134) px. The first",
+        "    (accumulative) run silently FROZE beyond ~frame 5 (engine sibling",
+        "    warm-start on decorrelation); the new honesty gate caught it and",
+        "    the inc re-run is pointwise-verified vs template matching:",
+        "    frame 5 err 0.39/0.41 px, frame 17 0.35/0.52 px (valid attrition",
+        "    2150 -> 416 by frame 33 is honest: extreme motion leaves support).",
         f"  - Frame-0 stereo match vs DICe GT: dx median {GTD['match_dx_med']:.3f} px",
         f"  - Frame-0 shape vs DICe GT (rigid-aligned): "
         f"median {GTD['rigid_resid_med']*1000:.1f} um",
@@ -400,7 +406,7 @@ def main() -> None:
         page_title(pdf)
         page_detection(pdf)
         page_calib_compare(pdf)
-        page_fields(pdf, RUN_DICE, "DICe calib")
+        page_fields(pdf, RUN_DICE, "DICe calib, incremental")
         page_shape(pdf, RUN_DICE)
         page_gt(pdf)
         page_crossrun(pdf)

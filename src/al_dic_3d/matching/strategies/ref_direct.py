@@ -58,6 +58,8 @@ class RefDirectStrategy:
         stereo_search: int = 48,
         use_global_step: bool = True,
         admm_max_iter: int = 3,
+        fft_search: int = 20,
+        temporal_gate_znssd: float = 1.0,
     ) -> None:
         self.winsize = winsize
         self.winstepsize = winstepsize
@@ -65,6 +67,8 @@ class RefDirectStrategy:
         self.stereo_search = stereo_search
         self.use_global_step = use_global_step
         self.admm_max_iter = admm_max_iter
+        self.fft_search = fft_search
+        self.temporal_gate_znssd = temporal_gate_znssd
 
     def compute(
         self,
@@ -98,9 +102,10 @@ class RefDirectStrategy:
             reference_mode="accumulative",
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,
+            fft_search=self.fft_search,
         )
 
-        tf_L = temporal_track(left, mesh_L, para_L, masks=mask_stream(seq, "L"), stop=stop)
+        tf_L = temporal_track(left, mesh_L, para_L, masks=mask_stream(seq, "L"), stop=stop, gate_znssd=self.temporal_gate_znssd)
         if not np.allclose(tf_L.ref_coords, coords_L, atol=1e-6):
             raise RuntimeError("left temporal mesh drifted from mesh_L (masked track = Phase 2b)")
 

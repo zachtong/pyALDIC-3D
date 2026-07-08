@@ -57,3 +57,17 @@ Row template (copy when adding a dependency):
 | `al_dic.mesh.refinement.build_refinement_policy` | runner quadtree mesh levers (inner/outer/brush + level), 2D-app parity |
 | `al_dic.mesh.refinement.refine_mesh` | one-shot static frame-1 mesh refinement in `_build_reference_mesh` |
 | `al_dic.mesh.refinement.RefinementContext` | context for the refinement criteria (mesh + frame-1 mask) |
+
+## Known engine caveats (read-only observations, 2026-07-07 inc-bug audit)
+
+These al_dic behaviors shape how the 3D layer must defend itself; none can be
+fixed here (D11). File:line refer to al-dic 0.6.0.
+
+| Behavior | Where | 3D-layer defense |
+|---|---|---|
+| Per-node failures are laundered into finite values: IC-GN bad points are IDW-refilled, subpb2's FEM field is finite everywhere, composition nearest-fills dropped nodes — `isfinite` validity is structurally all-True | `local_icgn.py:244`, `subpb1_solver.py:163`, `interpolation.py:109-152` | `temporal_track` honesty gate: frame-0 -> k ZNSSD re-verification invalidates fake tracks |
+| FFT auto-expand fires only on boundary-CLIPPED peaks; a decorrelated jump beyond the radius yields an in-bounds noise peak and never expands | `pipeline.py:934-975`, `integer_search.py:257-276` | `fft_search` knob (RunConfig/GUI) must cover the largest per-frame motion |
+| Accumulative sibling warm-start seeds frame k from frame k-1's solution and skips FFT; on decorrelation IC-GN "converges" at the seed (frozen field) | `pipeline.py:1122-1179` | honesty gate flags the frozen frame; use incremental mode for decorrelating sequences |
+| With an external mesh, `base_mesh` is never captured, so per-ref mask re-trims erode elements monotonically | `pipeline.py:989-1034` | static frame-1 mesh + mesh-drift hard error in `track_both` |
+| Deformed-frame mask `g_mask` is loaded but never used; ref mask applies at fixed pixel coords (no material warping) | `pipeline.py:824,833` | masks are per-frame and indexed by the moving reference (correct for inc); gate catches residual contamination |
+| Mid-chain composition break assigns a PARTIAL cumulative field; `U_accum=None` only when composing was skipped | `pipeline.py:476-501` | `temporal_track` hard-errors on `U_accum is None` in incremental mode |

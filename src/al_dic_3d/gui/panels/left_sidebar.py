@@ -517,6 +517,15 @@ class LeftSidebar3D(QWidget):
         self._search_spin.setSuffix(" px")
         layout.addLayout(self._param_row(self.tr("Stereo Search"), self._search_spin))
 
+        # Temporal FFT seeding half-width: must cover the largest per-frame
+        # motion (auto-expand only fires on boundary-clipped peaks, not on the
+        # in-bounds noise peaks a decorrelated jump produces).
+        self._temporal_spin = QSpinBox()
+        self._temporal_spin.setRange(8, 400)
+        self._temporal_spin.setValue(20)
+        self._temporal_spin.setSuffix(" px")
+        layout.addLayout(self._param_row(self.tr("Temporal Search"), self._temporal_spin))
+
         # ---- AL-DIC solver (audit 2026-07-07: global step ON is the default) ----
         self._global_cb = QCheckBox(self.tr("AL-DIC global step (ADMM)"))
         self._global_cb.setChecked(True)
@@ -558,6 +567,7 @@ class LeftSidebar3D(QWidget):
         self._subset_spin.valueChanged.connect(self._apply_params)
         self._step_combo.currentTextChanged.connect(self._apply_params)
         self._search_spin.valueChanged.connect(self._apply_params)
+        self._temporal_spin.valueChanged.connect(self._apply_params)
         self._global_cb.toggled.connect(self._apply_params)
         self._admm_spin.valueChanged.connect(self._apply_params)
         self._refine_inner_cb.toggled.connect(self._apply_params)
@@ -589,6 +599,7 @@ class LeftSidebar3D(QWidget):
         draft.winsize = int(self._subset_spin.value())
         draft.winstepsize = int(self._step_combo.currentText())
         draft.stereo_search = int(self._search_spin.value())
+        draft.fft_search = int(self._temporal_spin.value())
         draft.use_global_step = self._global_cb.isChecked()
         draft.admm_max_iter = int(self._admm_spin.value())
         draft.refine_inner = self._refine_inner_cb.isChecked()
@@ -667,6 +678,7 @@ class LeftSidebar3D(QWidget):
             self._subset_spin,
             self._step_combo,
             self._search_spin,
+            self._temporal_spin,
             self._global_cb,
             self._admm_spin,
             self._refine_inner_cb,
@@ -683,6 +695,7 @@ class LeftSidebar3D(QWidget):
         self._subset_spin.setValue(draft.winsize)
         self._step_combo.setCurrentText(str(draft.winstepsize))
         self._search_spin.setValue(draft.stereo_search)
+        self._temporal_spin.setValue(draft.fft_search)
         self._global_cb.setChecked(draft.use_global_step)
         self._admm_spin.setValue(draft.admm_max_iter)
         self._admm_spin.setEnabled(draft.use_global_step)

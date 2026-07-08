@@ -36,6 +36,7 @@ def make_dicpara(
     reference_mode: str = "accumulative",
     use_global_step: bool = True,
     admm_max_iter: int = 3,
+    fft_search: int = 20,
 ) -> DICPara:
     """A validated ``DICPara`` for the 3D layer's temporal-tracking runs.
 
@@ -54,6 +55,11 @@ def make_dicpara(
     per-frame ROI normalization in ``run_aldic``; ``None`` -> no masking.
     ``reference_mode`` selects the FrameSchedule (``"accumulative"`` -> every frame
     vs frame 1; ``"incremental"`` -> frame k vs k-1, engine composes to cumulative).
+    ``fft_search`` is the FFT integer-search half-width (px) for temporal seeding
+    (engine default 20). The engine's auto-expand only fires on boundary-CLIPPED
+    peaks; a decorrelated large jump yields an in-bounds noise peak instead, so
+    when per-frame motion can exceed ~20 px set this to cover it explicitly
+    (S3 inc-mode lesson: a true 21 px increment seeded garbage at the default).
     """
     from al_dic.core.data_structures import GridxyROIRange
 
@@ -69,6 +75,7 @@ def make_dicpara(
         icgn_max_iter=icgn_max_iter,
         tol=tol,
         admm_max_iter=max(1, admm_max_iter),
+        size_of_fft_search_region=max(4, int(fft_search)),
     )
     if img_ref_mask is not None:
         overrides["img_ref_mask"] = np.ascontiguousarray(img_ref_mask, dtype=np.float64)

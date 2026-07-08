@@ -27,6 +27,7 @@ SRC_DIR = REPO / "src" / "al_dic_3d" / "i18n" / "source"
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "zh_CN": {
+        "Temporal Search": "时序搜索",
         "AL-DIC global step (ADMM)": "AL-DIC 全局步（ADMM）",
         "ADMM Iterations": "ADMM 迭代次数",
         "Mesh refinement": "网格加密",
@@ -145,6 +146,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} 个 CSV 帧文件",
     },
     "zh_TW": {
+        "Temporal Search": "時序搜尋",
         "AL-DIC global step (ADMM)": "AL-DIC 全域步（ADMM）",
         "ADMM Iterations": "ADMM 迭代次數",
         "Mesh refinement": "網格加密",
@@ -263,6 +265,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} 個 CSV 幀檔案",
     },
     "ja": {
+        "Temporal Search": "時系列探索",
         "AL-DIC global step (ADMM)": "AL-DIC グローバルステップ（ADMM）",
         "ADMM Iterations": "ADMM 反復回数",
         "Mesh refinement": "メッシュ細分化",
@@ -381,6 +384,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} 件の CSV フレーム",
     },
     "ko": {
+        "Temporal Search": "시간 탐색",
         "AL-DIC global step (ADMM)": "AL-DIC 전역 단계(ADMM)",
         "ADMM Iterations": "ADMM 반복 횟수",
         "Mesh refinement": "메시 세분화",
@@ -499,6 +503,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "CSV 프레임 {0}개",
     },
     "de": {
+        "Temporal Search": "Zeitliche Suche",
         "AL-DIC global step (ADMM)": "AL-DIC-Globalschritt (ADMM)",
         "ADMM Iterations": "ADMM-Iterationen",
         "Mesh refinement": "Netzverfeinerung",
@@ -617,6 +622,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} CSV-Frames",
     },
     "fr": {
+        "Temporal Search": "Recherche temporelle",
         "AL-DIC global step (ADMM)": "Étape globale AL-DIC (ADMM)",
         "ADMM Iterations": "Itérations ADMM",
         "Mesh refinement": "Raffinement du maillage",
@@ -735,6 +741,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "{0} CSV frames": "{0} images CSV",
     },
     "es": {
+        "Temporal Search": "Búsqueda temporal",
         "AL-DIC global step (ADMM)": "Paso global AL-DIC (ADMM)",
         "ADMM Iterations": "Iteraciones ADMM",
         "Mesh refinement": "Refinamiento de malla",

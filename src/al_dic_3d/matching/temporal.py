@@ -61,6 +61,7 @@ def temporal_track(
     masks: list[NDArray[np.float64]] | None = None,
     u0: NDArray[np.float64] | None = None,
     stop: Callable[[], bool] | None = None,
+    gate_znssd: float = 1.0,
 ) -> TemporalField:
     """Track one camera's frames from a fixed reference mesh (accumulative).
 
@@ -75,6 +76,18 @@ def temporal_track(
             returned ``ref_coords`` equal ``mesh.coordinates_fem`` exactly.
         u0: optional frame-0->frame-1 seed of length ``2*n_nodes``. ``None`` lets
             ``run_aldic`` compute an FFT integer guess (robust to larger motion).
+        gate_znssd: honesty gate — per frame, each node's CUMULATIVE track is
+            re-verified by ZNSSD between the frame-0 subset at X and the frame-k
+            image at X + U^k (translation warp); nodes above the threshold are
+            invalidated (``NaN``). The 2D engine launders every per-node failure
+            into finite values (IC-GN bad points are IDW-refilled, subpb2's FEM
+            field is finite everywhere, composition nearest-fills), so without
+            this gate ``isfinite`` validity is structurally all-True and a
+            silently frozen/garbage frame flows downstream as "valid" (the S3
+            frame-3 failure in BOTH modes). ``<= 0`` disables. ZNSSD is in
+            ``[0, 4]``: 1.0 corresponds to ZNCC 0.5. The translation-only warp
+            inflates ZNSSD under very large strain — widen when gating
+            legitimately large-deformation data.
 
     Returns:
         A :class:`TemporalField`. Raises ``RuntimeError`` if a frame fails to
@@ -88,6 +101,7 @@ def temporal_track(
         masks = [np.ones((h, w), dtype=np.float64) for _ in frames]
     if len(masks) != len(frames):
         raise ValueError(f"masks ({len(masks)}) must match frames ({len(frames)})")
+    mask0 = np.ascontiguousarray(masks[0], dtype=np.float64)  # engine mutates para
 
     import warnings
 
@@ -137,14 +151,73 @@ def temporal_track(
     u_accum = np.zeros((n_frames, n, 2), dtype=np.float64)
     valid = np.zeros((n_frames, n), dtype=bool)
     valid[0] = True  # reference frame: zero displacement, all valid
+    incremental = getattr(para, "reference_mode", "accumulative") == "incremental"
     for k, fr in enumerate(result.result_disp, start=1):
-        vec = fr.U_accum if fr.U_accum is not None else fr.U
+        if fr.U_accum is None:
+            if incremental and k > 1:
+                # In incremental mode fr.U is the RAW k-1 -> k increment; letting
+                # it masquerade as the cumulative field silently loses the whole
+                # 0 -> k-1 history (the engine only skips composing when a chain
+                # ancestor failed).
+                raise RuntimeError(
+                    f"engine returned no composed cumulative field for frame {k} "
+                    f"(incremental chain broke upstream) — refusing to report the "
+                    f"raw increment as cumulative displacement."
+                )
+            vec = fr.U  # accumulative direct-to-root: U IS the cumulative field
+        else:
+            vec = fr.U_accum
         uu, vv = split_uv(np.asarray(vec, dtype=np.float64))
         u_accum[k, :, 0] = uu
         u_accum[k, :, 1] = vv
         valid[k] = np.isfinite(uu) & np.isfinite(vv)
 
+    if gate_znssd > 0:
+        _gate_by_znssd(frames, mask0, ref_coords, u_accum, valid, para, gate_znssd)
+
     return TemporalField(ref_coords=ref_coords, u_accum=u_accum, valid=valid)
+
+
+def _gate_by_znssd(
+    frames: list[NDArray[np.float64]],
+    mask0: NDArray[np.float64],
+    ref_coords: NDArray[np.float64],
+    u_accum: NDArray[np.float64],
+    valid: NDArray[np.bool_],
+    para: DICPara,
+    threshold: float,
+) -> None:
+    """Invalidate (in place) tracked nodes whose frame-0 -> frame-k correlation fails.
+
+    Independent verification of the shipped quantity itself: the frame-0 subset
+    at X must still correlate with frame k at X + U^k. Catches BOTH silent
+    failure shapes seen on S3: accumulative sibling-warm-start freeze (IC-GN
+    "converges" with a zero update on a decorrelated pattern) and incremental
+    garbage increments faithfully composed into the cumulative field.
+    """
+    from al_dic_3d.matching.primitives import _znssd
+
+    ref = np.ascontiguousarray(frames[0], dtype=np.float64)
+    n = ref_coords.shape[0]
+    zeros_f = np.zeros((n, 4), dtype=np.float64)
+    for k in range(1, u_accum.shape[0]):
+        pre = valid[k].copy()
+        if not pre.any():
+            continue
+        z = _znssd(
+            ref,
+            np.ascontiguousarray(frames[k], dtype=np.float64),
+            ref_coords,
+            u_accum[k],
+            zeros_f,
+            para.winsize,
+            pre,
+            mask0,
+        )
+        bad = pre & ~(z <= threshold)  # NaN znssd (no support) also fails
+        if bad.any():
+            u_accum[k, bad] = np.nan
+            valid[k, bad] = False
 
 
 def resample_to_points(

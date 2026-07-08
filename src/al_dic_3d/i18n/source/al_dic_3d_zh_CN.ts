@@ -660,7 +660,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="636"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
         <source>No images loaded</source>
         <translation>尚未加载图像</translation>
     </message>
@@ -812,52 +812,57 @@ fx {1:.0f}  fy {2:.0f}  |  基线 {3:.1f} mm</translation>
         <translation>立体搜索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="521"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="527"/>
+        <source>Temporal Search</source>
+        <translation>时序搜索</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>AL-DIC global step (ADMM)</source>
         <translation>AL-DIC 全局步（ADMM）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="537"/>
         <source>ADMM Iterations</source>
         <translation>ADMM 迭代次数</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
         <source>Mesh refinement</source>
         <translation>网格加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="548"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>在掩膜边界（孔洞）处加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="550"/>
         <source>Refine at ROI edges</source>
         <translation>在 ROI 边缘处加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="556"/>
         <source>Refinement Level</source>
         <translation>加密级别</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="551"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="560"/>
         <source>Paint region…</source>
         <translation>绘制加密区域…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="553"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="562"/>
         <source>Clear paint</source>
         <translation>清除绘制</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="652"/>
         <source>Paired: {0} frames per camera</source>
         <translation>已配对：每相机 {0} 帧</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="658"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>数量不匹配：左 {0} 帧，右 {1} 帧</translation>
     </message>
