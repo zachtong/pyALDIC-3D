@@ -15,7 +15,7 @@ from __future__ import annotations
 import glob
 import re
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -49,6 +49,13 @@ class RunConfig:
     Image/mask specs are either a glob string (sorted) or an explicit list; the
     ROI is ``(xmin, xmax, ymin, ymax)`` in pixels. Matching-scale fields are
     forwarded to the strategy so a run can match a MATLAB baseline's parameters.
+
+    ``roi_mask`` (``[roi].mask`` in TOML) is an arbitrary-shape ROI mask image
+    drawn on the LEFT camera, frame 1. When set, its ``> 0`` bounding box
+    OVERRIDES ``roi``, and — unless explicit ``left_masks`` are given, which
+    take precedence — the mask is applied as a constant per-frame left mask
+    (correct for the frame-1 reference mesh; accumulative tracking keys every
+    frame off that same reference geometry).
     """
 
     calibration_file: Path
@@ -57,6 +64,7 @@ class RunConfig:
     right: str | list[str]
     roi: tuple[int, int, int, int]
     output_dir: Path
+    roi_mask: Path | None = None
     left_masks: str | list[str] | None = None
     right_masks: str | list[str] | None = None
     strategy: str = "track_both"
@@ -124,10 +132,19 @@ def load_config(path: str | Path) -> RunConfig:
         return pp if pp.is_absolute() else base / pp
 
     roi_tbl = table.get("roi", {})
-    for key in ("xmin", "xmax", "ymin", "ymax"):
-        if key not in roi_tbl:
-            raise ValueError(f"config missing [roi].{key}")
-    roi = (int(roi_tbl["xmin"]), int(roi_tbl["xmax"]), int(roi_tbl["ymin"]), int(roi_tbl["ymax"]))
+    roi_mask = _resolve(str(roi_tbl["mask"])) if "mask" in roi_tbl else None
+    if roi_mask is None:
+        for key in ("xmin", "xmax", "ymin", "ymax"):
+            if key not in roi_tbl:
+                raise ValueError(f"config missing [roi].{key}")
+    # With [roi].mask the pixel bounds are optional — the mask's bounding box
+    # overrides them in run_pipeline (any explicit values are placeholders).
+    roi = (
+        int(roi_tbl.get("xmin", 0)),
+        int(roi_tbl.get("xmax", 0)),
+        int(roi_tbl.get("ymin", 0)),
+        int(roi_tbl.get("ymax", 0)),
+    )
 
     match = table.get("matching", {})
     offset = match.get("disparity_offset")
@@ -143,6 +160,7 @@ def load_config(path: str | Path) -> RunConfig:
         left=_require(table, "sequence", "left"),
         right=_require(table, "sequence", "right"),
         roi=roi,
+        roi_mask=roi_mask,
         output_dir=_resolve(str(out.get("dir", "results"))),
         left_masks=seq.get("left_mask"),
         right_masks=seq.get("right_mask"),
@@ -229,35 +247,50 @@ def _load_stream(
 # --- pipeline ----------------------------------------------------------------
 
 
-def _build_reference_mesh(cfg: RunConfig, img_h: int, img_w: int, left_masks) -> DICMesh:
+def build_reference_mesh(
+    img_h: int,
+    img_w: int,
+    roi: tuple[int, int, int, int],
+    *,
+    winsize: int = 32,
+    winstepsize: int = 16,
+    winsize_min: int = 8,
+    refine_inner: bool = False,
+    refine_outer: bool = False,
+    refinement_level: int = 1,
+    refinement_brush: NDArray[np.float64] | None = None,
+    mask: NDArray[np.float64] | None = None,
+) -> DICMesh:
     """The frame-1 LEFT reference mesh: uniform grid, optionally quadtree-refined.
 
     Refinement follows the 2D app's levers verbatim (build_refinement_policy):
     inner mask-boundary / outer ROI-edge / user-painted brush criteria with
     min element size ``max(2, winstepsize // 2**level)``. The refined mesh is
-    built ONCE here and passed to the strategies as the external mesh — the
-    engine's per-frame refinement hook is deliberately NOT used (the mesh-
-    built-once invariant; MATLAB's acc-mode per-frame quadtree is identical
-    per frame anyway).
+    built ONCE and passed to the strategies as the external mesh — the engine's
+    per-frame refinement hook is deliberately NOT used (the mesh-built-once
+    invariant; MATLAB's acc-mode per-frame quadtree is identical per frame
+    anyway).
+
+    Plain-args and Qt-free on purpose: the GUI's live mesh PREVIEW calls this
+    exact function with the draft's parameters, so preview == pipeline.
+
+    Args:
+        roi: ``(xmin, xmax, ymin, ymax)`` pixel bounds of the grid.
+        refinement_brush: optional ``(H, W)`` user-painted refine-here mask
+            (``> 0`` = refine), already in frame-1 left image coordinates.
+        mask: optional ``(H, W)`` float frame-1 left ROI mask (1 = valid) used
+            by the refinement criteria/trim.
     """
     para = make_dicpara(
         img_size=(img_h, img_w),
-        roi=cfg.roi,
-        winsize=cfg.winsize,
-        winstepsize=cfg.winstepsize,
-        winsize_min=cfg.winsize_min,
+        roi=roi,
+        winsize=winsize,
+        winstepsize=winstepsize,
+        winsize_min=winsize_min,
     )
     mesh = build_grid_mesh(para, img_h, img_w)
 
-    brush = None
-    if cfg.refinement_mask is not None:
-        import cv2
-
-        img = cv2.imread(str(cfg.refinement_mask), cv2.IMREAD_GRAYSCALE)
-        if img is None:
-            raise ValueError(f"cannot read refinement mask: {cfg.refinement_mask}")
-        brush = (img > 0).astype(np.float64)
-    if not (cfg.refine_inner or cfg.refine_outer or brush is not None):
+    if not (refine_inner or refine_outer or refinement_brush is not None):
         return mesh
 
     # See docs/DEPENDS_ON_2D.md for these engine imports.
@@ -268,15 +301,15 @@ def _build_reference_mesh(cfg: RunConfig, img_h: int, img_w: int, left_masks) ->
     )
 
     mask_l1 = None
-    if left_masks is not None:
-        mask_l1 = np.ascontiguousarray(np.asarray(left_masks[0], dtype=np.float64))
-    min_size = max(2, cfg.winstepsize // (2 ** max(1, cfg.refinement_level)))
+    if mask is not None:
+        mask_l1 = np.ascontiguousarray(np.asarray(mask, dtype=np.float64))
+    min_size = max(2, winstepsize // (2 ** max(1, refinement_level)))
     policy = build_refinement_policy(
-        refine_inner_boundary=cfg.refine_inner,
-        refine_outer_boundary=cfg.refine_outer,
-        refinement_mask=brush,
+        refine_inner_boundary=refine_inner,
+        refine_outer_boundary=refine_outer,
+        refinement_mask=refinement_brush,
         min_element_size=min_size,
-        half_win=cfg.winsize // 2,
+        half_win=winsize // 2,
     )
     if policy is None:
         return mesh
@@ -286,6 +319,49 @@ def _build_reference_mesh(cfg: RunConfig, img_h: int, img_w: int, left_masks) ->
         mesh, policy.pre_solve, ctx, u0, mask=mask_l1, img_size=(img_h, img_w)
     )
     return refined
+
+
+def _build_reference_mesh(cfg: RunConfig, img_h: int, img_w: int, left_masks) -> DICMesh:
+    """Config-driven wrapper over :func:`build_reference_mesh` (loads the brush PNG)."""
+    brush = None
+    if cfg.refinement_mask is not None:
+        import cv2
+
+        img = cv2.imread(str(cfg.refinement_mask), cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            raise ValueError(f"cannot read refinement mask: {cfg.refinement_mask}")
+        brush = (img > 0).astype(np.float64)
+    return build_reference_mesh(
+        img_h,
+        img_w,
+        cfg.roi,
+        winsize=cfg.winsize,
+        winstepsize=cfg.winstepsize,
+        winsize_min=cfg.winsize_min,
+        refine_inner=cfg.refine_inner,
+        refine_outer=cfg.refine_outer,
+        refinement_level=cfg.refinement_level,
+        refinement_brush=brush,
+        mask=left_masks[0] if left_masks is not None else None,
+    )
+
+
+def _load_roi_mask(path: Path, img_shape: tuple[int, int]) -> NDArray[np.bool_]:
+    """Load ``cfg.roi_mask`` as a boolean array; validate shape and non-emptiness."""
+    mask = _load_gray(path) > 0
+    if mask.shape != img_shape:
+        raise ValueError(
+            f"roi_mask shape {mask.shape} does not match the left images {img_shape}: {path}"
+        )
+    if not mask.any():
+        raise ValueError(f"roi_mask is empty (no pixels > 0): {path}")
+    return mask
+
+
+def _mask_bbox(mask: NDArray[np.bool_]) -> tuple[int, int, int, int]:
+    """``(xmin, xmax, ymin, ymax)`` bounding box of the True pixels."""
+    ys, xs = np.nonzero(mask)
+    return int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())
 
 
 def run_pipeline(
@@ -306,6 +382,17 @@ def run_pipeline(
     right_frames, right_names = _load_stream(cfg.right, seq_base)
     left_masks, _ = _load_stream(cfg.left_masks, seq_base)
     right_masks, _ = _load_stream(cfg.right_masks, seq_base)
+
+    if cfg.roi_mask is not None:
+        # Arbitrary-shape ROI (toolbox-drawn): its bounding box overrides the
+        # rectangular roi, and — unless explicit per-frame left masks were
+        # given, which take precedence — the mask applies as a constant left
+        # mask on every frame (all geometry keys off the frame-1 reference).
+        path = cfg.roi_mask if cfg.roi_mask.is_absolute() else seq_base / cfg.roi_mask
+        roi_mask = _load_roi_mask(path, left_frames[0].shape)
+        cfg = replace(cfg, roi=_mask_bbox(roi_mask))
+        if left_masks is None:
+            left_masks = [roi_mask.astype(np.float64)] * len(left_frames)
 
     masks: dict = {}
     if left_masks is not None:

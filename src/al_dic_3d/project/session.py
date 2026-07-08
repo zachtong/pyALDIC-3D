@@ -36,6 +36,7 @@ SCHEMA_VERSION = 1
 _CONFIG_NAME = "session.json"
 _RESULTS_NAME = "results.npz"
 _PATH_FIELDS = ("calibration_file", "output_dir", "base_dir")
+_OPT_PATH_FIELDS = ("refinement_mask", "roi_mask")  # Path | None on RunConfig
 
 
 class SessionError(Exception):
@@ -68,6 +69,9 @@ def _config_to_json(config: RunConfig) -> dict:
     d = dataclasses.asdict(config)
     for name in _PATH_FIELDS:
         d[name] = str(d[name])
+    for name in _OPT_PATH_FIELDS:
+        if d.get(name) is not None:
+            d[name] = str(d[name])
     return d
 
 
@@ -81,6 +85,9 @@ def _config_from_json(d: dict | None) -> RunConfig | None:
     for name in _PATH_FIELDS:
         if name in kw:
             kw[name] = Path(kw[name])
+    for name in _OPT_PATH_FIELDS:
+        if kw.get(name) is not None:
+            kw[name] = Path(kw[name])
     if "roi" in kw and kw["roi"] is not None:
         kw["roi"] = tuple(kw["roi"])
     if kw.get("disparity_offset") is not None:
@@ -93,9 +100,10 @@ _DRAFT_PATH_FIELDS = ("calibration_file", "output_dir")
 
 def _draft_to_json(draft: ProjectDraft) -> dict:
     d = dataclasses.asdict(draft)
-    # The brush-painted refinement mask is an ndarray — not JSON-serializable
-    # and rebuildable from the canvas; it is materialized to a PNG at build().
+    # The canvas-painted masks are ndarrays — not JSON-serializable and
+    # rebuildable from the canvas; they are materialized to PNGs at build().
     d.pop("refinement_mask_array", None)
+    d.pop("roi_mask_array", None)
     for name in _DRAFT_PATH_FIELDS:
         d[name] = str(d[name]) if d[name] is not None else None
     return d

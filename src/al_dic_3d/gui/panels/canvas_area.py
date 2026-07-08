@@ -6,6 +6,13 @@ colorbar (both reused/mirrored from 2D), and the 36 px frame navigator at the
 bottom. 3D content: the background is the CURRENT CAMERA's frame; results render
 as a colormapped scatter of the tracked correspondence points (the 3D pipeline's
 native representation), colored by the selected world-frame field.
+
+ROI toolbox: this panel owns the :class:`ROIController` mask engine behind the
+sidebar's ROI toolbar — shape commits, invert/clear/import/save all funnel into
+:meth:`commit_roi_mask`, which persists the mask on the draft and mirrors its
+bounding box into ``draft.roi``. It also drives the live mesh PREVIEW overlay:
+the debounced preview calls the runner's :func:`build_reference_mesh` with the
+draft's exact parameters, so preview == pipeline.
 """
 
 from __future__ import annotations
@@ -16,10 +23,11 @@ import numpy as np
 from al_dic.gui.icons import icon_maximize, icon_zoom_in, icon_zoom_out
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.colorbar_overlay import ColorbarOverlay
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QColor, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
+    QFileDialog,
     QHBoxLayout,
     QPushButton,
     QStackedWidget,
@@ -27,10 +35,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from al_dic_3d.gui.controllers.roi_controller import ROIController
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
 from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
+from al_dic_3d.gui.widgets.mesh_overlay import MeshOverlay
 from al_dic_3d.gui.widgets.view3d import View3D
 
 if TYPE_CHECKING:
@@ -51,6 +61,8 @@ _FIELD_LABELS = {
     "von_mises": "von Mises",
 }
 _STRAIN_IDS = ("exx", "eyy", "exy", "e1", "e2", "max_shear", "von_mises")
+
+_MESH_PREVIEW_DEBOUNCE_MS = 300
 
 
 class CanvasArea3D(QWidget):
@@ -95,6 +107,18 @@ class CanvasArea3D(QWidget):
             tb.addWidget(b)
         tb.addStretch()
 
+        self._grid_cb = QCheckBox(self.tr("Show Grid"))
+        self._grid_cb.setToolTip(self.tr("Show/hide computational mesh grid"))
+        self._grid_cb.setChecked(True)
+        self._grid_cb.toggled.connect(self._on_grid_toggled)
+        tb.addWidget(self._grid_cb)
+
+        self._subset_cb = QCheckBox(self.tr("Show Subset"))
+        self._subset_cb.setToolTip(self.tr("Show subset window on hover (requires Grid)"))
+        self._subset_cb.setChecked(False)
+        self._subset_cb.toggled.connect(self._on_subset_toggled)
+        tb.addWidget(self._subset_cb)
+
         self._view3d_btn = QPushButton(self.tr("3D View"))
         self._view3d_btn.setCheckable(True)
         self._view3d_btn.setFixedWidth(76)
@@ -117,8 +141,20 @@ class CanvasArea3D(QWidget):
 
         self._colorbar = ColorbarOverlay(self._canvas.viewport())
         self._config_overlay = ConfigOverlay3D(controller, self._canvas.viewport())
+        self._mesh_overlay = MeshOverlay(self._canvas.viewport())
         self._canvas.viewport().installEventFilter(self)
         self._rig_cache = None  # loaded lazily for the 3D frusta
+
+        # ROI mask engine (created lazily once an image defines the shape).
+        self._roi_ctrl: ROIController | None = None
+
+        # Mesh preview state (debounced rebuild; hover lookup arrays).
+        self._mesh_timer = QTimer(self)
+        self._mesh_timer.setSingleShot(True)
+        self._mesh_timer.setInterval(_MESH_PREVIEW_DEBOUNCE_MS)
+        self._mesh_timer.timeout.connect(self._generate_preview_mesh)
+        self._hover_coords: np.ndarray | None = None
+        self._hover_valid: np.ndarray | None = None
 
         # ---- frame navigator ----
         self._frame_nav = FrameNavigator3D(signals)
@@ -130,32 +166,136 @@ class CanvasArea3D(QWidget):
         btn_in.clicked.connect(self._canvas.zoom_in)
         btn_out.clicked.connect(self._canvas.zoom_out)
 
-        self._canvas.roi_changed.connect(self._on_canvas_roi)
+        self._canvas.roi_mask_edited.connect(self.commit_roi_mask)
+        self._canvas.notice.connect(signals.log)
         self._canvas.brush_changed.connect(self._on_brush_changed)
-        signals.frame_changed.connect(lambda _i: self.render())
-        signals.camera_changed.connect(lambda _c: self.render())
+        self._canvas.view_changed.connect(self._sync_mesh_view_transform)
+        self._canvas.scene_hover.connect(self._on_scene_hover)
+        self._canvas.hover_left.connect(lambda: self._mesh_overlay.set_hover_node(None))
+        signals.frame_changed.connect(self._on_frame_or_camera)
+        signals.camera_changed.connect(self._on_frame_or_camera)
         signals.display_changed.connect(self.render)
         signals.results_changed.connect(self._on_results)
         signals.images_changed.connect(self._on_images)
         signals.roi_changed.connect(self._sync_roi)
-        signals.params_changed.connect(self._config_overlay.refresh)
+        signals.params_changed.connect(self._on_params_changed)
         signals.calibration_changed.connect(self._invalidate_rig)
 
     @property
     def canvas(self) -> ImageCanvas3D:
         return self._canvas
 
-    # ---- ROI edit mode ----------------------------------------------------------
+    # ---- ROI toolbox --------------------------------------------------------------
 
-    def set_roi_edit_mode(self, active: bool) -> None:
-        self._canvas.set_roi_editable(active)
+    @property
+    def roi_ctrl(self) -> ROIController | None:
+        """The mask engine (None until an image defines the canvas shape)."""
+        self._ensure_roi_ctrl()
+        return self._roi_ctrl
+
+    def _ensure_roi_ctrl(self) -> None:
+        """(Re)create the ROI controller to match the current image shape."""
+        if not self._canvas.has_image:
+            return
+        rect = self._canvas.scene().sceneRect()
+        shape = (int(rect.height()), int(rect.width()))
+        if self._roi_ctrl is None or self._roi_ctrl.shape != shape:
+            self._roi_ctrl = ROIController(shape)
+            mask = self.controller.state.draft.roi_mask_array
+            if mask is not None and np.asarray(mask).shape == shape:
+                self._roi_ctrl.mask = np.asarray(mask) > 0
+            self._canvas.set_roi_controller(self._roi_ctrl)
+            self._canvas.update_roi_overlay()
+
+    def start_shape_tool(self, shape: str, mode: str) -> None:
+        """Arm a one-shot ROI drawing tool on the canvas (from the toolbar)."""
+        self._ensure_roi_ctrl()
+        self._canvas.set_tool(shape, mode)
+
+    def commit_roi_mask(self) -> None:
+        """Persist the controller mask on the draft; mirror its bbox into roi."""
+        ctrl = self._roi_ctrl
+        if ctrl is None:
+            return
+        draft = self.controller.state.draft
+        mask = ctrl.mask
+        if mask.any():
+            draft.roi_mask_array = mask.copy()
+            ys, xs = np.nonzero(mask)
+            draft.roi = (int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max()))
+        else:
+            draft.roi_mask_array = None
+            draft.roi = None
+        self._canvas.update_roi_overlay()
+        self.controller.state.mark_dirty()
+        self.signals.roi_changed.emit()
+
+    def roi_clear(self) -> None:
+        ctrl = self.roi_ctrl
+        if ctrl is None:
+            return
+        ctrl.clear()
+        self.commit_roi_mask()
+
+    def roi_invert(self) -> None:
+        ctrl = self.roi_ctrl
+        if ctrl is None:
+            return
+        ctrl.invert()
+        self.commit_roi_mask()
+
+    def roi_import(self, path: str) -> None:
+        ctrl = self.roi_ctrl
+        if ctrl is None:
+            self.signals.log.emit("load images first before importing a ROI mask", "warning")
+            return
+        try:
+            ctrl.import_mask(path)
+        except Exception as exc:  # noqa: BLE001 - surface bad files to the user log
+            self.signals.log.emit(f"mask import failed: {exc}", "error")
+            return
+        self.commit_roi_mask()
+        self.signals.log.emit(f"ROI mask imported from {path}", "info")
+
+    def roi_save(self) -> None:
+        ctrl = self.roi_ctrl
+        if ctrl is None or not ctrl.mask.any():
+            self.signals.log.emit("no ROI mask to save — draw one first", "warning")
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Save Mask"), "roi_mask.png", self.tr("PNG image (*.png)")
+        )
+        if not path:
+            return
+        try:
+            ctrl.save_mask(path)
+        except Exception as exc:  # noqa: BLE001 - surface IO errors to the user log
+            self.signals.log.emit(f"mask save failed: {exc}", "error")
+            return
+        self.signals.log.emit(f"ROI mask saved to {path}", "success")
+
+    def _sync_roi(self) -> None:
+        """Draft -> view: bbox rectangle, mask overlay, and the mesh preview."""
+        draft = self.controller.state.draft
+        self._canvas.set_roi(draft.roi)
+        if self._roi_ctrl is not None:
+            mask = draft.roi_mask_array
+            if mask is None:
+                if self._roi_ctrl.mask.any():
+                    self._roi_ctrl.clear()
+            elif np.asarray(mask).shape == self._roi_ctrl.shape and mask is not self._roi_ctrl.mask:
+                self._roi_ctrl.mask = np.asarray(mask) > 0
+            self._canvas.update_roi_overlay()
+        self._schedule_mesh_preview()
 
     # ---- refinement brush ---------------------------------------------------------
 
-    def set_brush_mode(self, active: bool) -> None:
-        # Brush radius tracks the subset step so one stroke covers ~2 elements.
-        radius = max(4, int(self.controller.state.draft.winstepsize))
-        self._canvas.set_brush_mode(active, radius=radius)
+    def set_refine_brush(self, mode: str, radius: int) -> None:
+        """Arm the canvas refinement brush ('paint' or 'erase') at ``radius`` px."""
+        self._canvas.set_brush_tool(mode, radius)
+
+    def set_brush_radius(self, radius: int) -> None:
+        self._canvas.set_brush_radius(radius)
 
     def clear_brush(self) -> None:
         self._canvas.clear_brush()
@@ -167,19 +307,140 @@ class CanvasArea3D(QWidget):
         self.controller.state.mark_dirty()
         self.signals.params_changed.emit()
 
-    def _on_canvas_roi(self, roi: tuple) -> None:
-        self.controller.state.draft.roi = tuple(int(v) for v in roi)
-        self.controller.state.mark_dirty()
-        self.signals.roi_changed.emit()
+    # ---- mesh preview + subset hover ------------------------------------------------
 
-    def _sync_roi(self) -> None:
-        self._canvas.set_roi(self.controller.state.draft.roi)
+    def _on_grid_toggled(self, checked: bool) -> None:
+        self._subset_cb.setEnabled(checked)
+        if not checked:
+            self._subset_cb.setChecked(False)
+            self._mesh_timer.stop()
+            self._mesh_overlay.setVisible(False)
+        else:
+            self._schedule_mesh_preview()
+
+    def _on_subset_toggled(self, checked: bool) -> None:
+        if not checked:
+            self._mesh_overlay.set_hover_node(None)
+
+    def _on_params_changed(self) -> None:
+        self._config_overlay.refresh()
+        self._schedule_mesh_preview()
+
+    def _on_frame_or_camera(self, _v) -> None:
+        self.render()
+        self._schedule_mesh_preview()
+
+    def _schedule_mesh_preview(self) -> None:
+        """Debounced preview rebuild (params/ROI edits arrive in bursts)."""
+        if self._grid_cb.isChecked():
+            self._mesh_timer.start()
+
+    def _mesh_preview_applicable(self) -> bool:
+        """Preview shows frame-1 LEFT reference geometry only on that view."""
+        draft = self.controller.state.draft
+        return (
+            self._stack.currentIndex() == 0
+            and self.signals.current_camera == "L"
+            and self.signals.current_frame == 0
+            and self._canvas.has_image
+            and draft.roi is not None
+            and draft.roi[0] < draft.roi[1]
+            and draft.roi[2] < draft.roi[3]
+        )
+
+    def _generate_preview_mesh(self) -> None:
+        """Build the preview mesh with the REAL pipeline grid code (debounced)."""
+        if not self._grid_cb.isChecked() or not self._mesh_preview_applicable():
+            self._hide_mesh_overlay()
+            return
+
+        draft = self.controller.state.draft
+        rect = self._canvas.scene().sceneRect()
+        img_h, img_w = int(rect.height()), int(rect.width())
+        roi_mask = draft.roi_mask_array
+        try:
+            from al_dic_3d.runner import build_reference_mesh
+
+            mask_f = None
+            if roi_mask is not None:
+                mask_f = (np.asarray(roi_mask) > 0).astype(np.float64)
+            brush = draft.refinement_mask_array
+            brush_f = (np.asarray(brush) > 0).astype(np.float64) if brush is not None else None
+            mesh = build_reference_mesh(
+                img_h,
+                img_w,
+                tuple(int(v) for v in draft.roi),
+                winsize=int(draft.winsize),
+                winstepsize=int(draft.winstepsize),
+                winsize_min=int(draft.winsize_min),
+                refine_inner=bool(draft.refine_inner),
+                refine_outer=bool(draft.refine_outer),
+                refinement_level=int(draft.refinement_level),
+                refinement_brush=brush_f,
+                mask=mask_f,
+            )
+            coords = np.asarray(mesh.coordinates_fem, dtype=np.float64)
+            elements = np.asarray(mesh.elements_fem, dtype=np.int64)
+            valid = self._node_valid_mask(coords, roi_mask)
+        except Exception:  # noqa: BLE001 - preview is best-effort, never block the GUI
+            self._hide_mesh_overlay()
+            return
+
+        self._hover_coords = coords
+        self._hover_valid = valid
+        self._mesh_overlay.set_mesh(coords, elements, valid)
+        self._mesh_overlay.set_view_transform(self._canvas.viewportTransform())
+        self._mesh_overlay.setVisible(True)
+
+    def _hide_mesh_overlay(self) -> None:
+        self._mesh_overlay.set_mesh(None, None)
+        self._mesh_overlay.setVisible(False)
+        self._hover_coords = None
+        self._hover_valid = None
+
+    @staticmethod
+    def _node_valid_mask(coords: np.ndarray, roi_mask) -> np.ndarray:
+        """Per-node boolean: True when the node lies inside the ROI mask."""
+        n = coords.shape[0]
+        if roi_mask is None:
+            return np.ones(n, dtype=bool)
+        m = np.asarray(roi_mask) > 0
+        h, w = m.shape
+        ix = np.clip(np.round(coords[:, 0]).astype(int), 0, w - 1)
+        iy = np.clip(np.round(coords[:, 1]).astype(int), 0, h - 1)
+        return m[iy, ix]
+
+    def _sync_mesh_view_transform(self) -> None:
+        """Lightweight pan/zoom sync — transform only, no path rebuild."""
+        if self._mesh_overlay.isVisible():
+            self._mesh_overlay.set_view_transform(self._canvas.viewportTransform())
+
+    def _on_scene_hover(self, sx: float, sy: float) -> None:
+        """Snap the hover subset window to the nearest valid preview node."""
+        if not self._subset_cb.isChecked() or self._hover_coords is None:
+            return
+        coords = self._hover_coords
+        dist_sq = (coords[:, 0] - sx) ** 2 + (coords[:, 1] - sy) ** 2
+        mask = ~np.isnan(dist_sq)
+        if self._hover_valid is not None:
+            mask &= self._hover_valid
+        if not np.any(mask):
+            self._mesh_overlay.set_hover_node(None)
+            return
+        dist_sq = np.where(mask, dist_sq, np.inf)
+        min_idx = int(np.argmin(dist_sq))
+        threshold = float(self.controller.state.draft.winstepsize) * 1.5
+        if dist_sq[min_idx] > threshold * threshold:
+            self._mesh_overlay.set_hover_node(None)
+            return
+        self._mesh_overlay.set_hover_node(min_idx, float(self.controller.state.draft.winsize))
 
     # ---- view mode ---------------------------------------------------------------
 
     def _on_view_mode(self, use_3d: bool) -> None:
         self._stack.setCurrentIndex(1 if use_3d else 0)
         self.render()
+        self._schedule_mesh_preview()
 
     def _invalidate_rig(self) -> None:
         self._rig_cache = None
@@ -207,6 +468,8 @@ class CanvasArea3D(QWidget):
         self._frame_nav.set_frame_count(n)
         self._config_overlay.refresh()
         self.render()
+        self._ensure_roi_ctrl()
+        self._schedule_mesh_preview()
 
     def _on_results(self) -> None:
         result = self.controller.state.result
@@ -373,5 +636,6 @@ class CanvasArea3D(QWidget):
     def eventFilter(self, obj, event) -> bool:  # noqa: N802 (Qt override)
         if obj is self._canvas.viewport() and event.type() == QEvent.Type.Resize:
             self._colorbar.setGeometry(0, 0, obj.width(), obj.height())
+            self._mesh_overlay.setGeometry(0, 0, obj.width(), obj.height())
             self._config_overlay.reposition()
         return super().eventFilter(obj, event)

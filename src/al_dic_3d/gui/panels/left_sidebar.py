@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (
 
 from al_dic_3d.calibration import IMPORTERS, load_calibration
 from al_dic_3d.gui.state import GuiSignals
+from al_dic_3d.gui.widgets.roi_toolbar import ROIToolbar
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
@@ -264,7 +265,7 @@ class LeftSidebar3D(QWidget):
         self._left_drop.folder_selected.connect(lambda f: self._load_camera("L", f))
         self._right_drop.folder_selected.connect(lambda f: self._load_camera("R", f))
         self.signals.images_changed.connect(self.refresh_images)
-        self.signals.roi_changed.connect(self._sync_roi_spins)
+        self.signals.roi_changed.connect(self._sync_roi_label)
 
     # ---- CALIBRATION ---------------------------------------------------------
 
@@ -459,56 +460,30 @@ class LeftSidebar3D(QWidget):
         )
         layout.addWidget(hint)
 
-        btn_row = QHBoxLayout()
-        btn_row.setSpacing(4)
-        self._roi_draw_btn = QPushButton(self.tr("+ Draw"))
-        self._roi_draw_btn.setCheckable(True)
-        self._roi_clear_btn = QPushButton(self.tr("Clear"))
-        btn_row.addWidget(self._roi_draw_btn)
-        btn_row.addWidget(self._roi_clear_btn)
-        layout.addLayout(btn_row)
+        # ROI toolbox — Add/Cut/Refine dropdown tools + Import/Save/Invert/Clear
+        # (the full 2D drawing experience; the canvas rasterizes the shapes).
+        self._roi_toolbar = ROIToolbar()
+        layout.addWidget(self._roi_toolbar)
 
-        spin_grid = QHBoxLayout()
-        spin_grid.setSpacing(4)
-        self._roi_spins: list[QSpinBox] = []
-        for _ in range(4):
-            spin = QSpinBox()
-            spin.setRange(0, 100000)
-            spin.valueChanged.connect(self._on_roi_spin)
-            self._roi_spins.append(spin)
-            spin_grid.addWidget(spin)
-        layout.addLayout(spin_grid)
-        roi_caption = QLabel(self.tr("x min / x max / y min / y max (px)"))
-        roi_caption.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
-        layout.addWidget(roi_caption)
-
-        self._roi_clear_btn.clicked.connect(self._on_roi_clear)
+        # Read-only bounding-box readout of the drawn mask.
+        self._roi_bbox_lbl = QLabel(self.tr("bbox: not set"))
+        self._roi_bbox_lbl.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
+        layout.addWidget(self._roi_bbox_lbl)
         return host
 
     @property
-    def roi_draw_button(self) -> QPushButton:
-        """The canvas wires this toggle to its rubber-band ROI mode."""
-        return self._roi_draw_btn
+    def roi_toolbar(self) -> ROIToolbar:
+        """The main window wires this toolbar to the canvas drawing tools."""
+        return self._roi_toolbar
 
-    def _on_roi_spin(self, _v: int) -> None:
-        vals = [s.value() for s in self._roi_spins]
-        self.controller.state.draft.roi = (vals[0], vals[1], vals[2], vals[3])
-        self.controller.state.mark_dirty()
-        self.signals.roi_changed.emit()
-
-    def _on_roi_clear(self) -> None:
-        self.controller.state.draft.roi = None
-        self.controller.state.mark_dirty()
-        self.signals.roi_changed.emit()
-
-    def _sync_roi_spins(self) -> None:
+    def _sync_roi_label(self) -> None:
         roi = self.controller.state.draft.roi
         if roi is None:
-            return
-        for spin, val in zip(self._roi_spins, roi, strict=True):
-            spin.blockSignals(True)
-            spin.setValue(int(val))
-            spin.blockSignals(False)
+            self._roi_bbox_lbl.setText(self.tr("bbox: not set"))
+        else:
+            self._roi_bbox_lbl.setText(
+                self.tr("bbox: {0}–{1}, {2}–{3} px").format(*(int(v) for v in roi))
+            )
 
     # ---- PARAMETERS ---------------------------------------------------------------
 
@@ -562,14 +537,8 @@ class LeftSidebar3D(QWidget):
         self._refine_level_spin.setValue(1)
         layout.addLayout(self._param_row(self.tr("Refinement Level"), self._refine_level_spin))
 
-        brush_row = QHBoxLayout()
-        brush_row.setSpacing(4)
-        self._brush_btn = QPushButton(self.tr("Paint region…"))
-        self._brush_btn.setCheckable(True)
-        self._brush_clear_btn = QPushButton(self.tr("Clear paint"))
-        brush_row.addWidget(self._brush_btn)
-        brush_row.addWidget(self._brush_clear_btn)
-        layout.addLayout(brush_row)
+        # The refinement BRUSH moved into the ROI toolbar's "+ Refine" menu
+        # (Paint / Erase / Clear Brush + radius) — 2D toolbox parity.
 
         self._subset_spin.valueChanged.connect(self._apply_params)
         self._step_spin.valueChanged.connect(self._apply_params)
@@ -611,15 +580,6 @@ class LeftSidebar3D(QWidget):
         self._strategy_combo.currentIndexChanged.connect(self._apply_workflow)
         self._admm_spin.valueChanged.connect(self._apply_params)
         return host
-
-    @property
-    def brush_button(self) -> QPushButton:
-        """The canvas wires this toggle to its refinement-brush paint mode."""
-        return self._brush_btn
-
-    @property
-    def brush_clear_button(self) -> QPushButton:
-        return self._brush_clear_btn
 
     def _param_row(self, text: str, widget: QWidget) -> QHBoxLayout:
         row = QHBoxLayout()
@@ -744,4 +704,4 @@ class LeftSidebar3D(QWidget):
         if draft.calibration_file is not None:
             self._preview_calibration()
         self.refresh_images()
-        self._sync_roi_spins()
+        self._sync_roi_label()

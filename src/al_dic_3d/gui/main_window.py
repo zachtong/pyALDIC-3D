@@ -48,28 +48,39 @@ class MainWindow3D(QMainWindow):
         self._right = RightSidebar3D(self.controller, self.signals)
         layout.addWidget(self._right, stretch=0)
 
-        # ROI draw toggle <-> canvas rubber-band mode; a completed drawing
-        # releases the toggle (2D toolbar deactivate idiom).
-        self._left.roi_draw_button.toggled.connect(self._canvas_area.set_roi_edit_mode)
-        self._canvas_area.canvas.roi_changed.connect(
-            lambda _roi: self._left.roi_draw_button.setChecked(False)
-        )
-
-        # Refinement brush toggle — mutually exclusive with ROI drawing (both
-        # claim the left mouse button on the canvas).
-        self._left.brush_button.toggled.connect(self._on_brush_toggled)
-        self._left.roi_draw_button.toggled.connect(
-            lambda on: on and self._left.brush_button.setChecked(False)
-        )
-        self._left.brush_clear_button.clicked.connect(self._canvas_area.clear_brush)
+        # ROI toolbox <-> canvas drawing tools (2D toolbar idiom): a shape
+        # selection arms a one-shot canvas tool; the commit/cancel resets the
+        # toolbar highlight via drawing_finished. The "+ Refine" menu drives
+        # the freehand refinement brush on the same canvas.
+        toolbar = self._left.roi_toolbar
+        toolbar.draw_requested.connect(self._on_roi_draw_requested)
+        toolbar.clear_requested.connect(self._canvas_area.roi_clear)
+        toolbar.invert_requested.connect(self._canvas_area.roi_invert)
+        toolbar.import_requested.connect(self._canvas_area.roi_import)
+        toolbar.save_requested.connect(self._canvas_area.roi_save)
+        toolbar.brush_requested.connect(self._on_brush_requested)
+        toolbar.brush_radius_changed.connect(self._canvas_area.set_brush_radius)
+        toolbar.brush_clear_requested.connect(self._canvas_area.clear_brush)
+        self._canvas_area.canvas.drawing_finished.connect(toolbar.deactivate)
 
         self._build_menu()
         self.signals.log.emit("pyALDIC-3D ready", "info")
 
-    def _on_brush_toggled(self, active: bool) -> None:
-        if active:
-            self._left.roi_draw_button.setChecked(False)
-        self._canvas_area.set_brush_mode(active)
+    def _on_roi_draw_requested(self, shape: str, mode: str) -> None:
+        if not self._canvas_area.canvas.has_image:
+            self.signals.log.emit(
+                "load images first before drawing a Region of Interest", "warning"
+            )
+            self._left.roi_toolbar.deactivate()
+            return
+        self._canvas_area.start_shape_tool(shape, mode)
+
+    def _on_brush_requested(self, mode: str, radius: int) -> None:
+        if not self._canvas_area.canvas.has_image:
+            self.signals.log.emit("load images first before using the brush", "warning")
+            self._left.roi_toolbar.deactivate()
+            return
+        self._canvas_area.set_refine_brush(mode, radius)
 
     # ---- menu ----------------------------------------------------------------
 

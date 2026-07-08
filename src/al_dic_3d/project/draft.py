@@ -28,6 +28,10 @@ class ProjectDraft:
     left_masks: list[str] | None = None
     right_masks: list[str] | None = None
     roi: tuple[int, int, int, int] | None = None  # (xmin, xmax, ymin, ymax)
+    roi_mask_array: object | None = field(default=None, repr=False)
+    # ^ toolbox-drawn (H, W) ROI mask from the canvas (left frame 1); written to
+    #   a PNG at build(). ``roi`` mirrors its bounding box so readiness checks
+    #   and the sidebar readout keep working.
     strategy: str = "track_both"
     reference_mode: str = "accumulative"
     winsize: int = 32
@@ -69,18 +73,26 @@ class ProjectDraft:
     def is_ready(self) -> bool:
         return not self.issues()
 
-    def _write_refinement_mask(self, out_dir: Path) -> Path | None:
-        """Persist the brush-painted refinement mask (if any) next to the run."""
-        if self.refinement_mask_array is None:
+    def _write_mask_png(self, array: object | None, out_dir: Path, name: str) -> Path | None:
+        """Persist a canvas-painted (H, W) mask array as ``out_dir/name`` PNG."""
+        if array is None:
             return None
         import cv2
         import numpy as np
 
-        arr = (np.asarray(self.refinement_mask_array) > 0).astype("uint8") * 255
+        arr = (np.asarray(array) > 0).astype("uint8") * 255
         out_dir.mkdir(parents=True, exist_ok=True)
-        path = out_dir / "refinement_mask.png"
+        path = out_dir / name
         cv2.imwrite(str(path), arr)
         return path
+
+    def _write_refinement_mask(self, out_dir: Path) -> Path | None:
+        """Persist the brush-painted refinement mask (if any) next to the run."""
+        return self._write_mask_png(self.refinement_mask_array, out_dir, "refinement_mask.png")
+
+    def _write_roi_mask(self, out_dir: Path) -> Path | None:
+        """Persist the toolbox-drawn ROI mask (if any) next to the run."""
+        return self._write_mask_png(self.roi_mask_array, out_dir, "roi_mask.png")
 
     def build(self) -> RunConfig:
         """Assemble a validated :class:`RunConfig`; raise if requirements are unmet."""
@@ -97,6 +109,7 @@ class ProjectDraft:
             left=list(self.left),
             right=list(self.right),
             roi=tuple(self.roi),  # type: ignore[arg-type]
+            roi_mask=self._write_roi_mask(out_dir),
             output_dir=out_dir,
             left_masks=list(self.left_masks) if self.left_masks else None,
             right_masks=list(self.right_masks) if self.right_masks else None,

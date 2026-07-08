@@ -75,12 +75,88 @@ def test_sidebar_populates_draft_and_canvas_shows_image(qapp, scene):
     win.close()
 
 
-def test_roi_draw_updates_draft(qapp, scene):
+def test_roi_toolbox_mask_updates_draft(qapp, scene):
     win = _loaded_window(scene)
-    win._canvas_area.canvas.roi_changed.emit((10, 150, 20, 160))
-    assert win.controller.state.draft.roi == (10, 150, 20, 160)
-    # drawing releases the toggle (2D deactivate idiom)
-    assert not win._left.roi_draw_button.isChecked()
+    area = win._canvas_area
+    draft = win.controller.state.draft
+
+    # Arm a rect tool from the toolbar path and stamp through the mask engine.
+    win._left.roi_toolbar.draw_requested.emit("rect", "add")
+    ctrl = area.roi_ctrl
+    assert ctrl is not None and ctrl.shape == (200, 200)
+    ctrl.add_rectangle(10, 20, 150, 160, "add")
+    area.commit_roi_mask()
+
+    # draft.roi follows the mask bounding box; the mask itself is persisted.
+    assert draft.roi == (10, 150, 20, 160)
+    assert draft.roi_mask_array is not None and draft.roi_mask_array.any()
+    assert "10" in win._left._roi_bbox_lbl.text()  # sidebar readout follows
+
+    # Cut a hole: bbox unchanged, mask smaller.
+    n_before = int(np.count_nonzero(draft.roi_mask_array))
+    ctrl.add_circle(80, 90, 20, "cut")
+    area.commit_roi_mask()
+    assert int(np.count_nonzero(draft.roi_mask_array)) < n_before
+    assert draft.roi == (10, 150, 20, 160)
+
+    # Invert + clear round-trip through the toolbar signals.
+    win._left.roi_toolbar.invert_requested.emit()
+    assert draft.roi_mask_array is not None
+    win._left.roi_toolbar.clear_requested.emit()
+    assert draft.roi_mask_array is None and draft.roi is None
+    win.close()
+
+
+def test_shape_commit_releases_toolbar_highlight(qapp, scene):
+    win = _loaded_window(scene)
+    toolbar = win._left.roi_toolbar
+    toolbar._on_shape_selected("circle", "cut")
+    assert toolbar._active_mode == "cut"
+    # canvas one-shot commit emits drawing_finished -> toolbar deactivates
+    win._canvas_area.canvas.drawing_finished.emit()
+    assert toolbar._active_mode is None
+    win.close()
+
+
+def test_refine_brush_via_toolbar(qapp, scene):
+    win = _loaded_window(scene)
+    canvas = win._canvas_area.canvas
+    win._left.roi_toolbar.brush_requested.emit("paint", 12)
+    assert canvas._tool == "brush" and canvas._brush_radius == 12
+    win._left.roi_toolbar.brush_radius_changed.emit(20)
+    assert canvas._brush_radius == 20
+    # paint a stroke programmatically; the draft picks up the refinement mask
+    assert canvas._ensure_brush_buffers()
+    from PySide6.QtCore import QPointF
+
+    canvas._brush_stroke_to(QPointF(100.0, 100.0))
+    canvas.brush_changed.emit()
+    assert win.controller.state.draft.refinement_mask_array is not None
+    win._left.roi_toolbar.brush_clear_requested.emit()
+    assert win.controller.state.draft.refinement_mask_array is None
+    win.close()
+
+
+def test_mesh_preview_builds_from_draft(qapp, scene):
+    win = _loaded_window(scene)
+    area = win._canvas_area
+    assert area._grid_cb.isChecked()  # default on
+    area._generate_preview_mesh()  # bypass the debounce timer
+    overlay = area._mesh_overlay
+    assert overlay.isVisible() and overlay._edge_path is not None
+    assert area._hover_coords is not None and len(area._hover_coords) > 4
+
+    # hover near a node shows the subset window (requires Show Subset)
+    area._subset_cb.setChecked(True)
+    x, y = float(area._hover_coords[0, 0]), float(area._hover_coords[0, 1])
+    area._on_scene_hover(x + 1.0, y + 1.0)
+    assert overlay._hover_idx is not None
+    assert overlay._hover_winsize == float(win.controller.state.draft.winsize)
+
+    # unchecking Grid disables + unchecks Subset and hides the overlay
+    area._grid_cb.setChecked(False)
+    assert not area._subset_cb.isChecked() and not area._subset_cb.isEnabled()
+    assert not overlay.isVisible()
     win.close()
 
 

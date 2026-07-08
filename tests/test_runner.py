@@ -216,3 +216,69 @@ def test_reference_mesh_quadtree_refinement():
     # refined nodes appear BETWEEN uniform grid lines (finer than winstepsize)
     xs = np.unique(np.asarray(refined.coordinates_fem)[:, 0])
     assert np.diff(np.sort(xs)).min() < 16
+
+
+def test_load_config_roi_mask_key(tmp_path):
+    # [roi].mask makes the pixel bounds optional (mask bbox overrides them).
+    (tmp_path / "calib.yml").write_text("", encoding="utf-8")
+    cfg_path = tmp_path / "config.toml"
+    cfg_path.write_text(
+        """
+[calibration]
+file = "calib.yml"
+format = "opencv_yaml"
+[sequence]
+left = "L_*.png"
+right = "R_*.png"
+[roi]
+mask = "roi_mask.png"
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    cfg = load_config(cfg_path)
+    assert cfg.roi_mask == tmp_path / "roi_mask.png"
+    assert cfg.roi == (0, 0, 0, 0)  # placeholder — replaced by the mask bbox
+
+
+def test_mask_bbox_and_roi_mask_validation(tmp_path):
+    from al_dic_3d.runner import _load_roi_mask, _mask_bbox
+
+    mask = np.zeros((60, 80), dtype=bool)
+    mask[10:31, 20:51] = True
+    assert _mask_bbox(mask) == (20, 50, 10, 30)
+
+    ok = np.zeros((60, 80), dtype=np.uint8)
+    ok[10:30, 20:50] = 255
+    cv2.imwrite(str(tmp_path / "ok.png"), ok)
+    loaded = _load_roi_mask(tmp_path / "ok.png", (60, 80))
+    assert loaded.dtype == bool and loaded[15, 30] and not loaded[0, 0]
+
+    with pytest.raises(ValueError, match="does not match"):
+        _load_roi_mask(tmp_path / "ok.png", (61, 80))
+
+    cv2.imwrite(str(tmp_path / "empty.png"), np.zeros((60, 80), dtype=np.uint8))
+    with pytest.raises(ValueError, match="empty"):
+        _load_roi_mask(tmp_path / "empty.png", (60, 80))
+
+
+def test_run_pipeline_roi_mask_confines_grid(tmp_path):
+    # An arbitrary-shape [roi].mask: bbox override + constant left mask.
+    from dataclasses import replace
+
+    scene = synth_stereo.build_scene(tmp_path, n_frames=2)
+    cfg = load_config(synth_stereo.write_config(tmp_path, scene))
+
+    img = cv2.imread(str(tmp_path / "L_000.png"), cv2.IMREAD_UNCHANGED)
+    mask = np.zeros(img.shape[:2], dtype=np.uint8)
+    cv2.circle(mask, (110, 130), 55, 255, -1)  # disc inside the default ROI
+    cv2.imwrite(str(tmp_path / "roi_mask.png"), mask)
+
+    cfg = replace(cfg, roi_mask=tmp_path / "roi_mask.png", roi=(0, 0, 0, 0))
+    result = run_pipeline(cfg)
+
+    # Reference grid is confined to the mask's bounding box (55..165, 75..185).
+    xs, ys = result.ref_coords[:, 0], result.ref_coords[:, 1]
+    assert xs.min() >= 55 and xs.max() <= 165
+    assert ys.min() >= 75 and ys.max() <= 185
+    assert result.meta["n_tracked_positions"] > 0

@@ -394,27 +394,57 @@
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="83"/>
+        <location filename="../../gui/panels/canvas_area.py" line="95"/>
         <source>Fit</source>
         <translation>適配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="98"/>
+        <location filename="../../gui/panels/canvas_area.py" line="110"/>
+        <source>Show Grid</source>
+        <translation>顯示網格</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="111"/>
+        <source>Show/hide computational mesh grid</source>
+        <translation>顯示/隱藏計算網格</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="116"/>
+        <source>Show Subset</source>
+        <translation>顯示子集</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="117"/>
+        <source>Show subset window on hover (requires Grid)</source>
+        <translation>懸停時顯示子集窗口（需要先開啟網格）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
         <source>3D View</source>
         <translation>3D 檢視</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="104"/>
+        <location filename="../../gui/panels/canvas_area.py" line="128"/>
         <source>Show Points</source>
         <translation>顯示測點</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="253"/>
+        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <source>Save Mask</source>
+        <translation>儲存掩模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <source>PNG image (*.png)</source>
+        <translation>PNG 影像 (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="516"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="259"/>
+        <location filename="../../gui/panels/canvas_area.py" line="522"/>
         <source>Selected field is not available.</source>
         <translation>所選場變量不可用。</translation>
     </message>
@@ -636,124 +666,124 @@
 <context>
     <name>LeftSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="163"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="164"/>
         <source>IMAGES</source>
         <translation>影像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="170"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="171"/>
         <source>Drop LEFT camera
 folder or click</source>
         <translation>拖入左相機資料夾
 或點擊選擇</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="171"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="172"/>
         <source>Drop RIGHT camera
 folder or click</source>
         <translation>拖入右相機資料夾
 或點擊選擇</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="176"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="177"/>
         <source>Natural Sort (1, 2, …, 10)</source>
         <translation>自然排序 (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="184"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="185"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="184"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="185"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="683"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="214"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="643"/>
         <source>No images loaded</source>
         <translation>尚未載入影像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="239"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="240"/>
         <source>CALIBRATION</source>
         <translation>標定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="243"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="244"/>
         <source>WORKFLOW TYPE</source>
         <translation>工作流類型</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="247"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="248"/>
         <source>REGION OF INTEREST</source>
         <translation>感興趣區域</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="251"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="252"/>
         <source>PARAMETERS</source>
         <translation>參數</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="255"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="256"/>
         <source>ADVANCED</source>
         <translation>高級</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="280"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="281"/>
         <source>Calibrate from images…</source>
         <translation>從影像校正…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="287"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="288"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="298"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="299"/>
         <source>Import calibration…</source>
         <translation>匯入標定…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="302"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="303"/>
         <source>Manual parameters…</source>
         <translation>手動輸入參數…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="306"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="307"/>
         <source>No calibration loaded</source>
         <translation>尚未載入標定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="344"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="345"/>
         <source>Choose calibration file</source>
         <translation>選擇標定檔案</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="346"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="347"/>
         <source>Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</source>
         <translation>標定檔案 (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="360"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="361"/>
         <source>Error: {0}</source>
         <translation>錯誤：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="368"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="369"/>
         <source>{0}
 fx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm</source>
         <translation>{0}
 fx {1:.0f}  fy {2:.0f}  |  基線 {3:.1f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="392"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="393"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="395"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="396"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -771,92 +801,100 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
 噪聲影像，或對應變精度要求高的場景。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="404"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="405"/>
         <source>Solver</source>
         <translation>求解器</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="592"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="469"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="482"/>
+        <source>bbox: not set</source>
+        <translation>包圍盒：未設定</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="485"/>
+        <source>bbox: {0}–{1}, {2}–{3} px</source>
+        <translation>包圍盒：{0}–{1}，{2}–{3} 像素</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="561"/>
         <source>Track Both</source>
         <translation>雙相機追蹤</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="593"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="562"/>
         <source>Stereo Each Frame</source>
         <translation>逐幀立體匹配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="594"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="563"/>
         <source>Reference Direct</source>
         <translation>參考幀直接匹配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="595"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="564"/>
         <source>Strategy</source>
         <translation>策略</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="384"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="385"/>
         <source>Accumulative</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="385"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="386"/>
         <source>Incremental</source>
         <translation>增量式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="386"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="387"/>
         <source>Tracking Mode</source>
         <translation>追蹤模式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="406"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="407"/>
         <source>Compute surface strain</source>
         <translation>計算表面應變</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="410"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="411"/>
         <source>Quality gates (ZNSSD / outliers)</source>
         <translation>品質門檻（ZNSSD / 離群點）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="450"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="451"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>在左相機第 1 幀上繪製——所有後續幀與右相機都由它推算。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="464"/>
         <source>+ Draw</source>
         <translation>+ 繪製</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="466"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="481"/>
         <source>x min / x max / y min / y max (px)</source>
         <translation>x 最小 / x 最大 / y 最小 / y 最大（像素）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="525"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="500"/>
         <source>Subset Size</source>
         <translation>子集尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="505"/>
         <source>Subset Step</source>
         <translation>子集步長</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="536"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="511"/>
         <source>Stereo Search</source>
         <translation>立體搜尋</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="545"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="520"/>
         <source>Temporal Search</source>
         <translation>時序搜尋</translation>
     </message>
@@ -869,57 +907,55 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
         <translation>ADMM 迭代次數</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="548"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="523"/>
         <source>Mesh refinement</source>
         <translation>網格加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="555"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>在遮罩邊界（孔洞）處加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="557"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
         <source>Refine at ROI edges</source>
         <translation>在 ROI 邊緣處加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="563"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="538"/>
         <source>Refinement Level</source>
         <translation>加密級別</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="567"/>
         <source>Paint region…</source>
         <translation>繪製加密區域…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="569"/>
         <source>Clear paint</source>
         <translation>清除繪製</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="602"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="571"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = 單次全域求解（最快），3 = 預設值，5 次以上收益遞減</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="604"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="573"/>
         <source>AL-DIC Iterations</source>
         <translation>AL-DIC 迭代次數</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="606"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="575"/>
         <source>Only affects AL-DIC solver. Ignored by Local DIC.</source>
         <translation>僅對 AL-DIC 求解器生效，Local DIC 會忽略。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="688"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="648"/>
         <source>Paired: {0} frames per camera</source>
         <translation>已配對：每相機 {0} 幀</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="694"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="654"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>數量不符：左 {0} 幀，右 {1} 幀</translation>
     </message>
@@ -932,53 +968,53 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="77"/>
+        <location filename="../../gui/main_window.py" line="88"/>
         <source>&amp;File</source>
         <translation>檔案(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="79"/>
+        <location filename="../../gui/main_window.py" line="90"/>
         <source>New Project</source>
         <translation>新建專案</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="84"/>
+        <location filename="../../gui/main_window.py" line="95"/>
         <source>Open Project…</source>
         <translation>開啟專案…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="89"/>
+        <location filename="../../gui/main_window.py" line="100"/>
         <source>Save Project…</source>
         <translation>儲存專案…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="95"/>
+        <location filename="../../gui/main_window.py" line="106"/>
         <source>Quit</source>
         <translation>離開</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="101"/>
+        <location filename="../../gui/main_window.py" line="112"/>
         <source>&amp;Settings</source>
         <translation>設定(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="102"/>
+        <location filename="../../gui/main_window.py" line="113"/>
         <source>Language</source>
         <translation>語言</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="152"/>
+        <location filename="../../gui/main_window.py" line="163"/>
         <source>Open Project</source>
         <translation>開啟專案</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="152"/>
-        <location filename="../../gui/main_window.py" line="169"/>
+        <location filename="../../gui/main_window.py" line="163"/>
+        <location filename="../../gui/main_window.py" line="180"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 專案 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="167"/>
+        <location filename="../../gui/main_window.py" line="178"/>
         <source>Save Project</source>
         <translation>儲存專案</translation>
     </message>
@@ -1049,6 +1085,131 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
         <location filename="../../gui/dialogs/manual_params_dialog.py" line="154"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>ROIToolbar</name>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="72"/>
+        <source>+ Add</source>
+        <translation>+ 添加</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="74"/>
+        <source>Add region to the Region of Interest (Polygon / Rectangle / Circle)</source>
+        <translation>向感興趣區域添加形狀（多邊形 / 矩形 / 圓形）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="78"/>
+        <source>Cut</source>
+        <translation>裁剪</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="80"/>
+        <source>Cut region from the Region of Interest (Polygon / Rectangle / Circle)</source>
+        <translation>從感興趣區域裁剪形狀（多邊形 / 矩形 / 圓形）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="84"/>
+        <source>+ Refine</source>
+        <translation>+ 加密</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="87"/>
+        <source>Paint extra mesh-refinement zones with a brush
+(on the LEFT camera, frame 1 — the reference mesh geometry)</source>
+        <translation>用畫筆繪製額外的網格加密區域
+（在左相機第 1 幀上 — 參考網格幾何）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="109"/>
+        <source>Import</source>
+        <translation>匯入</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="110"/>
+        <source>Import mask from image file</source>
+        <translation>從影像檔案匯入掩模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="119"/>
+        <source>Save</source>
+        <translation>儲存</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="120"/>
+        <source>Save current mask to PNG file</source>
+        <translation>將當前掩模儲存為 PNG 檔案</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="125"/>
+        <source>Invert</source>
+        <translation>反選</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="126"/>
+        <source>Invert the Region of Interest mask</source>
+        <translation>反轉感興趣區域掩模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="131"/>
+        <source>Clear</source>
+        <translation>清除</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="132"/>
+        <source>Clear all Region of Interest masks</source>
+        <translation>清除所有感興趣區域掩模</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="158"/>
+        <source>Polygon</source>
+        <translation>多邊形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="162"/>
+        <source>Rectangle</source>
+        <translation>矩形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="166"/>
+        <source>Circle</source>
+        <translation>圓形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="170"/>
+        <source>Circle (3-point)</source>
+        <translation>圓（三點）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="184"/>
+        <source>Radius</source>
+        <translation>半徑</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="201"/>
+        <source>Paint</source>
+        <translation>繪製</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="205"/>
+        <source>Erase</source>
+        <translation>擦除</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="214"/>
+        <source>Clear Brush</source>
+        <translation>清除畫筆</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="252"/>
+        <source>Import Mask Image</source>
+        <translation>匯入掩模影像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="254"/>
+        <source>Images (*.png *.bmp *.tif *.tiff *.jpg *.jpeg);;All Files (*)</source>
+        <translation>影像 (*.png *.bmp *.tif *.tiff *.jpg *.jpeg);;所有檔案 (*)</translation>
     </message>
 </context>
 <context>
@@ -1210,7 +1371,7 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
 <context>
     <name>_CameraDropZone</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="127"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="128"/>
         <source>Select image folder</source>
         <translation>選擇影像資料夾</translation>
     </message>
