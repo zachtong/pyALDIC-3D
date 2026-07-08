@@ -71,6 +71,8 @@ class RunWorker(QThread):
 class RightSidebar3D(QWidget):
     """Run controls + progress + field + visualization + log."""
 
+    open_strain_window_requested = Signal()
+
     def __init__(
         self,
         controller: WorkflowController,
@@ -111,6 +113,13 @@ class RightSidebar3D(QWidget):
         self._export_btn.setIcon(icon_download())
         self._export_btn.clicked.connect(self._on_export)
         layout.addWidget(self._export_btn)
+
+        # Strain is post-processing (Batch C): its own window, opened here.
+        self._strain_window_btn = QPushButton(self.tr("Open Strain Window"))
+        self._strain_window_btn.setFixedHeight(30)
+        self._strain_window_btn.setEnabled(False)
+        self._strain_window_btn.clicked.connect(self.open_strain_window_requested.emit)
+        layout.addWidget(self._strain_window_btn)
 
         self._ready_lbl = QLabel()
         self._ready_lbl.setWordWrap(True)
@@ -234,6 +243,11 @@ class RightSidebar3D(QWidget):
             self.signals.params_changed,
         ):
             sig.connect(self.refresh_readiness)
+        # Results-driven buttons must ALSO react to results_changed and to the
+        # run-state transitions: refresh_readiness alone missed the
+        # project-open path (results appear without any input signal firing).
+        self.signals.results_changed.connect(self._refresh_result_buttons)
+        self.signals.run_state_changed.connect(lambda _s: self._refresh_result_buttons())
 
         self._timer = QTimer(self)
         self._timer.setInterval(1000)
@@ -260,7 +274,19 @@ class RightSidebar3D(QWidget):
             self._ready_lbl.setText(self.tr("Not ready — {0}").format("; ".join(issues)))
         else:
             self._ready_lbl.setText(self.tr("Ready to run."))
-        self._export_btn.setEnabled(self.controller.state.has_results)
+        self._refresh_result_buttons()
+
+    def _refresh_result_buttons(self) -> None:
+        """Enable Export / Open Strain Window whenever results exist.
+
+        Driven by results_changed AND run_state_changed so the buttons work
+        both after a run completes (state -> done) and after a project open
+        (results restored, no run) — the latter was a known enablement bug.
+        """
+        has_results = self.controller.state.has_results
+        running = self.signals.run_state == "running"
+        self._export_btn.setEnabled(has_results and not running)
+        self._strain_window_btn.setEnabled(has_results and not running)
 
     # ---- run lifecycle ---------------------------------------------------------
 
@@ -303,8 +329,6 @@ class RightSidebar3D(QWidget):
         self._progress_bar.setValue(1000)
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
-        result = self.controller.state.result
-        self._field_selector.set_strain_available(result is not None and result.strain is not None)
         self._console.append_log(self.tr("Analysis complete"), "success")
         self.signals.set_run_state("done")
         self.signals.results_changed.emit()

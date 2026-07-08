@@ -33,7 +33,9 @@ def test_ready_draft_builds_runconfig(tmp_path):
     assert cfg.calibration_file == tmp_path / "calib.yml"
     assert cfg.left == ["L_000.png", "L_001.png", "L_002.png"]
     assert cfg.roi == (20, 180, 20, 180)
-    assert cfg.compute_strain is True  # draft default surfaces strain in the GUI
+    # Batch C: the GUI pipeline never computes strain — it is post-processing
+    # in the Strain window (the TOML/CLI path keeps its [strain].enabled switch).
+    assert cfg.compute_strain is False
     assert cfg.base_dir == tmp_path
 
 

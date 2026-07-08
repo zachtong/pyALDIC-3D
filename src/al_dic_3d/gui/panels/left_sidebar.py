@@ -404,16 +404,13 @@ class LeftSidebar3D(QWidget):
         )
         layout.addLayout(self._combo_row(self.tr("Solver"), self._solver_combo))
 
-        self._strain_cb = QCheckBox(self.tr("Compute surface strain"))
-        self._strain_cb.setChecked(True)
-        layout.addWidget(self._strain_cb)
-
+        # NOTE: surface strain is post-processing now (Batch C) — computed on
+        # demand in the Strain window, never during the pipeline run.
         self._quality_cb = QCheckBox(self.tr("Quality gates (ZNSSD / outliers)"))
         layout.addWidget(self._quality_cb)
 
         self._mode_combo.currentIndexChanged.connect(self._apply_workflow)
         self._solver_combo.currentIndexChanged.connect(self._apply_workflow)
-        self._strain_cb.toggled.connect(self._apply_workflow)
         self._quality_cb.toggled.connect(self._apply_workflow)
         return host
 
@@ -432,7 +429,6 @@ class LeftSidebar3D(QWidget):
         draft.strategy = self._strategy_combo.currentData()
         draft.reference_mode = self._mode_combo.currentData()
         draft.use_global_step = self._solver_combo.currentData() == "aldic"
-        draft.compute_strain = self._strain_cb.isChecked()
         draft.quality_gate = self._quality_cb.isChecked()
         self._admm_spin.setEnabled(draft.use_global_step)
         self.controller.state.mark_dirty()
@@ -670,7 +666,6 @@ class LeftSidebar3D(QWidget):
             self._strategy_combo,
             self._mode_combo,
             self._solver_combo,
-            self._strain_cb,
             self._quality_cb,
             self._subset_spin,
             self._step_spin,
@@ -687,7 +682,6 @@ class LeftSidebar3D(QWidget):
         self._strategy_combo.setCurrentIndex(max(0, self._strategy_combo.findData(draft.strategy)))
         self._mode_combo.setCurrentIndex(max(0, self._mode_combo.findData(draft.reference_mode)))
         self._solver_combo.setCurrentIndex(0 if draft.use_global_step else 1)
-        self._strain_cb.setChecked(draft.compute_strain)
         self._quality_cb.setChecked(draft.quality_gate)
         self._subset_spin.setValue(draft.winsize)
         self._step_spin.setValue(draft.winstepsize)

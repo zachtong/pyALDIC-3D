@@ -166,17 +166,16 @@ def test_run_and_overlay_render(qapp, scene):
     win._right._on_done()
 
     result = win.controller.state.result
-    assert result is not None and result.strain is not None
+    # Batch C: the GUI pipeline never computes strain (post-processing window).
+    assert result is not None and result.strain is None
     # field overlay rendered on the canvas + colorbar visible
     win.signals.set_current_frame(1, 3)
     win._canvas_area.render()
     assert not win._canvas_area.canvas._overlay_item.pixmap().isNull()
     assert win._canvas_area._colorbar.isVisible()
 
-    # switching to a strain field re-renders without error
-    win.signals.set_display_field("von_mises")
-    win._canvas_area.render()
-    assert not win._canvas_area.canvas._overlay_item.pixmap().isNull()
+    # the main field selector offers ONLY clean displacement fields now
+    assert set(win._right._field_selector._buttons) == {"U", "V", "W", "mag"}
 
     # switching camera swaps the background image (right frame exists)
     win.signals.set_camera("R")

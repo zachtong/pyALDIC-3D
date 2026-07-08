@@ -29,6 +29,7 @@ class MainWindow3D(QMainWindow):
         super().__init__(parent)
         self.controller = controller or WorkflowController()
         self.signals = GuiSignals()
+        self._strain_window = None  # lazy singleton (Batch C post-processing)
         self.setWindowTitle(self.tr("pyALDIC-3D"))
         self.setMinimumSize(1420, 800)
         enable_dark_title_bar(self)
@@ -63,8 +64,41 @@ class MainWindow3D(QMainWindow):
         toolbar.brush_clear_requested.connect(self._canvas_area.clear_brush)
         self._canvas_area.canvas.drawing_finished.connect(toolbar.deactivate)
 
+        # Strain window lifecycle: the sidebar button opens/raises it, and a
+        # completed run auto-opens it (2D idiom — non-modal, zero friction).
+        self._right.open_strain_window_requested.connect(self._open_strain_window)
+        self.signals.run_state_changed.connect(self._on_run_state_changed)
+
         self._build_menu()
         self.signals.log.emit("pyALDIC-3D ready", "info")
+
+    # ---- strain window (lazy singleton) -----------------------------------------
+
+    def _open_strain_window(self) -> None:
+        """Show the strain post-processing window; refuse (and log) without results."""
+        if not self.controller.state.has_results:
+            self.signals.log.emit("run an analysis first — no results to post-process", "warning")
+            return
+        if self._strain_window is None:
+            from al_dic_3d.gui.strain_window import StrainWindow3D
+
+            self._strain_window = StrainWindow3D(self.controller, self.signals, parent=None)
+        self._strain_window.show()
+        self._strain_window.raise_()
+        self._strain_window.activateWindow()
+
+    def _on_run_state_changed(self, new_state: str) -> None:
+        """Auto-open the strain window when a run completes (2D auto-open idiom)."""
+        if new_state == "done" and self.controller.state.has_results:
+            self._open_strain_window()
+
+    def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        # Cascade close: the strain window is a parentless top-level we own, so
+        # it must close with the main window to keep lifecycle parity.
+        if self._strain_window is not None:
+            self._strain_window.close()
+            self._strain_window = None
+        super().closeEvent(event)
 
     def _on_roi_draw_requested(self, shape: str, mode: str) -> None:
         if not self._canvas_area.canvas.has_image:

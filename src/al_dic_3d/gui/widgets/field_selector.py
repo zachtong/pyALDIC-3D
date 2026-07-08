@@ -1,9 +1,9 @@
 """``FieldSelector3D`` — toggle-button grid choosing the displayed result field.
 
-Mirrors the 2D strain window's FIELD section: a DISPLACEMENT group (U / V / W /
-Magnitude — 3D world-frame components) and a STRAIN group (Green-Lagrange surface
-strain invariants). Exactly one button is checked; the choice is pushed to
-:class:`~al_dic_3d.gui.state.GuiSignals`.
+The MAIN window shows displacement only (U / V / W / Magnitude — 3D world-frame
+components); strain fields live in the dedicated Strain window (Batch C: strain
+is post-processing, with its own field selector). Exactly one button is checked;
+the choice is pushed to :class:`~al_dic_3d.gui.state.GuiSignals`.
 """
 
 from __future__ import annotations
@@ -30,19 +30,10 @@ def apply_toggle_style(btn: QPushButton) -> None:
 
 
 _DISP_FIELDS = (("U", "U"), ("V", "V"), ("W", "W"), ("mag", "|D|"))
-_STRAIN_FIELDS = (
-    ("exx", "εxx"),
-    ("eyy", "εyy"),
-    ("exy", "εxy"),
-    ("e1", "ε₁"),
-    ("e2", "ε₂"),
-    ("max_shear", "γ max"),
-    ("von_mises", "von Mises"),
-)
 
 
 class FieldSelector3D(QWidget):
-    """Two labelled grids of mutually-exclusive field toggle buttons."""
+    """Labelled grid of mutually-exclusive displacement-field toggle buttons."""
 
     def __init__(self, signals: GuiSignals, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -55,13 +46,8 @@ class FieldSelector3D(QWidget):
 
         layout.addWidget(self._group_label(self.tr("DISPLACEMENT")))
         layout.addWidget(self._grid(_DISP_FIELDS, columns=2))
-        self._strain_label = self._group_label(self.tr("STRAIN"))
-        layout.addWidget(self._strain_label)
-        self._strain_grid = self._grid(_STRAIN_FIELDS, columns=3)
-        layout.addWidget(self._strain_grid)
 
         self._sync_checked()
-        self.set_strain_available(False)
 
     def _group_label(self, text: str) -> QLabel:
         lbl = QLabel(text)
@@ -95,9 +81,3 @@ class FieldSelector3D(QWidget):
             btn.setChecked(field_id == active)
             btn.blockSignals(False)
             apply_toggle_style(btn)
-
-    def set_strain_available(self, available: bool) -> None:
-        """Enable/disable the strain group (strain may not have been computed)."""
-        self._strain_label.setVisible(True)
-        for field_id, _label in _STRAIN_FIELDS:
-            self._buttons[field_id].setEnabled(available)

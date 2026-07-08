@@ -48,7 +48,7 @@ class ProjectDraft:
     refinement_level: int = 1  # 1=light .. 3=heavy (min elem = step // 2**level)
     refinement_mask_array: object | None = field(default=None, repr=False)
     # ^ brush-painted (H, W) array from the canvas; written to a PNG at build()
-    compute_strain: bool = True
+    compute_strain: bool = True  # legacy (kept for .aldic3d session compat; not wired)
     strain_size: int = 5
     output_dir: Path | None = None
     output_prefix: str = "run"
@@ -128,7 +128,10 @@ class ProjectDraft:
             refine_outer=self.refine_outer,
             refinement_level=self.refinement_level,
             refinement_mask=self._write_refinement_mask(out_dir),
-            compute_strain=self.compute_strain,
+            # The GUI path never computes strain in the pipeline: strain is
+            # post-processing (Strain window, Batch C). The TOML/CLI path keeps
+            # its [strain].enabled switch for headless users (see load_config).
+            compute_strain=False,
             strain_size=self.strain_size,
             output_prefix=self.output_prefix,
             base_dir=self.calibration_file.parent,

@@ -614,12 +614,11 @@
 <context>
     <name>FieldSelector3D</name>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="56"/>
+        <location filename="../../gui/widgets/field_selector.py" line="47"/>
         <source>DISPLACEMENT</source>
         <translation>변위</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="58"/>
         <source>STRAIN</source>
         <translation>변형률</translation>
     </message>
@@ -701,7 +700,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="214"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="643"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="639"/>
         <source>No images loaded</source>
         <translation>이미지가 로드되지 않았습니다</translation>
     </message>
@@ -806,33 +805,33 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>솔버</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="469"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="482"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="465"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="478"/>
         <source>bbox: not set</source>
         <translation>경계 상자: 미설정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="485"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="481"/>
         <source>bbox: {0}–{1}, {2}–{3} px</source>
         <translation>경계 상자: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="561"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="557"/>
         <source>Track Both</source>
         <translation>양쪽 카메라 추적</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="562"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="558"/>
         <source>Stereo Each Frame</source>
         <translation>프레임별 스테레오 매칭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="563"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="559"/>
         <source>Reference Direct</source>
         <translation>기준 프레임 직접 매칭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="564"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="560"/>
         <source>Strategy</source>
         <translation>전략</translation>
     </message>
@@ -852,17 +851,16 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>추적 모드</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="407"/>
         <source>Compute surface strain</source>
         <translation>표면 변형률 계산</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="411"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="409"/>
         <source>Quality gates (ZNSSD / outliers)</source>
         <translation>품질 게이트(ZNSSD / 이상점)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="451"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="447"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>왼쪽 카메라 1번 프레임에 그립니다 — 이후 프레임과 오른쪽 카메라는 여기서 유도됩니다.</translation>
     </message>
@@ -879,22 +877,22 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>x 최소 / x 최대 / y 최소 / y 최대 (px)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="500"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="496"/>
         <source>Subset Size</source>
         <translation>서브셋 크기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="505"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="501"/>
         <source>Subset Step</source>
         <translation>서브셋 간격</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="511"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="507"/>
         <source>Stereo Search</source>
         <translation>스테레오 탐색</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="520"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="516"/>
         <source>Temporal Search</source>
         <translation>시간 탐색</translation>
     </message>
@@ -907,22 +905,22 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>ADMM 반복 횟수</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="523"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="519"/>
         <source>Mesh refinement</source>
         <translation>메시 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="526"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>마스크 경계(구멍)에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
         <source>Refine at ROI edges</source>
         <translation>ROI 가장자리에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="538"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="534"/>
         <source>Refinement Level</source>
         <translation>세분화 레벨</translation>
     </message>
@@ -935,27 +933,27 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>그리기 지우기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="571"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="567"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = 단일 패스(가장 빠름), 3 = 기본값, 5 이상은 수익 감소</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="573"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="569"/>
         <source>AL-DIC Iterations</source>
         <translation>AL-DIC 반복 횟수</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="575"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="571"/>
         <source>Only affects AL-DIC solver. Ignored by Local DIC.</source>
         <translation>AL-DIC 솔버에만 적용됩니다. Local DIC에서는 무시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="648"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="644"/>
         <source>Paired: {0} frames per camera</source>
         <translation>페어링됨: 카메라당 {0} 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="654"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="650"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>불일치: 왼쪽 {0} / 오른쪽 {1} 프레임</translation>
     </message>
@@ -963,58 +961,58 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
 <context>
     <name>MainWindow3D</name>
     <message>
-        <location filename="../../gui/main_window.py" line="32"/>
+        <location filename="../../gui/main_window.py" line="33"/>
         <source>pyALDIC-3D</source>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="88"/>
+        <location filename="../../gui/main_window.py" line="124"/>
         <source>&amp;File</source>
         <translation>파일(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="90"/>
+        <location filename="../../gui/main_window.py" line="126"/>
         <source>New Project</source>
         <translation>새 프로젝트</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="95"/>
+        <location filename="../../gui/main_window.py" line="131"/>
         <source>Open Project…</source>
         <translation>프로젝트 열기…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="100"/>
+        <location filename="../../gui/main_window.py" line="136"/>
         <source>Save Project…</source>
         <translation>프로젝트 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="106"/>
+        <location filename="../../gui/main_window.py" line="142"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="112"/>
+        <location filename="../../gui/main_window.py" line="148"/>
         <source>&amp;Settings</source>
         <translation>설정(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="113"/>
+        <location filename="../../gui/main_window.py" line="149"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="163"/>
+        <location filename="../../gui/main_window.py" line="199"/>
         <source>Open Project</source>
         <translation>프로젝트 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="163"/>
-        <location filename="../../gui/main_window.py" line="180"/>
+        <location filename="../../gui/main_window.py" line="199"/>
+        <location filename="../../gui/main_window.py" line="216"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 프로젝트 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="178"/>
+        <location filename="../../gui/main_window.py" line="214"/>
         <source>Save Project</source>
         <translation>프로젝트 저장</translation>
     </message>
@@ -1215,144 +1213,457 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
 <context>
     <name>RightSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="93"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="95"/>
         <source>Run 3D Analysis</source>
         <translation>3D 분석 실행</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="100"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="102"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="110"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="121"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="118"/>
+        <source>Open Strain Window</source>
+        <translation>변형률 창 열기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="130"/>
         <source>PROGRESS</source>
         <translation>진행률</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="128"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="137"/>
         <source>Ready</source>
         <translation>준비 완료</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="133"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="142"/>
         <source>ELAPSED  --:--</source>
         <translation>경과  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="136"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="145"/>
         <source>REMAINING  --:--</source>
         <translation>남음  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="142"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="151"/>
         <source>FIELD</source>
         <translation>표시 필드</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="148"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="157"/>
         <source>Show on deformed frame</source>
         <translation>변형 프레임에 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="155"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="164"/>
         <source>Camera</source>
         <translation>카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="159"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="168"/>
         <source>Left</source>
         <translation>왼쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="160"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="169"/>
         <source>Right</source>
         <translation>오른쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="175"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="184"/>
         <source>VISUALIZATION</source>
         <translation>시각화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="178"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
         <source>Colormap</source>
         <translation>색상 맵</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="197"/>
         <source>Auto range</source>
         <translation>자동 범위</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="195"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="204"/>
         <source>Opacity</source>
         <translation>불투명도</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="208"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="217"/>
         <source>LOG</source>
         <translation>로그</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="215"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="224"/>
         <source>Clear</source>
         <translation>지우기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="260"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="274"/>
         <source>Not ready — {0}</source>
         <translation>준비되지 않음 — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="262"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="276"/>
         <source>Ready to run.</source>
         <translation>실행할 준비가 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="272"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="298"/>
         <source>Not ready: {0}</source>
         <translation>준비되지 않음: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="280"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="306"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 분석을 시작하는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="294"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="320"/>
         <source>Cancelling…</source>
         <translation>취소하는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="308"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="332"/>
         <source>Analysis complete</source>
         <translation>분석 완료</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="317"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="341"/>
         <source>Failed: {0}</source>
         <translation>실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="350"/>
         <source>Run cancelled</source>
         <translation>실행이 취소되었습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="333"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="357"/>
         <source>ELAPSED  {0}</source>
         <translation>경과  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="339"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="363"/>
         <source>REMAINING  {0}</source>
         <translation>남음  {0}</translation>
+    </message>
+</context>
+<context>
+    <name>StrainNavigator3D</name>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="46"/>
+        <source>Previous frame</source>
+        <translation>이전 프레임</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="53"/>
+        <location filename="../../gui/widgets/strain_navigator.py" line="112"/>
+        <source>Play animation</source>
+        <translation>애니메이션 재생</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="60"/>
+        <source>Next frame</source>
+        <translation>다음 프레임</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="69"/>
+        <source>Playback speed</source>
+        <translation>재생 속도</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="73"/>
+        <location filename="../../gui/widgets/strain_navigator.py" line="154"/>
+        <source>FRAME 0/0</source>
+        <translation>프레임 0/0</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="137"/>
+        <source>Pause animation</source>
+        <translation>애니메이션 일시정지</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_navigator.py" line="152"/>
+        <source>FRAME {0}/{1}</source>
+        <translation>프레임 {0}/{1}</translation>
+    </message>
+</context>
+<context>
+    <name>StrainParamPanel3D</name>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="70"/>
+        <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
+
+• Larger window → smoother strain, lower spatial resolution.
+• Smaller window → sharper strain, more noise.
+• Must span at least 3×3 nodes: use ≥ 2 × node spacing + 1 px.</source>
+        <translation>각 노드 주변에서 국소 변위 구배를 피팅하는 정사각형 윈도우의 한 변 길이(픽셀, 가상 변형률 게이지).
+
+• 윈도우가 클수록 → 변형률이 부드러워지고 공간 분해능은 낮아집니다.
+• 윈도우가 작을수록 → 변형률이 선명해지고 노이즈가 커집니다.
+• 최소 3×3 노드를 포함해야 합니다: ≥ 2 × 노드 간격 + 1 px 를 사용하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="78"/>
+        <source>Strain window</source>
+        <translation>VSG 윈도우</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="93"/>
+        <source>Off</source>
+        <translation>끔</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="94"/>
+        <source>Light (σ = 0.5 × step)</source>
+        <translation>약함 (σ = 0.5 × step)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="95"/>
+        <source>Medium (σ = 1 × step)</source>
+        <translation>중간 (σ = 1 × step)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="96"/>
+        <source>Strong (σ = 2 × step) ⚠</source>
+        <translation>강함 (σ = 2 × step) ⚠</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="102"/>
+        <source>Gaussian smoothing of the displacement field before the gradient fit.
+σ is the kernel width; step = DIC node spacing.
+  Light  (0.5 × step): subtle, preserves fine features.
+  Medium (1 × step): balanced, for noisy data.
+  Strong (2 × step) ⚠: aggressive, may blur real gradients.</source>
+        <translation>구배 피팅 전에 변위장에 가우시안 평활화를 적용합니다.
+σ 는 커널 폭, step = DIC 노드 간격.
+  약함 (0.5 × step): 미세, 세부 특징 보존.
+  중간 (1 × step): 균형, 노이즈 데이터에 적합.
+  강함 (2 × step) ⚠: 강력, 실제 구배가 흐려질 수 있음.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="109"/>
+        <source>Strain field smoothing</source>
+        <translation>변형률장 평활화</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="113"/>
+        <source>Surface tangent plane</source>
+        <translation>표면 접평면</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="114"/>
+        <source>Left camera frame</source>
+        <translation>왼쪽 카메라 좌표계</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
+        <source>Custom (3 points)</source>
+        <translation>사용자 지정 (3점)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
+        <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
+        <translation>참조 표면에 노드별로 피팅한 접평면: z 는 카메라를 향하는 표면 법선, x 는 왼쪽 카메라 +X 의 평면 투영, y = z × x. 곡면 시편에 적합한 기본값입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
+        <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
+        <translation>고정된 왼쪽 카메라(월드) 축에서 변형률을 보고합니다. 이미지 평면과 정렬된 평판 시편에 유효합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="128"/>
+        <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
+        <translation>참조 이미지에서 선택한 3점으로 구성되는 고정 시편 좌표계: 원점, +X 방향의 점, +Y 쪽의 점.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="137"/>
+        <source>Coordinate system</source>
+        <translation>좌표계</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <source>Pick 3 points…</source>
+        <translation>3점 선택…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="245"/>
+        <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
+        <translation>⚠ 윈도우 반경({0} px) &lt; 노드 간격({1} px); 평면 피팅에는 3×3 노드 게이지가 필요합니다. ≥ {2} px 를 사용하세요.</translation>
+    </message>
+</context>
+<context>
+    <name>StrainWindow3D</name>
+    <message>
+        <location filename="../../gui/strain_window.py" line="153"/>
+        <source>Strain Post-Processing</source>
+        <translation>변형률 후처리</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="176"/>
+        <source>Fit</source>
+        <translation>맞춤</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="177"/>
+        <source>Fit image to viewport</source>
+        <translation>이미지를 뷰포트에 맞춤</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="181"/>
+        <source>Zoom to 100% (1:1)</source>
+        <translation>100%(1:1) 확대</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="184"/>
+        <source>Zoom in</source>
+        <translation>확대</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="188"/>
+        <source>Zoom out</source>
+        <translation>축소</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="219"/>
+        <source>STRAIN PARAMETERS</source>
+        <translation>변형률 매개변수</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="228"/>
+        <source>Compute Strain</source>
+        <translation>변형률 계산</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="234"/>
+        <source>Export Results</source>
+        <translation>결과 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="238"/>
+        <source>Export displacement and strain results to NPZ / MAT / CSV</source>
+        <translation>변위 및 변형률 결과를 NPZ / MAT / CSV로 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="260"/>
+        <source>FIELD</source>
+        <translation>표시 필드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="266"/>
+        <source>VISUALIZATION</source>
+        <translation>시각화</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="270"/>
+        <source>LOG</source>
+        <translation>로그</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="302"/>
+        <source>Show on deformed frame</source>
+        <translation>변형 프레임에 표시</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="310"/>
+        <source>Colormap</source>
+        <translation>색상 맵</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="312"/>
+        <source>Auto range</source>
+        <translation>자동 범위</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="328"/>
+        <source>Min</source>
+        <translation>최소</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="330"/>
+        <source>Max</source>
+        <translation>최대</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="340"/>
+        <source>Opacity</source>
+        <translation>불투명도</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="406"/>
+        <location filename="../../gui/strain_window.py" line="452"/>
+        <location filename="../../gui/strain_window.py" line="519"/>
+        <source>Strain compute failed: {0}</source>
+        <translation>변형률 계산 실패: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="418"/>
+        <location filename="../../gui/strain_window.py" line="483"/>
+        <source>Run 3D analysis first — no results to post-process.</source>
+        <translation>먼저 3D 분석을 실행하세요 — 후처리할 결과가 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="421"/>
+        <location filename="../../gui/strain_window.py" line="494"/>
+        <location filename="../../gui/strain_window.py" line="521"/>
+        <source>Click Origin, then +X, then +Y on the image</source>
+        <translation>이미지에서 원점, +X, +Y 순서로 클릭하세요</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="427"/>
+        <source>Computing strain…</source>
+        <translation>변형률 계산 중…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="440"/>
+        <source>Complete</source>
+        <translation>완료</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="457"/>
+        <source>Strain computation complete.</source>
+        <translation>변형률 계산 완료.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="462"/>
+        <source>⚠ Params changed -- click Compute Strain</source>
+        <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="512"/>
+        <location filename="../../gui/strain_window.py" line="529"/>
+        <source>Picked {0}/3 points</source>
+        <translation>{0}/3 점 선택됨</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="531"/>
+        <source>x→{0}  y→{1}  z→{2}</source>
+        <translation>x→{0}  y→{1}  z→{2}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="542"/>
+        <source>O</source>
+        <translation>O</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="542"/>
+        <source>+X</source>
+        <translation>+X</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="542"/>
+        <source>+Y</source>
+        <translation>+Y</translation>
     </message>
 </context>
 <context>

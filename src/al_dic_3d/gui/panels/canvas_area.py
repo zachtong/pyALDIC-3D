@@ -23,8 +23,7 @@ import numpy as np
 from al_dic.gui.icons import icon_maximize, icon_zoom_in, icon_zoom_out
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.colorbar_overlay import ColorbarOverlay
-from PySide6.QtCore import QEvent, Qt, QTimer
-from PySide6.QtGui import QColor, QPainter, QPixmap
+from PySide6.QtCore import QEvent, QTimer
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -36,6 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.controllers.roi_controller import ROIController
+from al_dic_3d.gui.rendering import scatter_field_pixmap
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
@@ -567,8 +567,6 @@ class CanvasArea3D(QWidget):
         return lo, hi
 
     def _render_overlay(self, k: int) -> None:
-        from matplotlib import colormaps
-
         result = self.controller.state.result
         show = self._show_points_cb.isChecked()
         if result is None or not show:
@@ -596,33 +594,20 @@ class CanvasArea3D(QWidget):
             vmin, vmax = self._field_range(result)
         else:
             vmin, vmax = self.signals.color_min, self.signals.color_max
-        span = (vmax - vmin) or 1.0
 
         img_rect = self._canvas.scene().sceneRect()
-        w, h = int(img_rect.width()), int(img_rect.height())
-        if w == 0 or h == 0:
+        pixmap = scatter_field_pixmap(
+            pts,
+            vals,
+            int(img_rect.width()),
+            int(img_rect.height()),
+            cmap_name=self.signals.colormap,
+            vmin=vmin,
+            vmax=vmax,
+            radius=max(2.0, self.controller.state.draft.winstepsize * 0.30),
+        )
+        if pixmap is None:
             return
-
-        pixmap = QPixmap(w, h)
-        pixmap.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(pixmap)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setPen(Qt.PenStyle.NoPen)
-
-        cmap = colormaps[self.signals.colormap]
-        finite = np.isfinite(pts).all(axis=1) & np.isfinite(vals)
-        radius = max(2.0, self.controller.state.draft.winstepsize * 0.30)
-        norm = np.clip((vals[finite] - vmin) / span, 0.0, 1.0)
-        rgba = (cmap(norm) * 255).astype(np.uint8)
-        for (x, y), (r, g, b, _a) in zip(pts[finite], rgba, strict=True):
-            painter.setBrush(QColor(int(r), int(g), int(b)))
-            painter.drawEllipse(
-                int(round(x - radius)),
-                int(round(y - radius)),
-                int(round(2 * radius)),
-                int(round(2 * radius)),
-            )
-        painter.end()
 
         self._canvas.set_overlay_pixmap(pixmap)
         self._canvas.set_overlay_opacity(self.signals.overlay_alpha)

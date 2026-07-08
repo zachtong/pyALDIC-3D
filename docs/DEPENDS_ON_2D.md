@@ -49,6 +49,10 @@ justification.
 | `al_dic.gui.widgets.console_log.ConsoleLog` | reused 2D console widget (`append_log`) on the GUI Run page | internal (GUI widget; import via full path) |
 | `al_dic.gui.theme.build_stylesheet` | shared pyALDIC dark-navy QSS applied in `create_app` (visual consistency with 2D) | internal (GUI theme; import via full path) |
 | `al_dic.gui.theme.COLORS` | shared palette tokens used across the 3D GUI panels/widgets (incl. the ported ROI toolbar) | internal (GUI theme; import via full path) |
+| `al_dic.gui.widgets.colorbar_overlay.ColorbarOverlay` | reused 2D colorbar overlay on the main canvas AND the strain window (`update_params`) | internal (GUI widget; import via full path) |
+| `al_dic.gui.widgets.collapsible_section.CollapsibleSection` | reused 2D collapsible sections in the left sidebar and the strain window's right column | internal (GUI widget; import via full path) |
+| `al_dic.gui.icons` | shared icon set (`icon_maximize`, `icon_zoom_in/out`, `icon_chevron_*`, `icon_play/pause`, `icon_download`, `icon_stop`) across toolbars/navigators incl. the strain window | internal (GUI icons; import via full path) |
+| `al_dic.gui.window_chrome.enable_dark_title_bar` | dark OS title bar on `MainWindow3D` and `StrainWindow3D` (one visual frame with the 2D app) | internal (GUI chrome; import via full path) |
 
 <!--
 Row template (copy when adding a dependency):

@@ -67,10 +67,16 @@ def main(outdir: str | None = None) -> int:
 
     # --- state 3: after a run (field overlay + colorbar) ---
     win.controller.run()
-    win._right._on_done()
+    win._right._on_done()  # -> run_state "done" auto-opens the strain window
     win.signals.set_current_frame(min(2, len(draft.left) - 1), len(draft.left))
     win._canvas_area.render()
     _grab(win, out / "shot_results.png")
+
+    # --- state 3b: the strain post-processing window (Batch C) ---
+    sw = win._strain_window
+    sw.trigger_compute()
+    sw.set_strain_frame(min(2, len(draft.left) - 1))
+    _grab(sw, out / "shot_strain.png")
 
     # --- state 4: zh_CN localized window (i18n proof; new window, new translator) ---
     from al_dic_3d.i18n import install_translators
