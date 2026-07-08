@@ -131,6 +131,13 @@ class AnimationTab(ExportTabBase):
                 self.tr("Load an image sequence first (open the project in the main window).")
             )
 
+    # ---- surface consumed by the Preview & Colorbar tab -------------------------
+
+    @property
+    def field_rows(self):
+        """Per-field rows (targets of the preview's Apply-to-all button)."""
+        return self._rows.rows
+
     # ---- export ----------------------------------------------------------------
 
     def start_export(self) -> None:
@@ -155,6 +162,9 @@ class AnimationTab(ExportTabBase):
             show_deformed=self._background_row.show_deformed(),
             output_max_dim=int(self._resolution_combo.currentData()),
             include_colorbar=self._colorbar_check.isChecked(),
+            colorbar_style=self._dialog.colorbar_style(),
+            margin_ratio=self._dialog.margin_ratio(),
+            margin_color=self._dialog.margin_color(),
         )
         kwargs["frame_start"], kwargs["frame_end"] = self._range_row.frame_range()
 

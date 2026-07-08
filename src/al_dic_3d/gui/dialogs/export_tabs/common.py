@@ -217,7 +217,15 @@ class ExportTabBase(QWidget):
 
 
 class FieldRow(QWidget):
-    """One per-field row: enable + colormap + auto/fixed range + opacity."""
+    """One per-field row: enable + colormap + auto/fixed range + opacity.
+
+    The row is the single source of truth for its field's appearance: the
+    Preview tab reads it via :meth:`get_appearance` and writes back via
+    :meth:`set_appearance` (signals blocked, 2D idiom). Any direct user edit
+    on the row emits :attr:`appearance_changed` so the preview can follow.
+    """
+
+    appearance_changed = Signal()
 
     def __init__(
         self,
@@ -286,9 +294,20 @@ class FieldRow(QWidget):
         row.addWidget(self._alpha_spin)
         row.addStretch()
 
+        # Direct user edits notify listeners (the Preview tab's live sync).
+        self._cmap_combo.currentIndexChanged.connect(self.appearance_changed)
+        self._auto_check.toggled.connect(self.appearance_changed)
+        self._vmin_spin.valueChanged.connect(self.appearance_changed)
+        self._vmax_spin.valueChanged.connect(self.appearance_changed)
+        self._alpha_spin.valueChanged.connect(self.appearance_changed)
+
     def _on_auto_changed(self, auto: bool) -> None:
         self._vmin_spin.setEnabled(not auto)
         self._vmax_spin.setEnabled(not auto)
+
+    @property
+    def field_id(self) -> str:
+        return self._field_id
 
     def config(self) -> FieldImageConfig:
         return FieldImageConfig(
@@ -300,6 +319,49 @@ class FieldRow(QWidget):
             vmax=self._vmax_spin.value(),
             opacity=self._alpha_spin.value(),
         )
+
+    def get_appearance(self) -> dict:
+        """Colormap / range / opacity as a plain dict (for the preview panel)."""
+        return dict(
+            colormap=self._cmap_combo.currentText(),
+            auto=self._auto_check.isChecked(),
+            vmin=self._vmin_spin.value(),
+            vmax=self._vmax_spin.value(),
+            opacity=self._alpha_spin.value(),
+        )
+
+    def set_appearance(
+        self,
+        colormap: str | None = None,
+        auto: bool | None = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
+        opacity: float | None = None,
+    ) -> None:
+        """Push values into the row's widgets, blocking signals to avoid loops.
+
+        Lets the Preview tab edit a field's appearance while this row stays
+        the single source of truth that export reads via :meth:`config`.
+        """
+        for widget, value in (
+            (self._vmin_spin, vmin),
+            (self._vmax_spin, vmax),
+            (self._alpha_spin, opacity),
+        ):
+            if value is not None:
+                widget.blockSignals(True)
+                widget.setValue(value)
+                widget.blockSignals(False)
+        if colormap is not None:
+            self._cmap_combo.blockSignals(True)
+            self._cmap_combo.setCurrentText(colormap)
+            self._cmap_combo.blockSignals(False)
+        if auto is not None:
+            self._auto_check.blockSignals(True)
+            self._auto_check.setChecked(auto)
+            self._auto_check.blockSignals(False)
+            self._vmin_spin.setEnabled(not auto)
+            self._vmax_spin.setEnabled(not auto)
 
 
 class FieldRowsPanel(QWidget):
@@ -325,6 +387,13 @@ class FieldRowsPanel(QWidget):
             row = FieldRow(fid, hint, has_data=has_data)
             layout.addWidget(row)
             self._rows.append(row)
+
+    @property
+    def rows(self) -> list[FieldRow]:
+        return list(self._rows)
+
+    def row_for(self, field_id: str) -> FieldRow | None:
+        return next((r for r in self._rows if r.field_id == field_id), None)
 
     def configs(self) -> list[FieldImageConfig]:
         return [row.config() for row in self._rows]

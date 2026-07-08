@@ -54,12 +54,12 @@
         <translation>Zuerst eine Bildsequenz laden (Projekt im Hauptfenster öffnen).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="139"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="146"/>
         <source>Choose an output folder first.</source>
         <translation>Bitte zuerst einen Ausgabeordner wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="143"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="150"/>
         <source>No fields enabled.</source>
         <translation>Keine Felder aktiviert.</translation>
     </message>
@@ -67,12 +67,12 @@
 <context>
     <name>BackgroundRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="376"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="445"/>
         <source>Original (frame 1 background)</source>
         <translation>Original (Bild 1 als Hintergrund)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="377"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="446"/>
         <source>Deformed (current frame background)</source>
         <translation>Verformt (aktuelles Bild als Hintergrund)</translation>
     </message>
@@ -470,22 +470,22 @@
 <context>
     <name>CameraRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="344"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="413"/>
         <source>Camera</source>
         <translation>Kamera</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="348"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="417"/>
         <source>Left</source>
         <translation>Links</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="349"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="418"/>
         <source>Right</source>
         <translation>Rechts</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="350"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="419"/>
         <source>Left + Right</source>
         <translation>Links + Rechts</translation>
     </message>
@@ -688,47 +688,52 @@
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="85"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="94"/>
         <source>Export Results</source>
         <translation>Ergebnisse exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="92"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
         <source>OUTPUT FOLDER</source>
         <translation>AUSGABEORDNER</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
         <source>Select output folder…</source>
         <translation>Ausgabeordner wählen…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="97"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="106"/>
         <source>Browse…</source>
         <translation>Durchsuchen…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="100"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="109"/>
         <source>Open Folder</source>
         <translation>Ordner öffnen</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="111"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
         <source>Data</source>
         <translation>Daten</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="122"/>
         <source>Images</source>
         <translation>Bilder</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="113"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="123"/>
         <source>Animation</source>
         <translation>Animation</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="124"/>
+        <source>Preview &amp; Colorbar</source>
+        <translation>Vorschau &amp; Farbleiste</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="125"/>
         <source>3D View</source>
         <translation>3D-Ansicht</translation>
     </message>
@@ -777,7 +782,7 @@
         <translation>Daten exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="120"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="132"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
@@ -794,7 +799,7 @@
         <translation>Keine</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="229"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="264"/>
         <source>Choose output folder</source>
         <translation>Ausgabeordner wählen</translation>
     </message>
@@ -841,7 +846,7 @@
 <context>
     <name>ExportTabs</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="363"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="432"/>
         <source>Full resolution</source>
         <translation>Volle Auflösung</translation>
     </message>
@@ -849,22 +854,22 @@
 <context>
     <name>FieldRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="258"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="266"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="259"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="267"/>
         <source>Auto range</source>
         <translation>Auto-Bereich</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="275"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="283"/>
         <source>Opacity</source>
         <translation>Deckkraft</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="276"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="284"/>
         <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
         <translation>Feld-Deckkraft (0 = transparent, 1 = vollständig deckend)</translation>
     </message>
@@ -923,17 +928,17 @@
 <context>
     <name>FrameRangeRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="394"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="463"/>
         <source>All frames</source>
         <translation>Alle Bilder</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="398"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="467"/>
         <source>From frame</source>
         <translation>Von Bild</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="408"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="477"/>
         <source>to</source>
         <translation>bis</translation>
     </message>
@@ -981,12 +986,12 @@
         <translation>Zuerst eine Bildsequenz laden (Projekt im Hauptfenster öffnen).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="139"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="152"/>
         <source>Choose an output folder first.</source>
         <translation>Bitte zuerst einen Ausgabeordner wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="143"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="156"/>
         <source>No fields enabled.</source>
         <translation>Keine Felder aktiviert.</translation>
     </message>
@@ -1413,6 +1418,178 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <location filename="../../gui/dialogs/manual_params_dialog.py" line="154"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>PreviewTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="61"/>
+        <source>Open this tab to render a preview.</source>
+        <translation>Diesen Reiter öffnen, um eine Vorschau zu rendern.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="69"/>
+        <source>Field</source>
+        <translation>Feld</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="76"/>
+        <source>Frame</source>
+        <translation>Bild</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="85"/>
+        <source>Camera</source>
+        <translation>Kamera</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="89"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="168"/>
+        <source>Left</source>
+        <translation>Links</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="90"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="167"/>
+        <source>Right</source>
+        <translation>Rechts</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="120"/>
+        <source>FIELD APPEARANCE</source>
+        <translation>FELDDARSTELLUNG</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="125"/>
+        <source>Colormap</source>
+        <translation>Farbskala</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="127"/>
+        <source>Auto</source>
+        <translation>Auto</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="128"/>
+        <source>Auto range</source>
+        <translation>Auto-Bereich</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="131"/>
+        <source>Range</source>
+        <translation>Bereich</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="139"/>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="140"/>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="147"/>
+        <source>Opacity</source>
+        <translation>Deckkraft</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="149"/>
+        <source>Apply to all fields</source>
+        <translation>Auf alle Felder anwenden</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="152"/>
+        <source>Apply this field&apos;s colormap, opacity and auto-range to every enabled field (each field keeps its own min/max).</source>
+        <translation>Colormap, Deckkraft und Auto-Bereich dieses Felds auf alle aktivierten Felder anwenden (jedes Feld behält sein eigenes Min/Max).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="162"/>
+        <source>COLORBAR STYLE</source>
+        <translation>FARBLEISTEN-STIL</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="169"/>
+        <source>Top</source>
+        <translation>Oben</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="170"/>
+        <source>Bottom</source>
+        <translation>Unten</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="174"/>
+        <source>Position</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="180"/>
+        <source>Font size</source>
+        <translation>Schriftgröße</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="186"/>
+        <source>Font family</source>
+        <translation>Schriftart</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="194"/>
+        <source>Bar thickness</source>
+        <translation>Balkendicke</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="197"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="216"/>
+        <source>Black</source>
+        <translation>Schwarz</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="197"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="216"/>
+        <source>White</source>
+        <translation>Weiß</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="200"/>
+        <source>Background</source>
+        <translation>Hintergrund</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="208"/>
+        <source>Add a blank border around the exported content, as a fraction of the long edge (0 = none).</source>
+        <translation>Fügt einen leeren Rand um den exportierten Inhalt hinzu, als Anteil der langen Kante (0 = keiner).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="213"/>
+        <source>Margin</source>
+        <translation>Rand</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="219"/>
+        <source>Margin color</source>
+        <translation>Randfarbe</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="221"/>
+        <source>Refresh preview</source>
+        <translation>Vorschau aktualisieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="363"/>
+        <source>Preview failed: </source>
+        <translation>Vorschau fehlgeschlagen: </translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="374"/>
+        <source>Enable a field on the Images tab to preview.</source>
+        <translation>Aktivieren Sie ein Feld im Reiter „Images“ für die Vorschau.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="404"/>
+        <source>No data for this field/frame.</source>
+        <translation>Keine Daten für dieses Feld/Bild.</translation>
     </message>
 </context>
 <context>

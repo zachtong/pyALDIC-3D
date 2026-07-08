@@ -131,6 +131,19 @@ class ImagesTab(ExportTabBase):
         self._quality_lbl.setVisible(is_jpeg)
         self._quality_spin.setVisible(is_jpeg)
 
+    # ---- surface consumed by the Preview & Colorbar tab -------------------------
+
+    @property
+    def field_rows(self):
+        """Per-field rows — the single source of truth the preview syncs with."""
+        return self._rows.rows
+
+    def show_deformed(self) -> bool:
+        return self._background_row.show_deformed()
+
+    def include_colorbar(self) -> bool:
+        return self._colorbar_check.isChecked()
+
     # ---- export ----------------------------------------------------------------
 
     def start_export(self) -> None:
@@ -154,6 +167,9 @@ class ImagesTab(ExportTabBase):
             jpeg_quality=self._quality_spin.value(),
             output_max_dim=int(self._resolution_combo.currentData()),
             include_colorbar=self._colorbar_check.isChecked(),
+            colorbar_style=self._dialog.colorbar_style(),
+            margin_ratio=self._dialog.margin_ratio(),
+            margin_color=self._dialog.margin_color(),
         )
         kwargs["frame_start"], kwargs["frame_end"] = self._range_row.frame_range()
 

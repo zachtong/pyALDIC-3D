@@ -878,7 +878,8 @@ def fill_locale(locale: str) -> tuple[int, list[str]]:
 
     def _sub(m: re.Match) -> str:
         nonlocal count
-        source = unescape(m.group("src"))
+        # lupdate also escapes quotes; plain unescape() only covers &amp;/&lt;/&gt;.
+        source = unescape(m.group("src"), {"&apos;": "'", "&quot;": '"'})
         translation = table.get(source)
         if translation is None:
             missing.append(source)
@@ -2594,6 +2595,198 @@ _BATCH_E2: dict[str, dict[str, str]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Batch E3 export strings (Preview & Colorbar tab: WYSIWYG preview, colorbar
+# style, field appearance sync). All strings shared with the 2D platform's
+# Preview & Colorbar tab reuse the 2D catalog translations verbatim.
+# ---------------------------------------------------------------------------
+
+_APPLY_ALL_TIP = (
+    "Apply this field's colormap, opacity and auto-range to every "
+    "enabled field (each field keeps its own min/max)."
+)
+_MARGIN_TIP = (
+    "Add a blank border around the exported content, as a fraction of the long edge (0 = none)."
+)
+
+_BATCH_E3: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Preview & Colorbar": "预览与色条",
+        "Open this tab to render a preview.": "打开此选项卡以渲染预览。",
+        "Frame": "帧",
+        "FIELD APPEARANCE": "字段外观",
+        "Range": "范围",
+        "Apply to all fields": "应用到所有字段",
+        _APPLY_ALL_TIP: "将该字段的 colormap、不透明度和自动范围应用到所有已启用字段（每个字段保留各自的 min/max）。",
+        "COLORBAR STYLE": "色条样式",
+        "Position": "位置",
+        "Font size": "字号",
+        "Font family": "字体",
+        "Bar thickness": "色条粗细",
+        "Black": "黑色",
+        "White": "白色",
+        "Top": "上",
+        "Bottom": "下",
+        "Margin": "边距",
+        _MARGIN_TIP: "在导出内容外围加一圈空白边框，宽度为长边的比例（0 = 无）。",
+        "Margin color": "边距颜色",
+        "Refresh preview": "刷新预览",
+        "Preview failed: ": "预览失败：",
+        "Enable a field on the Images tab to preview.": "在 Images 页启用一个字段以进行预览。",
+        "No data for this field/frame.": "该字段/帧没有数据。",
+    },
+    "zh_TW": {
+        "Preview & Colorbar": "預覽與色條",
+        "Open this tab to render a preview.": "開啟此分頁以算繪預覽。",
+        "Frame": "影格",
+        "FIELD APPEARANCE": "欄位外觀",
+        "Range": "範圍",
+        "Apply to all fields": "套用到所有欄位",
+        _APPLY_ALL_TIP: "將該欄位的 colormap、不透明度和自動範圍套用到所有已啟用欄位（每個欄位保留各自的 min/max）。",
+        "COLORBAR STYLE": "色條樣式",
+        "Position": "位置",
+        "Font size": "字級",
+        "Font family": "字型",
+        "Bar thickness": "色條粗細",
+        "Black": "黑色",
+        "White": "白色",
+        "Top": "上",
+        "Bottom": "下",
+        "Margin": "邊距",
+        _MARGIN_TIP: "在匯出內容外圍加一圈空白邊框，寬度為長邊的比例（0 = 無）。",
+        "Margin color": "邊距顏色",
+        "Refresh preview": "重新整理預覽",
+        "Preview failed: ": "預覽失敗：",
+        "Enable a field on the Images tab to preview.": "在 Images 頁啟用一個欄位以進行預覽。",
+        "No data for this field/frame.": "該欄位/影格沒有資料。",
+    },
+    "ja": {
+        "Preview & Colorbar": "プレビューとカラーバー",
+        "Open this tab to render a preview.": "このタブを開くとプレビューが描画されます。",
+        "Frame": "フレーム",
+        "FIELD APPEARANCE": "フィールドの外観",
+        "Range": "範囲",
+        "Apply to all fields": "すべてのフィールドに適用",
+        _APPLY_ALL_TIP: "このフィールドの colormap・不透明度・自動範囲を、有効なすべてのフィールドに適用します（各フィールドの min/max は保持）。",
+        "COLORBAR STYLE": "カラーバーのスタイル",
+        "Position": "位置",
+        "Font size": "フォントサイズ",
+        "Font family": "フォント",
+        "Bar thickness": "バーの太さ",
+        "Black": "黒",
+        "White": "白",
+        "Top": "上",
+        "Bottom": "下",
+        "Margin": "余白",
+        _MARGIN_TIP: "書き出す内容の周囲に空白の枠を追加します。幅は長辺に対する割合です（0 = なし）。",
+        "Margin color": "余白の色",
+        "Refresh preview": "プレビューを更新",
+        "Preview failed: ": "プレビューに失敗しました：",
+        "Enable a field on the Images tab to preview.": "プレビューするには Images タブでフィールドを有効にしてください。",
+        "No data for this field/frame.": "このフィールド/フレームにはデータがありません。",
+    },
+    "ko": {
+        "Preview & Colorbar": "미리보기 및 컬러바",
+        "Open this tab to render a preview.": "이 탭을 열면 미리보기가 렌더링됩니다.",
+        "Frame": "프레임",
+        "FIELD APPEARANCE": "필드 모양",
+        "Range": "범위",
+        "Apply to all fields": "모든 필드에 적용",
+        _APPLY_ALL_TIP: "이 필드의 colormap, 불투명도, 자동 범위를 활성화된 모든 필드에 적용합니다(각 필드의 min/max는 유지).",
+        "COLORBAR STYLE": "컬러바 스타일",
+        "Position": "위치",
+        "Font size": "글꼴 크기",
+        "Font family": "글꼴",
+        "Bar thickness": "막대 두께",
+        "Black": "검정",
+        "White": "흰색",
+        "Top": "위",
+        "Bottom": "아래",
+        "Margin": "여백",
+        _MARGIN_TIP: "내보내는 콘텐츠 주위에 여백 테두리를 추가합니다. 너비는 긴 변에 대한 비율입니다(0 = 없음).",
+        "Margin color": "여백 색상",
+        "Refresh preview": "미리보기 새로고침",
+        "Preview failed: ": "미리보기 실패: ",
+        "Enable a field on the Images tab to preview.": "미리보려면 Images 탭에서 필드를 활성화하세요.",
+        "No data for this field/frame.": "이 필드/프레임에 데이터가 없습니다.",
+    },
+    "de": {
+        "Preview & Colorbar": "Vorschau & Farbleiste",
+        "Open this tab to render a preview.": "Diesen Reiter öffnen, um eine Vorschau zu rendern.",
+        "Frame": "Bild",
+        "FIELD APPEARANCE": "FELDDARSTELLUNG",
+        "Range": "Bereich",
+        "Apply to all fields": "Auf alle Felder anwenden",
+        _APPLY_ALL_TIP: "Colormap, Deckkraft und Auto-Bereich dieses Felds auf alle aktivierten Felder anwenden (jedes Feld behält sein eigenes Min/Max).",
+        "COLORBAR STYLE": "FARBLEISTEN-STIL",
+        "Position": "Position",
+        "Font size": "Schriftgröße",
+        "Font family": "Schriftart",
+        "Bar thickness": "Balkendicke",
+        "Black": "Schwarz",
+        "White": "Weiß",
+        "Top": "Oben",
+        "Bottom": "Unten",
+        "Margin": "Rand",
+        _MARGIN_TIP: "Fügt einen leeren Rand um den exportierten Inhalt hinzu, als Anteil der langen Kante (0 = keiner).",
+        "Margin color": "Randfarbe",
+        "Refresh preview": "Vorschau aktualisieren",
+        "Preview failed: ": "Vorschau fehlgeschlagen: ",
+        "Enable a field on the Images tab to preview.": "Aktivieren Sie ein Feld im Reiter „Images“ für die Vorschau.",
+        "No data for this field/frame.": "Keine Daten für dieses Feld/Bild.",
+    },
+    "fr": {
+        "Preview & Colorbar": "Aperçu et barre de couleur",
+        "Open this tab to render a preview.": "Ouvrez cet onglet pour générer un aperçu.",
+        "Frame": "Image",
+        "FIELD APPEARANCE": "APPARENCE DU CHAMP",
+        "Range": "Plage",
+        "Apply to all fields": "Appliquer à tous les champs",
+        _APPLY_ALL_TIP: "Applique la colormap, l'opacité et l'auto-plage de ce champ à tous les champs activés (chaque champ garde ses propres min/max).",
+        "COLORBAR STYLE": "STYLE DE BARRE DE COULEUR",
+        "Position": "Position",
+        "Font size": "Taille de police",
+        "Font family": "Police",
+        "Bar thickness": "Épaisseur de la barre",
+        "Black": "Noir",
+        "White": "Blanc",
+        "Top": "Haut",
+        "Bottom": "Bas",
+        "Margin": "Marge",
+        _MARGIN_TIP: "Ajoute une bordure vide autour du contenu exporté, en fraction du bord long (0 = aucune).",
+        "Margin color": "Couleur de marge",
+        "Refresh preview": "Actualiser l'aperçu",
+        "Preview failed: ": "Échec de l'aperçu : ",
+        "Enable a field on the Images tab to preview.": "Activez un champ dans l'onglet Images pour l'aperçu.",
+        "No data for this field/frame.": "Aucune donnée pour ce champ/cette image.",
+    },
+    "es": {
+        "Preview & Colorbar": "Vista previa y barra de color",
+        "Open this tab to render a preview.": "Abre esta pestaña para generar una vista previa.",
+        "Frame": "Fotograma",
+        "FIELD APPEARANCE": "APARIENCIA DEL CAMPO",
+        "Range": "Rango",
+        "Apply to all fields": "Aplicar a todos los campos",
+        _APPLY_ALL_TIP: "Aplica el colormap, la opacidad y el rango automático de este campo a todos los campos activados (cada campo conserva su propio mín/máx).",
+        "COLORBAR STYLE": "ESTILO DE BARRA DE COLOR",
+        "Position": "Posición",
+        "Font size": "Tamaño de fuente",
+        "Font family": "Fuente",
+        "Bar thickness": "Grosor de la barra",
+        "Black": "Negro",
+        "White": "Blanco",
+        "Top": "Arriba",
+        "Bottom": "Abajo",
+        "Margin": "Margen",
+        _MARGIN_TIP: "Añade un borde en blanco alrededor del contenido exportado, como fracción del borde largo (0 = ninguna).",
+        "Margin color": "Color del margen",
+        "Refresh preview": "Actualizar vista previa",
+        "Preview failed: ": "Error en la vista previa: ",
+        "Enable a field on the Images tab to preview.": "Active un campo en la pestaña Images para la vista previa.",
+        "No data for this field/frame.": "No hay datos para este campo/fotograma.",
+    },
+}
+
 for _loc, _entries in _CALIB.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_C3.items():
@@ -2609,6 +2802,8 @@ for _loc, _entries in _BATCH_C.items():
 for _loc, _entries in _BATCH_E1.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _BATCH_E2.items():
+    TRANSLATIONS[_loc].update(_entries)
+for _loc, _entries in _BATCH_E3.items():
     TRANSLATIONS[_loc].update(_entries)
 
 

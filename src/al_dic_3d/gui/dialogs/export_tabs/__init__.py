@@ -15,6 +15,7 @@ from al_dic_3d.gui.dialogs.export_tabs.common import (
 )
 from al_dic_3d.gui.dialogs.export_tabs.data_tab import DataTab
 from al_dic_3d.gui.dialogs.export_tabs.images_tab import ImagesTab
+from al_dic_3d.gui.dialogs.export_tabs.preview_tab import PreviewTab
 from al_dic_3d.gui.dialogs.export_tabs.view3d_tab import View3DTab
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "FieldRow",
     "FieldRowsPanel",
     "ImagesTab",
+    "PreviewTab",
     "ProgressRow",
     "View3DTab",
 ]

@@ -32,7 +32,12 @@ import cv2
 import numpy as np
 from numpy.typing import NDArray
 
-from al_dic_3d.export.colorbar import ColorbarStyle, attach_colorbar, colorbar_label
+from al_dic_3d.export.colorbar import (
+    ColorbarStyle,
+    add_margin,
+    attach_colorbar,
+    colorbar_label,
+)
 from al_dic_3d.export.render import (
     FieldImageConfig,
     _load_gray_u8,
@@ -123,6 +128,8 @@ def export_animation(
     output_max_dim: int = 1024,
     include_colorbar: bool = True,
     colorbar_style: ColorbarStyle | None = None,
+    margin_ratio: float = 0.0,
+    margin_color: str = "white",
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
 ) -> list[Path]:
@@ -136,6 +143,9 @@ def export_animation(
         fps: timeline frames per second BEFORE decimation; playback fps is
             ``round(fps / frame_step)`` so real duration is preserved.
         frame_step: keep every Nth frame (1 = all).
+        margin_ratio / margin_color: blank border around every encoded frame
+            (colorbar included) as a fraction of the long edge (0 = none) —
+            the Preview & Colorbar tab's margin settings (2D idiom).
         stop_event: cooperative cancel — checked before every frame.
         progress_cb: called with ``(frames_done, total_frames, label)`` where
             label is the ``{camera}_{field}`` currently encoding.
@@ -203,6 +213,7 @@ def export_animation(
                     img = attach_colorbar(
                         img, cb_style, cfg.colormap, vmin, vmax, colorbar_label(cfg.field_id)
                     )
+                img = add_margin(img, margin_ratio, margin_color)
 
                 # Lazily open the encoder once the first frame's size is known
                 # (that size includes the colorbar strip when present).

@@ -29,7 +29,12 @@ import cv2
 import numpy as np
 from numpy.typing import NDArray
 
-from al_dic_3d.export.colorbar import ColorbarStyle, attach_colorbar, colorbar_label
+from al_dic_3d.export.colorbar import (
+    ColorbarStyle,
+    add_margin,
+    attach_colorbar,
+    colorbar_label,
+)
 from al_dic_3d.export.tables import field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
 from al_dic_3d.viz3d.fieldmap import FieldmapRenderer, visible_values
@@ -302,6 +307,8 @@ def export_image_frames(
     output_max_dim: int = 1024,
     include_colorbar: bool = True,
     colorbar_style: ColorbarStyle | None = None,
+    margin_ratio: float = 0.0,
+    margin_color: str = "white",
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
 ) -> list[Path]:
@@ -318,6 +325,9 @@ def export_image_frames(
             (the R camera falls back to the hull support, GUI contract).
         frame_start / frame_end: inclusive 0-based range; ``frame_end < 0``
             means the last frame.
+        margin_ratio / margin_color: blank border around the final frame
+            (colorbar included) as a fraction of the long edge (0 = none) —
+            the Preview & Colorbar tab's margin settings (2D idiom).
         stop_event: cooperative cancel — checked before every frame.
         progress_cb: called with ``(frames_done, total_frames, label)``.
 
@@ -383,6 +393,7 @@ def export_image_frames(
                     img = attach_colorbar(
                         img, cb_style, cfg.colormap, vmin, vmax, colorbar_label(cfg.field_id)
                     )
+                img = add_margin(img, margin_ratio, margin_color)
                 field_dir = ensure_dir(images_dir / f"{cam}_{cfg.field_id}")
                 out = field_dir / f"{frame_tag(k, n_frames)}{ext}"
                 cv2.imwrite(str(out), img, enc_params)

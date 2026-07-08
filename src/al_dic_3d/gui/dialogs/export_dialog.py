@@ -1,11 +1,13 @@
-"""Export dialog — tabbed Data / Images / Animation / 3D View (2D dialog idiom).
+"""Export dialog — tabbed Data / Images / Animation / Preview / 3D View.
 
-A shared OUTPUT FOLDER row (path + Browse + Open Folder) feeds four tabs
+A shared OUTPUT FOLDER row (path + Browse + Open Folder) feeds the tabs
 (:mod:`al_dic_3d.gui.dialogs.export_tabs`): field-selective data serialization,
-rendered per-camera field images, streaming GIF/MP4 animations, and offscreen
-pyvista 3D-view exports. Every export action is a plain (non-accept) button —
-the dialog stays open — runs on its tab's own worker thread with cooperative
-cancel, and mints a FRESH timestamp per click so repeats never overwrite.
+rendered per-camera field images, streaming GIF/MP4 animations, a WYSIWYG
+Preview & Colorbar tab (whose colorbar/margin style ALL image/animation
+exports use), and offscreen pyvista 3D-view exports. Every export action is a
+plain (non-accept) button — the dialog stays open — runs on its tab's own
+worker thread with cooperative cancel, and mints a FRESH timestamp per click
+so repeats never overwrite.
 
 The :class:`~al_dic_3d.export.render.VizExportHint` snapshot (constructed at
 BOTH call sites: the main right sidebar and the strain window) prefills
@@ -32,9 +34,16 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.export import VizExportHint, make_prefix, make_timestamp
-from al_dic_3d.gui.dialogs.export_tabs import AnimationTab, DataTab, ImagesTab, View3DTab
+from al_dic_3d.gui.dialogs.export_tabs import (
+    AnimationTab,
+    DataTab,
+    ImagesTab,
+    PreviewTab,
+    View3DTab,
+)
 
 if TYPE_CHECKING:
+    from al_dic_3d.export import ColorbarStyle
     from al_dic_3d.project.draft import ProjectDraft
     from al_dic_3d.runner import RunResult
 
@@ -107,11 +116,14 @@ class ExportDialog(QDialog):
         self._data_tab = DataTab(self)
         self._images_tab = ImagesTab(self)
         self._animation_tab = AnimationTab(self)
+        self._preview_tab = PreviewTab(self)  # after Images/Animation: reads their rows
         self._view3d_tab = View3DTab(self)
         self._tabs.addTab(self._data_tab, self.tr("Data"))
         self._tabs.addTab(self._images_tab, self.tr("Images"))
         self._tabs.addTab(self._animation_tab, self.tr("Animation"))
+        self._tabs.addTab(self._preview_tab, self.tr("Preview & Colorbar"))
         self._tabs.addTab(self._view3d_tab, self.tr("3D View"))
+        self._tabs.currentChanged.connect(self._on_tab_changed)
         layout.addWidget(self._tabs, stretch=1)
 
         # ---- close ----
@@ -152,6 +164,22 @@ class ExportDialog(QDialog):
         prefix = make_prefix(Path(base_dir) if base_dir else None)
         return Path(folder), prefix, make_timestamp()
 
+    # ---- shared colorbar/margin style (Preview & Colorbar tab = source) ----------
+
+    def colorbar_style(self) -> ColorbarStyle:
+        """The style every Images / Animation export uses (WYSIWYG preview)."""
+        return self._preview_tab.colorbar_style()
+
+    def margin_ratio(self) -> float:
+        return self._preview_tab.margin_ratio()
+
+    def margin_color(self) -> str:
+        return self._preview_tab.margin_color()
+
+    def _on_tab_changed(self, index: int) -> None:
+        if self._tabs.widget(index) is self._preview_tab:
+            self._preview_tab.activate()
+
     # ---- Batch-E1 compatibility surface (tests + callers) -------------------------
 
     @property
@@ -188,7 +216,14 @@ class ExportDialog(QDialog):
     # ---- worker lifecycle ----------------------------------------------------------
 
     def _all_tabs(self):
-        return (self._data_tab, self._images_tab, self._animation_tab, self._view3d_tab)
+        # PreviewTab duck-types the worker surface (is_busy/shutdown/_worker).
+        return (
+            self._data_tab,
+            self._images_tab,
+            self._animation_tab,
+            self._preview_tab,
+            self._view3d_tab,
+        )
 
     def wait_for_export(self, timeout_ms: int = 120_000) -> bool:
         """Join all running tab workers, pumping queued signals (tests)."""

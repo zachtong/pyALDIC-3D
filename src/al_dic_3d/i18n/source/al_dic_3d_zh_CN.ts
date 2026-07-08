@@ -54,12 +54,12 @@
         <translation>请先加载图像序列（在主窗口中打开项目）。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="139"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="146"/>
         <source>Choose an output folder first.</source>
         <translation>请先选择输出文件夹。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="143"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="150"/>
         <source>No fields enabled.</source>
         <translation>未启用任何场变量。</translation>
     </message>
@@ -67,12 +67,12 @@
 <context>
     <name>BackgroundRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="376"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="445"/>
         <source>Original (frame 1 background)</source>
         <translation>原始配置（第 1 帧作背景）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="377"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="446"/>
         <source>Deformed (current frame background)</source>
         <translation>变形配置（当前帧作背景）</translation>
     </message>
@@ -470,22 +470,22 @@
 <context>
     <name>CameraRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="344"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="413"/>
         <source>Camera</source>
         <translation>相机</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="348"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="417"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="349"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="418"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="350"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="419"/>
         <source>Left + Right</source>
         <translation>左 + 右</translation>
     </message>
@@ -688,47 +688,52 @@
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="85"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="94"/>
         <source>Export Results</source>
         <translation>导出结果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="92"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
         <source>OUTPUT FOLDER</source>
         <translation>输出文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
         <source>Select output folder…</source>
         <translation>选择输出文件夹…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="97"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="106"/>
         <source>Browse…</source>
         <translation>浏览…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="100"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="109"/>
         <source>Open Folder</source>
         <translation>打开文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="111"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="122"/>
         <source>Images</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="113"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="123"/>
         <source>Animation</source>
         <translation>动画</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="124"/>
+        <source>Preview &amp; Colorbar</source>
+        <translation>预览与色条</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="125"/>
         <source>3D View</source>
         <translation>3D 视图</translation>
     </message>
@@ -777,7 +782,7 @@
         <translation>导出数据</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="120"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="132"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -794,7 +799,7 @@
         <translation>全不选</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="229"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="264"/>
         <source>Choose output folder</source>
         <translation>选择输出文件夹</translation>
     </message>
@@ -841,7 +846,7 @@
 <context>
     <name>ExportTabs</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="363"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="432"/>
         <source>Full resolution</source>
         <translation>原始分辨率</translation>
     </message>
@@ -849,22 +854,22 @@
 <context>
     <name>FieldRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="258"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="266"/>
         <source>Auto</source>
         <translation>自动</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="259"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="267"/>
         <source>Auto range</source>
         <translation>自动范围</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="275"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="283"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="276"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="284"/>
         <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
         <translation>场变量不透明度（0 = 透明，1 = 完全不透明）</translation>
     </message>
@@ -923,17 +928,17 @@
 <context>
     <name>FrameRangeRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="394"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="463"/>
         <source>All frames</source>
         <translation>所有帧</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="398"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="467"/>
         <source>From frame</source>
         <translation>起始帧</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="408"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="477"/>
         <source>to</source>
         <translation>至</translation>
     </message>
@@ -981,12 +986,12 @@
         <translation>请先加载图像序列（在主窗口中打开项目）。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="139"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="152"/>
         <source>Choose an output folder first.</source>
         <translation>请先选择输出文件夹。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="143"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="156"/>
         <source>No fields enabled.</source>
         <translation>未启用任何场变量。</translation>
     </message>
@@ -1412,6 +1417,178 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
         <location filename="../../gui/dialogs/manual_params_dialog.py" line="154"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>PreviewTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="61"/>
+        <source>Open this tab to render a preview.</source>
+        <translation>打开此选项卡以渲染预览。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="69"/>
+        <source>Field</source>
+        <translation>场变量</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="76"/>
+        <source>Frame</source>
+        <translation>帧</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="85"/>
+        <source>Camera</source>
+        <translation>相机</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="89"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="168"/>
+        <source>Left</source>
+        <translation>左</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="90"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="167"/>
+        <source>Right</source>
+        <translation>右</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="120"/>
+        <source>FIELD APPEARANCE</source>
+        <translation>字段外观</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="125"/>
+        <source>Colormap</source>
+        <translation>颜色映射</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="127"/>
+        <source>Auto</source>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="128"/>
+        <source>Auto range</source>
+        <translation>自动范围</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="131"/>
+        <source>Range</source>
+        <translation>范围</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="139"/>
+        <source>Min</source>
+        <translation>最小</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="140"/>
+        <source>Max</source>
+        <translation>最大</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="147"/>
+        <source>Opacity</source>
+        <translation>不透明度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="149"/>
+        <source>Apply to all fields</source>
+        <translation>应用到所有字段</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="152"/>
+        <source>Apply this field&apos;s colormap, opacity and auto-range to every enabled field (each field keeps its own min/max).</source>
+        <translation>将该字段的 colormap、不透明度和自动范围应用到所有已启用字段（每个字段保留各自的 min/max）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="162"/>
+        <source>COLORBAR STYLE</source>
+        <translation>色条样式</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="169"/>
+        <source>Top</source>
+        <translation>上</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="170"/>
+        <source>Bottom</source>
+        <translation>下</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="174"/>
+        <source>Position</source>
+        <translation>位置</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="180"/>
+        <source>Font size</source>
+        <translation>字号</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="186"/>
+        <source>Font family</source>
+        <translation>字体</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="194"/>
+        <source>Bar thickness</source>
+        <translation>色条粗细</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="197"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="216"/>
+        <source>Black</source>
+        <translation>黑色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="197"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="216"/>
+        <source>White</source>
+        <translation>白色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="200"/>
+        <source>Background</source>
+        <translation>背景</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="208"/>
+        <source>Add a blank border around the exported content, as a fraction of the long edge (0 = none).</source>
+        <translation>在导出内容外围加一圈空白边框，宽度为长边的比例（0 = 无）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="213"/>
+        <source>Margin</source>
+        <translation>边距</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="219"/>
+        <source>Margin color</source>
+        <translation>边距颜色</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="221"/>
+        <source>Refresh preview</source>
+        <translation>刷新预览</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="363"/>
+        <source>Preview failed: </source>
+        <translation>预览失败：</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="374"/>
+        <source>Enable a field on the Images tab to preview.</source>
+        <translation>在 Images 页启用一个字段以进行预览。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="404"/>
+        <source>No data for this field/frame.</source>
+        <translation>该字段/帧没有数据。</translation>
     </message>
 </context>
 <context>

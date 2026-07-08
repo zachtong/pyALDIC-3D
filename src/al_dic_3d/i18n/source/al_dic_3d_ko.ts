@@ -54,12 +54,12 @@
         <translation>먼저 이미지 시퀀스를 불러오세요(메인 창에서 프로젝트를 여세요).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="139"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="146"/>
         <source>Choose an output folder first.</source>
         <translation>먼저 출력 폴더를 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="143"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="150"/>
         <source>No fields enabled.</source>
         <translation>활성화된 필드가 없습니다.</translation>
     </message>
@@ -67,12 +67,12 @@
 <context>
     <name>BackgroundRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="376"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="445"/>
         <source>Original (frame 1 background)</source>
         <translation>원형 (1번 프레임을 배경으로)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="377"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="446"/>
         <source>Deformed (current frame background)</source>
         <translation>변형 후 (현재 프레임을 배경으로)</translation>
     </message>
@@ -470,22 +470,22 @@
 <context>
     <name>CameraRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="344"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="413"/>
         <source>Camera</source>
         <translation>카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="348"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="417"/>
         <source>Left</source>
         <translation>왼쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="349"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="418"/>
         <source>Right</source>
         <translation>오른쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="350"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="419"/>
         <source>Left + Right</source>
         <translation>왼쪽 + 오른쪽</translation>
     </message>
@@ -688,47 +688,52 @@
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="85"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="94"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="92"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
         <source>OUTPUT FOLDER</source>
         <translation>출력 폴더</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
         <source>Select output folder…</source>
         <translation>출력 폴더 선택…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="97"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="106"/>
         <source>Browse…</source>
         <translation>찾아보기…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="100"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="109"/>
         <source>Open Folder</source>
         <translation>폴더 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="111"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
         <source>Data</source>
         <translation>데이터</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="122"/>
         <source>Images</source>
         <translation>이미지</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="113"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="123"/>
         <source>Animation</source>
         <translation>애니메이션</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="124"/>
+        <source>Preview &amp; Colorbar</source>
+        <translation>미리보기 및 컬러바</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="125"/>
         <source>3D View</source>
         <translation>3D 보기</translation>
     </message>
@@ -777,7 +782,7 @@
         <translation>데이터 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="120"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="132"/>
         <source>Close</source>
         <translation>닫기</translation>
     </message>
@@ -794,7 +799,7 @@
         <translation>모두 해제</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="229"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="264"/>
         <source>Choose output folder</source>
         <translation>출력 폴더 선택</translation>
     </message>
@@ -841,7 +846,7 @@
 <context>
     <name>ExportTabs</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="363"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="432"/>
         <source>Full resolution</source>
         <translation>전체 해상도</translation>
     </message>
@@ -849,22 +854,22 @@
 <context>
     <name>FieldRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="258"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="266"/>
         <source>Auto</source>
         <translation>자동</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="259"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="267"/>
         <source>Auto range</source>
         <translation>자동 범위</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="275"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="283"/>
         <source>Opacity</source>
         <translation>불투명도</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="276"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="284"/>
         <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
         <translation>필드 불투명도 (0 = 투명, 1 = 완전 불투명)</translation>
     </message>
@@ -923,17 +928,17 @@
 <context>
     <name>FrameRangeRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="394"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="463"/>
         <source>All frames</source>
         <translation>모든 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="398"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="467"/>
         <source>From frame</source>
         <translation>시작 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="408"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="477"/>
         <source>to</source>
         <translation>~</translation>
     </message>
@@ -981,12 +986,12 @@
         <translation>먼저 이미지 시퀀스를 불러오세요(메인 창에서 프로젝트를 여세요).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="139"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="152"/>
         <source>Choose an output folder first.</source>
         <translation>먼저 출력 폴더를 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="143"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="156"/>
         <source>No fields enabled.</source>
         <translation>활성화된 필드가 없습니다.</translation>
     </message>
@@ -1412,6 +1417,178 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <location filename="../../gui/dialogs/manual_params_dialog.py" line="154"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>PreviewTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="61"/>
+        <source>Open this tab to render a preview.</source>
+        <translation>이 탭을 열면 미리보기가 렌더링됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="69"/>
+        <source>Field</source>
+        <translation>필드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="76"/>
+        <source>Frame</source>
+        <translation>프레임</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="85"/>
+        <source>Camera</source>
+        <translation>카메라</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="89"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="168"/>
+        <source>Left</source>
+        <translation>왼쪽</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="90"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="167"/>
+        <source>Right</source>
+        <translation>오른쪽</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="120"/>
+        <source>FIELD APPEARANCE</source>
+        <translation>필드 모양</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="125"/>
+        <source>Colormap</source>
+        <translation>색상 맵</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="127"/>
+        <source>Auto</source>
+        <translation>자동</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="128"/>
+        <source>Auto range</source>
+        <translation>자동 범위</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="131"/>
+        <source>Range</source>
+        <translation>범위</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="139"/>
+        <source>Min</source>
+        <translation>최소</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="140"/>
+        <source>Max</source>
+        <translation>최대</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="147"/>
+        <source>Opacity</source>
+        <translation>불투명도</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="149"/>
+        <source>Apply to all fields</source>
+        <translation>모든 필드에 적용</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="152"/>
+        <source>Apply this field&apos;s colormap, opacity and auto-range to every enabled field (each field keeps its own min/max).</source>
+        <translation>이 필드의 colormap, 불투명도, 자동 범위를 활성화된 모든 필드에 적용합니다(각 필드의 min/max는 유지).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="162"/>
+        <source>COLORBAR STYLE</source>
+        <translation>컬러바 스타일</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="169"/>
+        <source>Top</source>
+        <translation>위</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="170"/>
+        <source>Bottom</source>
+        <translation>아래</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="174"/>
+        <source>Position</source>
+        <translation>위치</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="180"/>
+        <source>Font size</source>
+        <translation>글꼴 크기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="186"/>
+        <source>Font family</source>
+        <translation>글꼴</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="194"/>
+        <source>Bar thickness</source>
+        <translation>막대 두께</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="197"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="216"/>
+        <source>Black</source>
+        <translation>검정</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="197"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="216"/>
+        <source>White</source>
+        <translation>흰색</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="200"/>
+        <source>Background</source>
+        <translation>배경</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="208"/>
+        <source>Add a blank border around the exported content, as a fraction of the long edge (0 = none).</source>
+        <translation>내보내는 콘텐츠 주위에 여백 테두리를 추가합니다. 너비는 긴 변에 대한 비율입니다(0 = 없음).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="213"/>
+        <source>Margin</source>
+        <translation>여백</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="219"/>
+        <source>Margin color</source>
+        <translation>여백 색상</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="221"/>
+        <source>Refresh preview</source>
+        <translation>미리보기 새로고침</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="363"/>
+        <source>Preview failed: </source>
+        <translation>미리보기 실패: </translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="374"/>
+        <source>Enable a field on the Images tab to preview.</source>
+        <translation>미리보려면 Images 탭에서 필드를 활성화하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="404"/>
+        <source>No data for this field/frame.</source>
+        <translation>이 필드/프레임에 데이터가 없습니다.</translation>
     </message>
 </context>
 <context>

@@ -192,6 +192,53 @@ def test_export_image_frames_colorbar_widens_frames(result, image_files, tmp_pat
     assert w_cb > w_plain  # colorbar strip appended on the right
 
 
+def test_export_image_frames_styled_colorbar_and_margin(result, image_files, tmp_path):
+    """position='top' stacks the bar (taller, not wider); margin pads all sides."""
+    from al_dic_3d.export import ColorbarStyle
+
+    kw = dict(cameras=("L",), mesh_step=16, frame_start=1, frame_end=1, output_max_dim=256)
+    cfgs = [FieldImageConfig(field_id="U")]
+    (right,) = export_image_frames(
+        tmp_path, "s", "20260708000010", result, image_files, cfgs, include_colorbar=True, **kw
+    )
+    (top,) = export_image_frames(
+        tmp_path,
+        "s",
+        "20260708000011",
+        result,
+        image_files,
+        cfgs,
+        include_colorbar=True,
+        colorbar_style=ColorbarStyle(position="top"),
+        **kw,
+    )
+    h_right, w_right = cv2.imread(str(right)).shape[:2]
+    h_top, w_top = cv2.imread(str(top)).shape[:2]
+    assert h_top > h_right  # bar stacked above the image
+    assert w_top < w_right  # ... instead of appended beside it
+
+    (plain,) = export_image_frames(
+        tmp_path, "s", "20260708000012", result, image_files, cfgs, include_colorbar=False, **kw
+    )
+    (margined,) = export_image_frames(
+        tmp_path,
+        "s",
+        "20260708000013",
+        result,
+        image_files,
+        cfgs,
+        include_colorbar=False,
+        margin_ratio=0.1,
+        margin_color="black",
+        **kw,
+    )
+    hp, wp = cv2.imread(str(plain)).shape[:2]
+    img_m = cv2.imread(str(margined))
+    m = round(max(hp, wp) * 0.1)
+    assert img_m.shape[:2] == (hp + 2 * m, wp + 2 * m)
+    assert (img_m[0, 0] == 0).all()  # black border pixel
+
+
 def test_export_image_frames_jpeg_and_progress(result, image_files, tmp_path):
     seen: list[tuple[int, int, str]] = []
     paths = export_image_frames(
@@ -431,9 +478,9 @@ def dialog(qapp, result, image_files, tmp_path):
     dlg.close()
 
 
-def test_dialog_has_four_tabs_and_hint_prefill(dialog):
+def test_dialog_has_five_tabs_and_hint_prefill(dialog):
     tabs = dialog._tabs
-    assert tabs.count() == 4
+    assert tabs.count() == 5
     # Images tab prefilled from the VizExportHint (colormap/opacity/deformed).
     row = dialog._images_tab._rows._rows[0]
     assert row._cmap_combo.currentText() == "viridis"
@@ -479,3 +526,109 @@ def test_images_tab_requires_folder(dialog):
     dialog._images_tab.start_export()
     assert not dialog._images_tab.is_busy()  # refused synchronously
     assert dialog._images_tab._progress._status.text()
+
+
+# ---------------------------------------------------------------------------
+# Preview & Colorbar tab (Batch E3)
+# ---------------------------------------------------------------------------
+
+
+def test_preview_tab_renders_pixmap(dialog):
+    tab = dialog._preview_tab
+    dialog._tabs.setCurrentWidget(tab)  # activate() + schedules the debounce
+    assert tab._field_combo.currentData() == "W"  # hint prefill
+    assert tab._frame_spin.value() == 2  # hint.current_frame == 1 (0-based)
+    tab._render_preview()  # force the debounced slot directly
+    pix = tab._preview_label.pixmap()
+    assert pix is not None and not pix.isNull()
+    assert pix.width() > 0 and pix.height() > 0
+
+
+def test_preview_error_shown_in_canvas_not_raised(dialog, monkeypatch):
+    import al_dic_3d.export as export_mod
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(export_mod, "render_field_frame", boom)
+    tab = dialog._preview_tab
+    tab._render_preview()  # must not raise
+    assert "boom" in tab._preview_label.text()
+
+
+def test_preview_appearance_syncs_both_ways(dialog):
+    tab = dialog._preview_tab
+    field = tab._field_combo.currentData()
+    row = next(r for r in dialog._images_tab.field_rows if r.field_id == field)
+    # Preview panel edit -> Images tab row follows (row = source of truth).
+    tab._cmap_combo.setCurrentText("jet")
+    assert row._cmap_combo.currentText() == "jet"
+    tab._opacity_spin.setValue(0.33)
+    assert row._alpha_spin.value() == pytest.approx(0.33)
+    tab._auto_check.setChecked(False)
+    assert not row._auto_check.isChecked()
+    assert tab._vmin_spin.isEnabled() and row._vmin_spin.isEnabled()
+    # Images tab row edit -> preview panel follows (live, same source).
+    row._cmap_combo.setCurrentText("plasma")
+    assert tab._cmap_combo.currentText() == "plasma"
+    row._alpha_spin.setValue(0.77)
+    assert tab._opacity_spin.value() == pytest.approx(0.77)
+
+
+def test_preview_apply_to_all_fields(dialog):
+    tab = dialog._preview_tab
+    tab._cmap_combo.setCurrentText("coolwarm")
+    tab._apply_all_btn.click()
+    for rows in (dialog._images_tab.field_rows, dialog._animation_tab.field_rows):
+        for row in rows:
+            if row.config().enabled:
+                assert row._cmap_combo.currentText() == "coolwarm"
+
+
+def _styled_preview(tab):
+    """Dial in a distinctive colorbar + margin style on the preview tab."""
+    tab._pos_combo.setCurrentIndex(tab._pos_combo.findData("top"))
+    tab._font_spin.setValue(14)
+    tab._bg_combo.setCurrentIndex(tab._bg_combo.findData("white"))
+    tab._width_spin.setValue(0.08)
+    tab._margin_spin.setValue(0.05)
+    tab._margin_color_combo.setCurrentIndex(tab._margin_color_combo.findData("black"))
+
+
+def test_colorbar_style_reaches_image_export_worker(dialog, monkeypatch):
+    import al_dic_3d.export as export_mod
+
+    _styled_preview(dialog._preview_tab)
+    captured: dict = {}
+
+    def fake_export(*args, **kwargs):
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr(export_mod, "export_image_frames", fake_export)
+    dialog._images_tab.start_export()
+    assert dialog.wait_for_export()
+    assert captured["colorbar_style"] == dialog.colorbar_style()
+    assert captured["colorbar_style"].position == "top"
+    assert captured["colorbar_style"].font_size == 14.0
+    assert captured["colorbar_style"].background == "white"
+    assert captured["margin_ratio"] == pytest.approx(0.05)
+    assert captured["margin_color"] == "black"
+
+
+def test_colorbar_style_reaches_animation_export_worker(dialog, monkeypatch):
+    import al_dic_3d.export as export_mod
+
+    _styled_preview(dialog._preview_tab)
+    captured: dict = {}
+
+    def fake_export(*args, **kwargs):
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr(export_mod, "export_animation", fake_export)
+    dialog._animation_tab.start_export()
+    assert dialog.wait_for_export()
+    assert captured["colorbar_style"] == dialog.colorbar_style()
+    assert captured["margin_ratio"] == pytest.approx(0.05)
+    assert captured["margin_color"] == "black"
