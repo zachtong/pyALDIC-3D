@@ -4,8 +4,11 @@ The 2D ``CanvasArea`` idiom: a 36 px toolbar (Fit / 100% / zoom, view toggles on
 the right), the zoomable canvas with a top-left config card and a right-edge
 colorbar (both reused/mirrored from 2D), and the 36 px frame navigator at the
 bottom. 3D content: the background is the CURRENT CAMERA's frame; results render
-as a colormapped scatter of the tracked correspondence points (the 3D pipeline's
-native representation), colored by the selected world-frame field.
+as a DENSE continuous full-field overlay (2D-app idiom): the tracked
+correspondence points are interpolated onto a regular image-space grid by the
+shared :class:`VizController3D`, masked to the reference ROI (or the valid-node
+support), and colormapped. "Show Points" optionally draws small node dots on
+top of the dense field.
 
 ROI toolbox: this panel owns the :class:`ROIController` mask engine behind the
 sidebar's ROI toolbar — shape commits, invert/clear/import/save all funnel into
@@ -35,6 +38,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.controllers.roi_controller import ROIController
+from al_dic_3d.gui.controllers.viz_controller import VizController3D, visible_values
 from al_dic_3d.gui.rendering import scatter_field_pixmap
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
@@ -125,8 +129,10 @@ class CanvasArea3D(QWidget):
         self._view3d_btn.toggled.connect(self._on_view_mode)
         tb.addWidget(self._view3d_btn)
 
+        # The dense field is always the base layer; "Show Points" (default
+        # OFF) additionally draws small node dots on top of it.
         self._show_points_cb = QCheckBox(self.tr("Show Points"))
-        self._show_points_cb.setChecked(True)
+        self._show_points_cb.setChecked(False)
         self._show_points_cb.toggled.connect(lambda _c: self.render())
         tb.addWidget(self._show_points_cb)
         layout.addWidget(toolbar)
@@ -144,6 +150,7 @@ class CanvasArea3D(QWidget):
         self._mesh_overlay = MeshOverlay(self._canvas.viewport())
         self._canvas.viewport().installEventFilter(self)
         self._rig_cache = None  # loaded lazily for the 3D frusta
+        self._viz_ctrl = VizController3D()  # dense field renderer + caches
 
         # ROI mask engine (created lazily once an image defines the shape).
         self._roi_ctrl: ROIController | None = None
@@ -177,7 +184,7 @@ class CanvasArea3D(QWidget):
         signals.display_changed.connect(self.render)
         signals.results_changed.connect(self._on_results)
         signals.images_changed.connect(self._on_images)
-        signals.roi_changed.connect(self._sync_roi)
+        signals.roi_changed.connect(self._on_roi_changed)
         signals.params_changed.connect(self._on_params_changed)
         signals.calibration_changed.connect(self._invalidate_rig)
 
@@ -273,6 +280,13 @@ class CanvasArea3D(QWidget):
             self.signals.log.emit(f"mask save failed: {exc}", "error")
             return
         self.signals.log.emit(f"ROI mask saved to {path}", "success")
+
+    def _on_roi_changed(self) -> None:
+        """ROI edits change the dense-field support: drop mask-derived caches."""
+        self._viz_ctrl.invalidate_masks()
+        self._sync_roi()
+        if self.controller.state.result is not None:
+            self.render()
 
     def _sync_roi(self) -> None:
         """Draft -> view: bbox rectangle, mask overlay, and the mesh preview."""
@@ -467,6 +481,7 @@ class CanvasArea3D(QWidget):
         n = max(len(draft.left), len(draft.right))
         self._frame_nav.set_frame_count(n)
         self._config_overlay.refresh()
+        self._viz_ctrl.clear_all()  # image size may have changed
         self.render()
         self._ensure_roi_ctrl()
         self._schedule_mesh_preview()
@@ -475,6 +490,7 @@ class CanvasArea3D(QWidget):
         result = self.controller.state.result
         if result is not None:
             self._field_range_cache: dict = {}
+        self._viz_ctrl.clear_all()
         self.render()
 
     # ---- rendering ------------------------------------------------------------------
@@ -566,51 +582,111 @@ class CanvasArea3D(QWidget):
         cache[field] = (lo, hi)
         return lo, hi
 
+    def _clear_overlay(self) -> None:
+        self._canvas.set_overlay_pixmap(None)
+        self._canvas.set_points_pixmap(None)
+        self._colorbar.setVisible(False)
+
     def _render_overlay(self, k: int) -> None:
         result = self.controller.state.result
-        show = self._show_points_cb.isChecked()
-        if result is None or not show:
-            self._canvas.set_overlay_pixmap(None)
-            self._colorbar.setVisible(False)
+        if result is None:
+            self._clear_overlay()
             return
 
         cs = result.correspondence
         if k >= cs.n_frames:
-            self._canvas.set_overlay_pixmap(None)
-            self._colorbar.setVisible(False)
+            self._clear_overlay()
             return
         cam = self.signals.current_camera
+        x_cam = cs.xL if cam == "L" else cs.xR
         # Geometry follows the toggle (frame-k vs frame-1 positions); the
         # field values below always belong to the navigated frame k.
-        pos_k = k if self.signals.show_deformed else 0
-        pts = cs.xL[pos_k] if cam == "L" else cs.xR[pos_k]
+        deformed = bool(self.signals.show_deformed) and k > 0
+        pts = x_cam[k] if deformed else x_cam[0]
+        ref_pts = x_cam[0]
         vals = self._field_values(result, k)
         if vals is None:
-            self._canvas.set_overlay_pixmap(None)
-            self._colorbar.setVisible(False)
+            self._clear_overlay()
             return
+        ref_uv = None
+        if deformed:
+            d = x_cam[k] - x_cam[0]  # 2D ref_uv contract: x_k - x_1 per node
+            ref_uv = (d[:, 0], d[:, 1])
 
+        # LEFT camera: the user-drawn reference ROI mask bounds the field.
+        # RIGHT camera: no drawn mask exists (ROI tools live on the left
+        # view), so the renderer falls back to the valid-node hull support.
+        roi_mask = None
+        if cam == "L":
+            drawn = self.controller.state.draft.roi_mask_array
+            if drawn is not None:
+                roi_mask = np.asarray(drawn) > 0
+
+        # Auto colorbar range from VISIBLE nodes only (2D visible_values
+        # contract): clipped-by-mask nodes must not stretch the range. The
+        # range is written back so switching Auto off starts from live values.
         if self.signals.color_auto:
-            vmin, vmax = self._field_range(result)
+            vis = visible_values(vals, ref_pts, roi_mask)
+            finite = vis[np.isfinite(vis)]
+            if finite.size:
+                vmin, vmax = float(finite.min()), float(finite.max())
+            else:
+                vmin, vmax = 0.0, 1.0
+            self.signals.color_min, self.signals.color_max = vmin, vmax
         else:
             vmin, vmax = self.signals.color_min, self.signals.color_max
 
         img_rect = self._canvas.scene().sceneRect()
-        pixmap = scatter_field_pixmap(
-            pts,
-            vals,
-            int(img_rect.width()),
-            int(img_rect.height()),
-            cmap_name=self.signals.colormap,
-            vmin=vmin,
-            vmax=vmax,
-            radius=max(2.0, self.controller.state.draft.winstepsize * 0.30),
-        )
+        w, h = int(img_rect.width()), int(img_rect.height())
+        if w <= 0 or h <= 0:
+            self._clear_overlay()
+            return
+
+        try:
+            pixmap, xg, yg, out_step = self._viz_ctrl.render_field(
+                k,
+                f"{cam}:{self.signals.display_field}",
+                pts,
+                vals,
+                img_shape=(h, w),
+                mesh_step=int(self.controller.state.draft.winstepsize),
+                cmap=self.signals.colormap,
+                vmin=vmin,
+                vmax=vmax,
+                roi_mask=roi_mask,
+                deformed=deformed,
+                ref_uv=ref_uv,
+                ref_pts=ref_pts,
+            )
+        except Exception as exc:  # noqa: BLE001 - a render bug must not kill the GUI
+            self.signals.log.emit(f"overlay render failed: {type(exc).__name__}: {exc}", "error")
+            self._clear_overlay()
+            return
         if pixmap is None:
+            self._clear_overlay()
             return
 
         self._canvas.set_overlay_pixmap(pixmap)
+        self._canvas.set_overlay_geometry(float(out_step), float(xg.min()), float(yg.min()))
         self._canvas.set_overlay_opacity(self.signals.overlay_alpha)
+
+        # Optional node markers on top of the dense field (small fixed dots).
+        if self._show_points_cb.isChecked():
+            self._canvas.set_points_pixmap(
+                scatter_field_pixmap(
+                    pts,
+                    vals,
+                    w,
+                    h,
+                    cmap_name=self.signals.colormap,
+                    vmin=vmin,
+                    vmax=vmax,
+                    radius=2.0,
+                )
+            )
+        else:
+            self._canvas.set_points_pixmap(None)
+
         self._colorbar.update_params(
             self.signals.colormap, vmin, vmax, _FIELD_LABELS.get(self.signals.display_field, "")
         )

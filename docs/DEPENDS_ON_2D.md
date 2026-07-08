@@ -62,6 +62,8 @@ Row template (copy when adding a dependency):
 | `al_dic.mesh.refinement.build_refinement_policy` | runner quadtree mesh levers (inner/outer/brush + level), 2D-app parity |
 | `al_dic.mesh.refinement.refine_mesh` | one-shot static frame-1 mesh refinement in `_build_reference_mesh` |
 | `al_dic.mesh.refinement.RefinementContext` | context for the refinement criteria (mesh + frame-1 mask) |
+| `al_dic.utils.interpolation.FieldInterpolator` | cached Delaunay scattered-field interpolator for the dense overlay renderer (`gui.controllers.viz_controller`) | public (module-level; import via full path) |
+| `al_dic.utils.interpolation.scatter_to_grid` | scattered node values -> regular pixel grid (smart output-step sizing) for the dense field overlay | public (module-level; import via full path) |
 
 ## Known engine caveats (read-only observations, 2026-07-07 inc-bug audit)
 

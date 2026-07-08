@@ -2,9 +2,11 @@
 
 Independent ``QMainWindow`` over a completed :class:`~al_dic_3d.runner.RunResult`:
 runs :class:`StrainController3D` on demand and renders the strain fields as a
-colormapped scatter on the LEFT-camera image (the strain gauge is defined on the
-left/frame-1 mesh, so the left view is the natural canvas; a camera toggle is
-deliberately out of scope — keep it simple).
+DENSE continuous full-field overlay on the LEFT-camera image (the strain gauge
+is defined on the left/frame-1 mesh, so the left view is the natural canvas; a
+camera toggle is deliberately out of scope — keep it simple). Rendering shares
+:class:`VizController3D` with the main canvas, namespaced ``strain_window:<field>``
+(the 2D idiom), through a PRIVATE controller instance.
 
 Decoupling contracts (mirroring the 2D window, enforced by tests):
 
@@ -53,7 +55,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.controllers.strain_controller import StrainController3D
-from al_dic_3d.gui.rendering import scatter_field_pixmap
+from al_dic_3d.gui.controllers.viz_controller import VizController3D, visible_values
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
 from al_dic_3d.gui.widgets.strain_field_selector import (
@@ -142,7 +144,7 @@ class StrainWindow3D(QMainWindow):
 
         # PRIVATE display state — never mirrored to GuiSignals.
         self._frame = 0
-        self._range_cache: dict[str, tuple[float, float]] = {}
+        self._viz_ctrl = VizController3D()  # private dense renderer + caches
         self._last_rendered: tuple[float, float] = (0.0, 1.0)
         self._recon_id: int | None = None  # detects a NEW run vs a strain writeback
 
@@ -352,6 +354,9 @@ class StrainWindow3D(QMainWindow):
     def showEvent(self, event) -> None:  # noqa: N802 (Qt override)
         super().showEvent(event)
         self._connect_signals()
+        # 2D idiom: clear the viz cache on show so a previous session's
+        # overlay never bleeds through after the data changed while hidden.
+        self._viz_ctrl.clear_all()
         self._param_panel.set_winstepsize(self.controller.state.draft.winstepsize)
         self._refresh_from_result()
         self._render()
@@ -405,7 +410,7 @@ class StrainWindow3D(QMainWindow):
         except Exception as exc:  # noqa: BLE001 - surface compute errors in the log
             self._log(self.tr("Strain compute failed: {0}").format(exc), "error")
             return
-        self._range_cache.clear()
+        self._viz_ctrl.clear_all()
         self.signals.results_changed.emit()
         self._after_compute_success()
 
@@ -435,7 +440,7 @@ class StrainWindow3D(QMainWindow):
     def _on_worker_finished(self, strain: StrainResult3D) -> None:
         # Writeback on the main thread (frozen replace + one notification).
         self._strain_ctrl.apply(strain)
-        self._range_cache.clear()
+        self._viz_ctrl.clear_all()
         self.signals.results_changed.emit()
         self._progress_lbl.setText(self.tr("Complete"))
         self._compute_btn.setEnabled(True)
@@ -558,7 +563,7 @@ class StrainWindow3D(QMainWindow):
 
     def _on_results_changed(self) -> None:
         result = self.controller.state.result
-        self._range_cache.clear()
+        self._viz_ctrl.clear_all()
         recon_id = None if result is None else id(result.reconstruction)
         if recon_id != self._recon_id:
             # A genuinely new run (not our strain writeback): picked nodes and
@@ -620,27 +625,15 @@ class StrainWindow3D(QMainWindow):
         except Exception:  # noqa: BLE001 - a bad frame must not crash the canvas
             pass
 
-    def _field_range(self, strain: StrainResult3D, field: str) -> tuple[float, float]:
-        """Stable auto color range over ALL frames (playback doesn't re-scale)."""
-        if field in self._range_cache:
-            return self._range_cache[field]
-        vals = getattr(strain, field)
-        finite = vals[np.isfinite(vals)]
-        if finite.size == 0:
-            lo, hi = 0.0, 1.0
-        else:
-            lo, hi = float(finite.min()), float(finite.max())
-            if hi <= lo:
-                lo, hi = lo, lo + 1.0
-        self._range_cache[field] = (lo, hi)
-        return lo, hi
+    def _clear_overlay(self) -> None:
+        self._canvas.set_overlay_pixmap(None)
+        self._colorbar.setVisible(False)
 
     def _render(self) -> None:
         result = self.controller.state.result
         show_deformed = self._deformed_cb.isChecked()
         if result is None:
-            self._canvas.set_overlay_pixmap(None)
-            self._colorbar.setVisible(False)
+            self._clear_overlay()
             self._try_load_background(0)
             return
 
@@ -649,36 +642,73 @@ class StrainWindow3D(QMainWindow):
 
         strain = result.strain
         if strain is None:
-            self._canvas.set_overlay_pixmap(None)
-            self._colorbar.setVisible(False)
+            self._clear_overlay()
             return
 
         field = self._field_selector.current_field()
         vals = getattr(strain, field)[k]
         cs = result.correspondence
         # Geometry follows the deformed toggle; values stay those of frame k.
-        pts = cs.xL[k] if show_deformed else cs.xL[0]
+        deformed = bool(show_deformed) and k > 0
+        pts = cs.xL[k] if deformed else cs.xL[0]
+        ref_pts = cs.xL[0]
+        ref_uv = None
+        if deformed:
+            d = cs.xL[k] - cs.xL[0]  # 2D ref_uv contract: x_k - x_1 per node
+            ref_uv = (d[:, 0], d[:, 1])
 
+        # The strain gauge lives on the LEFT/frame-1 mesh, so the drawn LEFT
+        # reference mask (if any) bounds the field; otherwise the renderer
+        # falls back to the valid-node hull support.
+        roi_mask = None
+        drawn = self.controller.state.draft.roi_mask_array
+        if drawn is not None:
+            roi_mask = np.asarray(drawn) > 0
+
+        # Auto range from VISIBLE nodes of THIS frame only (2D visible_values
+        # contract): the colorbar must match what the dense render shows.
         if self._auto_range_cb.isChecked():
-            vmin, vmax = self._field_range(strain, field)
+            vis = visible_values(vals, ref_pts, roi_mask)
+            finite = vis[np.isfinite(vis)]
+            if finite.size:
+                vmin, vmax = float(finite.min()), float(finite.max())
+            else:
+                vmin, vmax = 0.0, 1.0
         else:
             vmin, vmax = float(self._vmin_spin.value()), float(self._vmax_spin.value())
         self._last_rendered = (vmin, vmax)
 
         rect = self._canvas.scene().sceneRect()
-        pixmap = scatter_field_pixmap(
-            pts,
-            vals,
-            int(rect.width()),
-            int(rect.height()),
-            cmap_name=self._cmap_combo.currentText(),
-            vmin=vmin,
-            vmax=vmax,
-            radius=max(2.0, self.controller.state.draft.winstepsize * 0.30),
-        )
+        w, h = int(rect.width()), int(rect.height())
+        if w <= 0 or h <= 0:
+            self._clear_overlay()
+            return
+
+        try:
+            pixmap, xg, yg, out_step = self._viz_ctrl.render_field(
+                k,
+                f"strain_window:{field}",
+                pts,
+                vals,
+                img_shape=(h, w),
+                mesh_step=int(self.controller.state.draft.winstepsize),
+                cmap=self._cmap_combo.currentText(),
+                vmin=vmin,
+                vmax=vmax,
+                roi_mask=roi_mask,
+                deformed=deformed,
+                ref_uv=ref_uv,
+                ref_pts=ref_pts,
+            )
+        except Exception as exc:  # noqa: BLE001 - a render bug must not kill the window
+            self._log(f"render failed: {type(exc).__name__}: {exc}", "error")
+            self._clear_overlay()
+            return
         if pixmap is None:
+            self._clear_overlay()
             return
         self._canvas.set_overlay_pixmap(pixmap)
+        self._canvas.set_overlay_geometry(float(out_step), float(xg.min()), float(yg.min()))
         self._canvas.set_overlay_opacity(self._opacity_slider.value() / 100.0)
         vp = self._canvas.viewport()
         self._colorbar.setGeometry(0, 0, vp.width(), vp.height())

@@ -1,9 +1,9 @@
 """``ImageCanvas3D`` — zoomable, layered image canvas (2D ``ImageCanvas`` idiom).
 
-Layers: background image (z0), semi-transparent field overlay (z1), refinement
-brush overlay (z1.5, cyan), ROI mask overlay (z1.8, blue), ROI bbox rectangle
-(z2). Scene coordinates are 1:1 with image pixels, so drawn shapes are directly
-in pixel coordinates.
+Layers: background image (z0), semi-transparent field overlay (z1), optional
+node-dot markers (z1.2), refinement brush overlay (z1.5, cyan), ROI mask
+overlay (z1.8, blue), ROI bbox rectangle (z2). Scene coordinates are 1:1 with
+image pixels, so drawn shapes are directly in pixel coordinates.
 
 Interaction is a tool-mode state machine ported from the 2D canvas:
 ``set_tool(shape, mode)`` arms a one-shot rect / polygon / circle / circle3
@@ -128,6 +128,11 @@ class ImageCanvas3D(QGraphicsView):
         self._overlay_item.setOpacity(0.85)
         self._scene.addItem(self._overlay_item)
 
+        # Node-dot layer (z1.2): optional small markers over the dense field.
+        self._points_item = QGraphicsPixmapItem()
+        self._points_item.setZValue(1.2)
+        self._scene.addItem(self._points_item)
+
         # Brush layer (z1.5): refinement-mask strokes over frame 1 (cyan).
         self._brush_item = QGraphicsPixmapItem()
         self._brush_item.setZValue(1.5)
@@ -191,7 +196,8 @@ class ImageCanvas3D(QGraphicsView):
 
     def clear_image(self) -> None:
         self._bg_item.setPixmap(QPixmap())
-        self._overlay_item.setPixmap(QPixmap())
+        self.set_overlay_pixmap(None)
+        self.set_points_pixmap(None)
         self._roi_mask_item.setPixmap(QPixmap())
         if self._roi_item is not None:
             self._roi_item.setRect(0, 0, 0, 0)
@@ -200,10 +206,24 @@ class ImageCanvas3D(QGraphicsView):
     # --- field overlay ---------------------------------------------------------
 
     def set_overlay_pixmap(self, pixmap: QPixmap | None) -> None:
-        self._overlay_item.setPixmap(pixmap if pixmap is not None else QPixmap())
+        if pixmap is None:
+            self._overlay_item.setPixmap(QPixmap())
+            self.set_overlay_geometry(1.0, 0.0, 0.0)  # drop any stale transform
+        else:
+            self._overlay_item.setPixmap(pixmap)
+
+    def set_overlay_geometry(self, scale: float, x: float, y: float) -> None:
+        """Place the overlay pixmap: dense renders are grid-resolution images
+        positioned at the grid origin and scaled by the output step."""
+        self._overlay_item.setScale(scale)
+        self._overlay_item.setPos(x, y)
 
     def set_overlay_opacity(self, alpha: float) -> None:
         self._overlay_item.setOpacity(max(0.0, min(1.0, alpha)))
+
+    def set_points_pixmap(self, pixmap: QPixmap | None) -> None:
+        """Full-image-size node-dot layer drawn over the dense field."""
+        self._points_item.setPixmap(pixmap if pixmap is not None else QPixmap())
 
     # --- ROI toolbox -------------------------------------------------------------
 

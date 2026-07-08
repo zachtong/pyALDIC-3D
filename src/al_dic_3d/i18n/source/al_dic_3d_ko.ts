@@ -394,57 +394,57 @@
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="95"/>
+        <location filename="../../gui/panels/canvas_area.py" line="99"/>
         <source>Fit</source>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="110"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Show Grid</source>
         <translation>격자 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="111"/>
+        <location filename="../../gui/panels/canvas_area.py" line="115"/>
         <source>Show/hide computational mesh grid</source>
         <translation>계산 메시 격자 표시/숨김</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="116"/>
+        <location filename="../../gui/panels/canvas_area.py" line="120"/>
         <source>Show Subset</source>
         <translation>서브셋 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="117"/>
+        <location filename="../../gui/panels/canvas_area.py" line="121"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>마우스 오버 시 서브셋 창 표시(격자 필요)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <location filename="../../gui/panels/canvas_area.py" line="126"/>
         <source>3D View</source>
         <translation>3D 보기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="128"/>
+        <location filename="../../gui/panels/canvas_area.py" line="134"/>
         <source>Show Points</source>
         <translation>측정점 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <location filename="../../gui/panels/canvas_area.py" line="273"/>
         <source>Save Mask</source>
         <translation>마스크 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <location filename="../../gui/panels/canvas_area.py" line="273"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 이미지 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="516"/>
+        <location filename="../../gui/panels/canvas_area.py" line="532"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="522"/>
+        <location filename="../../gui/panels/canvas_area.py" line="538"/>
         <source>Selected field is not available.</source>
         <translation>선택한 필드를 사용할 수 없습니다.</translation>
     </message>
@@ -453,7 +453,7 @@
     <name>ConfigOverlay3D</name>
     <message>
         <source>Strategy</source>
-        <translation>전략</translation>
+        <translation type="vanished">전략</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="39"/>
@@ -482,15 +482,15 @@
     </message>
     <message>
         <source>Track Both</source>
-        <translation>양쪽 카메라 추적</translation>
+        <translation type="vanished">양쪽 카메라 추적</translation>
     </message>
     <message>
         <source>Stereo Each Frame</source>
-        <translation>프레임별 스테레오 매칭</translation>
+        <translation type="vanished">프레임별 스테레오 매칭</translation>
     </message>
     <message>
         <source>Reference Direct</source>
-        <translation>기준 프레임 직접 매칭</translation>
+        <translation type="vanished">기준 프레임 직접 매칭</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="74"/>
@@ -620,7 +620,7 @@
     </message>
     <message>
         <source>STRAIN</source>
-        <translation>변형률</translation>
+        <translation type="vanished">변형률</translation>
     </message>
 </context>
 <context>
@@ -852,7 +852,7 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>Compute surface strain</source>
-        <translation>표면 변형률 계산</translation>
+        <translation type="vanished">표면 변형률 계산</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="409"/>
@@ -866,15 +866,15 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>+ Draw</source>
-        <translation>+ 그리기</translation>
+        <translation type="vanished">+ 그리기</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation>지우기</translation>
+        <translation type="vanished">지우기</translation>
     </message>
     <message>
         <source>x min / x max / y min / y max (px)</source>
-        <translation>x 최소 / x 최대 / y 최소 / y 최대 (px)</translation>
+        <translation type="vanished">x 최소 / x 최대 / y 최소 / y 최대 (px)</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="496"/>
@@ -898,11 +898,11 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>AL-DIC global step (ADMM)</source>
-        <translation>AL-DIC 전역 단계(ADMM)</translation>
+        <translation type="vanished">AL-DIC 전역 단계(ADMM)</translation>
     </message>
     <message>
         <source>ADMM Iterations</source>
-        <translation>ADMM 반복 횟수</translation>
+        <translation type="vanished">ADMM 반복 횟수</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="519"/>
@@ -926,11 +926,11 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>Paint region…</source>
-        <translation>세분화 영역 그리기…</translation>
+        <translation type="vanished">세분화 영역 그리기…</translation>
     </message>
     <message>
         <source>Clear paint</source>
-        <translation>그리기 지우기</translation>
+        <translation type="vanished">그리기 지우기</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="567"/>
@@ -966,53 +966,53 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="124"/>
+        <location filename="../../gui/main_window.py" line="122"/>
         <source>&amp;File</source>
         <translation>파일(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="126"/>
+        <location filename="../../gui/main_window.py" line="124"/>
         <source>New Project</source>
         <translation>새 프로젝트</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="131"/>
+        <location filename="../../gui/main_window.py" line="129"/>
         <source>Open Project…</source>
         <translation>프로젝트 열기…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="136"/>
+        <location filename="../../gui/main_window.py" line="134"/>
         <source>Save Project…</source>
         <translation>프로젝트 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="142"/>
+        <location filename="../../gui/main_window.py" line="140"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="148"/>
+        <location filename="../../gui/main_window.py" line="146"/>
         <source>&amp;Settings</source>
         <translation>설정(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="149"/>
+        <location filename="../../gui/main_window.py" line="147"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="199"/>
+        <location filename="../../gui/main_window.py" line="197"/>
         <source>Open Project</source>
         <translation>프로젝트 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="199"/>
-        <location filename="../../gui/main_window.py" line="216"/>
+        <location filename="../../gui/main_window.py" line="197"/>
+        <location filename="../../gui/main_window.py" line="214"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 프로젝트 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="214"/>
+        <location filename="../../gui/main_window.py" line="212"/>
         <source>Save Project</source>
         <translation>프로젝트 저장</translation>
     </message>
@@ -1505,163 +1505,163 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="153"/>
+        <location filename="../../gui/strain_window.py" line="155"/>
         <source>Strain Post-Processing</source>
         <translation>변형률 후처리</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="176"/>
+        <location filename="../../gui/strain_window.py" line="178"/>
         <source>Fit</source>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="177"/>
+        <location filename="../../gui/strain_window.py" line="179"/>
         <source>Fit image to viewport</source>
         <translation>이미지를 뷰포트에 맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="181"/>
+        <location filename="../../gui/strain_window.py" line="183"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>100%(1:1) 확대</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="184"/>
+        <location filename="../../gui/strain_window.py" line="186"/>
         <source>Zoom in</source>
         <translation>확대</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="188"/>
+        <location filename="../../gui/strain_window.py" line="190"/>
         <source>Zoom out</source>
         <translation>축소</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="219"/>
+        <location filename="../../gui/strain_window.py" line="221"/>
         <source>STRAIN PARAMETERS</source>
         <translation>변형률 매개변수</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="228"/>
+        <location filename="../../gui/strain_window.py" line="230"/>
         <source>Compute Strain</source>
         <translation>변형률 계산</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="234"/>
+        <location filename="../../gui/strain_window.py" line="236"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="238"/>
+        <location filename="../../gui/strain_window.py" line="240"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>변위 및 변형률 결과를 NPZ / MAT / CSV로 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="260"/>
+        <location filename="../../gui/strain_window.py" line="262"/>
         <source>FIELD</source>
         <translation>표시 필드</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="266"/>
+        <location filename="../../gui/strain_window.py" line="268"/>
         <source>VISUALIZATION</source>
         <translation>시각화</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="270"/>
+        <location filename="../../gui/strain_window.py" line="272"/>
         <source>LOG</source>
         <translation>로그</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="302"/>
+        <location filename="../../gui/strain_window.py" line="304"/>
         <source>Show on deformed frame</source>
         <translation>변형 프레임에 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="310"/>
+        <location filename="../../gui/strain_window.py" line="312"/>
         <source>Colormap</source>
         <translation>색상 맵</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="312"/>
+        <location filename="../../gui/strain_window.py" line="314"/>
         <source>Auto range</source>
         <translation>자동 범위</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="328"/>
+        <location filename="../../gui/strain_window.py" line="330"/>
         <source>Min</source>
         <translation>최소</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="330"/>
+        <location filename="../../gui/strain_window.py" line="332"/>
         <source>Max</source>
         <translation>최대</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="340"/>
+        <location filename="../../gui/strain_window.py" line="342"/>
         <source>Opacity</source>
         <translation>불투명도</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="406"/>
-        <location filename="../../gui/strain_window.py" line="452"/>
-        <location filename="../../gui/strain_window.py" line="519"/>
+        <location filename="../../gui/strain_window.py" line="411"/>
+        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="524"/>
         <source>Strain compute failed: {0}</source>
         <translation>변형률 계산 실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="418"/>
-        <location filename="../../gui/strain_window.py" line="483"/>
+        <location filename="../../gui/strain_window.py" line="423"/>
+        <location filename="../../gui/strain_window.py" line="488"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>먼저 3D 분석을 실행하세요 — 후처리할 결과가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="421"/>
-        <location filename="../../gui/strain_window.py" line="494"/>
-        <location filename="../../gui/strain_window.py" line="521"/>
+        <location filename="../../gui/strain_window.py" line="426"/>
+        <location filename="../../gui/strain_window.py" line="499"/>
+        <location filename="../../gui/strain_window.py" line="526"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>이미지에서 원점, +X, +Y 순서로 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="427"/>
+        <location filename="../../gui/strain_window.py" line="432"/>
         <source>Computing strain…</source>
         <translation>변형률 계산 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="440"/>
+        <location filename="../../gui/strain_window.py" line="445"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="462"/>
         <source>Strain computation complete.</source>
         <translation>변형률 계산 완료.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="462"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="512"/>
-        <location filename="../../gui/strain_window.py" line="529"/>
+        <location filename="../../gui/strain_window.py" line="517"/>
+        <location filename="../../gui/strain_window.py" line="534"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 점 선택됨</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="531"/>
+        <location filename="../../gui/strain_window.py" line="536"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>

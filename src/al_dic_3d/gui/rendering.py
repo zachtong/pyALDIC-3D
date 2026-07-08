@@ -1,10 +1,10 @@
 """Shared Qt rendering helpers for result overlays.
 
-The 3D pipeline's native result representation is a scattered point cloud
-(tracked correspondence nodes), so both the main canvas and the strain
-post-processing window render fields as a colormapped scatter over the camera
-image. This module holds that one drawing routine so the two views cannot
-drift apart. Qt view layer; no user-facing strings.
+Fields render as a DENSE continuous overlay via
+:class:`~al_dic_3d.gui.controllers.viz_controller.VizController3D`; this module
+keeps the colormapped-scatter routine used for the optional "Show Points"
+node markers drawn on TOP of the dense field. Qt view layer; no user-facing
+strings.
 """
 
 from __future__ import annotations

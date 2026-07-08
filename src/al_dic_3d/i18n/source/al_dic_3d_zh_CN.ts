@@ -394,57 +394,57 @@
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="95"/>
+        <location filename="../../gui/panels/canvas_area.py" line="99"/>
         <source>Fit</source>
         <translation>适配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="110"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Show Grid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="111"/>
+        <location filename="../../gui/panels/canvas_area.py" line="115"/>
         <source>Show/hide computational mesh grid</source>
         <translation>显示/隐藏计算网格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="116"/>
+        <location filename="../../gui/panels/canvas_area.py" line="120"/>
         <source>Show Subset</source>
         <translation>显示子集</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="117"/>
+        <location filename="../../gui/panels/canvas_area.py" line="121"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>悬停时显示子集窗口（需要先开启网格）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <location filename="../../gui/panels/canvas_area.py" line="126"/>
         <source>3D View</source>
         <translation>3D 视图</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="128"/>
+        <location filename="../../gui/panels/canvas_area.py" line="134"/>
         <source>Show Points</source>
         <translation>显示测点</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <location filename="../../gui/panels/canvas_area.py" line="273"/>
         <source>Save Mask</source>
         <translation>保存掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <location filename="../../gui/panels/canvas_area.py" line="273"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 图像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="516"/>
+        <location filename="../../gui/panels/canvas_area.py" line="532"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 视图 — 运行分析后即可查看重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="522"/>
+        <location filename="../../gui/panels/canvas_area.py" line="538"/>
         <source>Selected field is not available.</source>
         <translation>所选场变量不可用。</translation>
     </message>
@@ -453,7 +453,7 @@
     <name>ConfigOverlay3D</name>
     <message>
         <source>Strategy</source>
-        <translation>策略</translation>
+        <translation type="vanished">策略</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="39"/>
@@ -482,15 +482,15 @@
     </message>
     <message>
         <source>Track Both</source>
-        <translation>双相机追踪</translation>
+        <translation type="vanished">双相机追踪</translation>
     </message>
     <message>
         <source>Stereo Each Frame</source>
-        <translation>逐帧立体匹配</translation>
+        <translation type="vanished">逐帧立体匹配</translation>
     </message>
     <message>
         <source>Reference Direct</source>
-        <translation>参考帧直接匹配</translation>
+        <translation type="vanished">参考帧直接匹配</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="74"/>
@@ -620,7 +620,7 @@
     </message>
     <message>
         <source>STRAIN</source>
-        <translation>应变</translation>
+        <translation type="vanished">应变</translation>
     </message>
 </context>
 <context>
@@ -852,7 +852,7 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
     </message>
     <message>
         <source>Compute surface strain</source>
-        <translation>计算表面应变</translation>
+        <translation type="vanished">计算表面应变</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="409"/>
@@ -866,15 +866,15 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
     </message>
     <message>
         <source>+ Draw</source>
-        <translation>+ 绘制</translation>
+        <translation type="vanished">+ 绘制</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation>清除</translation>
+        <translation type="vanished">清除</translation>
     </message>
     <message>
         <source>x min / x max / y min / y max (px)</source>
-        <translation>x 最小 / x 最大 / y 最小 / y 最大（像素）</translation>
+        <translation type="vanished">x 最小 / x 最大 / y 最小 / y 最大（像素）</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="496"/>
@@ -898,11 +898,11 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
     </message>
     <message>
         <source>AL-DIC global step (ADMM)</source>
-        <translation>AL-DIC 全局步（ADMM）</translation>
+        <translation type="vanished">AL-DIC 全局步（ADMM）</translation>
     </message>
     <message>
         <source>ADMM Iterations</source>
-        <translation>ADMM 迭代次数</translation>
+        <translation type="vanished">ADMM 迭代次数</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="519"/>
@@ -926,11 +926,11 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
     </message>
     <message>
         <source>Paint region…</source>
-        <translation>绘制加密区域…</translation>
+        <translation type="vanished">绘制加密区域…</translation>
     </message>
     <message>
         <source>Clear paint</source>
-        <translation>清除绘制</translation>
+        <translation type="vanished">清除绘制</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="567"/>
@@ -966,53 +966,53 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="124"/>
+        <location filename="../../gui/main_window.py" line="122"/>
         <source>&amp;File</source>
         <translation>文件(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="126"/>
+        <location filename="../../gui/main_window.py" line="124"/>
         <source>New Project</source>
         <translation>新建项目</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="131"/>
+        <location filename="../../gui/main_window.py" line="129"/>
         <source>Open Project…</source>
         <translation>打开项目…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="136"/>
+        <location filename="../../gui/main_window.py" line="134"/>
         <source>Save Project…</source>
         <translation>保存项目…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="142"/>
+        <location filename="../../gui/main_window.py" line="140"/>
         <source>Quit</source>
         <translation>退出</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="148"/>
+        <location filename="../../gui/main_window.py" line="146"/>
         <source>&amp;Settings</source>
         <translation>设置(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="149"/>
+        <location filename="../../gui/main_window.py" line="147"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="199"/>
+        <location filename="../../gui/main_window.py" line="197"/>
         <source>Open Project</source>
         <translation>打开项目</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="199"/>
-        <location filename="../../gui/main_window.py" line="216"/>
+        <location filename="../../gui/main_window.py" line="197"/>
+        <location filename="../../gui/main_window.py" line="214"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 项目 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="214"/>
+        <location filename="../../gui/main_window.py" line="212"/>
         <source>Save Project</source>
         <translation>保存项目</translation>
     </message>
@@ -1505,163 +1505,163 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="153"/>
+        <location filename="../../gui/strain_window.py" line="155"/>
         <source>Strain Post-Processing</source>
         <translation>应变后处理</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="176"/>
+        <location filename="../../gui/strain_window.py" line="178"/>
         <source>Fit</source>
         <translation>适配</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="177"/>
+        <location filename="../../gui/strain_window.py" line="179"/>
         <source>Fit image to viewport</source>
         <translation>将图像适配到视口</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="181"/>
+        <location filename="../../gui/strain_window.py" line="183"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>缩放到 100%（1:1）</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="184"/>
+        <location filename="../../gui/strain_window.py" line="186"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="188"/>
+        <location filename="../../gui/strain_window.py" line="190"/>
         <source>Zoom out</source>
         <translation>缩小</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="219"/>
+        <location filename="../../gui/strain_window.py" line="221"/>
         <source>STRAIN PARAMETERS</source>
         <translation>应变参数</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="228"/>
+        <location filename="../../gui/strain_window.py" line="230"/>
         <source>Compute Strain</source>
         <translation>计算应变</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="234"/>
+        <location filename="../../gui/strain_window.py" line="236"/>
         <source>Export Results</source>
         <translation>导出结果</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="238"/>
+        <location filename="../../gui/strain_window.py" line="240"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>将位移和应变结果导出为 NPZ / MAT / CSV</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="260"/>
+        <location filename="../../gui/strain_window.py" line="262"/>
         <source>FIELD</source>
         <translation>场变量</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="266"/>
+        <location filename="../../gui/strain_window.py" line="268"/>
         <source>VISUALIZATION</source>
         <translation>可视化</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="270"/>
+        <location filename="../../gui/strain_window.py" line="272"/>
         <source>LOG</source>
         <translation>日志</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="302"/>
+        <location filename="../../gui/strain_window.py" line="304"/>
         <source>Show on deformed frame</source>
         <translation>在变形帧上显示</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="310"/>
+        <location filename="../../gui/strain_window.py" line="312"/>
         <source>Colormap</source>
         <translation>颜色映射</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="312"/>
+        <location filename="../../gui/strain_window.py" line="314"/>
         <source>Auto range</source>
         <translation>自动范围</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="328"/>
+        <location filename="../../gui/strain_window.py" line="330"/>
         <source>Min</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="330"/>
+        <location filename="../../gui/strain_window.py" line="332"/>
         <source>Max</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="340"/>
+        <location filename="../../gui/strain_window.py" line="342"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="406"/>
-        <location filename="../../gui/strain_window.py" line="452"/>
-        <location filename="../../gui/strain_window.py" line="519"/>
+        <location filename="../../gui/strain_window.py" line="411"/>
+        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="524"/>
         <source>Strain compute failed: {0}</source>
         <translation>应变计算失败：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="418"/>
-        <location filename="../../gui/strain_window.py" line="483"/>
+        <location filename="../../gui/strain_window.py" line="423"/>
+        <location filename="../../gui/strain_window.py" line="488"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>请先运行 3D 分析——没有可后处理的结果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="421"/>
-        <location filename="../../gui/strain_window.py" line="494"/>
-        <location filename="../../gui/strain_window.py" line="521"/>
+        <location filename="../../gui/strain_window.py" line="426"/>
+        <location filename="../../gui/strain_window.py" line="499"/>
+        <location filename="../../gui/strain_window.py" line="526"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>请在图像上依次点击原点、+X 点、+Y 点</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="427"/>
+        <location filename="../../gui/strain_window.py" line="432"/>
         <source>Computing strain…</source>
         <translation>正在计算应变…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="440"/>
+        <location filename="../../gui/strain_window.py" line="445"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="462"/>
         <source>Strain computation complete.</source>
         <translation>应变计算完成。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="462"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 参数已变更 — 请点击“计算应变”</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="512"/>
-        <location filename="../../gui/strain_window.py" line="529"/>
+        <location filename="../../gui/strain_window.py" line="517"/>
+        <location filename="../../gui/strain_window.py" line="534"/>
         <source>Picked {0}/3 points</source>
         <translation>已拾取 {0}/3 个点</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="531"/>
+        <location filename="../../gui/strain_window.py" line="536"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>

@@ -168,11 +168,27 @@ def test_run_and_overlay_render(qapp, scene):
     result = win.controller.state.result
     # Batch C: the GUI pipeline never computes strain (post-processing window).
     assert result is not None and result.strain is None
-    # field overlay rendered on the canvas + colorbar visible
+    # DENSE field overlay rendered on the canvas + colorbar visible
     win.signals.set_current_frame(1, 3)
     win._canvas_area.render()
-    assert not win._canvas_area.canvas._overlay_item.pixmap().isNull()
+    canvas = win._canvas_area.canvas
+    assert not canvas._overlay_item.pixmap().isNull()
     assert win._canvas_area._colorbar.isVisible()
+    # the dense overlay is a grid-resolution image scaled to pixel coords
+    assert canvas._overlay_item.scale() >= 1.0
+    # "Show Points" is OFF by default: no dot layer over the dense field ...
+    assert not win._canvas_area._show_points_cb.isChecked()
+    assert canvas._points_item.pixmap().isNull()
+    # ... and checking it draws the node markers on top
+    win._canvas_area._show_points_cb.setChecked(True)
+    assert not canvas._points_item.pixmap().isNull()
+    win._canvas_area._show_points_cb.setChecked(False)
+    assert canvas._points_item.pixmap().isNull()
+    # colorbar range matches the visible values of the rendered frame (auto)
+    disp_u = result.reconstruction.displacement[1][:, 0]
+    finite = disp_u[np.isfinite(disp_u)]
+    assert win.signals.color_min == pytest.approx(float(finite.min()))
+    assert win.signals.color_max == pytest.approx(float(finite.max()))
 
     # the main field selector offers ONLY clean displacement fields now
     assert set(win._right._field_selector._buttons) == {"U", "V", "W", "mag"}

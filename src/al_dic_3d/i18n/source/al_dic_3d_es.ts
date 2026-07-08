@@ -394,57 +394,57 @@
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="95"/>
+        <location filename="../../gui/panels/canvas_area.py" line="99"/>
         <source>Fit</source>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="110"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Show Grid</source>
         <translation>Mostrar cuadrícula</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="111"/>
+        <location filename="../../gui/panels/canvas_area.py" line="115"/>
         <source>Show/hide computational mesh grid</source>
         <translation>Mostrar/ocultar la cuadrícula de la malla</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="116"/>
+        <location filename="../../gui/panels/canvas_area.py" line="120"/>
         <source>Show Subset</source>
         <translation>Mostrar subconjunto</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="117"/>
+        <location filename="../../gui/panels/canvas_area.py" line="121"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>Mostrar ventana del subconjunto al pasar el cursor (requiere cuadrícula)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <location filename="../../gui/panels/canvas_area.py" line="126"/>
         <source>3D View</source>
         <translation>Vista 3D</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="128"/>
+        <location filename="../../gui/panels/canvas_area.py" line="134"/>
         <source>Show Points</source>
         <translation>Mostrar puntos</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <location filename="../../gui/panels/canvas_area.py" line="273"/>
         <source>Save Mask</source>
         <translation>Guardar máscara</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="266"/>
+        <location filename="../../gui/panels/canvas_area.py" line="273"/>
         <source>PNG image (*.png)</source>
         <translation>Imagen PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="516"/>
+        <location filename="../../gui/panels/canvas_area.py" line="532"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>Vista 3D — ejecute un análisis para ver la superficie reconstruida.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="522"/>
+        <location filename="../../gui/panels/canvas_area.py" line="538"/>
         <source>Selected field is not available.</source>
         <translation>El campo seleccionado no está disponible.</translation>
     </message>
@@ -453,7 +453,7 @@
     <name>ConfigOverlay3D</name>
     <message>
         <source>Strategy</source>
-        <translation>Estrategia</translation>
+        <translation type="vanished">Estrategia</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="39"/>
@@ -482,15 +482,15 @@
     </message>
     <message>
         <source>Track Both</source>
-        <translation>Seguir ambas cámaras</translation>
+        <translation type="vanished">Seguir ambas cámaras</translation>
     </message>
     <message>
         <source>Stereo Each Frame</source>
-        <translation>Estéreo en cada fotograma</translation>
+        <translation type="vanished">Estéreo en cada fotograma</translation>
     </message>
     <message>
         <source>Reference Direct</source>
-        <translation>Referencia directa</translation>
+        <translation type="vanished">Referencia directa</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="74"/>
@@ -620,7 +620,7 @@
     </message>
     <message>
         <source>STRAIN</source>
-        <translation>DEFORMACIÓN</translation>
+        <translation type="vanished">DEFORMACIÓN</translation>
     </message>
 </context>
 <context>
@@ -853,7 +853,7 @@ con ruido o cuando la precisión de la deformación es importante.</translation>
     </message>
     <message>
         <source>Compute surface strain</source>
-        <translation>Calcular deformación superficial</translation>
+        <translation type="vanished">Calcular deformación superficial</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="409"/>
@@ -867,15 +867,15 @@ con ruido o cuando la precisión de la deformación es importante.</translation>
     </message>
     <message>
         <source>+ Draw</source>
-        <translation>+ Dibujar</translation>
+        <translation type="vanished">+ Dibujar</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation>Limpiar</translation>
+        <translation type="vanished">Limpiar</translation>
     </message>
     <message>
         <source>x min / x max / y min / y max (px)</source>
-        <translation>x mín / x máx / y mín / y máx (px)</translation>
+        <translation type="vanished">x mín / x máx / y mín / y máx (px)</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="496"/>
@@ -899,11 +899,11 @@ con ruido o cuando la precisión de la deformación es importante.</translation>
     </message>
     <message>
         <source>AL-DIC global step (ADMM)</source>
-        <translation>Paso global AL-DIC (ADMM)</translation>
+        <translation type="vanished">Paso global AL-DIC (ADMM)</translation>
     </message>
     <message>
         <source>ADMM Iterations</source>
-        <translation>Iteraciones ADMM</translation>
+        <translation type="vanished">Iteraciones ADMM</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="519"/>
@@ -927,11 +927,11 @@ con ruido o cuando la precisión de la deformación es importante.</translation>
     </message>
     <message>
         <source>Paint region…</source>
-        <translation>Pintar región…</translation>
+        <translation type="vanished">Pintar región…</translation>
     </message>
     <message>
         <source>Clear paint</source>
-        <translation>Borrar pintura</translation>
+        <translation type="vanished">Borrar pintura</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="567"/>
@@ -967,53 +967,53 @@ con ruido o cuando la precisión de la deformación es importante.</translation>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="124"/>
+        <location filename="../../gui/main_window.py" line="122"/>
         <source>&amp;File</source>
         <translation>&amp;Archivo</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="126"/>
+        <location filename="../../gui/main_window.py" line="124"/>
         <source>New Project</source>
         <translation>Nuevo proyecto</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="131"/>
+        <location filename="../../gui/main_window.py" line="129"/>
         <source>Open Project…</source>
         <translation>Abrir proyecto…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="136"/>
+        <location filename="../../gui/main_window.py" line="134"/>
         <source>Save Project…</source>
         <translation>Guardar proyecto…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="142"/>
+        <location filename="../../gui/main_window.py" line="140"/>
         <source>Quit</source>
         <translation>Salir</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="148"/>
+        <location filename="../../gui/main_window.py" line="146"/>
         <source>&amp;Settings</source>
         <translation>&amp;Configuración</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="149"/>
+        <location filename="../../gui/main_window.py" line="147"/>
         <source>Language</source>
         <translation>Idioma</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="199"/>
+        <location filename="../../gui/main_window.py" line="197"/>
         <source>Open Project</source>
         <translation>Abrir proyecto</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="199"/>
-        <location filename="../../gui/main_window.py" line="216"/>
+        <location filename="../../gui/main_window.py" line="197"/>
+        <location filename="../../gui/main_window.py" line="214"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>Proyecto pyALDIC-3D (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="214"/>
+        <location filename="../../gui/main_window.py" line="212"/>
         <source>Save Project</source>
         <translation>Guardar proyecto</translation>
     </message>
@@ -1506,163 +1506,163 @@ con ruido o cuando la precisión de la deformación es importante.</translation>
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="153"/>
+        <location filename="../../gui/strain_window.py" line="155"/>
         <source>Strain Post-Processing</source>
         <translation>Post-procesado de deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="176"/>
+        <location filename="../../gui/strain_window.py" line="178"/>
         <source>Fit</source>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="177"/>
+        <location filename="../../gui/strain_window.py" line="179"/>
         <source>Fit image to viewport</source>
         <translation>Ajustar la imagen a la vista</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="181"/>
+        <location filename="../../gui/strain_window.py" line="183"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>Zoom al 100% (1:1)</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="184"/>
+        <location filename="../../gui/strain_window.py" line="186"/>
         <source>Zoom in</source>
         <translation>Acercar</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="188"/>
+        <location filename="../../gui/strain_window.py" line="190"/>
         <source>Zoom out</source>
         <translation>Alejar</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="219"/>
+        <location filename="../../gui/strain_window.py" line="221"/>
         <source>STRAIN PARAMETERS</source>
         <translation>PARÁMETROS DE DEFORMACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="228"/>
+        <location filename="../../gui/strain_window.py" line="230"/>
         <source>Compute Strain</source>
         <translation>Calcular deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="234"/>
+        <location filename="../../gui/strain_window.py" line="236"/>
         <source>Export Results</source>
         <translation>Exportar resultados</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="238"/>
+        <location filename="../../gui/strain_window.py" line="240"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>Exportar resultados de desplazamiento y deformación a NPZ / MAT / CSV</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="260"/>
+        <location filename="../../gui/strain_window.py" line="262"/>
         <source>FIELD</source>
         <translation>CAMPO</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="266"/>
+        <location filename="../../gui/strain_window.py" line="268"/>
         <source>VISUALIZATION</source>
         <translation>VISUALIZACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="270"/>
+        <location filename="../../gui/strain_window.py" line="272"/>
         <source>LOG</source>
         <translation>REGISTRO</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="302"/>
+        <location filename="../../gui/strain_window.py" line="304"/>
         <source>Show on deformed frame</source>
         <translation>Mostrar en fotograma deformado</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="310"/>
+        <location filename="../../gui/strain_window.py" line="312"/>
         <source>Colormap</source>
         <translation>Mapa de colores</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="312"/>
+        <location filename="../../gui/strain_window.py" line="314"/>
         <source>Auto range</source>
         <translation>Rango automático</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="328"/>
+        <location filename="../../gui/strain_window.py" line="330"/>
         <source>Min</source>
         <translation>Mín</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="330"/>
+        <location filename="../../gui/strain_window.py" line="332"/>
         <source>Max</source>
         <translation>Máx</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="340"/>
+        <location filename="../../gui/strain_window.py" line="342"/>
         <source>Opacity</source>
         <translation>Opacidad</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="406"/>
-        <location filename="../../gui/strain_window.py" line="452"/>
-        <location filename="../../gui/strain_window.py" line="519"/>
+        <location filename="../../gui/strain_window.py" line="411"/>
+        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="524"/>
         <source>Strain compute failed: {0}</source>
         <translation>Fallo en el cálculo de deformación: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="418"/>
-        <location filename="../../gui/strain_window.py" line="483"/>
+        <location filename="../../gui/strain_window.py" line="423"/>
+        <location filename="../../gui/strain_window.py" line="488"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>Ejecute primero el análisis 3D — no hay resultados para posprocesar.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="421"/>
-        <location filename="../../gui/strain_window.py" line="494"/>
-        <location filename="../../gui/strain_window.py" line="521"/>
+        <location filename="../../gui/strain_window.py" line="426"/>
+        <location filename="../../gui/strain_window.py" line="499"/>
+        <location filename="../../gui/strain_window.py" line="526"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>Haga clic en el origen, luego +X, luego +Y en la imagen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="427"/>
+        <location filename="../../gui/strain_window.py" line="432"/>
         <source>Computing strain…</source>
         <translation>Calculando deformación…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="440"/>
+        <location filename="../../gui/strain_window.py" line="445"/>
         <source>Complete</source>
         <translation>Completado</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="462"/>
         <source>Strain computation complete.</source>
         <translation>Cálculo de deformación completado.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="462"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ Parámetros modificados — haga clic en «Calcular deformación»</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="512"/>
-        <location filename="../../gui/strain_window.py" line="529"/>
+        <location filename="../../gui/strain_window.py" line="517"/>
+        <location filename="../../gui/strain_window.py" line="534"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 puntos elegidos</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="531"/>
+        <location filename="../../gui/strain_window.py" line="536"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="542"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
