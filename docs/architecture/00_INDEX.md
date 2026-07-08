@@ -64,6 +64,12 @@
 
 ## Changelog
 
+- 2026-07-08 v1.5.1 — **结果场稠密连续渲染（2D VizController 移植）**（`f9fd4e4`，249 tests）。
+  散点圆退役为可选 "Show Points" 小标记（默认关）；主渲染 = Delaunay+CloughTocher C1 插值到
+  step/4 网格 → colormap RGBA（NaN 透明）→ 双层缓存（插值网格/pixmap）+ warp 掩膜缓存；左相机
+  用手绘 ROI 掩膜，右相机/无掩膜回退"全有效三角形并集"支撑（NaN 孔洞保持透明，比 2D 更严格）；
+  变形模式按 ref_uv=x_k−x_1 反演支撑；自动色标=当帧可见值并回写共享 color_min/max；应变窗共用
+  渲染器（strain_window: 命名空间）。
 - 2026-07-08 v1.5.0 — **GUI 六点评审整改（用户实测反馈）三批全落地**（`19a49b2`+`62648ae`+`dffef2d`，
   241 tests，i18n 322×7 100%，scan clean）。**A**：Solver 下拉（AL-DIC/Local DIC，2D tooltip 移植）
   替代 ADMM 勾选框；新增折叠"高级"区（策略下拉 + "AL-DIC Iterations"藏 ADMM 术语）；步长 combo→
