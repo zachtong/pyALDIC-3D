@@ -69,7 +69,8 @@ def test_export_dialog_offscreen(result, tmp_path):
     dialog._csv_cb.setChecked(True)
     dialog._ply_cb.setChecked(True)
     dialog._vtu_cb.setChecked(True)
-    dialog._on_export()
+    dialog._on_export()  # runs on the Data tab's worker thread (Batch E2)
+    assert dialog.wait_for_export()
     # Timestamped names (fresh per export, never overwriting) + params always.
     assert len(list(tmp_path.glob("*.npz"))) == 1
     assert len(list(tmp_path.glob("*.mat"))) == 1

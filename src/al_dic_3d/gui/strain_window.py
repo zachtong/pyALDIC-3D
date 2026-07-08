@@ -475,10 +475,29 @@ class StrainWindow3D(QMainWindow):
         result = self.controller.state.result
         if result is None:
             return
+        from al_dic_3d.export import VizExportHint
         from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
 
+        # Snapshot of THIS window's private display state (never GuiSignals):
+        # the export dialog opens prefilled with what the user is looking at.
+        hint = VizExportHint(
+            colormap=self._cmap_combo.currentText(),
+            show_deformed=self._deformed_cb.isChecked(),
+            overlay_alpha=self._opacity_slider.value() / 100.0,
+            current_field=self._field_selector.current_field(),
+            auto_range=self._auto_range_cb.isChecked(),
+            vmin=float(self._vmin_spin.value()),
+            vmax=float(self._vmax_spin.value()),
+            current_frame=self._frame,
+        )
         extra = draft_export_params(self.controller.state.draft)
-        ExportDialog(result, extra_params=extra, parent=self).exec()
+        ExportDialog(
+            result,
+            extra_params=extra,
+            parent=self,
+            draft=self.controller.state.draft,
+            hint=hint,
+        ).exec()
 
     # ------------------------------------------------------------------
     # 3-point specimen pick flow

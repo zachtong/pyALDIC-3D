@@ -2,6 +2,82 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="sd_PK">
 <context>
+    <name>AnimationTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="54"/>
+        <source>Fields</source>
+        <translation>場變數</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="71"/>
+        <source>Format</source>
+        <translation>格式</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="78"/>
+        <source>Frames per second</source>
+        <translation>每秒影格數</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="85"/>
+        <source>Frame step</source>
+        <translation>抽幀間隔</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="86"/>
+        <source>Keep every Nth frame (1 = all)</source>
+        <translation>每 N 影格保留一格（1 = 全部保留）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="93"/>
+        <source>Resolution (long edge)</source>
+        <translation>解析度（長邊）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="101"/>
+        <source>Include colorbar</source>
+        <translation>包含色條</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="106"/>
+        <source>Background</source>
+        <translation>背景</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="120"/>
+        <source>Export Animation</source>
+        <translation>匯出動畫</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="131"/>
+        <source>Load an image sequence first (open the project in the main window).</source>
+        <translation>請先載入影像序列（在主視窗中開啟專案）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="139"/>
+        <source>Choose an output folder first.</source>
+        <translation>請先選擇輸出資料夾。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="143"/>
+        <source>No fields enabled.</source>
+        <translation>未啟用任何場變數。</translation>
+    </message>
+</context>
+<context>
+    <name>BackgroundRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="376"/>
+        <source>Original (frame 1 background)</source>
+        <translation>原始配置（第 1 影格作背景）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="377"/>
+        <source>Deformed (current frame background)</source>
+        <translation>變形配置（當前影格作背景）</translation>
+    </message>
+</context>
+<context>
     <name>CalibrationDialog</name>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="170"/>
@@ -392,6 +468,29 @@
     </message>
 </context>
 <context>
+    <name>CameraRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="344"/>
+        <source>Camera</source>
+        <translation>相機</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="348"/>
+        <source>Left</source>
+        <translation>左</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="349"/>
+        <source>Right</source>
+        <translation>右</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="350"/>
+        <source>Left + Right</source>
+        <translation>左 + 右</translation>
+    </message>
+</context>
+<context>
     <name>CanvasArea3D</name>
     <message>
         <location filename="../../gui/panels/canvas_area.py" line="99"/>
@@ -504,131 +603,270 @@
     </message>
 </context>
 <context>
-    <name>ExportDialog</name>
+    <name>DataTab</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="89"/>
-        <source>Export Results</source>
-        <translation>匯出結果</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="96"/>
-        <source>OUTPUT FOLDER</source>
-        <translation>輸出資料夾</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="99"/>
-        <source>Select output folder…</source>
-        <translation>選擇輸出資料夾…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
-        <source>Browse…</source>
-        <translation>瀏覽…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
-        <source>Open Folder</source>
-        <translation>開啟資料夾</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="110"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="43"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="45"/>
         <source>NumPy archive (.npz)</source>
         <translation>NumPy 封存 (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="47"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="116"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="49"/>
         <source>CSV (one file per frame)</source>
         <translation>CSV（每幀一個檔案）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="117"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="50"/>
         <source>PLY point clouds (per frame)</source>
         <translation>PLY 點雲（逐幀）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="118"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="51"/>
         <source>VTU mesh series (ParaView)</source>
         <translation>VTU 網格序列（ParaView）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="54"/>
         <source>✓ Parameters file (JSON) always exported</source>
         <translation>✓ 參數檔案（JSON）始終會被匯出</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="128"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="61"/>
         <source>Displacement</source>
         <translation>位移</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="134"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="65"/>
         <source>Strain</source>
         <translation>應變</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="72"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D 點、重投影誤差與來源旗標始終會被匯出。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="81"/>
         <source>Export Data</source>
         <translation>匯出資料</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="158"/>
-        <source>Close</source>
-        <translation>關閉</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="98"/>
         <source>Select:</source>
         <translation>選擇：</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="101"/>
         <source>All</source>
         <translation>全選</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="102"/>
         <source>None</source>
         <translation>全不選</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="216"/>
-        <source>Choose output folder</source>
-        <translation>選擇輸出資料夾</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="230"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="139"/>
         <source>Choose an output folder first.</source>
         <translation>請先選擇輸出資料夾。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="257"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="160"/>
+        <source>Wrote: {0}</source>
+        <translation>已寫入：{0}</translation>
+    </message>
+</context>
+<context>
+    <name>ExportDialog</name>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="85"/>
+        <source>Export Results</source>
+        <translation>匯出結果</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="92"/>
+        <source>OUTPUT FOLDER</source>
+        <translation>輸出資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <source>Select output folder…</source>
+        <translation>選擇輸出資料夾…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="97"/>
+        <source>Browse…</source>
+        <translation>瀏覽…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="100"/>
+        <source>Open Folder</source>
+        <translation>開啟資料夾</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="111"/>
+        <source>Data</source>
+        <translation>資料</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <source>Images</source>
+        <translation>影像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="113"/>
+        <source>Animation</source>
+        <translation>動畫</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <source>3D View</source>
+        <translation>3D 檢視</translation>
+    </message>
+    <message>
+        <source>Format</source>
+        <translation>格式</translation>
+    </message>
+    <message>
+        <source>NumPy archive (.npz)</source>
+        <translation>NumPy 封存 (.npz)</translation>
+    </message>
+    <message>
+        <source>MATLAB (.mat)</source>
+        <translation>MATLAB (.mat)</translation>
+    </message>
+    <message>
+        <source>CSV (one file per frame)</source>
+        <translation>CSV（每幀一個檔案）</translation>
+    </message>
+    <message>
+        <source>PLY point clouds (per frame)</source>
+        <translation>PLY 點雲（逐幀）</translation>
+    </message>
+    <message>
+        <source>VTU mesh series (ParaView)</source>
+        <translation>VTU 網格序列（ParaView）</translation>
+    </message>
+    <message>
+        <source>✓ Parameters file (JSON) always exported</source>
+        <translation>✓ 參數檔案（JSON）始終會被匯出</translation>
+    </message>
+    <message>
+        <source>Displacement</source>
+        <translation>位移</translation>
+    </message>
+    <message>
+        <source>Strain</source>
+        <translation>應變</translation>
+    </message>
+    <message>
+        <source>3D points, reprojection error, and source flags are always exported.</source>
+        <translation>3D 點、重投影誤差與來源旗標始終會被匯出。</translation>
+    </message>
+    <message>
+        <source>Export Data</source>
+        <translation>匯出資料</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="120"/>
+        <source>Close</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <source>Select:</source>
+        <translation>選擇：</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>全選</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>全不選</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="229"/>
+        <source>Choose output folder</source>
+        <translation>選擇輸出資料夾</translation>
+    </message>
+    <message>
+        <source>Choose an output folder first.</source>
+        <translation>請先選擇輸出資料夾。</translation>
+    </message>
+    <message>
         <source>{0} CSV frames</source>
         <translation>{0} 個 CSV 幀檔案</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="267"/>
         <source>Error: {0}</source>
         <translation>錯誤：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="270"/>
         <source>Wrote: {0}</source>
         <translation>已寫入：{0}</translation>
+    </message>
+</context>
+<context>
+    <name>ExportTabBase</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="179"/>
+        <source>Cancelling…</source>
+        <translation>正在取消…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="188"/>
+        <source>Export cancelled — {0} file(s) kept</source>
+        <translation>匯出已取消 — 已保留 {0} 個檔案</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="196"/>
+        <source>Error: {0}</source>
+        <translation>錯誤：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="200"/>
+        <source>Wrote {0} file(s)</source>
+        <translation>已寫入 {0} 個檔案</translation>
+    </message>
+</context>
+<context>
+    <name>ExportTabs</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="363"/>
+        <source>Full resolution</source>
+        <translation>原始解析度</translation>
+    </message>
+</context>
+<context>
+    <name>FieldRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="258"/>
+        <source>Auto</source>
+        <translation>自動</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="259"/>
+        <source>Auto range</source>
+        <translation>自動範圍</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="275"/>
+        <source>Opacity</source>
+        <translation>不透明度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="276"/>
+        <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
+        <translation>場變數不透明度（0 = 透明，1 = 完全不透明）</translation>
     </message>
 </context>
 <context>
@@ -680,6 +918,77 @@
         <location filename="../../gui/widgets/frame_navigator.py" line="137"/>
         <source>FRAME 0/0</source>
         <translation>幀 0/0</translation>
+    </message>
+</context>
+<context>
+    <name>FrameRangeRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="394"/>
+        <source>All frames</source>
+        <translation>所有影格</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="398"/>
+        <source>From frame</source>
+        <translation>起始影格</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="408"/>
+        <source>to</source>
+        <translation>至</translation>
+    </message>
+</context>
+<context>
+    <name>ImagesTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="54"/>
+        <source>Fields</source>
+        <translation>場變數</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="71"/>
+        <source>Format</source>
+        <translation>格式</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="80"/>
+        <source>JPEG quality</source>
+        <translation>JPEG 品質</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="87"/>
+        <source>Resolution (long edge)</source>
+        <translation>解析度（長邊）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="96"/>
+        <source>Include colorbar</source>
+        <translation>包含色條</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="101"/>
+        <source>Background</source>
+        <translation>背景</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="115"/>
+        <source>Export Images</source>
+        <translation>匯出影像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="126"/>
+        <source>Load an image sequence first (open the project in the main window).</source>
+        <translation>請先載入影像序列（在主視窗中開啟專案）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="139"/>
+        <source>Choose an output folder first.</source>
+        <translation>請先選擇輸出資料夾。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="143"/>
+        <source>No fields enabled.</source>
+        <translation>未啟用任何場變數。</translation>
     </message>
 </context>
 <context>
@@ -1103,6 +1412,19 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
         <location filename="../../gui/dialogs/manual_params_dialog.py" line="154"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>ProgressRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="110"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="127"/>
+        <source>Exporting…</source>
+        <translation>正在匯出…</translation>
     </message>
 </context>
 <context>
@@ -1622,20 +1944,20 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
     <message>
         <location filename="../../gui/strain_window.py" line="411"/>
         <location filename="../../gui/strain_window.py" line="457"/>
-        <location filename="../../gui/strain_window.py" line="525"/>
+        <location filename="../../gui/strain_window.py" line="544"/>
         <source>Strain compute failed: {0}</source>
         <translation>應變計算失敗：{0}</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="423"/>
-        <location filename="../../gui/strain_window.py" line="489"/>
+        <location filename="../../gui/strain_window.py" line="508"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>請先執行 3D 分析——沒有可後處理的結果。</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="500"/>
-        <location filename="../../gui/strain_window.py" line="527"/>
+        <location filename="../../gui/strain_window.py" line="519"/>
+        <location filename="../../gui/strain_window.py" line="546"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>請在影像上依次點擊原點、+X 點、+Y 點</translation>
     </message>
@@ -1660,28 +1982,28 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
         <translation>⚠ 參數已變更 — 請點擊「計算應變」</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="518"/>
-        <location filename="../../gui/strain_window.py" line="535"/>
+        <location filename="../../gui/strain_window.py" line="537"/>
+        <location filename="../../gui/strain_window.py" line="554"/>
         <source>Picked {0}/3 points</source>
         <translation>已拾取 {0}/3 個點</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="537"/>
+        <location filename="../../gui/strain_window.py" line="556"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
@@ -1697,6 +2019,79 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
         <location filename="../../gui/widgets/view3d.py" line="137"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D 檢視不可用：{0}</translation>
+    </message>
+</context>
+<context>
+    <name>View3DTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="56"/>
+        <source>Field</source>
+        <translation>場變數</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="69"/>
+        <source>Colormap</source>
+        <translation>色彩對映</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="78"/>
+        <source>Resolution</source>
+        <translation>解析度</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="89"/>
+        <source>Frame sequence</source>
+        <translation>影格序列</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="92"/>
+        <source>Per-frame image sequence (PNG)</source>
+        <translation>逐幀影像序列（PNG）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="97"/>
+        <source>Animation</source>
+        <translation>動畫</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="104"/>
+        <source>Frames per second</source>
+        <translation>每秒影格數</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="111"/>
+        <source>Frame step</source>
+        <translation>抽幀間隔</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="125"/>
+        <source>Turntable</source>
+        <translation>環繞旋轉</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="130"/>
+        <source>Turntable (360° orbit at frame {0})</source>
+        <translation>環繞旋轉（在第 {0} 影格繞 360°）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="133"/>
+        <source>Orbit frames</source>
+        <translation>環繞影格數</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="147"/>
+        <source>Export 3D View</source>
+        <translation>匯出 3D 視圖</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="160"/>
+        <source>Choose an output folder first.</source>
+        <translation>請先選擇輸出資料夾。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="166"/>
+        <source>Nothing selected to export.</source>
+        <translation>未選擇任何要匯出的內容。</translation>
     </message>
 </context>
 <context>

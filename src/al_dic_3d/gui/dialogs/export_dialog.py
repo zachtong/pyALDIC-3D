@@ -1,10 +1,16 @@
-"""Export dialog — output folder + formats + field selection (2D dialog idiom).
+"""Export dialog — tabbed Data / Images / Animation / 3D View (2D dialog idiom).
 
-Mirrors the 2D Export Results window: an OUTPUT FOLDER row (path + Browse + Open
-Folder), FORMAT checkboxes (NumPy / MATLAB / per-frame CSV / PLY / VTU), and
-DISPLACEMENT / STRAIN field groups with All / None pickers. Exports run through
-the Qt-free :mod:`al_dic_3d.export` module; a parameters JSON is always written
-and every export mints a fresh timestamp so repeats never overwrite.
+A shared OUTPUT FOLDER row (path + Browse + Open Folder) feeds four tabs
+(:mod:`al_dic_3d.gui.dialogs.export_tabs`): field-selective data serialization,
+rendered per-camera field images, streaming GIF/MP4 animations, and offscreen
+pyvista 3D-view exports. Every export action is a plain (non-accept) button —
+the dialog stays open — runs on its tab's own worker thread with cooperative
+cancel, and mints a FRESH timestamp per click so repeats never overwrite.
+
+The :class:`~al_dic_3d.export.render.VizExportHint` snapshot (constructed at
+BOTH call sites: the main right sidebar and the strain window) prefills
+colormap / opacity / deformed mode / current field so the export opens showing
+what the user was looking at.
 """
 
 from __future__ import annotations
@@ -12,40 +18,25 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from al_dic.gui.theme import COLORS
+import numpy as np
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import (
-    QCheckBox,
     QDialog,
     QFileDialog,
-    QGridLayout,
-    QGroupBox,
     QHBoxLayout,
-    QLabel,
     QLineEdit,
     QPushButton,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
 
-from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS
+from al_dic_3d.export import VizExportHint, make_prefix, make_timestamp
+from al_dic_3d.gui.dialogs.export_tabs import AnimationTab, DataTab, ImagesTab, View3DTab
 
 if TYPE_CHECKING:
     from al_dic_3d.project.draft import ProjectDraft
     from al_dic_3d.runner import RunResult
-
-_FIELD_LABELS = {
-    "U": "U",
-    "V": "V",
-    "W": "W",
-    "mag": "|D|",
-    "exx": "εxx",
-    "eyy": "εyy",
-    "exy": "εxy",
-    "e1": "ε₁",
-    "e2": "ε₂",
-    "max_shear": "γ max",
-    "von_mises": "von Mises",
-}
 
 # Draft knobs recorded in the always-written parameters JSON (scalar fields
 # only; arrays/sequences are summarised by the run's own meta instead).
@@ -75,24 +66,29 @@ def draft_export_params(draft: ProjectDraft) -> dict:
 
 
 class ExportDialog(QDialog):
-    """Field-selective export of a completed run."""
+    """Field-selective data + rendered-media export of a completed run."""
 
     def __init__(
         self,
         result: RunResult,
         extra_params: dict | None = None,
         parent: QWidget | None = None,
+        *,
+        draft: ProjectDraft | None = None,
+        hint: VizExportHint | None = None,
     ) -> None:
         super().__init__(parent)
-        self._result = result
-        self._extra_params = extra_params or {}
+        self.result = result
+        self.extra_params = extra_params or {}
+        self.draft = draft
+        self.hint = hint if hint is not None else VizExportHint()
         self.setWindowTitle(self.tr("Export Results"))
-        self.setMinimumWidth(560)
+        self.setMinimumWidth(640)
 
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
 
-        # ---- OUTPUT FOLDER ----
+        # ---- shared OUTPUT FOLDER row ----
         layout.addWidget(self._section_label(self.tr("OUTPUT FOLDER")))
         folder_row = QHBoxLayout()
         self._folder_edit = QLineEdit()
@@ -106,109 +102,126 @@ class ExportDialog(QDialog):
         folder_row.addWidget(self._open_btn)
         layout.addLayout(folder_row)
 
-        # ---- FORMAT ----
-        fmt_group = QGroupBox(self.tr("Format"))
-        fmt_layout = QVBoxLayout(fmt_group)
-        self._npz_cb = QCheckBox(self.tr("NumPy archive (.npz)"))
-        self._npz_cb.setChecked(True)
-        self._mat_cb = QCheckBox(self.tr("MATLAB (.mat)"))
-        self._mat_cb.setChecked(True)
-        self._csv_cb = QCheckBox(self.tr("CSV (one file per frame)"))
-        self._ply_cb = QCheckBox(self.tr("PLY point clouds (per frame)"))
-        self._vtu_cb = QCheckBox(self.tr("VTU mesh series (ParaView)"))
-        for cb in (self._npz_cb, self._mat_cb, self._csv_cb, self._ply_cb, self._vtu_cb):
-            fmt_layout.addWidget(cb)
-        params_note = QLabel(self.tr("✓ Parameters file (JSON) always exported"))
-        params_note.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
-        fmt_layout.addWidget(params_note)
-        layout.addWidget(fmt_group)
+        # ---- tabs ----
+        self._tabs = QTabWidget()
+        self._data_tab = DataTab(self)
+        self._images_tab = ImagesTab(self)
+        self._animation_tab = AnimationTab(self)
+        self._view3d_tab = View3DTab(self)
+        self._tabs.addTab(self._data_tab, self.tr("Data"))
+        self._tabs.addTab(self._images_tab, self.tr("Images"))
+        self._tabs.addTab(self._animation_tab, self.tr("Animation"))
+        self._tabs.addTab(self._view3d_tab, self.tr("3D View"))
+        layout.addWidget(self._tabs, stretch=1)
 
-        # ---- DISPLACEMENT ----
-        self._disp_checks = self._field_group(
-            layout, self.tr("Displacement"), DISPLACEMENT_IDS, checked=True
-        )
-
-        # ---- STRAIN ----
-        strain_available = result.strain is not None
-        self._strain_checks = self._field_group(
-            layout, self.tr("Strain"), STRAIN_IDS, checked=strain_available
-        )
-        if not strain_available:
-            for cb in self._strain_checks.values():
-                cb.setEnabled(False)
-
-        note = QLabel(
-            self.tr("3D points, reprojection error, and source flags are always exported.")
-        )
-        note.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
-        layout.addWidget(note)
-
-        # ---- actions ----
-        self._status = QLabel("")
-        self._status.setStyleSheet(f"color: {COLORS.SUCCESS}; font-size: 11px;")
-        layout.addWidget(self._status)
-
+        # ---- close ----
         buttons = QHBoxLayout()
         buttons.addStretch()
-        self._export_btn = QPushButton(self.tr("Export Data"))
-        self._export_btn.setProperty("class", "btn-primary")
-        self._export_btn.setFixedHeight(32)
-        self._export_btn.clicked.connect(self._on_export)
-        buttons.addWidget(self._export_btn)
         close_btn = QPushButton(self.tr("Close"))
         close_btn.setFixedHeight(32)
         close_btn.clicked.connect(self.accept)
         buttons.addWidget(close_btn)
         layout.addLayout(buttons)
 
+    # ---- shared context consumed by the tabs -------------------------------------
+
+    @property
+    def image_files(self) -> dict[str, list[str]]:
+        """Camera id -> background image paths (empty lists without a draft)."""
+        if self.draft is None:
+            return {"L": [], "R": []}
+        return {"L": list(self.draft.left), "R": list(self.draft.right)}
+
+    @property
+    def mesh_step(self) -> int:
+        return int(self.draft.winstepsize) if self.draft is not None else 16
+
+    @property
+    def roi_mask(self) -> np.ndarray | None:
+        """Drawn LEFT reference ROI mask as bool, or None."""
+        if self.draft is None or self.draft.roi_mask_array is None:
+            return None
+        return np.asarray(self.draft.roi_mask_array) > 0
+
+    def export_target(self) -> tuple[Path, str, str] | None:
+        """(folder, prefix, FRESH timestamp) for one export click, or None."""
+        folder = self._folder_edit.text().strip()
+        if not folder:
+            return None
+        base_dir = self.result.meta.get("base_dir")
+        prefix = make_prefix(Path(base_dir) if base_dir else None)
+        return Path(folder), prefix, make_timestamp()
+
+    # ---- Batch-E1 compatibility surface (tests + callers) -------------------------
+
+    @property
+    def _npz_cb(self):
+        return self._data_tab._npz_cb
+
+    @property
+    def _mat_cb(self):
+        return self._data_tab._mat_cb
+
+    @property
+    def _csv_cb(self):
+        return self._data_tab._csv_cb
+
+    @property
+    def _ply_cb(self):
+        return self._data_tab._ply_cb
+
+    @property
+    def _vtu_cb(self):
+        return self._data_tab._vtu_cb
+
+    @property
+    def _status(self):
+        return self._data_tab.status_label
+
+    def selected_fields(self) -> list[str]:
+        return self._data_tab.selected_fields()
+
+    def _on_export(self) -> None:
+        """Trigger the Data tab export (kept for the E1 entry-point name)."""
+        self._data_tab.start_export()
+
+    # ---- worker lifecycle ----------------------------------------------------------
+
+    def _all_tabs(self):
+        return (self._data_tab, self._images_tab, self._animation_tab, self._view3d_tab)
+
+    def wait_for_export(self, timeout_ms: int = 120_000) -> bool:
+        """Join all running tab workers, pumping queued signals (tests)."""
+        import time
+
+        deadline = time.monotonic() + timeout_ms / 1000.0
+        while any(tab.is_busy() for tab in self._all_tabs()):
+            QCoreApplication.processEvents()
+            if time.monotonic() > deadline:
+                return False
+            for tab in self._all_tabs():
+                if tab._worker is not None:
+                    tab._worker.wait(50)
+        QCoreApplication.processEvents()
+        return True
+
+    def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        for tab in self._all_tabs():
+            tab.shutdown()
+        super().closeEvent(event)
+
     # ---- helpers ---------------------------------------------------------------
 
-    def _section_label(self, text: str) -> QLabel:
+    def _section_label(self, text: str):
+        from al_dic.gui.theme import COLORS
+        from PySide6.QtWidgets import QLabel
+
         lbl = QLabel(text)
         lbl.setStyleSheet(
             f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px; "
             f"font-weight: bold; letter-spacing: 1px;"
         )
         return lbl
-
-    def _field_group(
-        self, layout: QVBoxLayout, title: str, ids: tuple, *, checked: bool
-    ) -> dict[str, QCheckBox]:
-        group = QGroupBox(title)
-        outer = QVBoxLayout(group)
-        picker = QHBoxLayout()
-        picker.setSpacing(4)
-        pick_lbl = QLabel(self.tr("Select:"))
-        pick_lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
-        picker.addWidget(pick_lbl)
-        all_btn = QPushButton(self.tr("All"))
-        none_btn = QPushButton(self.tr("None"))
-        for b in (all_btn, none_btn):
-            b.setFixedSize(64, 24)
-            picker.addWidget(b)
-        picker.addStretch()
-        outer.addLayout(picker)
-
-        grid_host = QWidget()
-        grid = QGridLayout(grid_host)
-        grid.setContentsMargins(0, 0, 0, 0)
-        checks: dict[str, QCheckBox] = {}
-        for i, field_id in enumerate(ids):
-            cb = QCheckBox(_FIELD_LABELS.get(field_id, field_id))
-            cb.setChecked(checked)
-            grid.addWidget(cb, i // 4, i % 4)
-            checks[field_id] = cb
-        outer.addWidget(grid_host)
-        layout.addWidget(group)
-
-        all_btn.clicked.connect(lambda: [cb.setChecked(True) for cb in checks.values()])
-        none_btn.clicked.connect(lambda: [cb.setChecked(False) for cb in checks.values()])
-        return checks
-
-    def selected_fields(self) -> list[str]:
-        fields = [f for f, cb in self._disp_checks.items() if cb.isChecked()]
-        fields += [f for f, cb in self._strain_checks.items() if cb.isChecked() and cb.isEnabled()]
-        return fields
 
     # ---- actions ----------------------------------------------------------------
 
@@ -223,48 +236,3 @@ class ExportDialog(QDialog):
             import os
 
             os.startfile(folder)  # noqa: S606 - open the user's own folder
-
-    def _on_export(self) -> None:
-        folder = self._folder_edit.text().strip()
-        if not folder:
-            self._status.setText(self.tr("Choose an output folder first."))
-            self._status.setStyleSheet(f"color: {COLORS.WARNING}; font-size: 11px;")
-            return
-        from al_dic_3d.export import (
-            export_csv_frames,
-            export_mat,
-            export_npz,
-            export_params,
-            export_ply_frames,
-            export_vtu_series,
-            make_prefix,
-            make_timestamp,
-        )
-
-        out = Path(folder)
-        fields = self.selected_fields()
-        # Fresh timestamp per export; prefix from the run's data folder (2D idiom).
-        ts = make_timestamp()
-        base_dir = self._result.meta.get("base_dir")
-        prefix = make_prefix(Path(base_dir) if base_dir else None)
-        written: list[str] = [export_params(out, prefix, ts, self._result, self._extra_params).name]
-        if self._npz_cb.isChecked():
-            written.append(export_npz(self._result, fields, out, f"{prefix}_{ts}").name)
-        if self._mat_cb.isChecked():
-            written.append(export_mat(self._result, fields, out, f"{prefix}_{ts}").name)
-        if self._csv_cb.isChecked():
-            frames = export_csv_frames(self._result, fields, out, f"{prefix}_{ts}")
-            written.append(self.tr("{0} CSV frames").format(len(frames)))
-        if self._ply_cb.isChecked():
-            export_ply_frames(out, prefix, ts, self._result, fields)
-            written.append(f"{prefix}_ply_{ts}/")
-        if self._vtu_cb.isChecked():
-            try:
-                export_vtu_series(out, prefix, ts, self._result, fields)
-                written.append(f"{prefix}_vtu_{ts}/")
-            except ImportError as exc:  # viz3d extra missing
-                self._status.setStyleSheet(f"color: {COLORS.WARNING}; font-size: 11px;")
-                self._status.setText(self.tr("Error: {0}").format(str(exc)))
-                return
-        self._status.setStyleSheet(f"color: {COLORS.SUCCESS}; font-size: 11px;")
-        self._status.setText(self.tr("Wrote: {0}").format(", ".join(written)))

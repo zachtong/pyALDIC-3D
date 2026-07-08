@@ -2,6 +2,82 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="sd_PK">
 <context>
+    <name>AnimationTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="54"/>
+        <source>Fields</source>
+        <translation>Felder</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="71"/>
+        <source>Format</source>
+        <translation>Format</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="78"/>
+        <source>Frames per second</source>
+        <translation>Bilder pro Sekunde</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="85"/>
+        <source>Frame step</source>
+        <translation>Bildschritt</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="86"/>
+        <source>Keep every Nth frame (1 = all)</source>
+        <translation>Nur jedes N-te Bild behalten (1 = alle)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="93"/>
+        <source>Resolution (long edge)</source>
+        <translation>Auflösung (lange Kante)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="101"/>
+        <source>Include colorbar</source>
+        <translation>Farbleiste einfügen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="106"/>
+        <source>Background</source>
+        <translation>Hintergrund</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="120"/>
+        <source>Export Animation</source>
+        <translation>Animation exportieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="131"/>
+        <source>Load an image sequence first (open the project in the main window).</source>
+        <translation>Zuerst eine Bildsequenz laden (Projekt im Hauptfenster öffnen).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="139"/>
+        <source>Choose an output folder first.</source>
+        <translation>Bitte zuerst einen Ausgabeordner wählen.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="143"/>
+        <source>No fields enabled.</source>
+        <translation>Keine Felder aktiviert.</translation>
+    </message>
+</context>
+<context>
+    <name>BackgroundRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="376"/>
+        <source>Original (frame 1 background)</source>
+        <translation>Original (Bild 1 als Hintergrund)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="377"/>
+        <source>Deformed (current frame background)</source>
+        <translation>Verformt (aktuelles Bild als Hintergrund)</translation>
+    </message>
+</context>
+<context>
     <name>CalibrationDialog</name>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="170"/>
@@ -392,6 +468,29 @@
     </message>
 </context>
 <context>
+    <name>CameraRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="344"/>
+        <source>Camera</source>
+        <translation>Kamera</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="348"/>
+        <source>Left</source>
+        <translation>Links</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="349"/>
+        <source>Right</source>
+        <translation>Rechts</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="350"/>
+        <source>Left + Right</source>
+        <translation>Links + Rechts</translation>
+    </message>
+</context>
+<context>
     <name>CanvasArea3D</name>
     <message>
         <location filename="../../gui/panels/canvas_area.py" line="99"/>
@@ -504,131 +603,270 @@
     </message>
 </context>
 <context>
-    <name>ExportDialog</name>
+    <name>DataTab</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="89"/>
-        <source>Export Results</source>
-        <translation>Ergebnisse exportieren</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="96"/>
-        <source>OUTPUT FOLDER</source>
-        <translation>AUSGABEORDNER</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="99"/>
-        <source>Select output folder…</source>
-        <translation>Ausgabeordner wählen…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
-        <source>Browse…</source>
-        <translation>Durchsuchen…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
-        <source>Open Folder</source>
-        <translation>Ordner öffnen</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="110"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="43"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="45"/>
         <source>NumPy archive (.npz)</source>
         <translation>NumPy-Archiv (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="47"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="116"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="49"/>
         <source>CSV (one file per frame)</source>
         <translation>CSV (eine Datei pro Frame)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="117"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="50"/>
         <source>PLY point clouds (per frame)</source>
         <translation>PLY-Punktwolken (pro Frame)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="118"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="51"/>
         <source>VTU mesh series (ParaView)</source>
         <translation>VTU-Netzserie (ParaView)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="54"/>
         <source>✓ Parameters file (JSON) always exported</source>
         <translation>✓ Parameterdatei (JSON) wird immer exportiert</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="128"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="61"/>
         <source>Displacement</source>
         <translation>Verschiebung</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="134"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="65"/>
         <source>Strain</source>
         <translation>Dehnung</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="72"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D-Punkte, Reprojektionsfehler und Quell-Flags werden immer exportiert.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="81"/>
         <source>Export Data</source>
         <translation>Daten exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="158"/>
-        <source>Close</source>
-        <translation>Schließen</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="98"/>
         <source>Select:</source>
         <translation>Auswahl:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="101"/>
         <source>All</source>
         <translation>Alle</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="102"/>
         <source>None</source>
         <translation>Keine</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="216"/>
-        <source>Choose output folder</source>
-        <translation>Ausgabeordner wählen</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="230"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="139"/>
         <source>Choose an output folder first.</source>
         <translation>Bitte zuerst einen Ausgabeordner wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="257"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="160"/>
+        <source>Wrote: {0}</source>
+        <translation>Geschrieben: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>ExportDialog</name>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="85"/>
+        <source>Export Results</source>
+        <translation>Ergebnisse exportieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="92"/>
+        <source>OUTPUT FOLDER</source>
+        <translation>AUSGABEORDNER</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <source>Select output folder…</source>
+        <translation>Ausgabeordner wählen…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="97"/>
+        <source>Browse…</source>
+        <translation>Durchsuchen…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="100"/>
+        <source>Open Folder</source>
+        <translation>Ordner öffnen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="111"/>
+        <source>Data</source>
+        <translation>Daten</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <source>Images</source>
+        <translation>Bilder</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="113"/>
+        <source>Animation</source>
+        <translation>Animation</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <source>3D View</source>
+        <translation>3D-Ansicht</translation>
+    </message>
+    <message>
+        <source>Format</source>
+        <translation>Format</translation>
+    </message>
+    <message>
+        <source>NumPy archive (.npz)</source>
+        <translation>NumPy-Archiv (.npz)</translation>
+    </message>
+    <message>
+        <source>MATLAB (.mat)</source>
+        <translation>MATLAB (.mat)</translation>
+    </message>
+    <message>
+        <source>CSV (one file per frame)</source>
+        <translation>CSV (eine Datei pro Frame)</translation>
+    </message>
+    <message>
+        <source>PLY point clouds (per frame)</source>
+        <translation>PLY-Punktwolken (pro Frame)</translation>
+    </message>
+    <message>
+        <source>VTU mesh series (ParaView)</source>
+        <translation>VTU-Netzserie (ParaView)</translation>
+    </message>
+    <message>
+        <source>✓ Parameters file (JSON) always exported</source>
+        <translation>✓ Parameterdatei (JSON) wird immer exportiert</translation>
+    </message>
+    <message>
+        <source>Displacement</source>
+        <translation>Verschiebung</translation>
+    </message>
+    <message>
+        <source>Strain</source>
+        <translation>Dehnung</translation>
+    </message>
+    <message>
+        <source>3D points, reprojection error, and source flags are always exported.</source>
+        <translation>3D-Punkte, Reprojektionsfehler und Quell-Flags werden immer exportiert.</translation>
+    </message>
+    <message>
+        <source>Export Data</source>
+        <translation>Daten exportieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="120"/>
+        <source>Close</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <source>Select:</source>
+        <translation>Auswahl:</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Keine</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="229"/>
+        <source>Choose output folder</source>
+        <translation>Ausgabeordner wählen</translation>
+    </message>
+    <message>
+        <source>Choose an output folder first.</source>
+        <translation>Bitte zuerst einen Ausgabeordner wählen.</translation>
+    </message>
+    <message>
         <source>{0} CSV frames</source>
         <translation>{0} CSV-Frames</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="267"/>
         <source>Error: {0}</source>
         <translation>Fehler: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="270"/>
         <source>Wrote: {0}</source>
         <translation>Geschrieben: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>ExportTabBase</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="179"/>
+        <source>Cancelling…</source>
+        <translation>Wird abgebrochen…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="188"/>
+        <source>Export cancelled — {0} file(s) kept</source>
+        <translation>Export abgebrochen — {0} Datei(en) behalten</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="196"/>
+        <source>Error: {0}</source>
+        <translation>Fehler: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="200"/>
+        <source>Wrote {0} file(s)</source>
+        <translation>{0} Datei(en) geschrieben</translation>
+    </message>
+</context>
+<context>
+    <name>ExportTabs</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="363"/>
+        <source>Full resolution</source>
+        <translation>Volle Auflösung</translation>
+    </message>
+</context>
+<context>
+    <name>FieldRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="258"/>
+        <source>Auto</source>
+        <translation>Auto</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="259"/>
+        <source>Auto range</source>
+        <translation>Auto-Bereich</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="275"/>
+        <source>Opacity</source>
+        <translation>Deckkraft</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="276"/>
+        <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
+        <translation>Feld-Deckkraft (0 = transparent, 1 = vollständig deckend)</translation>
     </message>
 </context>
 <context>
@@ -680,6 +918,77 @@
         <location filename="../../gui/widgets/frame_navigator.py" line="137"/>
         <source>FRAME 0/0</source>
         <translation>FRAME 0/0</translation>
+    </message>
+</context>
+<context>
+    <name>FrameRangeRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="394"/>
+        <source>All frames</source>
+        <translation>Alle Bilder</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="398"/>
+        <source>From frame</source>
+        <translation>Von Bild</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="408"/>
+        <source>to</source>
+        <translation>bis</translation>
+    </message>
+</context>
+<context>
+    <name>ImagesTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="54"/>
+        <source>Fields</source>
+        <translation>Felder</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="71"/>
+        <source>Format</source>
+        <translation>Format</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="80"/>
+        <source>JPEG quality</source>
+        <translation>JPEG-Qualität</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="87"/>
+        <source>Resolution (long edge)</source>
+        <translation>Auflösung (lange Kante)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="96"/>
+        <source>Include colorbar</source>
+        <translation>Farbleiste einfügen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="101"/>
+        <source>Background</source>
+        <translation>Hintergrund</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="115"/>
+        <source>Export Images</source>
+        <translation>Bilder exportieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="126"/>
+        <source>Load an image sequence first (open the project in the main window).</source>
+        <translation>Zuerst eine Bildsequenz laden (Projekt im Hauptfenster öffnen).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="139"/>
+        <source>Choose an output folder first.</source>
+        <translation>Bitte zuerst einen Ausgabeordner wählen.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="143"/>
+        <source>No fields enabled.</source>
+        <translation>Keine Felder aktiviert.</translation>
     </message>
 </context>
 <context>
@@ -1104,6 +1413,19 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <location filename="../../gui/dialogs/manual_params_dialog.py" line="154"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>ProgressRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="110"/>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="127"/>
+        <source>Exporting…</source>
+        <translation>Exportiere…</translation>
     </message>
 </context>
 <context>
@@ -1623,20 +1945,20 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
     <message>
         <location filename="../../gui/strain_window.py" line="411"/>
         <location filename="../../gui/strain_window.py" line="457"/>
-        <location filename="../../gui/strain_window.py" line="525"/>
+        <location filename="../../gui/strain_window.py" line="544"/>
         <source>Strain compute failed: {0}</source>
         <translation>Dehnungsberechnung fehlgeschlagen: {0}</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="423"/>
-        <location filename="../../gui/strain_window.py" line="489"/>
+        <location filename="../../gui/strain_window.py" line="508"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>Zuerst die 3D-Analyse ausführen — keine Ergebnisse zur Nachbearbeitung.</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="500"/>
-        <location filename="../../gui/strain_window.py" line="527"/>
+        <location filename="../../gui/strain_window.py" line="519"/>
+        <location filename="../../gui/strain_window.py" line="546"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>Klicken Sie im Bild auf den Ursprung, dann +X, dann +Y</translation>
     </message>
@@ -1661,28 +1983,28 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <translation>⚠ Parameter geändert — „Dehnung berechnen“ klicken</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="518"/>
-        <location filename="../../gui/strain_window.py" line="535"/>
+        <location filename="../../gui/strain_window.py" line="537"/>
+        <location filename="../../gui/strain_window.py" line="554"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 Punkte gewählt</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="537"/>
+        <location filename="../../gui/strain_window.py" line="556"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
@@ -1698,6 +2020,79 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <location filename="../../gui/widgets/view3d.py" line="137"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D-Ansicht nicht verfügbar: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>View3DTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="56"/>
+        <source>Field</source>
+        <translation>Feld</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="69"/>
+        <source>Colormap</source>
+        <translation>Farbskala</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="78"/>
+        <source>Resolution</source>
+        <translation>Auflösung</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="89"/>
+        <source>Frame sequence</source>
+        <translation>Bildsequenz</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="92"/>
+        <source>Per-frame image sequence (PNG)</source>
+        <translation>Bildsequenz pro Frame (PNG)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="97"/>
+        <source>Animation</source>
+        <translation>Animation</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="104"/>
+        <source>Frames per second</source>
+        <translation>Bilder pro Sekunde</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="111"/>
+        <source>Frame step</source>
+        <translation>Bildschritt</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="125"/>
+        <source>Turntable</source>
+        <translation>Rundumdrehung</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="130"/>
+        <source>Turntable (360° orbit at frame {0})</source>
+        <translation>Rundumdrehung (360°-Orbit bei Bild {0})</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="133"/>
+        <source>Orbit frames</source>
+        <translation>Orbit-Bilder</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="147"/>
+        <source>Export 3D View</source>
+        <translation>3D-Ansicht exportieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="160"/>
+        <source>Choose an output folder first.</source>
+        <translation>Bitte zuerst einen Ausgabeordner wählen.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="166"/>
+        <source>Nothing selected to export.</source>
+        <translation>Nichts zum Exportieren ausgewählt.</translation>
     </message>
 </context>
 <context>

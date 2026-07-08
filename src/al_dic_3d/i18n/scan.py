@@ -40,11 +40,11 @@ _SINK_METHODS = frozenset(
         "_set",  # this package's WorkflowPage helper
     }
 )
-# Brand-specific literals kept identical across ALL locales by design (the 2D
+# Brand/format literals kept identical across ALL locales by design (the 2D
 # app's convention): wrapping them in tr() would invite translators to vary a
-# product acronym. Exact-match only — longer strings mentioning the brand are
-# still prose and must be translated.
-_LOCALE_INVARIANT = frozenset({"AL-DIC"})
+# product acronym or a file-format name. Exact-match only — longer strings
+# mentioning a brand/format are still prose and must be translated.
+_LOCALE_INVARIANT = frozenset({"AL-DIC", "MP4", "GIF", "PNG", "JPEG", "TIFF"})
 
 # Widget constructors whose first string argument is user-facing.
 _SINK_CTORS = frozenset(

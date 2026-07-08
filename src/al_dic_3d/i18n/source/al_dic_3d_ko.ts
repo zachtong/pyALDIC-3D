@@ -2,6 +2,82 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="sd_PK">
 <context>
+    <name>AnimationTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="54"/>
+        <source>Fields</source>
+        <translation>필드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="71"/>
+        <source>Format</source>
+        <translation>형식</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="78"/>
+        <source>Frames per second</source>
+        <translation>초당 프레임 수</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="85"/>
+        <source>Frame step</source>
+        <translation>프레임 간격</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="86"/>
+        <source>Keep every Nth frame (1 = all)</source>
+        <translation>N 프레임마다 1장 유지 (1 = 모두)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="93"/>
+        <source>Resolution (long edge)</source>
+        <translation>해상도(긴 변)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="101"/>
+        <source>Include colorbar</source>
+        <translation>컬러바 포함</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="106"/>
+        <source>Background</source>
+        <translation>배경</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="120"/>
+        <source>Export Animation</source>
+        <translation>애니메이션 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="131"/>
+        <source>Load an image sequence first (open the project in the main window).</source>
+        <translation>먼저 이미지 시퀀스를 불러오세요(메인 창에서 프로젝트를 여세요).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="139"/>
+        <source>Choose an output folder first.</source>
+        <translation>먼저 출력 폴더를 선택하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="143"/>
+        <source>No fields enabled.</source>
+        <translation>활성화된 필드가 없습니다.</translation>
+    </message>
+</context>
+<context>
+    <name>BackgroundRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="376"/>
+        <source>Original (frame 1 background)</source>
+        <translation>원형 (1번 프레임을 배경으로)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="377"/>
+        <source>Deformed (current frame background)</source>
+        <translation>변형 후 (현재 프레임을 배경으로)</translation>
+    </message>
+</context>
+<context>
     <name>CalibrationDialog</name>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="170"/>
@@ -392,6 +468,29 @@
     </message>
 </context>
 <context>
+    <name>CameraRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="344"/>
+        <source>Camera</source>
+        <translation>카메라</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="348"/>
+        <source>Left</source>
+        <translation>왼쪽</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="349"/>
+        <source>Right</source>
+        <translation>오른쪽</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="350"/>
+        <source>Left + Right</source>
+        <translation>왼쪽 + 오른쪽</translation>
+    </message>
+</context>
+<context>
     <name>CanvasArea3D</name>
     <message>
         <location filename="../../gui/panels/canvas_area.py" line="99"/>
@@ -504,131 +603,270 @@
     </message>
 </context>
 <context>
-    <name>ExportDialog</name>
+    <name>DataTab</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="89"/>
-        <source>Export Results</source>
-        <translation>결과 내보내기</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="96"/>
-        <source>OUTPUT FOLDER</source>
-        <translation>출력 폴더</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="99"/>
-        <source>Select output folder…</source>
-        <translation>출력 폴더 선택…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
-        <source>Browse…</source>
-        <translation>찾아보기…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
-        <source>Open Folder</source>
-        <translation>폴더 열기</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="110"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="43"/>
         <source>Format</source>
         <translation>형식</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="45"/>
         <source>NumPy archive (.npz)</source>
         <translation>NumPy 아카이브 (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="47"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="116"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="49"/>
         <source>CSV (one file per frame)</source>
         <translation>CSV(프레임당 파일 1개)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="117"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="50"/>
         <source>PLY point clouds (per frame)</source>
         <translation>PLY 점군(프레임별)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="118"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="51"/>
         <source>VTU mesh series (ParaView)</source>
         <translation>VTU 메시 시퀀스(ParaView)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="54"/>
         <source>✓ Parameters file (JSON) always exported</source>
         <translation>✓ 매개변수 파일(JSON)은 항상 내보내집니다</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="128"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="61"/>
         <source>Displacement</source>
         <translation>변위</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="134"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="65"/>
         <source>Strain</source>
         <translation>변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="72"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D 점, 재투영 오차, 소스 플래그는 항상 내보내집니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="81"/>
         <source>Export Data</source>
         <translation>데이터 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="158"/>
-        <source>Close</source>
-        <translation>닫기</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="98"/>
         <source>Select:</source>
         <translation>선택:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="101"/>
         <source>All</source>
         <translation>모두 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="102"/>
         <source>None</source>
         <translation>모두 해제</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="216"/>
-        <source>Choose output folder</source>
-        <translation>출력 폴더 선택</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="230"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="139"/>
         <source>Choose an output folder first.</source>
         <translation>먼저 출력 폴더를 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="257"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="160"/>
+        <source>Wrote: {0}</source>
+        <translation>기록됨: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>ExportDialog</name>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="85"/>
+        <source>Export Results</source>
+        <translation>결과 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="92"/>
+        <source>OUTPUT FOLDER</source>
+        <translation>출력 폴더</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <source>Select output folder…</source>
+        <translation>출력 폴더 선택…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="97"/>
+        <source>Browse…</source>
+        <translation>찾아보기…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="100"/>
+        <source>Open Folder</source>
+        <translation>폴더 열기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="111"/>
+        <source>Data</source>
+        <translation>데이터</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
+        <source>Images</source>
+        <translation>이미지</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="113"/>
+        <source>Animation</source>
+        <translation>애니메이션</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <source>3D View</source>
+        <translation>3D 보기</translation>
+    </message>
+    <message>
+        <source>Format</source>
+        <translation>형식</translation>
+    </message>
+    <message>
+        <source>NumPy archive (.npz)</source>
+        <translation>NumPy 아카이브 (.npz)</translation>
+    </message>
+    <message>
+        <source>MATLAB (.mat)</source>
+        <translation>MATLAB (.mat)</translation>
+    </message>
+    <message>
+        <source>CSV (one file per frame)</source>
+        <translation>CSV(프레임당 파일 1개)</translation>
+    </message>
+    <message>
+        <source>PLY point clouds (per frame)</source>
+        <translation>PLY 점군(프레임별)</translation>
+    </message>
+    <message>
+        <source>VTU mesh series (ParaView)</source>
+        <translation>VTU 메시 시퀀스(ParaView)</translation>
+    </message>
+    <message>
+        <source>✓ Parameters file (JSON) always exported</source>
+        <translation>✓ 매개변수 파일(JSON)은 항상 내보내집니다</translation>
+    </message>
+    <message>
+        <source>Displacement</source>
+        <translation>변위</translation>
+    </message>
+    <message>
+        <source>Strain</source>
+        <translation>변형률</translation>
+    </message>
+    <message>
+        <source>3D points, reprojection error, and source flags are always exported.</source>
+        <translation>3D 점, 재투영 오차, 소스 플래그는 항상 내보내집니다.</translation>
+    </message>
+    <message>
+        <source>Export Data</source>
+        <translation>데이터 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="120"/>
+        <source>Close</source>
+        <translation>닫기</translation>
+    </message>
+    <message>
+        <source>Select:</source>
+        <translation>선택:</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>모두 선택</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>모두 해제</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="229"/>
+        <source>Choose output folder</source>
+        <translation>출력 폴더 선택</translation>
+    </message>
+    <message>
+        <source>Choose an output folder first.</source>
+        <translation>먼저 출력 폴더를 선택하세요.</translation>
+    </message>
+    <message>
         <source>{0} CSV frames</source>
         <translation>CSV 프레임 {0}개</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="267"/>
         <source>Error: {0}</source>
         <translation>오류: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="270"/>
         <source>Wrote: {0}</source>
         <translation>기록됨: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>ExportTabBase</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="179"/>
+        <source>Cancelling…</source>
+        <translation>취소하는 중…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="188"/>
+        <source>Export cancelled — {0} file(s) kept</source>
+        <translation>내보내기 취소됨 — 파일 {0}개 유지</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="196"/>
+        <source>Error: {0}</source>
+        <translation>오류: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="200"/>
+        <source>Wrote {0} file(s)</source>
+        <translation>파일 {0}개를 썼습니다</translation>
+    </message>
+</context>
+<context>
+    <name>ExportTabs</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="363"/>
+        <source>Full resolution</source>
+        <translation>전체 해상도</translation>
+    </message>
+</context>
+<context>
+    <name>FieldRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="258"/>
+        <source>Auto</source>
+        <translation>자동</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="259"/>
+        <source>Auto range</source>
+        <translation>자동 범위</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="275"/>
+        <source>Opacity</source>
+        <translation>불투명도</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="276"/>
+        <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
+        <translation>필드 불투명도 (0 = 투명, 1 = 완전 불투명)</translation>
     </message>
 </context>
 <context>
@@ -680,6 +918,77 @@
         <location filename="../../gui/widgets/frame_navigator.py" line="137"/>
         <source>FRAME 0/0</source>
         <translation>프레임 0/0</translation>
+    </message>
+</context>
+<context>
+    <name>FrameRangeRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="394"/>
+        <source>All frames</source>
+        <translation>모든 프레임</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="398"/>
+        <source>From frame</source>
+        <translation>시작 프레임</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="408"/>
+        <source>to</source>
+        <translation>~</translation>
+    </message>
+</context>
+<context>
+    <name>ImagesTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="54"/>
+        <source>Fields</source>
+        <translation>필드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="71"/>
+        <source>Format</source>
+        <translation>형식</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="80"/>
+        <source>JPEG quality</source>
+        <translation>JPEG 품질</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="87"/>
+        <source>Resolution (long edge)</source>
+        <translation>해상도(긴 변)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="96"/>
+        <source>Include colorbar</source>
+        <translation>컬러바 포함</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="101"/>
+        <source>Background</source>
+        <translation>배경</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="115"/>
+        <source>Export Images</source>
+        <translation>이미지 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="126"/>
+        <source>Load an image sequence first (open the project in the main window).</source>
+        <translation>먼저 이미지 시퀀스를 불러오세요(메인 창에서 프로젝트를 여세요).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="139"/>
+        <source>Choose an output folder first.</source>
+        <translation>먼저 출력 폴더를 선택하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="143"/>
+        <source>No fields enabled.</source>
+        <translation>활성화된 필드가 없습니다.</translation>
     </message>
 </context>
 <context>
@@ -1103,6 +1412,19 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <location filename="../../gui/dialogs/manual_params_dialog.py" line="154"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>ProgressRow</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="110"/>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="127"/>
+        <source>Exporting…</source>
+        <translation>내보내는 중…</translation>
     </message>
 </context>
 <context>
@@ -1622,20 +1944,20 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     <message>
         <location filename="../../gui/strain_window.py" line="411"/>
         <location filename="../../gui/strain_window.py" line="457"/>
-        <location filename="../../gui/strain_window.py" line="525"/>
+        <location filename="../../gui/strain_window.py" line="544"/>
         <source>Strain compute failed: {0}</source>
         <translation>변형률 계산 실패: {0}</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="423"/>
-        <location filename="../../gui/strain_window.py" line="489"/>
+        <location filename="../../gui/strain_window.py" line="508"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>먼저 3D 분석을 실행하세요 — 후처리할 결과가 없습니다.</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="500"/>
-        <location filename="../../gui/strain_window.py" line="527"/>
+        <location filename="../../gui/strain_window.py" line="519"/>
+        <location filename="../../gui/strain_window.py" line="546"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>이미지에서 원점, +X, +Y 순서로 클릭하세요</translation>
     </message>
@@ -1660,28 +1982,28 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="518"/>
-        <location filename="../../gui/strain_window.py" line="535"/>
+        <location filename="../../gui/strain_window.py" line="537"/>
+        <location filename="../../gui/strain_window.py" line="554"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 점 선택됨</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="537"/>
+        <location filename="../../gui/strain_window.py" line="556"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="548"/>
+        <location filename="../../gui/strain_window.py" line="567"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
@@ -1697,6 +2019,79 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <location filename="../../gui/widgets/view3d.py" line="137"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D 보기를 사용할 수 없습니다: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>View3DTab</name>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="56"/>
+        <source>Field</source>
+        <translation>필드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="69"/>
+        <source>Colormap</source>
+        <translation>색상 맵</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="78"/>
+        <source>Resolution</source>
+        <translation>해상도</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="89"/>
+        <source>Frame sequence</source>
+        <translation>프레임 시퀀스</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="92"/>
+        <source>Per-frame image sequence (PNG)</source>
+        <translation>프레임별 이미지 시퀀스(PNG)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="97"/>
+        <source>Animation</source>
+        <translation>애니메이션</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="104"/>
+        <source>Frames per second</source>
+        <translation>초당 프레임 수</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="111"/>
+        <source>Frame step</source>
+        <translation>프레임 간격</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="125"/>
+        <source>Turntable</source>
+        <translation>턴테이블</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="130"/>
+        <source>Turntable (360° orbit at frame {0})</source>
+        <translation>턴테이블 (프레임 {0}에서 360° 회전)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="133"/>
+        <source>Orbit frames</source>
+        <translation>회전 프레임 수</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="147"/>
+        <source>Export 3D View</source>
+        <translation>3D 뷰 내보내기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="160"/>
+        <source>Choose an output folder first.</source>
+        <translation>먼저 출력 폴더를 선택하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="166"/>
+        <source>Nothing selected to export.</source>
+        <translation>내보낼 항목이 선택되지 않았습니다.</translation>
     </message>
 </context>
 <context>

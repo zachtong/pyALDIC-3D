@@ -392,8 +392,23 @@ class RightSidebar3D(QWidget):
         state = self.controller.state
         if state.result is None:
             return
+        from al_dic_3d.export import VizExportHint
         from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
 
+        # Snapshot of the live view so the export dialog opens showing what
+        # the user is looking at (colormap, deformed mode, field, frame).
+        hint = VizExportHint(
+            colormap=self.signals.colormap,
+            show_deformed=self.signals.show_deformed,
+            overlay_alpha=self.signals.overlay_alpha,
+            current_field=self.signals.display_field,
+            auto_range=self.signals.color_auto,
+            vmin=self.signals.color_min,
+            vmax=self.signals.color_max,
+            current_frame=self.signals.current_frame,
+        )
         extra = draft_export_params(state.draft)
-        dialog = ExportDialog(state.result, extra_params=extra, parent=self)
+        dialog = ExportDialog(
+            state.result, extra_params=extra, parent=self, draft=state.draft, hint=hint
+        )
         dialog.exec()
