@@ -149,7 +149,7 @@ def test_incremental_composition_large_increments():
 def test_incremental_composition_beats_wrong_position_variant():
     """The measured field must match DEFORMED-position composition, not the
     reference-position variant — i.e. the test above has discriminating power."""
-    h = w = 460
+    w = 460
     cx = cy = (w - 1) / 2.0
     tx, ty, g = 12.0, 8.0, 0.010
     rng = np.random.default_rng(0)

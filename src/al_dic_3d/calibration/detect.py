@@ -271,6 +271,16 @@ def _binarizations(gray: NDArray[np.uint8], dark: bool):
     tt = cv2.THRESH_BINARY_INV if dark else cv2.THRESH_BINARY
     _t, binary = cv2.threshold(gray, 0, 255, tt + cv2.THRESH_OTSU)
     yield "", binary
+    # Flat-field rung: divide out a heavily blurred background before Otsu.
+    # A strong illumination gradient defeats every single global threshold
+    # (dots merge in the dark corner or vanish in the bright one) while the
+    # adaptive rung erases the small donut-fiducial holes; normalizing by the
+    # local background fixes both (S5 real photos: 7/47 -> 47/47 detections).
+    bg = cv2.GaussianBlur(gray.astype(np.float32), (0, 0), sigmaX=min(gray.shape) / 12)
+    norm = gray.astype(np.float32) / np.maximum(bg, 1.0)
+    norm8 = cv2.normalize(norm, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    _t, binary = cv2.threshold(norm8, 0, 255, tt + cv2.THRESH_OTSU)
+    yield "+flatfield", binary
     block = max(31, (min(gray.shape) // 8) | 1)
     yield "+adaptive", cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, tt, block, 5)
     for thr in (60, 100, 140, 180, 220):

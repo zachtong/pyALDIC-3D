@@ -137,3 +137,19 @@ def test_matchid_missing_fx_raises(tmp_path):
     p.write_text("SomeKey;1.0\nTx [mm];174.15\n")
     with pytest.raises(ValueError, match="Fx"):
         load_calibration(p, "matchid")
+
+
+def test_flatfield_rung_survives_illumination_gradient():
+    """S5 real-photo failure shape: strong lighting gradient + donut fiducials.
+
+    A global threshold merges/loses dots on one side; the adaptive rung erases
+    the small fiducial holes. The flat-field rung must recover the detection.
+    """
+    img = _draw_donut_target().astype(np.float64)
+    h, w = img.shape
+    yy, xx = np.mgrid[0:h, 0:w]
+    gradient = 0.35 + 0.65 * (xx / w) * (yy / h)  # dark corner -> bright corner
+    shaded = np.clip(img * gradient, 0, 255).astype(np.uint8)
+    det = detect_board(shaded, SPEC)
+    assert det.ok, det.reason
+    assert det.n_points >= 120
