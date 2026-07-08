@@ -64,6 +64,20 @@
 
 ## Changelog
 
+- 2026-07-08 v1.5.0 — **GUI 六点评审整改（用户实测反馈）三批全落地**（`19a49b2`+`62648ae`+`dffef2d`，
+  241 tests，i18n 322×7 100%，scan clean）。**A**：Solver 下拉（AL-DIC/Local DIC，2D tooltip 移植）
+  替代 ADMM 勾选框；新增折叠"高级"区（策略下拉 + "AL-DIC Iterations"藏 ADMM 术语）；步长 combo→
+  spin 2..256；浮动卡改为 MODE/SOLVER/SUBSET（"ADMM (N iter)" 格式，含单位）；"在变形帧上显示"
+  几何切换（参考模式=帧1背景+帧1位置散点，场值仍随导航帧——2D 契约）。**B**：完整 ROI 工具箱移植
+  （Qt-free ROIController：矩形/多边形/圆/三点圆 add/cut、画刷、导入/保存/反选/清除；ROI 升级为
+  左相机帧1布尔掩膜→roi_mask.png→bbox 覆盖+常量左掩膜流+网格裁剪）；MeshOverlay 网格预览
+  （"Show Grid"默认开，预览与管线共用重构后的 runner.build_reference_mesh 含四叉树加密）+
+  "Show Subset"悬停子集框；顺带修复带 Path 的 RunConfig 无法存 session。**C**：应变改为后处理
+  ——GUI 运行恒不算应变，主窗只留位移四场；StrainWindow3D 全克隆 2D（独立画布/色条/帧导航/字段区/
+  导出/脏参数提示/QThread 计算/运行完成自动弹出），**坐标系三选**：表面切平面（默认，逐节点拟合
+  平面，z 指向相机侧、x=左相机+X 投影——计算核心审计确认与约定一致且三模式早已实现）/左相机系/
+  自定义三点（画布拾取 O/X/Y 吸附最近节点3D坐标→specimen_frame）；修复工程重开后应变/导出按钮
+  不恢复。
 - 2026-07-07 v1.4.8 — **Phase-5 验证扫荡：Challenge 1.0 S2/S4/S5 + Challenge 2.0 Task1 全 PASS**
   （`51dbd26`，215 tests；tools/challenge_*.py，报告 reports/challenge_sweep.pdf）。四数据集四锚点：
   ①**S2 仿真刚体平移（±10/20mm 精确真值，双镜头架）**：16 步 |err| 中位 0.3/0.1µm、最大 0.5/0.3µm；
