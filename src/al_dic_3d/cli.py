@@ -51,8 +51,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="run a headless correspondence + 3D-reconstruction pipeline from a TOML config",
         description=(
             "Load calibration + image sequences per the config, run the "
-            "correspondence strategy and DLT reconstruction, and write "
-            "<output.dir>/<output.prefix>.{npz,mat}."
+            "correspondence strategy and DLT reconstruction, and write the "
+            "selected --formats (plus a parameters JSON) under <output.dir>."
         ),
     )
     run_p.add_argument("config", help="path to the run configuration (TOML)")
@@ -61,6 +61,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_p.add_argument(
         "-q", "--quiet", action="store_true", help="suppress per-frame progress output"
+    )
+    run_p.add_argument(
+        "--formats",
+        default="npz,mat",
+        metavar="LIST",
+        help=(
+            "comma-separated output formats: npz,mat,csv,ply,vtu "
+            "(default: npz,mat; a parameters JSON is always written)"
+        ),
     )
 
     subparsers.add_parser(
@@ -142,7 +151,17 @@ def _run_command(args: argparse.Namespace) -> int:
     """Handle ``al-dic-3d run <config.toml>``."""
     from dataclasses import replace
 
-    from al_dic_3d.runner import load_config, run_pipeline, write_results
+    from al_dic_3d.runner import RESULT_FORMATS, load_config, run_pipeline, write_results
+
+    formats = [f.strip().lower() for f in args.formats.split(",") if f.strip()]
+    unknown = sorted(set(formats) - set(RESULT_FORMATS))
+    if unknown or not formats:
+        print(
+            f"error: --formats must be a comma list of {','.join(RESULT_FORMATS)}; "
+            f"got {args.formats!r}",
+            file=sys.stderr,
+        )
+        return 2
 
     cfg = load_config(args.config)
     if args.output:
@@ -153,7 +172,7 @@ def _run_command(args: argparse.Namespace) -> int:
             print(f"  [{frac * 100:5.1f}%] {msg}")
 
     result = run_pipeline(cfg, progress=progress)
-    paths = write_results(result, cfg)
+    paths = write_results(result, cfg, formats=formats)
 
     m = result.meta
     total = int(m["n_frames"]) * int(m["n_pts"])
@@ -161,8 +180,8 @@ def _run_command(args: argparse.Namespace) -> int:
         f"strategy={m['strategy']} frames={m['n_frames']} points={m['n_pts']} "
         f"tracked={m['n_tracked_positions']}/{total}"
     )
-    print(f"wrote {paths['npz']}")
-    print(f"wrote {paths['mat']}")
+    for key in ("params", *formats):
+        print(f"wrote {paths[key]}")
     return 0
 
 

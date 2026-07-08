@@ -1,10 +1,14 @@
 """``View3D`` — interactive 3D surface view (pyvista, lazy ``[viz3d]`` extra).
 
-Shows the reconstructed surface at the current frame as a triangulated point
-cloud colored by the selected field, plus the two camera frusta. The heavy
-pyvista/VTK import happens lazily on first use; if the extra is missing or the
-machine has no usable OpenGL context, the widget degrades to a styled message
-instead of crashing (this also keeps headless test runs safe).
+Shows the reconstructed surface at the current frame colored by the selected
+field, plus the two camera frusta. When the reference grid is available the
+surface uses the shared regular-grid quad connectivity
+(:func:`al_dic_3d.viz3d.build_quad_connectivity` — the same topology the VTU
+export writes); otherwise it falls back to a Delaunay triangulation of the
+finite points. The heavy pyvista/VTK import happens lazily on first use; if
+the extra is missing or the machine has no usable OpenGL context, the widget
+degrades to a styled message instead of crashing (this also keeps headless
+test runs safe).
 
 ``build_surface_mesh`` / ``camera_frustum_lines`` are pure (no GL) and unit-
 testable without a display.
@@ -18,16 +22,47 @@ from numpy.typing import NDArray
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
+from al_dic_3d.viz3d import as_vtk_faces, build_quad_connectivity, filter_cells_finite
 
-def build_surface_mesh(points_3d: NDArray, values: NDArray, name: str):
-    """Triangulated surface (``pv.PolyData``) from finite 3D points + scalars.
 
+def _quad_surface_mesh(pts: NDArray, vals: NDArray, name: str, ref_coords: NDArray):
+    """Regular-grid quad surface, or ``None`` when no usable quads exist."""
+    import pyvista as pv
+
+    cells = build_quad_connectivity(ref_coords)
+    cells = filter_cells_finite(cells, pts)
+    # A cell with a NaN scalar corner would render as a nan-colored patch; drop
+    # it to match the point-filtering semantics of the Delaunay fallback.
+    if len(cells):
+        cells = cells[np.isfinite(vals[cells]).all(axis=1)]
+    if len(cells) == 0:
+        return None
+    used = np.unique(cells)
+    remap = np.zeros(len(pts), dtype=np.int64)
+    remap[used] = np.arange(len(used))
+    surf = pv.PolyData(pts[used], faces=as_vtk_faces(remap[cells]))
+    surf[name] = vals[used]
+    return surf
+
+
+def build_surface_mesh(
+    points_3d: NDArray, values: NDArray, name: str, ref_coords: NDArray | None = None
+):
+    """Surface (``pv.PolyData``) from finite 3D points + scalars.
+
+    With ``ref_coords`` (the frame-1 reference grid) the surface is the shared
+    regular-grid quad mesh; without it — or when no complete quad survives the
+    NaN filtering — it is a Delaunay triangulation of the finite points.
     Returns ``None`` when fewer than 3 finite points exist (nothing to render).
     """
     import pyvista as pv
 
     pts = np.asarray(points_3d, dtype=np.float64).reshape(-1, 3)
     vals = np.asarray(values, dtype=np.float64).reshape(-1)
+    if ref_coords is not None:
+        surf = _quad_surface_mesh(pts, vals, name, np.asarray(ref_coords, dtype=np.float64))
+        if surf is not None:
+            return surf
     finite = np.isfinite(pts).all(axis=1) & np.isfinite(vals)
     if finite.sum() < 3:
         return None
@@ -118,11 +153,12 @@ class View3D(QWidget):
         vmin: float,
         vmax: float,
         rig=None,
+        ref_coords: NDArray | None = None,
     ) -> None:
         """Re-render the surface for one frame (called on frame/field changes)."""
         if not self._ensure_plotter():
             return
-        surf = build_surface_mesh(points_3d, values, field_label)
+        surf = build_surface_mesh(points_3d, values, field_label, ref_coords)
         self._plotter.clear()
         if surf is None:
             return

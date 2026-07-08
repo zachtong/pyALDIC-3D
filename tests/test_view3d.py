@@ -48,6 +48,39 @@ def test_surface_mesh_degenerate_returns_none():
     assert build_surface_mesh(pts, np.zeros(5), "f") is None
 
 
+def _regular_grid_cloud(nx: int = 5, ny: int = 4, step: float = 16.0):
+    xs = 100.0 + step * np.arange(nx)
+    ys = 50.0 + step * np.arange(ny)
+    gx, gy = np.meshgrid(xs, ys)
+    ref = np.column_stack([gx.ravel(), gy.ravel()])
+    pts = np.column_stack([ref * 0.1, np.full(len(ref), 800.0)])
+    return ref, pts
+
+
+def test_surface_mesh_uses_regular_grid_quads():
+    ref, pts = _regular_grid_cloud()
+    vals = pts[:, 0] * 0.01
+    surf = build_surface_mesh(pts, vals, "U", ref)
+    assert surf.n_cells == (5 - 1) * (4 - 1)  # quad topology, not delaunay triangles
+    assert (surf.faces.reshape(-1, 5)[:, 0] == 4).all()  # every cell is a quad
+    assert np.isfinite(surf["U"]).all()
+
+
+def test_surface_mesh_quads_drop_nan_and_fall_back():
+    ref, pts = _regular_grid_cloud()
+    vals = pts[:, 0] * 0.01
+    pts[1 * 5 + 2] = np.nan  # interior node invalid -> its 4 quads dropped
+    surf = build_surface_mesh(pts, vals, "U", ref)
+    assert surf.n_cells == 12 - 4
+    assert np.isfinite(surf.points).all()  # NaN vertices are not carried into the mesh
+    # Without a usable lattice (collinear ref nodes) the builder yields nothing
+    # and build_surface_mesh falls back to the delaunay triangulation.
+    degenerate_ref = np.column_stack([np.arange(60.0), np.zeros(60)])
+    pts2 = _bump_cloud(60, seed=2)
+    surf2 = build_surface_mesh(pts2, pts2[:, 2], "f", degenerate_ref)
+    assert surf2 is not None and surf2.n_cells > 0
+
+
 def test_camera_frustum_geometry():
     th = np.deg2rad(18.0)
     R = np.array([[np.cos(th), 0, np.sin(th)], [0, 1, 0], [-np.sin(th), 0, np.cos(th)]])

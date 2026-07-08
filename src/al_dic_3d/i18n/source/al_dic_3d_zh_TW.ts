@@ -453,7 +453,7 @@
     <name>ConfigOverlay3D</name>
     <message>
         <source>Strategy</source>
-        <translation type="vanished">策略</translation>
+        <translation>策略</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="39"/>
@@ -482,15 +482,15 @@
     </message>
     <message>
         <source>Track Both</source>
-        <translation type="vanished">雙相機追蹤</translation>
+        <translation>雙相機追蹤</translation>
     </message>
     <message>
         <source>Stereo Each Frame</source>
-        <translation type="vanished">逐幀立體匹配</translation>
+        <translation>逐幀立體匹配</translation>
     </message>
     <message>
         <source>Reference Direct</source>
-        <translation type="vanished">參考幀直接匹配</translation>
+        <translation>參考幀直接匹配</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="74"/>
@@ -506,107 +506,127 @@
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="55"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="89"/>
         <source>Export Results</source>
         <translation>匯出結果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="62"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="96"/>
         <source>OUTPUT FOLDER</source>
         <translation>輸出資料夾</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="65"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="99"/>
         <source>Select output folder…</source>
         <translation>選擇輸出資料夾…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="67"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
         <source>Browse…</source>
         <translation>瀏覽…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="70"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
         <source>Open Folder</source>
         <translation>開啟資料夾</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="76"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="110"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="78"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
         <source>NumPy archive (.npz)</source>
         <translation>NumPy 封存 (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="80"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="82"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="116"/>
         <source>CSV (one file per frame)</source>
         <translation>CSV（每幀一個檔案）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="89"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="117"/>
+        <source>PLY point clouds (per frame)</source>
+        <translation>PLY 點雲（逐幀）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="118"/>
+        <source>VTU mesh series (ParaView)</source>
+        <translation>VTU 網格序列（ParaView）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
+        <source>✓ Parameters file (JSON) always exported</source>
+        <translation>✓ 參數檔案（JSON）始終會被匯出</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="128"/>
         <source>Displacement</source>
         <translation>位移</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="134"/>
         <source>Strain</source>
         <translation>應變</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="102"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D 點、重投影誤差與來源旗標始終會被匯出。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
         <source>Export Data</source>
         <translation>匯出資料</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="119"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="158"/>
         <source>Close</source>
         <translation>關閉</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="142"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
         <source>Select:</source>
         <translation>選擇：</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="145"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
         <source>All</source>
         <translation>全選</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="146"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
         <source>None</source>
         <translation>全不選</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="177"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="216"/>
         <source>Choose output folder</source>
         <translation>選擇輸出資料夾</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="191"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="230"/>
         <source>Choose an output folder first.</source>
         <translation>請先選擇輸出資料夾。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="205"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="257"/>
         <source>{0} CSV frames</source>
         <translation>{0} 個 CSV 幀檔案</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="207"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="267"/>
+        <source>Error: {0}</source>
+        <translation>錯誤：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="270"/>
         <source>Wrote: {0}</source>
         <translation>已寫入：{0}</translation>
     </message>
@@ -620,7 +640,7 @@
     </message>
     <message>
         <source>STRAIN</source>
-        <translation type="vanished">應變</translation>
+        <translation>應變</translation>
     </message>
 </context>
 <context>
@@ -852,7 +872,7 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
     </message>
     <message>
         <source>Compute surface strain</source>
-        <translation type="vanished">計算表面應變</translation>
+        <translation>計算表面應變</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="409"/>
@@ -866,15 +886,15 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
     </message>
     <message>
         <source>+ Draw</source>
-        <translation type="vanished">+ 繪製</translation>
+        <translation>+ 繪製</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">清除</translation>
+        <translation>清除</translation>
     </message>
     <message>
         <source>x min / x max / y min / y max (px)</source>
-        <translation type="vanished">x 最小 / x 最大 / y 最小 / y 最大（像素）</translation>
+        <translation>x 最小 / x 最大 / y 最小 / y 最大（像素）</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="496"/>
@@ -898,11 +918,11 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
     </message>
     <message>
         <source>AL-DIC global step (ADMM)</source>
-        <translation type="vanished">AL-DIC 全域步（ADMM）</translation>
+        <translation>AL-DIC 全域步（ADMM）</translation>
     </message>
     <message>
         <source>ADMM Iterations</source>
-        <translation type="vanished">ADMM 迭代次數</translation>
+        <translation>ADMM 迭代次數</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="519"/>
@@ -926,11 +946,11 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
     </message>
     <message>
         <source>Paint region…</source>
-        <translation type="vanished">繪製加密區域…</translation>
+        <translation>繪製加密區域…</translation>
     </message>
     <message>
         <source>Clear paint</source>
-        <translation type="vanished">清除繪製</translation>
+        <translation>清除繪製</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="567"/>
@@ -1602,20 +1622,20 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
     <message>
         <location filename="../../gui/strain_window.py" line="411"/>
         <location filename="../../gui/strain_window.py" line="457"/>
-        <location filename="../../gui/strain_window.py" line="524"/>
+        <location filename="../../gui/strain_window.py" line="525"/>
         <source>Strain compute failed: {0}</source>
         <translation>應變計算失敗：{0}</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="423"/>
-        <location filename="../../gui/strain_window.py" line="488"/>
+        <location filename="../../gui/strain_window.py" line="489"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>請先執行 3D 分析——沒有可後處理的結果。</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="499"/>
-        <location filename="../../gui/strain_window.py" line="526"/>
+        <location filename="../../gui/strain_window.py" line="500"/>
+        <location filename="../../gui/strain_window.py" line="527"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>請在影像上依次點擊原點、+X 點、+Y 點</translation>
     </message>
@@ -1640,28 +1660,28 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
         <translation>⚠ 參數已變更 — 請點擊「計算應變」</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="517"/>
-        <location filename="../../gui/strain_window.py" line="534"/>
+        <location filename="../../gui/strain_window.py" line="518"/>
+        <location filename="../../gui/strain_window.py" line="535"/>
         <source>Picked {0}/3 points</source>
         <translation>已拾取 {0}/3 個點</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="536"/>
+        <location filename="../../gui/strain_window.py" line="537"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
@@ -1669,12 +1689,12 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="78"/>
+        <location filename="../../gui/widgets/view3d.py" line="113"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="102"/>
+        <location filename="../../gui/widgets/view3d.py" line="137"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D 檢視不可用：{0}</translation>
     </message>

@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from al_dic_3d.matching.contracts import INVALID
-from al_dic_3d.runner import load_config, run_pipeline, write_results
+from al_dic_3d.runner import RunConfig, load_config, run_pipeline, write_results
 
 cv2 = pytest.importorskip("cv2")
 
@@ -124,6 +124,8 @@ def test_run_pipeline_end_to_end_recovers_3d(tmp_path):
 
 
 def test_write_results_roundtrips_npz_and_mat(tmp_path):
+    import json
+
     import scipy.io
 
     scene = synth_stereo.build_scene(tmp_path, n_frames=2)
@@ -141,6 +143,12 @@ def test_write_results_roundtrips_npz_and_mat(tmp_path):
     assert np.allclose(npz["points3D"], rec.points, equal_nan=True)
     assert np.allclose(npz["displacement3D"], rec.displacement, equal_nan=True)
     assert np.array_equal(npz["source"], result.correspondence.source)
+    # Unified schema (E1): the archive is a SUPERSET — per-component stacks from
+    # export.tables.selected_arrays live next to the legacy keys.
+    for key in ("U", "V", "W", "mag", "xL", "xR", "quality", "ref_coords"):
+        assert key in npz, f"unified archive missing {key!r}"
+    assert np.allclose(npz["U"], rec.displacement[:, :, 0], equal_nan=True)
+    assert np.allclose(npz["xL"], result.correspondence.xL, equal_nan=True)
 
     mat = scipy.io.loadmat(str(paths["mat"]))
     assert mat["displacement3D"].shape == (2, result.correspondence.n_pts, 3)
@@ -148,16 +156,42 @@ def test_write_results_roundtrips_npz_and_mat(tmp_path):
     assert np.allclose(mat["displacement3D"], rec.displacement, equal_nan=True)
     assert str(mat["strategy"][0]) == "track_both"
 
+    # The parameters JSON is always written and records the RunConfig.
+    params = json.loads(paths["params"].read_text(encoding="utf-8"))
+    assert params["strategy"] == "track_both"
+    assert params["winsize"] == cfg.winsize and params["winstepsize"] == cfg.winstepsize
+
+
+def test_write_results_rejects_unknown_format(tmp_path):
+    cfg = RunConfig(
+        calibration_file=tmp_path / "calib.yml",
+        calibration_format="opencv_yaml",
+        left=[],
+        right=[],
+        roi=(0, 1, 0, 1),
+        output_dir=tmp_path,
+    )
+    with pytest.raises(ValueError, match="unknown output format"):
+        write_results(None, cfg, formats=("npz", "bogus"))  # validated before any I/O
+
 
 def test_cli_run_creates_outputs(tmp_path):
     from al_dic_3d.cli import main
 
     scene = synth_stereo.build_scene(tmp_path, n_frames=2)
     cfg_path = synth_stereo.write_config(tmp_path, scene)
-    rc = main(["run", str(cfg_path), "-q"])
+    rc = main(["run", str(cfg_path), "-q", "--formats", "npz,mat,csv,ply,vtu"])
     assert rc == 0
-    assert (tmp_path / "out" / "run.npz").exists()
-    assert (tmp_path / "out" / "run.mat").exists()
+    out = tmp_path / "out"
+    assert (out / "run.npz").exists()
+    assert (out / "run.mat").exists()
+    assert len(list(out.glob("run_parameters_*.json"))) == 1
+    csv_dir = next(out.glob("run_csv_*"))
+    assert len(list(csv_dir.glob("*.csv"))) == 2
+    ply_dir = next(out.glob("run_ply_*"))
+    assert len(list(ply_dir.glob("*.ply"))) == 2
+    vtu_dir = next(out.glob("run_vtu_*"))
+    assert len(list(vtu_dir.glob("*.vtu"))) == 2 and (vtu_dir / "run.pvd").exists()
 
 
 def test_run_pipeline_cooperative_cancel(tmp_path):

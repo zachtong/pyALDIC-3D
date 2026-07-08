@@ -1,9 +1,10 @@
 """Export dialog — output folder + formats + field selection (2D dialog idiom).
 
 Mirrors the 2D Export Results window: an OUTPUT FOLDER row (path + Browse + Open
-Folder), FORMAT checkboxes (NumPy / MATLAB / per-frame CSV), and DISPLACEMENT /
-STRAIN field groups with All / None pickers. Exports run through the Qt-free
-:mod:`al_dic_3d.export` module.
+Folder), FORMAT checkboxes (NumPy / MATLAB / per-frame CSV / PLY / VTU), and
+DISPLACEMENT / STRAIN field groups with All / None pickers. Exports run through
+the Qt-free :mod:`al_dic_3d.export` module; a parameters JSON is always written
+and every export mints a fresh timestamp so repeats never overwrite.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ from PySide6.QtWidgets import (
 from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS
 
 if TYPE_CHECKING:
+    from al_dic_3d.project.draft import ProjectDraft
     from al_dic_3d.runner import RunResult
 
 _FIELD_LABELS = {
@@ -45,13 +47,45 @@ _FIELD_LABELS = {
     "von_mises": "von Mises",
 }
 
+# Draft knobs recorded in the always-written parameters JSON (scalar fields
+# only; arrays/sequences are summarised by the run's own meta instead).
+_DRAFT_PARAM_FIELDS = (
+    "strategy",
+    "reference_mode",
+    "winsize",
+    "winstepsize",
+    "winsize_min",
+    "stereo_search",
+    "fft_search",
+    "use_global_step",
+    "admm_max_iter",
+    "quality_gate",
+    "refine_inner",
+    "refine_outer",
+    "refinement_level",
+    "strain_size",
+    "calibration_file",
+    "roi",
+)
+
+
+def draft_export_params(draft: ProjectDraft) -> dict:
+    """The GUI draft's matching parameters, for :func:`export_params` extra."""
+    return {name: getattr(draft, name) for name in _DRAFT_PARAM_FIELDS}
+
 
 class ExportDialog(QDialog):
     """Field-selective export of a completed run."""
 
-    def __init__(self, result: RunResult, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        result: RunResult,
+        extra_params: dict | None = None,
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
         self._result = result
+        self._extra_params = extra_params or {}
         self.setWindowTitle(self.tr("Export Results"))
         self.setMinimumWidth(560)
 
@@ -80,8 +114,13 @@ class ExportDialog(QDialog):
         self._mat_cb = QCheckBox(self.tr("MATLAB (.mat)"))
         self._mat_cb.setChecked(True)
         self._csv_cb = QCheckBox(self.tr("CSV (one file per frame)"))
-        for cb in (self._npz_cb, self._mat_cb, self._csv_cb):
+        self._ply_cb = QCheckBox(self.tr("PLY point clouds (per frame)"))
+        self._vtu_cb = QCheckBox(self.tr("VTU mesh series (ParaView)"))
+        for cb in (self._npz_cb, self._mat_cb, self._csv_cb, self._ply_cb, self._vtu_cb):
             fmt_layout.addWidget(cb)
+        params_note = QLabel(self.tr("✓ Parameters file (JSON) always exported"))
+        params_note.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
+        fmt_layout.addWidget(params_note)
         layout.addWidget(fmt_group)
 
         # ---- DISPLACEMENT ----
@@ -191,17 +230,41 @@ class ExportDialog(QDialog):
             self._status.setText(self.tr("Choose an output folder first."))
             self._status.setStyleSheet(f"color: {COLORS.WARNING}; font-size: 11px;")
             return
-        from al_dic_3d.export import export_csv_frames, export_mat, export_npz
+        from al_dic_3d.export import (
+            export_csv_frames,
+            export_mat,
+            export_npz,
+            export_params,
+            export_ply_frames,
+            export_vtu_series,
+            make_prefix,
+            make_timestamp,
+        )
 
         out = Path(folder)
         fields = self.selected_fields()
-        written: list[str] = []
+        # Fresh timestamp per export; prefix from the run's data folder (2D idiom).
+        ts = make_timestamp()
+        base_dir = self._result.meta.get("base_dir")
+        prefix = make_prefix(Path(base_dir) if base_dir else None)
+        written: list[str] = [export_params(out, prefix, ts, self._result, self._extra_params).name]
         if self._npz_cb.isChecked():
-            written.append(export_npz(self._result, fields, out, "results").name)
+            written.append(export_npz(self._result, fields, out, f"{prefix}_{ts}").name)
         if self._mat_cb.isChecked():
-            written.append(export_mat(self._result, fields, out, "results").name)
+            written.append(export_mat(self._result, fields, out, f"{prefix}_{ts}").name)
         if self._csv_cb.isChecked():
-            frames = export_csv_frames(self._result, fields, out, "results")
+            frames = export_csv_frames(self._result, fields, out, f"{prefix}_{ts}")
             written.append(self.tr("{0} CSV frames").format(len(frames)))
+        if self._ply_cb.isChecked():
+            export_ply_frames(out, prefix, ts, self._result, fields)
+            written.append(f"{prefix}_ply_{ts}/")
+        if self._vtu_cb.isChecked():
+            try:
+                export_vtu_series(out, prefix, ts, self._result, fields)
+                written.append(f"{prefix}_vtu_{ts}/")
+            except ImportError as exc:  # viz3d extra missing
+                self._status.setStyleSheet(f"color: {COLORS.WARNING}; font-size: 11px;")
+                self._status.setText(self.tr("Error: {0}").format(str(exc)))
+                return
         self._status.setStyleSheet(f"color: {COLORS.SUCCESS}; font-size: 11px;")
         self._status.setText(self.tr("Wrote: {0}").format(", ".join(written)))

@@ -20,7 +20,8 @@ DISPLACEMENT_IDS = ("U", "V", "W", "mag")
 STRAIN_IDS = ("exx", "eyy", "exy", "e1", "e2", "max_shear", "von_mises")
 
 
-def _field_frame(result: RunResult, field: str, k: int) -> np.ndarray | None:
+def field_frame(result: RunResult, field: str, k: int) -> np.ndarray | None:
+    """One frame of a selectable field id, or ``None`` when unavailable."""
     rec = result.reconstruction
     if field in ("U", "V", "W"):
         return rec.displacement[k][:, ("U", "V", "W").index(field)]
@@ -46,7 +47,7 @@ def selected_arrays(result: RunResult, fields: list[str]) -> dict[str, np.ndarra
         stack = np.full((n_frames, n_pts), np.nan)
         ok = False
         for k in range(n_frames):
-            vals = _field_frame(result, field, k)
+            vals = field_frame(result, field, k)
             if vals is not None:
                 stack[k] = vals
                 ok = True
@@ -87,7 +88,7 @@ def export_csv_frames(
             ("Z_mm", rec.points[k][:, 2]),
         ]
         for field in fields:
-            vals = _field_frame(result, field, k)
+            vals = field_frame(result, field, k)
             if vals is not None:
                 columns.append((field, vals))
         header = ",".join(name for name, _ in columns)

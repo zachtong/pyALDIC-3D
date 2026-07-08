@@ -392,7 +392,8 @@ class RightSidebar3D(QWidget):
         state = self.controller.state
         if state.result is None:
             return
-        from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
+        from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
 
-        dialog = ExportDialog(state.result, parent=self)
+        extra = draft_export_params(state.draft)
+        dialog = ExportDialog(state.result, extra_params=extra, parent=self)
         dialog.exec()

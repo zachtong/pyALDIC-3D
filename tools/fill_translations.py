@@ -2274,6 +2274,49 @@ _BATCH_C: dict[str, dict[str, str]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Batch E1 export strings (export_dialog: PLY / VTU formats + params-JSON note).
+# "PLY" / "VTU" / "ParaView" / "JSON" are product/format names — locale-invariant.
+# ---------------------------------------------------------------------------
+
+_BATCH_E1: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "PLY point clouds (per frame)": "PLY 点云（逐帧）",
+        "VTU mesh series (ParaView)": "VTU 网格序列（ParaView）",
+        "✓ Parameters file (JSON) always exported": "✓ 参数文件（JSON）始终会被导出",
+    },
+    "zh_TW": {
+        "PLY point clouds (per frame)": "PLY 點雲（逐幀）",
+        "VTU mesh series (ParaView)": "VTU 網格序列（ParaView）",
+        "✓ Parameters file (JSON) always exported": "✓ 參數檔案（JSON）始終會被匯出",
+    },
+    "ja": {
+        "PLY point clouds (per frame)": "PLY 点群（フレームごと）",
+        "VTU mesh series (ParaView)": "VTU メッシュ時系列（ParaView）",
+        "✓ Parameters file (JSON) always exported": "✓ パラメータファイル（JSON）は常にエクスポートされます",
+    },
+    "ko": {
+        "PLY point clouds (per frame)": "PLY 점군(프레임별)",
+        "VTU mesh series (ParaView)": "VTU 메시 시퀀스(ParaView)",
+        "✓ Parameters file (JSON) always exported": "✓ 매개변수 파일(JSON)은 항상 내보내집니다",
+    },
+    "de": {
+        "PLY point clouds (per frame)": "PLY-Punktwolken (pro Frame)",
+        "VTU mesh series (ParaView)": "VTU-Netzserie (ParaView)",
+        "✓ Parameters file (JSON) always exported": "✓ Parameterdatei (JSON) wird immer exportiert",
+    },
+    "fr": {
+        "PLY point clouds (per frame)": "Nuages de points PLY (un par image)",
+        "VTU mesh series (ParaView)": "Série de maillages VTU (ParaView)",
+        "✓ Parameters file (JSON) always exported": "✓ Fichier de paramètres (JSON) toujours exporté",
+    },
+    "es": {
+        "PLY point clouds (per frame)": "Nubes de puntos PLY (por fotograma)",
+        "VTU mesh series (ParaView)": "Serie de mallas VTU (ParaView)",
+        "✓ Parameters file (JSON) always exported": "✓ Archivo de parámetros (JSON) siempre exportado",
+    },
+}
+
 for _loc, _entries in _CALIB.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_C3.items():
@@ -2285,6 +2328,8 @@ for _loc, _entries in _BATCH_A.items():
 for _loc, _entries in _BATCH_B.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _BATCH_C.items():
+    TRANSLATIONS[_loc].update(_entries)
+for _loc, _entries in _BATCH_E1.items():
     TRANSLATIONS[_loc].update(_entries)
 
 

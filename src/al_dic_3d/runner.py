@@ -492,36 +492,94 @@ def run_pipeline(
 # --- output ------------------------------------------------------------------
 
 
+RESULT_FORMATS = ("npz", "mat", "csv", "ply", "vtu")
+
+
 def _arrays(result: RunResult) -> dict:
+    """The unified archive: GUI selection schema + correspondence extras.
+
+    Built on :func:`al_dic_3d.export.tables.selected_arrays` with ALL field ids
+    (strategy / ref_coords / points3D / reproj_error / source + one
+    ``(n_frames, n_pts)`` stack per field: U, V, W, mag, exx, ...), merged with
+    the correspondence extras ``xL`` / ``xR`` / ``quality``. The LEGACY keys
+    (``displacement3D``, ``strain_<name>`` incl. dwdx/dwdy, ``n_frames``,
+    ``n_pts``) are still written so parity tools keep reading — the archive is
+    a SUPERSET of both the old CLI layout and the GUI export schema.
+    """
+    from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS, selected_arrays
+
     cs = result.correspondence
-    rec = result.reconstruction
-    arrays = {
-        "strategy": result.strategy,
-        "ref_coords": result.ref_coords,
-        "xL": cs.xL,
-        "xR": cs.xR,
-        "quality": cs.quality,
-        "source": cs.source,
-        "points3D": rec.points,
-        "displacement3D": rec.displacement,
-        "reproj_error": rec.reproj_error,
-        "n_frames": np.int64(cs.n_frames),
-        "n_pts": np.int64(cs.n_pts),
-    }
+    arrays = selected_arrays(result, [*DISPLACEMENT_IDS, *STRAIN_IDS])
+    arrays.update(
+        {
+            "xL": cs.xL,
+            "xR": cs.xR,
+            "quality": cs.quality,
+            "displacement3D": result.reconstruction.displacement,
+            "n_frames": np.int64(cs.n_frames),
+            "n_pts": np.int64(cs.n_pts),
+        }
+    )
     if result.strain is not None:
         for name in STRAIN_FIELDS:
             arrays[f"strain_{name}"] = getattr(result.strain, name)
     return arrays
 
 
-def write_results(result: RunResult, cfg: RunConfig) -> dict[str, Path]:
-    """Write ``<output_dir>/<prefix>.npz`` and ``.mat``; return the two paths."""
-    import scipy.io
+def write_results(
+    result: RunResult, cfg: RunConfig, formats: Sequence[str] = ("npz", "mat")
+) -> dict[str, Path]:
+    """Write the run outputs under ``cfg.output_dir``; return format -> path.
+
+    ``npz`` / ``mat`` carry the unified SUPERSET archive (see :func:`_arrays`)
+    at the fixed ``<prefix>.npz`` / ``<prefix>.mat`` paths that the parity
+    tooling reads. ``csv`` / ``ply`` / ``vtu`` route through the export package
+    into ``<prefix>_{fmt}_{timestamp}`` folders — a fresh timestamp per call,
+    so repeated runs never overwrite them. A ``<prefix>_parameters_{ts}.json``
+    recording the full RunConfig is ALWAYS written (key ``"params"``).
+    """
+    from dataclasses import asdict
+
+    from al_dic_3d.export import (
+        DISPLACEMENT_IDS,
+        STRAIN_IDS,
+        export_csv_frames,
+        export_params,
+        export_ply_frames,
+        export_vtu_series,
+        make_timestamp,
+    )
+
+    unknown = sorted(set(formats) - set(RESULT_FORMATS))
+    if unknown:
+        raise ValueError(f"unknown output format(s): {', '.join(unknown)}")
 
     cfg.output_dir.mkdir(parents=True, exist_ok=True)
-    arrays = _arrays(result)
-    npz_path = cfg.output_dir / f"{cfg.output_prefix}.npz"
-    mat_path = cfg.output_dir / f"{cfg.output_prefix}.mat"
-    np.savez_compressed(npz_path, **arrays)
-    scipy.io.savemat(str(mat_path), arrays, do_compression=True)
-    return {"npz": npz_path, "mat": mat_path}
+    prefix = cfg.output_prefix
+    ts = make_timestamp()
+    fields = list(DISPLACEMENT_IDS) + (list(STRAIN_IDS) if result.strain is not None else [])
+    paths: dict[str, Path] = {
+        "params": export_params(cfg.output_dir, prefix, ts, result, extra=asdict(cfg))
+    }
+
+    if "npz" in formats or "mat" in formats:
+        arrays = _arrays(result)
+        if "npz" in formats:
+            paths["npz"] = cfg.output_dir / f"{prefix}.npz"
+            np.savez_compressed(paths["npz"], **arrays)
+        if "mat" in formats:
+            import scipy.io
+
+            paths["mat"] = cfg.output_dir / f"{prefix}.mat"
+            scipy.io.savemat(str(paths["mat"]), arrays, do_compression=True)
+    if "csv" in formats:
+        csv_dir = cfg.output_dir / f"{prefix}_csv_{ts}"
+        export_csv_frames(result, fields, csv_dir, prefix)
+        paths["csv"] = csv_dir
+    if "ply" in formats:
+        export_ply_frames(cfg.output_dir, prefix, ts, result, fields)
+        paths["ply"] = cfg.output_dir / f"{prefix}_ply_{ts}"
+    if "vtu" in formats:
+        export_vtu_series(cfg.output_dir, prefix, ts, result, fields)
+        paths["vtu"] = cfg.output_dir / f"{prefix}_vtu_{ts}"
+    return paths

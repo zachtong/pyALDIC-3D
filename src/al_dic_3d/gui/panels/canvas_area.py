@@ -549,6 +549,7 @@ class CanvasArea3D(QWidget):
             vmin=vmin,
             vmax=vmax,
             rig=self._load_rig(),
+            ref_coords=result.ref_coords,
         )
 
     def _field_values(self, result, k: int) -> np.ndarray | None:

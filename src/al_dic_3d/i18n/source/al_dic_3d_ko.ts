@@ -453,7 +453,7 @@
     <name>ConfigOverlay3D</name>
     <message>
         <source>Strategy</source>
-        <translation type="vanished">전략</translation>
+        <translation>전략</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="39"/>
@@ -482,15 +482,15 @@
     </message>
     <message>
         <source>Track Both</source>
-        <translation type="vanished">양쪽 카메라 추적</translation>
+        <translation>양쪽 카메라 추적</translation>
     </message>
     <message>
         <source>Stereo Each Frame</source>
-        <translation type="vanished">프레임별 스테레오 매칭</translation>
+        <translation>프레임별 스테레오 매칭</translation>
     </message>
     <message>
         <source>Reference Direct</source>
-        <translation type="vanished">기준 프레임 직접 매칭</translation>
+        <translation>기준 프레임 직접 매칭</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="74"/>
@@ -506,107 +506,127 @@
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="55"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="89"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="62"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="96"/>
         <source>OUTPUT FOLDER</source>
         <translation>출력 폴더</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="65"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="99"/>
         <source>Select output folder…</source>
         <translation>출력 폴더 선택…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="67"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="101"/>
         <source>Browse…</source>
         <translation>찾아보기…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="70"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="104"/>
         <source>Open Folder</source>
         <translation>폴더 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="76"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="110"/>
         <source>Format</source>
         <translation>형식</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="78"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="112"/>
         <source>NumPy archive (.npz)</source>
         <translation>NumPy 아카이브 (.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="80"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
         <source>MATLAB (.mat)</source>
         <translation>MATLAB (.mat)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="82"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="116"/>
         <source>CSV (one file per frame)</source>
         <translation>CSV(프레임당 파일 1개)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="89"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="117"/>
+        <source>PLY point clouds (per frame)</source>
+        <translation>PLY 점군(프레임별)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="118"/>
+        <source>VTU mesh series (ParaView)</source>
+        <translation>VTU 메시 시퀀스(ParaView)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="121"/>
+        <source>✓ Parameters file (JSON) always exported</source>
+        <translation>✓ 매개변수 파일(JSON)은 항상 내보내집니다</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="128"/>
         <source>Displacement</source>
         <translation>변위</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="95"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="134"/>
         <source>Strain</source>
         <translation>변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="102"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D 점, 재투영 오차, 소스 플래그는 항상 내보내집니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="114"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
         <source>Export Data</source>
         <translation>데이터 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="119"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="158"/>
         <source>Close</source>
         <translation>닫기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="142"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
         <source>Select:</source>
         <translation>선택:</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="145"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
         <source>All</source>
         <translation>모두 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="146"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
         <source>None</source>
         <translation>모두 해제</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="177"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="216"/>
         <source>Choose output folder</source>
         <translation>출력 폴더 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="191"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="230"/>
         <source>Choose an output folder first.</source>
         <translation>먼저 출력 폴더를 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="205"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="257"/>
         <source>{0} CSV frames</source>
         <translation>CSV 프레임 {0}개</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="207"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="267"/>
+        <source>Error: {0}</source>
+        <translation>오류: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="270"/>
         <source>Wrote: {0}</source>
         <translation>기록됨: {0}</translation>
     </message>
@@ -620,7 +640,7 @@
     </message>
     <message>
         <source>STRAIN</source>
-        <translation type="vanished">변형률</translation>
+        <translation>변형률</translation>
     </message>
 </context>
 <context>
@@ -852,7 +872,7 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>Compute surface strain</source>
-        <translation type="vanished">표면 변형률 계산</translation>
+        <translation>표면 변형률 계산</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="409"/>
@@ -866,15 +886,15 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>+ Draw</source>
-        <translation type="vanished">+ 그리기</translation>
+        <translation>+ 그리기</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">지우기</translation>
+        <translation>지우기</translation>
     </message>
     <message>
         <source>x min / x max / y min / y max (px)</source>
-        <translation type="vanished">x 최소 / x 최대 / y 최소 / y 최대 (px)</translation>
+        <translation>x 최소 / x 최대 / y 최소 / y 최대 (px)</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="496"/>
@@ -898,11 +918,11 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>AL-DIC global step (ADMM)</source>
-        <translation type="vanished">AL-DIC 전역 단계(ADMM)</translation>
+        <translation>AL-DIC 전역 단계(ADMM)</translation>
     </message>
     <message>
         <source>ADMM Iterations</source>
-        <translation type="vanished">ADMM 반복 횟수</translation>
+        <translation>ADMM 반복 횟수</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="519"/>
@@ -926,11 +946,11 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     </message>
     <message>
         <source>Paint region…</source>
-        <translation type="vanished">세분화 영역 그리기…</translation>
+        <translation>세분화 영역 그리기…</translation>
     </message>
     <message>
         <source>Clear paint</source>
-        <translation type="vanished">그리기 지우기</translation>
+        <translation>그리기 지우기</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="567"/>
@@ -1602,20 +1622,20 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
     <message>
         <location filename="../../gui/strain_window.py" line="411"/>
         <location filename="../../gui/strain_window.py" line="457"/>
-        <location filename="../../gui/strain_window.py" line="524"/>
+        <location filename="../../gui/strain_window.py" line="525"/>
         <source>Strain compute failed: {0}</source>
         <translation>변형률 계산 실패: {0}</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="423"/>
-        <location filename="../../gui/strain_window.py" line="488"/>
+        <location filename="../../gui/strain_window.py" line="489"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>먼저 3D 분석을 실행하세요 — 후처리할 결과가 없습니다.</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="499"/>
-        <location filename="../../gui/strain_window.py" line="526"/>
+        <location filename="../../gui/strain_window.py" line="500"/>
+        <location filename="../../gui/strain_window.py" line="527"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>이미지에서 원점, +X, +Y 순서로 클릭하세요</translation>
     </message>
@@ -1640,28 +1660,28 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="517"/>
-        <location filename="../../gui/strain_window.py" line="534"/>
+        <location filename="../../gui/strain_window.py" line="518"/>
+        <location filename="../../gui/strain_window.py" line="535"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 점 선택됨</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="536"/>
+        <location filename="../../gui/strain_window.py" line="537"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="548"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
@@ -1669,12 +1689,12 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="78"/>
+        <location filename="../../gui/widgets/view3d.py" line="113"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="102"/>
+        <location filename="../../gui/widgets/view3d.py" line="137"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D 보기를 사용할 수 없습니다: {0}</translation>
     </message>

@@ -49,3 +49,16 @@ def test_parser_exposes_version_action() -> None:
     with pytest.raises(SystemExit) as exc:
         parser.parse_args(["--version"])
     assert exc.value.code == 0
+
+
+def test_run_rejects_unknown_formats(tmp_path) -> None:
+    # Validation happens BEFORE the pipeline: a bogus config path never loads.
+    rc = main(["run", str(tmp_path / "missing.toml"), "--formats", "npz,bogus"])
+    assert rc == 2
+
+
+def test_run_formats_default_and_parsing() -> None:
+    args = build_parser().parse_args(["run", "config.toml"])
+    assert args.formats == "npz,mat"
+    args = build_parser().parse_args(["run", "config.toml", "--formats", "npz,csv,ply,vtu"])
+    assert args.formats == "npz,csv,ply,vtu"

@@ -60,14 +60,27 @@ def test_export_dialog_offscreen(result, tmp_path):
     from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
 
     create_app([])
-    dialog = ExportDialog(result)
+    dialog = ExportDialog(result, extra_params={"winsize": 32})
     # default selection = all displacement + all strain (strain available)
     fields = dialog.selected_fields()
     assert "U" in fields and "von_mises" in fields
+    assert not dialog._ply_cb.isChecked() and not dialog._vtu_cb.isChecked()  # default off
     dialog._folder_edit.setText(str(tmp_path))
     dialog._csv_cb.setChecked(True)
+    dialog._ply_cb.setChecked(True)
+    dialog._vtu_cb.setChecked(True)
     dialog._on_export()
-    assert (tmp_path / "results.npz").exists()
-    assert (tmp_path / "results.mat").exists()
-    assert (tmp_path / "results_frame000.csv").exists()
+    # Timestamped names (fresh per export, never overwriting) + params always.
+    assert len(list(tmp_path.glob("*.npz"))) == 1
+    assert len(list(tmp_path.glob("*.mat"))) == 1
+    assert len(list(tmp_path.glob("*_frame000.csv"))) == 1
+    params = list(tmp_path.glob("*_parameters_*.json"))
+    assert len(params) == 1
+    assert '"winsize": 32' in params[0].read_text(encoding="utf-8")
+    ply_dir = next(tmp_path.glob("*_ply_*"))
+    n_frames = result.reconstruction.n_frames
+    assert len(list(ply_dir.glob("*.ply"))) == n_frames
+    vtu_dir = next(tmp_path.glob("*_vtu_*"))
+    assert len(list(vtu_dir.glob("*.vtu"))) == n_frames
+    assert len(list(vtu_dir.glob("*.pvd"))) == 1
     assert "Wrote" in dialog._status.text()

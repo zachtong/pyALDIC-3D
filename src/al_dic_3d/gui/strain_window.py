@@ -475,9 +475,10 @@ class StrainWindow3D(QMainWindow):
         result = self.controller.state.result
         if result is None:
             return
-        from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
+        from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
 
-        ExportDialog(result, parent=self).exec()
+        extra = draft_export_params(self.controller.state.draft)
+        ExportDialog(result, extra_params=extra, parent=self).exec()
 
     # ------------------------------------------------------------------
     # 3-point specimen pick flow
