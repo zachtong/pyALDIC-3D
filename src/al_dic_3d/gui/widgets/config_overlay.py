@@ -1,9 +1,9 @@
 """``ConfigOverlay3D`` — top-left canvas card summarising the run configuration.
 
 The 3D analogue of the 2D ``CanvasConfigOverlay``: a small semi-transparent panel
-pinned to the canvas corner showing the decisions that shape a run — STRATEGY,
-MODE, SUBSET — updating live as the sidebar changes. Visible once both sequences
-are loaded.
+pinned to the canvas corner showing the decisions that shape a run — MODE,
+SOLVER, SUBSET — updating live as the sidebar changes. Visible once both
+sequences are loaded.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class ConfigOverlay3D(QFrame):
-    """Labelled STRATEGY / MODE / SUBSET rows pinned to the canvas top-left."""
+    """Labelled MODE / SOLVER / SUBSET rows pinned to the canvas top-left."""
 
     MARGIN = 12
 
@@ -36,8 +36,8 @@ class ConfigOverlay3D(QFrame):
         layout.setContentsMargins(10, 8, 10, 8)
         layout.setSpacing(3)
 
-        self._strategy_lbl = self._make_row(layout, self.tr("Strategy"))
         self._mode_lbl = self._make_row(layout, self.tr("Mode"))
+        self._solver_lbl = self._make_row(layout, self.tr("Solver"))
         self._subset_lbl = self._make_row(layout, self.tr("Subset"))
         self.adjustSize()
         self.refresh()
@@ -69,15 +69,14 @@ class ConfigOverlay3D(QFrame):
         if len(draft.left) < 2:
             self.setVisible(False)
             return
-        strategy_labels = {
-            "track_both": self.tr("Track Both"),
-            "stereo_each_frame": self.tr("Stereo Each Frame"),
-            "ref_direct": self.tr("Reference Direct"),
-        }
-        self._strategy_lbl.setText(strategy_labels.get(draft.strategy, draft.strategy))
         mode = draft.reference_mode
         self._mode_lbl.setText(
             self.tr("Accumulative") if mode == "accumulative" else self.tr("Incremental")
+        )
+        self._solver_lbl.setText(
+            self.tr("ADMM ({0} iter)").format(draft.admm_max_iter)
+            if draft.use_global_step
+            else self.tr("Local DIC")
         )
         self._subset_lbl.setText(f"{draft.winsize} / {draft.winstepsize} px")
         self.adjustSize()

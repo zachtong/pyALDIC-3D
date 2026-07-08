@@ -409,12 +409,12 @@
         <translation>測定点を表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="248"/>
+        <location filename="../../gui/panels/canvas_area.py" line="253"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="254"/>
+        <location filename="../../gui/panels/canvas_area.py" line="259"/>
         <source>Selected field is not available.</source>
         <translation>選択した項目は利用できません。</translation>
     </message>
@@ -422,14 +422,18 @@
 <context>
     <name>ConfigOverlay3D</name>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="39"/>
         <source>Strategy</source>
         <translation>戦略</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="40"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="39"/>
         <source>Mode</source>
         <translation>モード</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="40"/>
+        <source>Solver</source>
+        <translation>ソルバー</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="41"/>
@@ -437,27 +441,34 @@
         <translation>サブセット</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="73"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="77"/>
+        <source>ADMM ({0} iter)</source>
+        <translation>ADMM ({0} 反復)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="79"/>
+        <source>Local DIC</source>
+        <translation>Local DIC</translation>
+    </message>
+    <message>
         <source>Track Both</source>
         <translation>両カメラ追跡</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
         <source>Stereo Each Frame</source>
         <translation>毎フレームステレオマッチング</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
         <source>Reference Direct</source>
         <translation>参照フレーム直接マッチング</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
         <source>Accumulative</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
         <source>Incremental</source>
         <translation>逐次式</translation>
     </message>
@@ -660,7 +671,7 @@ folder or click</source>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="213"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="647"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="683"/>
         <source>No images loaded</source>
         <translation>画像が読み込まれていません</translation>
     </message>
@@ -685,184 +696,229 @@ folder or click</source>
         <translation>パラメータ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="276"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="255"/>
+        <source>ADVANCED</source>
+        <translation>詳細設定</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="280"/>
         <source>Calibrate from images…</source>
         <translation>画像からキャリブレーション…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="283"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="287"/>
         <source>Format</source>
         <translation>形式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="294"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="298"/>
         <source>Import calibration…</source>
         <translation>キャリブレーションを読み込む…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="298"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="302"/>
         <source>Manual parameters…</source>
         <translation>パラメータを手動入力…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="302"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="306"/>
         <source>No calibration loaded</source>
         <translation>キャリブレーションが未読み込みです</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="340"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="344"/>
         <source>Choose calibration file</source>
         <translation>キャリブレーションファイルを選択</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="342"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="346"/>
         <source>Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</source>
         <translation>キャリブレーションファイル (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="356"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="360"/>
         <source>Error: {0}</source>
         <translation>エラー：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="364"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="368"/>
         <source>{0}
 fx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm</source>
         <translation>{0}
 fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="380"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="392"/>
+        <source>Local DIC</source>
+        <translation>Local DIC</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="395"/>
+        <source>Local DIC: Independent subset matching (IC-GN). Fast,
+preserves sharp local features. Best for small
+deformations or high-quality images.
+
+AL-DIC: Augmented Lagrangian with global FEM
+regularization. Enforces displacement compatibility
+between subsets. Best for large deformations, noisy
+images, or when strain accuracy matters.</source>
+        <translation>Local DIC: 独立サブセットマッチング(IC-GN)。高速で
+局所特徴を保持します。小変形や高品質画像に最適です。
+
+AL-DIC: 全体 FEM 正則化付き拡張ラグランジュ。
+サブセット間の変位適合性を強制します。
+大変形・ノイズ画像・ひずみ精度重視の場合に最適です。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="404"/>
+        <source>Solver</source>
+        <translation>ソルバー</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="592"/>
         <source>Track Both</source>
         <translation>両カメラ追跡</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="381"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="593"/>
         <source>Stereo Each Frame</source>
         <translation>毎フレームステレオマッチング</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="382"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="594"/>
         <source>Reference Direct</source>
         <translation>参照フレーム直接マッチング</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="383"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="595"/>
         <source>Strategy</source>
         <translation>戦略</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="386"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="384"/>
         <source>Accumulative</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="387"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="385"/>
         <source>Incremental</source>
         <translation>逐次式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="388"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="386"/>
         <source>Tracking Mode</source>
         <translation>追跡モード</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="390"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="406"/>
         <source>Compute surface strain</source>
         <translation>表面ひずみを計算</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="394"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="410"/>
         <source>Quality gates (ZNSSD / outliers)</source>
         <translation>品質ゲート（ZNSSD / 外れ値）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="432"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="450"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>左カメラの第 1 フレームに描画します——以降のフレームと右カメラはそこから導かれます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="464"/>
         <source>+ Draw</source>
         <translation>+ 描画</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="448"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="466"/>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="481"/>
         <source>x min / x max / y min / y max (px)</source>
         <translation>x 最小 / x 最大 / y 最小 / y 最大（ピクセル）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="507"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="525"/>
         <source>Subset Size</source>
         <translation>サブセットサイズ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="512"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>Subset Step</source>
         <translation>サブセットステップ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="518"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="536"/>
         <source>Stereo Search</source>
         <translation>ステレオ探索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="527"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="545"/>
         <source>Temporal Search</source>
         <translation>時系列探索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>AL-DIC global step (ADMM)</source>
         <translation>AL-DIC グローバルステップ（ADMM）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="537"/>
         <source>ADMM Iterations</source>
         <translation>ADMM 反復回数</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="548"/>
         <source>Mesh refinement</source>
         <translation>メッシュ細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="548"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="555"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>マスク境界（穴）で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="550"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="557"/>
         <source>Refine at ROI edges</source>
         <translation>ROI の縁で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="556"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="563"/>
         <source>Refinement Level</source>
         <translation>細分化レベル</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="560"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="567"/>
         <source>Paint region…</source>
         <translation>細分化領域を描画…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="562"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="569"/>
         <source>Clear paint</source>
         <translation>描画をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="652"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="602"/>
+        <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
+        <translation>1 = 単一パス（最速）、3 = デフォルト、5 以上は効果逓減</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="604"/>
+        <source>AL-DIC Iterations</source>
+        <translation>AL-DIC 反復回数</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="606"/>
+        <source>Only affects AL-DIC solver. Ignored by Local DIC.</source>
+        <translation>AL-DIC ソルバーにのみ影響します。Local DIC では無視されます。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="688"/>
         <source>Paired: {0} frames per camera</source>
         <translation>ペアリング済み：各カメラ {0} フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="658"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="694"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>不一致：左 {0} フレーム、右 {1} フレーム</translation>
     </message>
@@ -1038,96 +1094,101 @@ fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
     </message>
     <message>
         <location filename="../../gui/panels/right_sidebar.py" line="148"/>
+        <source>Show on deformed frame</source>
+        <translation>変形後フレームに表示</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="155"/>
         <source>Camera</source>
         <translation>カメラ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="152"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="159"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="153"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="160"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="168"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="175"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="171"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="178"/>
         <source>Colormap</source>
         <translation>カラーマップ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="181"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
         <source>Auto range</source>
         <translation>自動レンジ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="195"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="201"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="208"/>
         <source>LOG</source>
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="208"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="215"/>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="253"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="260"/>
         <source>Not ready — {0}</source>
         <translation>未準備 — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="255"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="262"/>
         <source>Ready to run.</source>
         <translation>実行できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="265"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="272"/>
         <source>Not ready: {0}</source>
         <translation>未準備：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="273"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="280"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 解析を開始しています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="287"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="294"/>
         <source>Cancelling…</source>
         <translation>キャンセルしています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="301"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="308"/>
         <source>Analysis complete</source>
         <translation>解析が完了しました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="310"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="317"/>
         <source>Failed: {0}</source>
         <translation>失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="319"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
         <source>Run cancelled</source>
         <translation>実行をキャンセルしました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="333"/>
         <source>ELAPSED  {0}</source>
         <translation>経過  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="332"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="339"/>
         <source>REMAINING  {0}</source>
         <translation>残り  {0}</translation>
     </message>

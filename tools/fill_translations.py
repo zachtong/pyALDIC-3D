@@ -1551,11 +1551,134 @@ _CALIB_MMC: dict[str, dict[str, str]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Batch A (GUI parity with 2D): Solver combo + ADVANCED section + step spin +
+# config-overlay SOLVER row + deformed-frame toggle. Translations copied from
+# the 2D pyALDIC catalogs where the identical source string exists there
+# ("Solver", "Local DIC", "ADVANCED", "AL-DIC Iterations", the solver tooltip,
+# "Show on deformed frame", "ADMM (%1 iter)" -> "{0}" placeholder adapted); the
+# condensed iteration tooltip is adapted from the 2D long-form tooltip.
+# ---------------------------------------------------------------------------
+
+_SOLVER_TOOLTIP = (
+    "Local DIC: Independent subset matching (IC-GN). Fast,\n"
+    "preserves sharp local features. Best for small\n"
+    "deformations or high-quality images.\n\n"
+    "AL-DIC: Augmented Lagrangian with global FEM\n"
+    "regularization. Enforces displacement compatibility\n"
+    "between subsets. Best for large deformations, noisy\n"
+    "images, or when strain accuracy matters."
+)
+_ADMM_TOOLTIP = "1 = single global pass (fastest), 3 = default, 5+ = diminishing returns"
+
+_BATCH_A: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Solver": "求解器",
+        "Local DIC": "Local DIC",
+        "ADVANCED": "高级",
+        "AL-DIC Iterations": "AL-DIC 迭代次数",
+        _SOLVER_TOOLTIP: (
+            "Local DIC：独立子集匹配（IC-GN）。速度快，\n保留局部锐利特征。适合小变形\n或高质量图像。\n\n"
+            "AL-DIC：全局 FEM 正则化的增广拉格朗日方法。\n强制子集间的位移相容性。适合大变形、\n噪声图像，或对应变精度要求高的场景。"
+        ),
+        _ADMM_TOOLTIP: "1 = 单次全局求解（最快），3 = 默认值，5 次以上收益递减",
+        "Only affects AL-DIC solver. Ignored by Local DIC.": "仅对 AL-DIC 求解器生效，Local DIC 会忽略。",
+        "ADMM ({0} iter)": "ADMM（{0} 次迭代）",
+        "Show on deformed frame": "在变形帧上显示",
+    },
+    "zh_TW": {
+        "Solver": "求解器",
+        "Local DIC": "Local DIC",
+        "ADVANCED": "高級",
+        "AL-DIC Iterations": "AL-DIC 迭代次數",
+        _SOLVER_TOOLTIP: (
+            "Local DIC：獨立子集匹配（IC-GN）。速度快，\n保留局部銳利特徵。適合小變形\n或高質量影像。\n\n"
+            "AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。\n強制子集間的位移相容性。適合大變形、\n噪聲影像，或對應變精度要求高的場景。"
+        ),
+        _ADMM_TOOLTIP: "1 = 單次全域求解（最快），3 = 預設值，5 次以上收益遞減",
+        "Only affects AL-DIC solver. Ignored by Local DIC.": "僅對 AL-DIC 求解器生效，Local DIC 會忽略。",
+        "ADMM ({0} iter)": "ADMM（{0} 次迭代）",
+        "Show on deformed frame": "在變形幀上顯示",
+    },
+    "ja": {
+        "Solver": "ソルバー",
+        "Local DIC": "Local DIC",
+        "ADVANCED": "詳細設定",
+        "AL-DIC Iterations": "AL-DIC 反復回数",
+        _SOLVER_TOOLTIP: (
+            "Local DIC: 独立サブセットマッチング(IC-GN)。高速で\n局所特徴を保持します。小変形や高品質画像に最適です。\n\n"
+            "AL-DIC: 全体 FEM 正則化付き拡張ラグランジュ。\nサブセット間の変位適合性を強制します。\n大変形・ノイズ画像・ひずみ精度重視の場合に最適です。"
+        ),
+        _ADMM_TOOLTIP: "1 = 単一パス（最速）、3 = デフォルト、5 以上は効果逓減",
+        "Only affects AL-DIC solver. Ignored by Local DIC.": "AL-DIC ソルバーにのみ影響します。Local DIC では無視されます。",
+        "ADMM ({0} iter)": "ADMM ({0} 反復)",
+        "Show on deformed frame": "変形後フレームに表示",
+    },
+    "ko": {
+        "Solver": "솔버",
+        "Local DIC": "Local DIC",
+        "ADVANCED": "고급 설정",
+        "AL-DIC Iterations": "AL-DIC 반복 횟수",
+        _SOLVER_TOOLTIP: (
+            "Local DIC: 독립 서브셋 매칭(IC-GN). 빠르고\n국소 특징을 보존합니다. 작은 변형이나 고품질\n이미지에 적합합니다.\n\n"
+            "AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.\n서브셋 간 변위 적합성을 강제합니다. 큰 변형,\n노이즈 이미지, 변형률 정확도가 중요한 경우에 적합합니다."
+        ),
+        _ADMM_TOOLTIP: "1 = 단일 패스(가장 빠름), 3 = 기본값, 5 이상은 수익 감소",
+        "Only affects AL-DIC solver. Ignored by Local DIC.": "AL-DIC 솔버에만 적용됩니다. Local DIC에서는 무시됩니다.",
+        "ADMM ({0} iter)": "ADMM({0}회 반복)",
+        "Show on deformed frame": "변형 프레임에 표시",
+    },
+    "de": {
+        "Solver": "Löser",
+        "Local DIC": "Local DIC",
+        "ADVANCED": "ERWEITERT",
+        "AL-DIC Iterations": "AL-DIC-Iterationen",
+        _SOLVER_TOOLTIP: (
+            "Local DIC: Unabhängiges Subset-Matching (IC-GN). Schnell,\nerhält scharfe lokale Merkmale. Optimal für kleine\nVerformungen oder hochwertige Bilder.\n\n"
+            "AL-DIC: Augmented Lagrangian mit globaler FEM-\nRegularisierung. Erzwingt Verschiebungskompatibilität\nzwischen Subsets. Optimal für große Verformungen,\nverrauschte Bilder oder hohe Dehnungsgenauigkeit."
+        ),
+        _ADMM_TOOLTIP: "1 = einmaliger Durchlauf (schnellste), 3 = Standard, 5+ = abnehmender Ertrag",
+        "Only affects AL-DIC solver. Ignored by Local DIC.": "Betrifft nur den AL-DIC-Löser. Wird von Local DIC ignoriert.",
+        "ADMM ({0} iter)": "ADMM ({0} Iter.)",
+        "Show on deformed frame": "Auf deformiertem Frame anzeigen",
+    },
+    "fr": {
+        "Solver": "Solveur",
+        "Local DIC": "Local DIC",
+        "ADVANCED": "AVANCÉ",
+        "AL-DIC Iterations": "Itérations AL-DIC",
+        _SOLVER_TOOLTIP: (
+            "Local DIC : Appariement d'imagettes indépendant (IC-GN). Rapide,\npréserve les détails locaux. Idéal pour les petites\ndéformations ou les images de haute qualité.\n\n"
+            "AL-DIC : Lagrangien augmenté avec régularisation\nFEM globale. Impose la compatibilité des déplacements\nentre imagettes. Idéal pour les grandes déformations, les images\nbruitées ou lorsque la précision de la déformation est importante."
+        ),
+        _ADMM_TOOLTIP: "1 = passe unique (le plus rapide), 3 = par défaut, 5+ = rendement décroissant",
+        "Only affects AL-DIC solver. Ignored by Local DIC.": "N'affecte que le solveur AL-DIC. Ignoré par Local DIC.",
+        "ADMM ({0} iter)": "ADMM ({0} itér.)",
+        "Show on deformed frame": "Afficher sur l'image déformée",
+    },
+    "es": {
+        "Solver": "Solucionador",
+        "Local DIC": "Local DIC",
+        "ADVANCED": "AVANZADO",
+        "AL-DIC Iterations": "Iteraciones AL-DIC",
+        _SOLVER_TOOLTIP: (
+            "Local DIC: Coincidencia de subconjuntos independiente (IC-GN). Rápido,\nconserva detalles locales nítidos. Ideal para pequeñas\ndeformaciones o imágenes de alta calidad.\n\n"
+            "AL-DIC: Lagrangiano aumentado con regularización\nFEM global. Impone compatibilidad de desplazamientos\nentre subconjuntos. Ideal para grandes deformaciones, imágenes\ncon ruido o cuando la precisión de la deformación es importante."
+        ),
+        _ADMM_TOOLTIP: "1 = pasada única (más rápido), 3 = predeterminado, 5+ = rendimientos decrecientes",
+        "Only affects AL-DIC solver. Ignored by Local DIC.": "Solo afecta al solucionador AL-DIC. Local DIC lo ignora.",
+        "ADMM ({0} iter)": "ADMM ({0} iter.)",
+        "Show on deformed frame": "Mostrar en fotograma deformado",
+    },
+}
+
 for _loc, _entries in _CALIB.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_C3.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_MMC.items():
+    TRANSLATIONS[_loc].update(_entries)
+for _loc, _entries in _BATCH_A.items():
     TRANSLATIONS[_loc].update(_entries)
 
 

@@ -143,6 +143,13 @@ class RightSidebar3D(QWidget):
         self._field_selector = FieldSelector3D(signals)
         layout.addWidget(self._field_selector)
 
+        # Deformed vs reference frame toggle (2D idiom): controls WHERE the
+        # field is plotted (geometry), so it lives in FIELD, not VISUALIZATION.
+        self._deformed_cb = QCheckBox(self.tr("Show on deformed frame"))
+        self._deformed_cb.setChecked(True)
+        self._deformed_cb.toggled.connect(self.signals.set_show_deformed)
+        layout.addWidget(self._deformed_cb)
+
         self._camera_row = QHBoxLayout()
         self._camera_row.setSpacing(4)
         cam_lbl = QLabel(self.tr("Camera"))

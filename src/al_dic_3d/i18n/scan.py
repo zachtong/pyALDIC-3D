@@ -40,6 +40,12 @@ _SINK_METHODS = frozenset(
         "_set",  # this package's WorkflowPage helper
     }
 )
+# Brand-specific literals kept identical across ALL locales by design (the 2D
+# app's convention): wrapping them in tr() would invite translators to vary a
+# product acronym. Exact-match only — longer strings mentioning the brand are
+# still prose and must be translated.
+_LOCALE_INVARIANT = frozenset({"AL-DIC"})
+
 # Widget constructors whose first string argument is user-facing.
 _SINK_CTORS = frozenset(
     {
@@ -67,7 +73,7 @@ class Leak:
 
 
 def _is_user_facing(s: str) -> bool:
-    return any(ch.isalpha() for ch in s)
+    return any(ch.isalpha() for ch in s) and s not in _LOCALE_INVARIANT
 
 
 _TR_NAMES = frozenset({"tr", "translate"})

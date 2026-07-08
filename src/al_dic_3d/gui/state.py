@@ -39,6 +39,7 @@ class GuiSignals(QObject):
         # View/display state (not persisted except through view_state).
         self.current_frame: int = 0
         self.current_camera: str = "L"
+        self.show_deformed: bool = True
         self.display_field: str = "U"
         self.colormap: str = "turbo"
         self.color_auto: bool = True
@@ -59,6 +60,12 @@ class GuiSignals(QObject):
         if cam != self.current_camera:
             self.current_camera = cam
             self.camera_changed.emit(cam)
+
+    def set_show_deformed(self, on: bool) -> None:
+        """Plot geometry on the deformed frame (True) or the reference frame."""
+        if on != self.show_deformed:
+            self.show_deformed = on
+            self.display_changed.emit()
 
     def set_display_field(self, field: str) -> None:
         if field != self.display_field:

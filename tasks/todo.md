@@ -1,3 +1,38 @@
+# GUI PARITY PLAN (user 6-point review 2026-07-08; investigated via 4 readers)
+# Batch A - quick wins (~half day): items 1+2+3+6
+- [ ] A1 Solver combo 'AL-DIC'/'Local DIC' in WORKFLOW TYPE (2D: workflow_type_panel.py:70-91,
+      tooltip verbatim); replaces the 'AL-DIC global step (ADMM)' checkbox; maps to
+      draft.use_global_step
+- [ ] A2 NEW 'ADVANCED' CollapsibleSection (collapsed): 'AL-DIC Iterations' spin 1-10 moved here
+      (label hides the ADMM acronym, greyed under Local DIC + hint line, 2D advanced_tuning_widget)
+      + move strategy combo here too (user: not user-facing for now)
+- [ ] A3 Step size: combo 4/8/16/32 -> QSpinBox 2..256 (2D uses combo [4..64]; user wants 2-256)
+- [ ] A4 Config overlay rows -> MODE / SOLVER / SUBSET only (drop STRATEGY);
+      SOLVER = 'Local DIC' | 'ADMM (N iter)' (2D canvas_config_overlay.py:97-103);
+      SUBSET = 'w / s px'
+- [ ] A5 'Show on deformed frame' checkbox (FIELD section, default ON; 2D right_sidebar.py:138-148):
+      ref mode = frame-0 background + points at xL[0]/xR[0], values still frame k
+      (canvas_area.py:226-236 + line 317); auto colorbar from visible nodes
+- [ ] A6 i18n round + screenshots + tests
+# Batch B - ROI toolbox + mesh preview (~1 day): item 4
+- [ ] B1 Port 2D ROIController (Qt-free cv2 mask engine: rect/polygon/circle/circle3, add/cut,
+      brush paint/erase, import/invert/save) as al_dic_3d copy; ROI = left-cam frame-1 BOOLEAN MASK
+      (draft mask array -> build() writes PNG -> runner mask0 + bbox roi)
+- [ ] B2 Port ROIToolbar (+Add/Cut menus, Refine brush w/ radius, Import/Save/Invert/Clear)
+- [ ] B3 Port MeshOverlay (viewport child QWidget, prebuilt QPainterPath, cosmetic pens; edges
+      white 1px, node dots green 3px cap 4000) + preview mesh via runner._build_reference_mesh
+      logic, 300ms debounce on params_changed
+- [ ] B4 'Show Grid' (default ON) + 'Show Subset' (hover yellow dashed square = winsize, snapped
+      to nearest node) toggles on canvas toolbar; ~40 i18n strings
+# Batch C - strain as post-processing (~1 day): item 5
+- [ ] C1 Pipeline always compute_strain=False; remove checkbox from WORKFLOW TYPE
+- [ ] C2 StrainWindow3D (lightweight v1: params + Compute button + QThread progress + dirty hint;
+      display stays in main field selector) - params: strain window size, smoothing, (fit method);
+      writeback dataclasses.replace(result, strain=...) + results_changed
+- [ ] C3 Auto-open on run DONE + sidebar button (2D app.py:908-937); fix EXISTING bug: strain
+      buttons not re-enabled on project open (route set_strain_available off results_changed)
+# open question for user: strain window full 2D clone (own canvas+navigator) vs lightweight v1
+
 # EXECUTION (user 2026-07-07 approved): A) AL global step DEFAULT ON
 # (stereo stays local ICGN = MATLAB anchor); B) quadtree refinement wired
 # 2D-pyALDIC style: default OFF, checkable refine_inner / refine_outer /

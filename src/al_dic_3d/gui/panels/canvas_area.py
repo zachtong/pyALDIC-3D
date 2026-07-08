@@ -232,8 +232,13 @@ class CanvasArea3D(QWidget):
             self._colorbar.setVisible(False)
             return
         k = min(k, len(files) - 1)
+        # Reference-frame plotting (2D idiom): the toggle switches GEOMETRY —
+        # background image and node positions — while the field VALUES stay
+        # those of frame k. Without results there is no geometry to switch.
+        has_result = self.controller.state.result is not None
+        bg = k if self.signals.show_deformed or not has_result else 0
         try:
-            self._canvas.set_image_file(files[k])
+            self._canvas.set_image_file(files[bg])
         except Exception:  # noqa: BLE001 - a bad frame must not crash the canvas
             self._canvas.clear_image()
             return
@@ -314,7 +319,10 @@ class CanvasArea3D(QWidget):
             self._colorbar.setVisible(False)
             return
         cam = self.signals.current_camera
-        pts = cs.xL[k] if cam == "L" else cs.xR[k]
+        # Geometry follows the toggle (frame-k vs frame-1 positions); the
+        # field values below always belong to the navigated frame k.
+        pos_k = k if self.signals.show_deformed else 0
+        pts = cs.xL[pos_k] if cam == "L" else cs.xR[pos_k]
         vals = self._field_values(result, k)
         if vals is None:
             self._canvas.set_overlay_pixmap(None)

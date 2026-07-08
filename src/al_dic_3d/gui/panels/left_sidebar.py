@@ -141,7 +141,7 @@ class _CameraDropZone(QWidget):
 
 
 class LeftSidebar3D(QWidget):
-    """Fixed-width sidebar: IMAGES (L/R) + CALIBRATION + WORKFLOW + ROI + PARAMETERS."""
+    """Fixed-width sidebar: IMAGES (L/R) + CALIBRATION + WORKFLOW + ROI + PARAMETERS + ADVANCED."""
 
     def __init__(
         self,
@@ -251,6 +251,10 @@ class LeftSidebar3D(QWidget):
         self._params_section = CollapsibleSection(self.tr("PARAMETERS"), expanded=True)
         self._params_section.add_widget(self._build_params())
         sections.addWidget(self._params_section)
+
+        self._advanced_section = CollapsibleSection(self.tr("ADVANCED"), expanded=False)
+        self._advanced_section.add_widget(self._build_advanced())
+        sections.addWidget(self._advanced_section)
 
         sections.addStretch()
         scroll.setWidget(container)
@@ -376,16 +380,28 @@ class LeftSidebar3D(QWidget):
         layout.setContentsMargins(12, 4, 12, 8)
         layout.setSpacing(6)
 
-        self._strategy_combo = QComboBox()
-        self._strategy_combo.addItem(self.tr("Track Both"), "track_both")
-        self._strategy_combo.addItem(self.tr("Stereo Each Frame"), "stereo_each_frame")
-        self._strategy_combo.addItem(self.tr("Reference Direct"), "ref_direct")
-        layout.addLayout(self._combo_row(self.tr("Strategy"), self._strategy_combo))
-
         self._mode_combo = QComboBox()
         self._mode_combo.addItem(self.tr("Accumulative"), "accumulative")
         self._mode_combo.addItem(self.tr("Incremental"), "incremental")
         layout.addLayout(self._combo_row(self.tr("Tracking Mode"), self._mode_combo))
+
+        # "AL-DIC" is a brand-specific acronym kept literal across locales;
+        # "Local DIC" is translatable (same convention as the 2D app).
+        self._solver_combo = QComboBox()
+        self._solver_combo.addItem("AL-DIC", "aldic")
+        self._solver_combo.addItem(self.tr("Local DIC"), "local")
+        self._solver_combo.setToolTip(
+            self.tr(
+                "Local DIC: Independent subset matching (IC-GN). Fast,\n"
+                "preserves sharp local features. Best for small\n"
+                "deformations or high-quality images.\n\n"
+                "AL-DIC: Augmented Lagrangian with global FEM\n"
+                "regularization. Enforces displacement compatibility\n"
+                "between subsets. Best for large deformations, noisy\n"
+                "images, or when strain accuracy matters."
+            )
+        )
+        layout.addLayout(self._combo_row(self.tr("Solver"), self._solver_combo))
 
         self._strain_cb = QCheckBox(self.tr("Compute surface strain"))
         self._strain_cb.setChecked(True)
@@ -394,8 +410,8 @@ class LeftSidebar3D(QWidget):
         self._quality_cb = QCheckBox(self.tr("Quality gates (ZNSSD / outliers)"))
         layout.addWidget(self._quality_cb)
 
-        self._strategy_combo.currentIndexChanged.connect(self._apply_workflow)
         self._mode_combo.currentIndexChanged.connect(self._apply_workflow)
+        self._solver_combo.currentIndexChanged.connect(self._apply_workflow)
         self._strain_cb.toggled.connect(self._apply_workflow)
         self._quality_cb.toggled.connect(self._apply_workflow)
         return host
@@ -414,8 +430,10 @@ class LeftSidebar3D(QWidget):
         draft = self.controller.state.draft
         draft.strategy = self._strategy_combo.currentData()
         draft.reference_mode = self._mode_combo.currentData()
+        draft.use_global_step = self._solver_combo.currentData() == "aldic"
         draft.compute_strain = self._strain_cb.isChecked()
         draft.quality_gate = self._quality_cb.isChecked()
+        self._admm_spin.setEnabled(draft.use_global_step)
         self.controller.state.mark_dirty()
         self.signals.params_changed.emit()
 
@@ -506,10 +524,10 @@ class LeftSidebar3D(QWidget):
         self._subset_spin.setValue(32)
         layout.addLayout(self._param_row(self.tr("Subset Size"), self._subset_spin))
 
-        self._step_combo = QComboBox()
-        self._step_combo.addItems(["4", "8", "16", "32"])
-        self._step_combo.setCurrentText("16")
-        layout.addLayout(self._param_row(self.tr("Subset Step"), self._step_combo))
+        self._step_spin = QSpinBox()
+        self._step_spin.setRange(2, 256)
+        self._step_spin.setValue(16)
+        layout.addLayout(self._param_row(self.tr("Subset Step"), self._step_spin))
 
         self._search_spin = QSpinBox()
         self._search_spin.setRange(4, 400)
@@ -525,17 +543,6 @@ class LeftSidebar3D(QWidget):
         self._temporal_spin.setValue(20)
         self._temporal_spin.setSuffix(" px")
         layout.addLayout(self._param_row(self.tr("Temporal Search"), self._temporal_spin))
-
-        # ---- AL-DIC solver (audit 2026-07-07: global step ON is the default) ----
-        self._global_cb = QCheckBox(self.tr("AL-DIC global step (ADMM)"))
-        self._global_cb.setChecked(True)
-        layout.addWidget(self._global_cb)
-
-        self._admm_spin = QSpinBox()
-        self._admm_spin.setRange(1, 10)
-        self._admm_spin.setValue(3)
-        layout.addLayout(self._param_row(self.tr("ADMM Iterations"), self._admm_spin))
-        self._global_cb.toggled.connect(self._admm_spin.setEnabled)
 
         # ---- quadtree mesh refinement (2D-app levers; default = uniform grid) ----
         refine_lbl = QLabel(self.tr("Mesh refinement"))
@@ -565,14 +572,44 @@ class LeftSidebar3D(QWidget):
         layout.addLayout(brush_row)
 
         self._subset_spin.valueChanged.connect(self._apply_params)
-        self._step_combo.currentTextChanged.connect(self._apply_params)
+        self._step_spin.valueChanged.connect(self._apply_params)
         self._search_spin.valueChanged.connect(self._apply_params)
         self._temporal_spin.valueChanged.connect(self._apply_params)
-        self._global_cb.toggled.connect(self._apply_params)
-        self._admm_spin.valueChanged.connect(self._apply_params)
         self._refine_inner_cb.toggled.connect(self._apply_params)
         self._refine_outer_cb.toggled.connect(self._apply_params)
         self._refine_level_spin.valueChanged.connect(self._apply_params)
+        return host
+
+    # ---- ADVANCED -------------------------------------------------------------------
+
+    def _build_advanced(self) -> QWidget:
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        layout.setContentsMargins(12, 4, 12, 8)
+        layout.setSpacing(6)
+
+        self._strategy_combo = QComboBox()
+        self._strategy_combo.addItem(self.tr("Track Both"), "track_both")
+        self._strategy_combo.addItem(self.tr("Stereo Each Frame"), "stereo_each_frame")
+        self._strategy_combo.addItem(self.tr("Reference Direct"), "ref_direct")
+        layout.addLayout(self._combo_row(self.tr("Strategy"), self._strategy_combo))
+
+        # AL-DIC global refinement cycles (ADMM under the hood; acronym hidden).
+        self._admm_spin = QSpinBox()
+        self._admm_spin.setRange(1, 10)
+        self._admm_spin.setValue(3)
+        self._admm_spin.setToolTip(
+            self.tr("1 = single global pass (fastest), 3 = default, 5+ = diminishing returns")
+        )
+        layout.addLayout(self._param_row(self.tr("AL-DIC Iterations"), self._admm_spin))
+
+        admm_hint = QLabel(self.tr("Only affects AL-DIC solver. Ignored by Local DIC."))
+        admm_hint.setWordWrap(True)
+        admm_hint.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
+        layout.addWidget(admm_hint)
+
+        self._strategy_combo.currentIndexChanged.connect(self._apply_workflow)
+        self._admm_spin.valueChanged.connect(self._apply_params)
         return host
 
     @property
@@ -597,10 +634,9 @@ class LeftSidebar3D(QWidget):
     def _apply_params(self, *_a) -> None:
         draft = self.controller.state.draft
         draft.winsize = int(self._subset_spin.value())
-        draft.winstepsize = int(self._step_combo.currentText())
+        draft.winstepsize = int(self._step_spin.value())
         draft.stereo_search = int(self._search_spin.value())
         draft.fft_search = int(self._temporal_spin.value())
-        draft.use_global_step = self._global_cb.isChecked()
         draft.admm_max_iter = int(self._admm_spin.value())
         draft.refine_inner = self._refine_inner_cb.isChecked()
         draft.refine_outer = self._refine_outer_cb.isChecked()
@@ -673,13 +709,13 @@ class LeftSidebar3D(QWidget):
         widgets = (
             self._strategy_combo,
             self._mode_combo,
+            self._solver_combo,
             self._strain_cb,
             self._quality_cb,
             self._subset_spin,
-            self._step_combo,
+            self._step_spin,
             self._search_spin,
             self._temporal_spin,
-            self._global_cb,
             self._admm_spin,
             self._refine_inner_cb,
             self._refine_outer_cb,
@@ -690,13 +726,13 @@ class LeftSidebar3D(QWidget):
             w.blockSignals(True)
         self._strategy_combo.setCurrentIndex(max(0, self._strategy_combo.findData(draft.strategy)))
         self._mode_combo.setCurrentIndex(max(0, self._mode_combo.findData(draft.reference_mode)))
+        self._solver_combo.setCurrentIndex(0 if draft.use_global_step else 1)
         self._strain_cb.setChecked(draft.compute_strain)
         self._quality_cb.setChecked(draft.quality_gate)
         self._subset_spin.setValue(draft.winsize)
-        self._step_combo.setCurrentText(str(draft.winstepsize))
+        self._step_spin.setValue(draft.winstepsize)
         self._search_spin.setValue(draft.stereo_search)
         self._temporal_spin.setValue(draft.fft_search)
-        self._global_cb.setChecked(draft.use_global_step)
         self._admm_spin.setValue(draft.admm_max_iter)
         self._admm_spin.setEnabled(draft.use_global_step)
         self._refine_inner_cb.setChecked(draft.refine_inner)
