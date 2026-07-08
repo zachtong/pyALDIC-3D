@@ -64,6 +64,21 @@
 
 ## Changelog
 
+- 2026-07-07 v1.4.7 — **"inc 组合 bug" 结案（诊断反转）：时序诚实性门控 + fft_search 旋钮**
+  （`49b3827`，214 tests；三读者审计 + 模板匹配仲裁）。引擎的增量组合本来就正确（变形位置插值，
+  新增大增量解析测试验证 <0.15px）；真正的三个静默失败：①**acc 模式 sibling warm-start 冻结**
+  ——共享参考帧的帧从上一帧解播种且不重跑 FFT，失相关时 ICGN 零更新"收敛"，帧 k 逐字返回帧 k-1
+  的场（S3 acc 0→2 与 0→1 差 <0.002px；MATLAB 基线的 −13px 是同款失败）；②**inc 模式 FFT
+  搜索不足**——每次参考切换重跑 FFT 但自动扩张只在峰值贴边时触发，失相关跳变给界内噪声峰（默认
+  20px）；③**引擎洗白**——坏点 IDW 回填、FEM 场处处有限、组合 nearest 填充，isfinite 校验结构
+  性全真。修复（全在 3D 层，引擎问题记入 DEPENDS_ON_2D.md 备案表）：`fft_search` 贯通
+  make_dicpara→RunConfig→策略→draft→GUI"时序搜索"（i18n 223×7）；`temporal_track` 诚实性门控
+  （帧0→k ZNSSD 在 X+U^k 处复核累积追踪，失败置 NaN）；inc 模式 U_accum=None 硬报错；harness
+  新增 **P2 门禁**（inc 帧 0→2 vs 模板匹配真值**逐点**对比，0.38/0.43px 中位 PASS；注意支撑差
+  异陷阱——非均匀运动上禁用场中位 vs 锚点中位比较）。P1 双模式 PASS；acc 帧 2 诚实全无效。
+  **连带发现**：D-shape 34 帧序列并非静止（模板真值 0→33 = +365,−134 px）——v1.4.6 的 acc 场
+  在 ~帧 5 后是冻结伪影；已用 inc 模式重跑（160s）并逐点验证（帧 5/17 误差 0.35–0.52px，帧 33
+  有效数 2150→416 为诚实衰减），报告已重生成。
 - 2026-07-07 v1.4.6 — **D-shape 真实数据端到端验证：内置标定 + 34 帧 3D-DIC 双门禁 PASS**
   （`93c8d2d`，209 tests；报告 `tools/dshape_report.py` → reports/dshape_validation.pdf）。
   数据 = Challenge 1.0 S3 实验集（66 对真实编码圆点标定照 14×10@7mm + 34 帧 D 试件序列 + 3 家
