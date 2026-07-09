@@ -64,6 +64,20 @@
 
 ## Changelog
 
+- 2026-07-08 v1.7.0 — **GUI 二轮八点评审整改三批全落地（F1/F2/F3）**（`314da73`+`eaa17b9`+`8a48f82`，
+  331 tests，i18n 472×7 100%）。**F1**：subset 奇数显示/偶数内部（2D 约定）+ 连带修复 step=2/4 引擎
+  崩溃（镜像 2D winsize_min=min(8,step) 钳制）；step 改 2 的幂下拉 [2..128]；搜索上限调查（2D GUI
+  什么都没做、引擎钳制警告死在 stderr）→ 3D 引擎警告实时转发 GUI 日志 + 双搜索框 tooltip 显示当前
+  有效上限；删 Show Points 与 ROI 外接矩形；稠密支撑三角形加 2.5×步长边长上限（无节点孔洞不再被
+  跨越）。**F2**：INITIAL GUESS 区（种子点默认/FFT/上一帧）——引擎实况核实：外部网格下唯一杠杆是
+  U0（逐帧 FFT 与周期重置被显式跳过），三模式如实映射并文档化（matching/seed.py）；种子点=左相机
+  单击，96px 邻域 NCC 自动得立体偏移 + 各相机首对均匀 U0，NCC<0.5 告警回退；右相机稠密渲染用左
+  ROI 掩膜经帧1对应关系反演（viz3d/maskwarp.py，孔洞保留）。**F3**：失败可见性审计——10 条静默
+  路径全部盘点修复（matching/diagnostics.py 逐帧诊断 → meta → 运行后日志汇总表 + <70% 帧黄色警告
+  + 全空结果画布红色提示 + worker 异常带类型/traceback + S2/S3 帧1全败改 raise + warning 级别
+  着色修复）；3D 视图根因（掩膜从未传入 _render_3d 且孔内节点被引擎 IDW 回填为有限值 + Delaunay
+  回退无边长上限）→ 统一 viz3d/surface.build_surface_polydata（View3D 与导出共用），带孔 ROI 的
+  3D 形状与 2D 视图一致；3D View 改为与 Show Grid/Show Subset 同排勾选框。
 - 2026-07-08 v1.6.0 — **导出套件三批全落地（E1/E2/E3，Phase-5 核心交付）**（`24a4ede`+`8c3b8fc`+E3，
   298 tests，i18n 100%×7）。**E1 数据**：PLY 逐帧点云（纯 numpy 二进制/ASCII）、VTU+PVD 网格时间
   序列（ParaView；quad 连通性从 view3d 抽出共享，NaN 单元剔除）、参数 JSON 恒写、时间戳防覆盖、
