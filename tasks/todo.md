@@ -1,3 +1,44 @@
+# ROUND-2 USER AMENDMENTS (2026-07-08, all approved, "do everything, time no object"):
+# [1] Starting Points = DEFAULT init strategy; ONE click on LEFT camera suffices.
+#     Explain 'disparity prior' to user: auto template-match of the seed/anchors
+#     L->R to find the big stereo offset (S2: true disparity ~290px vs +-80 search
+#     around 0 -> false locks, 16% scale error). Seed point can drive BOTH temporal
+#     seeding and the stereo offset.
+# [2] CORRECTED: step size = POWERS OF 2 only (combo 2,4,...,128/256?); subset size
+#     = ODD ONLY with snap-to-nearest-odd (2D convention: display odd 11-201,
+#     internal even = odd-1). Follow 2D exactly.
+# [3] Do NOT invent the cap UI; investigate how the 2D GUI handles search-range
+#     limits (2D spin is 4-512 step 2) and mirror its approach.
+
+# GUI REVIEW ROUND 2 (user 8 points, 2026-07-08) - VERIFIED, PLAN PENDING APPROVAL
+# F1 quick (~half day): [2] subset size spin -> even 2..128 (warn <8 accuracy);
+#   [3] search caps: engine clamps fft_search to max(10, img_min/4 - winsize) SILENTLY
+#   -> dynamic spinbox max on image load + tooltip + visible log when clamped;
+#   [6] remove Show Points (redundant w/ Show Grid node dots);
+#   [8] remove blue ROI bbox rect (keep mask fill only);
+#   [4a] dense-support triangles get edge-length cap (~2.5x step) so node-free ROI
+#   holes stop being spanned (L and R both)
+# F1 DONE 2026-07-08 (not committed): odd subset 5-201 snap-to-odd (draft.winsize
+#   stays even = display-1); step combo 2..128 powers of 2 (+winsize_min auto-clamp
+#   min(8, step), 2D parity); F1.3 = 2D approach mirrored (2D does NOT cap the spin;
+#   engine warning now forwarded to GUI log via RunWorker showwarning capture +
+#   formula tooltips on both search spins); Show Points + node-dot layer +
+#   gui/rendering.py + ROI bbox rect removed; fieldmap edge cap 2.5x mesh_step
+#   (median-NN fallback) + unit test. 299 tests green, i18n 100% (6 new strings x 7),
+#   scan clean, gui_screenshot OK.
+# F2 (~1 day): [1] INITIAL GUESS section port from 2D (Starting Points / FFT every
+#   frame / FFT on ref update / Previous frame) -> map to engine switches
+#   (init_fft_search_method, fft_auto_expand, seed pass-through; VERIFY engine
+#   exposure first); include stereo disparity-prior auto-estimation option (S2
+#   lesson); assess warm-start-freeze vs FFT-every-frame accuracy/cost tradeoffs;
+#   [4b] right camera support = left ROI mask warped through frame-1 disparity
+# F3 (~1 day): [7] failure-reporting audit end-to-end: per-frame diagnostics
+#   (valid%, gated%, reasons) into RunResult.meta -> post-run log summary table +
+#   warnings for low-validity frames; worker exceptions with full context to log;
+#   honesty-gate kills must be VISIBLE; [5] 3D view root-cause (quad path vs
+#   delaunay fallback with holed ROI; canvas ref_coords pass-through) + rebuild;
+#   3D View toolbar button -> checkbox next to Show Grid/Show Subset
+
 # GUI PARITY PLAN (user 6-point review 2026-07-08; investigated via 4 readers)
 # Batch A - quick wins (~half day): items 1+2+3+6
 - [ ] A1 Solver combo 'AL-DIC'/'Local DIC' in WORKFLOW TYPE (2D: workflow_type_panel.py:70-91,

@@ -41,6 +41,10 @@ if TYPE_CHECKING:
 
 _IMAGE_EXTS = {".png", ".tif", ".tiff", ".jpg", ".jpeg", ".bmp"}
 
+# Subset Step options: powers of two only (the 2D app uses a power-of-2 combo;
+# the refinement formula min_size = max(2, step // 2**level) stays integral).
+_STEP_OPTIONS = (2, 4, 8, 16, 32, 64, 128)
+
 
 def _natural_key(name: str) -> list:
     import re
@@ -153,6 +157,7 @@ class LeftSidebar3D(QWidget):
         super().__init__(parent)
         self.controller = controller
         self.signals = signals
+        self._shape_cache: tuple[str, int | None] | None = None  # (path, min(H, W))
         self.setObjectName("leftSidebar")
         self.setFixedWidth(320)
 
@@ -265,6 +270,7 @@ class LeftSidebar3D(QWidget):
         self._left_drop.folder_selected.connect(lambda f: self._load_camera("L", f))
         self._right_drop.folder_selected.connect(lambda f: self._load_camera("R", f))
         self.signals.images_changed.connect(self.refresh_images)
+        self.signals.images_changed.connect(self._update_search_tooltips)
         self.signals.roi_changed.connect(self._sync_roi_label)
 
     # ---- CALIBRATION ---------------------------------------------------------
@@ -489,16 +495,22 @@ class LeftSidebar3D(QWidget):
         layout.setContentsMargins(12, 4, 12, 8)
         layout.setSpacing(6)
 
+        # Subset Size: display ODD (2*half+1 centered window, the 2D-app
+        # convention) while draft.winsize keeps the engine's EVEN internal
+        # value (display - 1). Snap-to-odd lives in _on_subset_display_changed.
         self._subset_spin = QSpinBox()
-        self._subset_spin.setRange(8, 200)
+        self._subset_spin.setRange(5, 201)
         self._subset_spin.setSingleStep(2)
-        self._subset_spin.setValue(32)
+        self._subset_spin.setValue(33)  # draft default winsize=32 -> display 33
+        self._subset_spin.setToolTip(self.tr("IC-GN subset window size in pixels (odd number)"))
         layout.addLayout(self._param_row(self.tr("Subset Size"), self._subset_spin))
 
-        self._step_spin = QSpinBox()
-        self._step_spin.setRange(2, 256)
-        self._step_spin.setValue(16)
-        layout.addLayout(self._param_row(self.tr("Subset Step"), self._step_spin))
+        # Subset Step: powers of two only (combo, 2D idiom).
+        self._step_combo = QComboBox()
+        self._step_combo.addItems([str(v) for v in _STEP_OPTIONS])
+        self._step_combo.setCurrentText("16")
+        self._step_combo.setToolTip(self.tr("Node spacing in pixels (must be power of 2)"))
+        layout.addLayout(self._param_row(self.tr("Subset Step"), self._step_combo))
 
         self._search_spin = QSpinBox()
         self._search_spin.setRange(4, 400)
@@ -514,6 +526,7 @@ class LeftSidebar3D(QWidget):
         self._temporal_spin.setValue(20)
         self._temporal_spin.setSuffix(" px")
         layout.addLayout(self._param_row(self.tr("Temporal Search"), self._temporal_spin))
+        self._update_search_tooltips()
 
         # ---- quadtree mesh refinement (2D-app levers; default = uniform grid) ----
         refine_lbl = QLabel(self.tr("Mesh refinement"))
@@ -536,8 +549,8 @@ class LeftSidebar3D(QWidget):
         # The refinement BRUSH moved into the ROI toolbar's "+ Refine" menu
         # (Paint / Erase / Clear Brush + radius) — 2D toolbox parity.
 
-        self._subset_spin.valueChanged.connect(self._apply_params)
-        self._step_spin.valueChanged.connect(self._apply_params)
+        self._subset_spin.valueChanged.connect(self._on_subset_display_changed)
+        self._step_combo.currentTextChanged.connect(self._apply_params)
         self._search_spin.valueChanged.connect(self._apply_params)
         self._temporal_spin.valueChanged.connect(self._apply_params)
         self._refine_inner_cb.toggled.connect(self._apply_params)
@@ -587,10 +600,22 @@ class LeftSidebar3D(QWidget):
         row.addWidget(widget, stretch=1)
         return row
 
+    def _on_subset_display_changed(self, display_value: int) -> None:
+        """Snap a typed even value to the next odd one (2D convention), then apply."""
+        if display_value % 2 == 0:
+            display_value += 1
+            self._subset_spin.blockSignals(True)
+            self._subset_spin.setValue(display_value)
+            self._subset_spin.blockSignals(False)
+        self._apply_params()
+
     def _apply_params(self, *_a) -> None:
         draft = self.controller.state.draft
-        draft.winsize = int(self._subset_spin.value())
-        draft.winstepsize = int(self._step_spin.value())
+        # Odd display value -> the engine's even internal winsize (display - 1).
+        draft.winsize = int(self._subset_spin.value()) - 1
+        draft.winstepsize = int(self._step_combo.currentText())
+        # Engine invariant: winsize_min <= winstepsize (2D auto-clamps too).
+        draft.winsize_min = min(8, draft.winstepsize)
         draft.stereo_search = int(self._search_spin.value())
         draft.fft_search = int(self._temporal_spin.value())
         draft.admm_max_iter = int(self._admm_spin.value())
@@ -598,7 +623,65 @@ class LeftSidebar3D(QWidget):
         draft.refine_outer = self._refine_outer_cb.isChecked()
         draft.refinement_level = int(self._refine_level_spin.value())
         self.controller.state.mark_dirty()
+        self._update_search_tooltips()  # winsize feeds the search-cap formulas
         self.signals.params_changed.emit()
+
+    # ---- search-range caps (F1.3) ---------------------------------------------------
+
+    def _sequence_min_dim(self) -> int | None:
+        """``min(H, W)`` of the first LEFT image (cached per path); None if unknown."""
+        draft = self.controller.state.draft
+        if not draft.left:
+            self._shape_cache = None
+            return None
+        path = str(draft.left[0])
+        if self._shape_cache is not None and self._shape_cache[0] == path:
+            return self._shape_cache[1]
+        try:
+            import cv2
+
+            img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+            min_dim = None if img is None else int(min(img.shape[:2]))
+        except Exception:  # noqa: BLE001 - a bad frame must not break the sidebar
+            min_dim = None
+        self._shape_cache = (path, min_dim)
+        return min_dim
+
+    def _update_search_tooltips(self) -> None:
+        """Static guidance + the image-derived search caps once images are loaded.
+
+        The engine clamps the temporal FFT search region to
+        ``max(10, min(H, W) // 4 - winsize)`` at run start with only a warning
+        (2D pipeline behavior; the 2D GUI does not cap its spin either), and
+        the stereo NCC window is clamped at the image borders per point. The
+        spins stay uncapped — the tooltip surfaces the numbers so the run-start
+        auto-reduce is no surprise.
+        """
+        stereo_tip = self.tr(
+            "NCC search half-width (pixels) around each node for the\n"
+            "left-to-right stereo match. Set larger than the largest\n"
+            "expected stereo disparity."
+        )
+        temporal_tip = self.tr(
+            "Maximum per-frame displacement the temporal FFT search can\n"
+            "detect (pixels). Set comfortably larger than the expected\n"
+            "inter-frame motion."
+        )
+        min_dim = self._sequence_min_dim()
+        if min_dim is not None:
+            win = int(self.controller.state.draft.winsize)
+            stereo_cap = max(1, (min_dim - win) // 2)
+            temporal_cap = max(10, min_dim // 4 - win)
+            stereo_tip += "\n" + self.tr(
+                "Current images: values above {0} px cannot widen the search\n"
+                "(the window is clamped at the image borders)."
+            ).format(stereo_cap)
+            temporal_tip += "\n" + self.tr(
+                "Current images: the engine caps this at {0} px at run start\n"
+                "(max(10, min(H, W) / 4 - subset))."
+            ).format(temporal_cap)
+        self._search_spin.setToolTip(stereo_tip)
+        self._temporal_spin.setToolTip(temporal_tip)
 
     # ---- IMAGES --------------------------------------------------------------------
 
@@ -668,7 +751,7 @@ class LeftSidebar3D(QWidget):
             self._solver_combo,
             self._quality_cb,
             self._subset_spin,
-            self._step_spin,
+            self._step_combo,
             self._search_spin,
             self._temporal_spin,
             self._admm_spin,
@@ -683,8 +766,14 @@ class LeftSidebar3D(QWidget):
         self._mode_combo.setCurrentIndex(max(0, self._mode_combo.findData(draft.reference_mode)))
         self._solver_combo.setCurrentIndex(0 if draft.use_global_step else 1)
         self._quality_cb.setChecked(draft.quality_gate)
-        self._subset_spin.setValue(draft.winsize)
-        self._step_spin.setValue(draft.winstepsize)
+        draft.winsize = int(draft.winsize) - (int(draft.winsize) % 2)  # engine value is even
+        self._subset_spin.setValue(draft.winsize + 1)  # even internal -> odd display
+        # Snap legacy non-power-of-2 steps to the nearest option so the combo
+        # and the draft cannot diverge silently.
+        step = min(_STEP_OPTIONS, key=lambda v: abs(v - int(draft.winstepsize)))
+        draft.winstepsize = step
+        draft.winsize_min = min(8, step)  # engine invariant: winsize_min <= step
+        self._step_combo.setCurrentText(str(step))
         self._search_spin.setValue(draft.stereo_search)
         self._temporal_spin.setValue(draft.fft_search)
         self._admm_spin.setValue(draft.admm_max_iter)
@@ -698,4 +787,5 @@ class LeftSidebar3D(QWidget):
         if draft.calibration_file is not None:
             self._preview_calibration()
         self.refresh_images()
+        self._update_search_tooltips()
         self._sync_roi_label()

@@ -82,10 +82,29 @@ def visible_values(
     return out
 
 
+# Support triangles with an edge longer than this multiple of the node step are
+# dropped: Delaunay spans node-free ROI holes with long triangles, and without
+# the cap those holes get filled instead of staying transparent. 2.5x leaves
+# regular grids (longest edge = sqrt(2) x step) and moderately distorted
+# disparity-warped clouds untouched.
+_MAX_EDGE_FACTOR = 2.5
+
+
+def _median_nn_spacing(pts: NDArray[np.float64]) -> float:
+    """Median nearest-neighbor distance — the de-facto node step of a cloud."""
+    if pts.shape[0] < 2:
+        return 0.0
+    from scipy.spatial import cKDTree
+
+    dist, _ = cKDTree(pts).query(pts, k=2)
+    return float(np.median(dist[:, 1]))
+
+
 def valid_node_support_mask(
     nodes: NDArray[np.float64],
     values: NDArray[np.float64],
     img_shape: tuple[int, int],
+    mesh_step: float | None = None,
 ) -> NDArray[np.bool_]:
     """Boolean ``(H, W)`` support: Delaunay triangles whose 3 vertices are valid.
 
@@ -93,6 +112,12 @@ def valid_node_support_mask(
     covers the point cloud like the 2D convex-hull behavior, but triangles
     touching an invalid node (NaN value or NaN position) are dropped, so holes
     from invalid nodes stay transparent instead of being interpolated across.
+
+    Triangles whose longest edge exceeds ``2.5 x`` the node step are dropped
+    too: Delaunay spans node-free ROI holes (right camera / maskless runs)
+    with long triangles that would otherwise fill the hole. ``mesh_step`` is
+    the nominal node spacing; when absent it defaults to the median
+    nearest-neighbor spacing of the finite nodes.
     """
     import cv2
 
@@ -108,6 +133,12 @@ def valid_node_support_mask(
     except Exception:  # degenerate (collinear) node sets have no support
         return mask.astype(bool)
     good = ok[tri.simplices].all(axis=1)
+    step = float(mesh_step) if mesh_step else _median_nn_spacing(pts)
+    if step > 0.0:
+        tri_pts = pts[tri.simplices]  # (n_tri, 3, 2)
+        edges = tri_pts - np.roll(tri_pts, 1, axis=1)
+        longest = np.sqrt((edges**2).sum(axis=2)).max(axis=1)
+        good &= longest <= _MAX_EDGE_FACTOR * step
     if np.any(good):
         polys = np.round(pts[tri.simplices[good]]).astype(np.int32)
         cv2.fillPoly(mask, list(polys), 1)
@@ -252,7 +283,15 @@ class FieldmapRenderer:
             # internal holes survive instead of being interpolated across.
             if deformed and ref_uv is not None:
                 eff = self._effective_mask(
-                    frame_idx, field_name, values, img_shape, roi_mask, ref_uv, ref_pts, nodes
+                    frame_idx,
+                    field_name,
+                    values,
+                    img_shape,
+                    roi_mask,
+                    ref_uv,
+                    ref_pts,
+                    nodes,
+                    mesh_step,
                 )
                 if eff is not None:
                     u_grid = interpolator.interpolate(ref_uv[0][finite], xg, yg)
@@ -271,7 +310,15 @@ class FieldmapRenderer:
             mask_to_use = self._warp_cache[interp_key]
         else:
             eff = self._effective_mask(
-                frame_idx, field_name, values, img_shape, roi_mask, ref_uv, ref_pts, nodes
+                frame_idx,
+                field_name,
+                values,
+                img_shape,
+                roi_mask,
+                ref_uv,
+                ref_pts,
+                nodes,
+                mesh_step,
             )
             if eff is not None and xg is not None:
                 mask_to_use = lookup_outside(eff, xg, yg)
@@ -293,12 +340,14 @@ class FieldmapRenderer:
         ref_uv: tuple[NDArray[np.float64], NDArray[np.float64]] | None,
         ref_pts: NDArray[np.float64] | None,
         nodes: NDArray[np.float64],
+        mesh_step: float | None = None,
     ) -> NDArray[np.bool_] | None:
         """The reference-frame support: the drawn ROI mask or the hull fallback.
 
         The fallback is built in REFERENCE coordinates with frame-k validity,
         so invalid-node holes appear in both plot modes (the deformed path
-        warps this same mask). Cached per (frame, field).
+        warps this same mask). ``mesh_step`` feeds the edge-length cap that
+        keeps node-free holes transparent. Cached per (frame, field).
         """
         if roi_mask is not None:
             return roi_mask
@@ -311,6 +360,6 @@ class FieldmapRenderer:
                     base = nodes - np.column_stack(ref_uv)
                 else:
                     base = nodes
-            support = valid_node_support_mask(base, values, img_shape)
+            support = valid_node_support_mask(base, values, img_shape, mesh_step=mesh_step)
             self._support_cache[skey] = support
         return support

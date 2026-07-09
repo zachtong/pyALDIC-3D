@@ -2787,6 +2787,90 @@ _BATCH_E3: dict[str, dict[str, str]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# GUI review round-2 Batch F1 (odd subset size, power-of-2 step, search-cap
+# tooltips). The two subset tooltips reuse the 2D pyALDIC catalog translations
+# verbatim (al_dic/i18n/source); the search-cap strings are new to 3D.
+# ---------------------------------------------------------------------------
+
+_STEREO_TIP = (
+    "NCC search half-width (pixels) around each node for the\n"
+    "left-to-right stereo match. Set larger than the largest\n"
+    "expected stereo disparity."
+)
+_TEMPORAL_TIP = (
+    "Maximum per-frame displacement the temporal FFT search can\n"
+    "detect (pixels). Set comfortably larger than the expected\n"
+    "inter-frame motion."
+)
+_STEREO_CAP = (
+    "Current images: values above {0} px cannot widen the search\n"
+    "(the window is clamped at the image borders)."
+)
+_TEMPORAL_CAP = (
+    "Current images: the engine caps this at {0} px at run start\n"
+    "(max(10, min(H, W) / 4 - subset))."
+)
+
+_BATCH_F1: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "IC-GN subset window size in pixels (odd number)": "IC-GN 子集窗口尺寸（像素，奇数）",
+        "Node spacing in pixels (must be power of 2)": "节点间距（像素，必须是 2 的幂）",
+        _STEREO_TIP: "左→右立体匹配时围绕每个节点的 NCC 搜索半宽（像素）。\n应大于预期的最大立体视差。",
+        _TEMPORAL_TIP: "时序 FFT 搜索可检测的最大逐帧位移（像素）。\n应设置得明显大于预期的帧间运动。",
+        _STEREO_CAP: "当前图像：超过 {0} px 的取值无法再扩大搜索\n（搜索窗口在图像边界处被裁剪）。",
+        _TEMPORAL_CAP: "当前图像：运行开始时引擎会将其限制为 {0} px\n（max(10, min(H, W) / 4 - 子集尺寸)）。",
+    },
+    "zh_TW": {
+        "IC-GN subset window size in pixels (odd number)": "IC-GN 子集窗口尺寸（像素，奇數）",
+        "Node spacing in pixels (must be power of 2)": "節點間距（像素，必須是 2 的冪）",
+        _STEREO_TIP: "左→右立體匹配時圍繞每個節點的 NCC 搜尋半寬（像素）。\n應大於預期的最大立體視差。",
+        _TEMPORAL_TIP: "時序 FFT 搜尋可偵測的最大逐幀位移（像素）。\n應設定得明顯大於預期的幀間運動。",
+        _STEREO_CAP: "目前影像：超過 {0} px 的取值無法再擴大搜尋\n（搜尋視窗在影像邊界處被裁剪）。",
+        _TEMPORAL_CAP: "目前影像：執行開始時引擎會將其限制為 {0} px\n（max(10, min(H, W) / 4 - 子集尺寸)）。",
+    },
+    "ja": {
+        "IC-GN subset window size in pixels (odd number)": "IC-GN サブセットウィンドウサイズ(ピクセル、奇数)",
+        "Node spacing in pixels (must be power of 2)": "ノード間隔(ピクセル、2 の累乗)",
+        _STEREO_TIP: "左→右ステレオマッチングで各ノード周りに取る NCC 探索半幅（ピクセル）。\n想定される最大の視差より大きく設定してください。",
+        _TEMPORAL_TIP: "時系列 FFT 探索が検出できるフレームあたりの最大変位（ピクセル）。\n想定されるフレーム間の動きより十分大きく設定してください。",
+        _STEREO_CAP: "現在の画像では {0} px を超える値にしても探索範囲は広がりません\n（探索ウィンドウは画像境界でクリップされます）。",
+        _TEMPORAL_CAP: "現在の画像では、実行開始時にエンジンがこの値を {0} px に制限します\n（max(10, min(H, W) / 4 - サブセットサイズ)）。",
+    },
+    "ko": {
+        "IC-GN subset window size in pixels (odd number)": "IC-GN 서브셋 윈도우 크기(픽셀, 홀수)",
+        "Node spacing in pixels (must be power of 2)": "노드 간격(픽셀, 2의 거듭제곱이어야 함)",
+        _STEREO_TIP: "좌→우 스테레오 매칭에서 각 노드 주위의 NCC 탐색 반폭(픽셀).\n예상되는 최대 시차보다 크게 설정하십시오.",
+        _TEMPORAL_TIP: "시간 방향 FFT 탐색이 감지할 수 있는 프레임당 최대 변위(픽셀).\n예상 프레임 간 이동보다 충분히 크게 설정하십시오.",
+        _STEREO_CAP: "현재 이미지에서는 {0} px를 초과해도 탐색이 더 넓어지지 않습니다\n(탐색 창이 이미지 경계에서 잘립니다).",
+        _TEMPORAL_CAP: "현재 이미지에서는 실행 시작 시 엔진이 이 값을 {0} px로 제한합니다\n(max(10, min(H, W) / 4 - 서브셋 크기)).",
+    },
+    "de": {
+        "IC-GN subset window size in pixels (odd number)": "IC-GN-Subset-Fenstergröße in Pixeln (ungerade Zahl)",
+        "Node spacing in pixels (must be power of 2)": "Knotenabstand in Pixeln (muss eine Zweierpotenz sein)",
+        _STEREO_TIP: "NCC-Suchhalbweite (Pixel) um jeden Knoten für den\nLinks-rechts-Stereoabgleich. Größer als die größte\nerwartete Stereo-Disparität wählen.",
+        _TEMPORAL_TIP: "Maximale Verschiebung pro Frame, die die zeitliche FFT-Suche\nerkennen kann (Pixel). Deutlich größer als die erwartete\nBewegung zwischen Frames wählen.",
+        _STEREO_CAP: "Aktuelle Bilder: Werte über {0} px vergrößern die Suche nicht weiter\n(das Suchfenster wird an den Bildrändern beschnitten).",
+        _TEMPORAL_CAP: "Aktuelle Bilder: Die Engine begrenzt diesen Wert beim Start auf {0} px\n(max(10, min(H, W) / 4 - Subsetgröße)).",
+    },
+    "fr": {
+        "IC-GN subset window size in pixels (odd number)": "Taille de la fenêtre d'imagette IC-GN en pixels (nombre impair)",
+        "Node spacing in pixels (must be power of 2)": "Espacement des nœuds en pixels (doit être une puissance de 2)",
+        _STEREO_TIP: "Demi-largeur de recherche NCC (pixels) autour de chaque nœud pour\nl'appariement stéréo gauche-droite. À régler au-dessus de la plus\ngrande disparité stéréo attendue.",
+        _TEMPORAL_TIP: "Déplacement maximal par image que la recherche FFT temporelle peut\ndétecter (pixels). À régler nettement au-dessus du mouvement attendu\nentre images.",
+        _STEREO_CAP: "Images actuelles : au-delà de {0} px la recherche ne s'élargit plus\n(la fenêtre est tronquée aux bords de l'image).",
+        _TEMPORAL_CAP: "Images actuelles : le moteur plafonne cette valeur à {0} px au\nlancement (max(10, min(H, W) / 4 - taille d'imagette)).",
+    },
+    "es": {
+        "IC-GN subset window size in pixels (odd number)": "Tamaño de la ventana del subconjunto IC-GN en píxeles (número impar)",
+        "Node spacing in pixels (must be power of 2)": "Espaciado de nodos en píxeles (debe ser potencia de 2)",
+        _STEREO_TIP: "Semiancho de búsqueda NCC (píxeles) alrededor de cada nodo para la\ncorrespondencia estéreo izquierda-derecha. Ajústelo por encima de la\nmayor disparidad estéreo esperada.",
+        _TEMPORAL_TIP: "Desplazamiento máximo por fotograma que la búsqueda FFT temporal\npuede detectar (píxeles). Ajústelo claramente por encima del\nmovimiento esperado entre fotogramas.",
+        _STEREO_CAP: "Imágenes actuales: por encima de {0} px la búsqueda ya no se amplía\n(la ventana se recorta en los bordes de la imagen).",
+        _TEMPORAL_CAP: "Imágenes actuales: el motor limita este valor a {0} px al iniciar\n(max(10, min(H, W) / 4 - tamaño del subconjunto)).",
+    },
+}
+
 for _loc, _entries in _CALIB.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_C3.items():
@@ -2804,6 +2888,8 @@ for _loc, _entries in _BATCH_E1.items():
 for _loc, _entries in _BATCH_E2.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _BATCH_E3.items():
+    TRANSLATIONS[_loc].update(_entries)
+for _loc, _entries in _BATCH_F1.items():
     TRANSLATIONS[_loc].update(_entries)
 
 

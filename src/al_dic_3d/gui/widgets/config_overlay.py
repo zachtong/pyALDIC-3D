@@ -78,7 +78,8 @@ class ConfigOverlay3D(QFrame):
             if draft.use_global_step
             else self.tr("Local DIC")
         )
-        self._subset_lbl.setText(f"{draft.winsize} / {draft.winstepsize} px")
+        # Match the sidebar's ODD display convention (engine winsize + 1).
+        self._subset_lbl.setText(f"{int(draft.winsize) + 1} / {draft.winstepsize} px")
         self.adjustSize()
         self.setVisible(True)
         self.reposition()

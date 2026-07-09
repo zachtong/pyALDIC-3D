@@ -176,14 +176,9 @@ def test_run_and_overlay_render(qapp, scene):
     assert win._canvas_area._colorbar.isVisible()
     # the dense overlay is a grid-resolution image scaled to pixel coords
     assert canvas._overlay_item.scale() >= 1.0
-    # "Show Points" is OFF by default: no dot layer over the dense field ...
-    assert not win._canvas_area._show_points_cb.isChecked()
-    assert canvas._points_item.pixmap().isNull()
-    # ... and checking it draws the node markers on top
-    win._canvas_area._show_points_cb.setChecked(True)
-    assert not canvas._points_item.pixmap().isNull()
-    win._canvas_area._show_points_cb.setChecked(False)
-    assert canvas._points_item.pixmap().isNull()
+    # the node-dot layer and its "Show Points" toggle were removed (F1.4):
+    # the dense field is the only result rendering on the canvas
+    assert not hasattr(win._canvas_area, "_show_points_cb")
     # colorbar range matches the visible values of the rendered frame (auto)
     disp_u = result.reconstruction.displacement[1][:, 0]
     finite = disp_u[np.isfinite(disp_u)]

@@ -166,6 +166,27 @@ def test_valid_node_support_mask_basics():
     assert holey[15, 15]
 
 
+def test_support_edge_cap_keeps_node_free_holes_transparent():
+    """A rectangular node-free ROI hole must NOT be spanned by the fallback
+    support: Delaunay bridges it with long triangles, and the 2.5x-step edge
+    cap drops them (the right-camera / maskless hole-fill fix, F1.5)."""
+    step = 10.0
+    xs, ys = np.meshgrid(5.0 + step * np.arange(6), 5.0 + step * np.arange(6))
+    nodes = np.column_stack([xs.ravel(), ys.ravel()]).astype(np.float64)
+    in_hole = (nodes[:, 0] >= 15) & (nodes[:, 0] <= 45) & (nodes[:, 1] >= 15) & (nodes[:, 1] <= 45)
+    nodes = nodes[~in_hole]  # 4x4 interior block removed -> node-free hole
+    values = np.ones(len(nodes))
+
+    support = valid_node_support_mask(nodes, values, IMG_SHAPE, mesh_step=step)
+    assert not support[30, 30]  # hole interior stays transparent
+    assert support[8, 8]  # normal-density corner region keeps its support
+
+    # Default step (median nearest-neighbor spacing) finds the same hole.
+    support_auto = valid_node_support_mask(nodes, values, IMG_SHAPE)
+    assert not support_auto[30, 30]
+    assert support_auto[8, 8]
+
+
 def test_visible_values_restricts_range_to_mask():
     nodes = _grid_nodes()
     values = nodes[:, 0].copy()  # 10 .. 50

@@ -7,8 +7,7 @@ bottom. 3D content: the background is the CURRENT CAMERA's frame; results render
 as a DENSE continuous full-field overlay (2D-app idiom): the tracked
 correspondence points are interpolated onto a regular image-space grid by the
 shared :class:`VizController3D`, masked to the reference ROI (or the valid-node
-support), and colormapped. "Show Points" optionally draws small node dots on
-top of the dense field.
+support), and colormapped.
 
 ROI toolbox: this panel owns the :class:`ROIController` mask engine behind the
 sidebar's ROI toolbar — shape commits, invert/clear/import/save all funnel into
@@ -39,7 +38,6 @@ from PySide6.QtWidgets import (
 
 from al_dic_3d.gui.controllers.roi_controller import ROIController
 from al_dic_3d.gui.controllers.viz_controller import VizController3D, visible_values
-from al_dic_3d.gui.rendering import scatter_field_pixmap
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
@@ -128,13 +126,6 @@ class CanvasArea3D(QWidget):
         self._view3d_btn.setFixedWidth(76)
         self._view3d_btn.toggled.connect(self._on_view_mode)
         tb.addWidget(self._view3d_btn)
-
-        # The dense field is always the base layer; "Show Points" (default
-        # OFF) additionally draws small node dots on top of it.
-        self._show_points_cb = QCheckBox(self.tr("Show Points"))
-        self._show_points_cb.setChecked(False)
-        self._show_points_cb.toggled.connect(lambda _c: self.render())
-        tb.addWidget(self._show_points_cb)
         layout.addWidget(toolbar)
 
         # ---- canvas (2D) / 3D view stack + overlays ----
@@ -289,9 +280,8 @@ class CanvasArea3D(QWidget):
             self.render()
 
     def _sync_roi(self) -> None:
-        """Draft -> view: bbox rectangle, mask overlay, and the mesh preview."""
+        """Draft -> view: mask overlay and the mesh preview (mask fill IS the ROI display)."""
         draft = self.controller.state.draft
-        self._canvas.set_roi(draft.roi)
         if self._roi_ctrl is not None:
             mask = draft.roi_mask_array
             if mask is None:
@@ -585,7 +575,6 @@ class CanvasArea3D(QWidget):
 
     def _clear_overlay(self) -> None:
         self._canvas.set_overlay_pixmap(None)
-        self._canvas.set_points_pixmap(None)
         self._colorbar.setVisible(False)
 
     def _render_overlay(self, k: int) -> None:
@@ -670,23 +659,6 @@ class CanvasArea3D(QWidget):
         self._canvas.set_overlay_pixmap(pixmap)
         self._canvas.set_overlay_geometry(float(out_step), float(xg.min()), float(yg.min()))
         self._canvas.set_overlay_opacity(self.signals.overlay_alpha)
-
-        # Optional node markers on top of the dense field (small fixed dots).
-        if self._show_points_cb.isChecked():
-            self._canvas.set_points_pixmap(
-                scatter_field_pixmap(
-                    pts,
-                    vals,
-                    w,
-                    h,
-                    cmap_name=self.signals.colormap,
-                    vmin=vmin,
-                    vmax=vmax,
-                    radius=2.0,
-                )
-            )
-        else:
-            self._canvas.set_points_pixmap(None)
 
         self._colorbar.update_params(
             self.signals.colormap, vmin, vmax, _FIELD_LABELS.get(self.signals.display_field, "")

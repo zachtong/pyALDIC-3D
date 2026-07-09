@@ -41,6 +41,7 @@ class RunWorker(QThread):
     """Runs the pipeline off the UI thread, relaying progress; cancellable."""
 
     progress = Signal(float, str)
+    log = Signal(str, str)  # (message, level) — engine warnings forwarded live
     finished_ok = Signal()
     failed = Signal(str)
     cancelled = Signal()
@@ -55,11 +56,25 @@ class RunWorker(QThread):
         self._stop_requested = True
 
     def run(self) -> None:  # QThread entry point (worker thread)
+        import warnings
+
+        def _forward(message, category, filename, lineno, file=None, line=None):  # noqa: ARG001
+            # Engine run-time warnings (e.g. "Auto-scaled FFT search region:
+            # 48 -> 26 (image 200x200)" from run_aldic's search clamp) would
+            # otherwise die on stderr; surface them in the GUI console log.
+            self.log.emit(str(message), "warning")
+
         try:
-            self._controller.run(
-                progress=lambda f, m: self.progress.emit(f, m),
-                stop=lambda: self._stop_requested,
-            )
+            # catch_warnings snapshots + restores the global filter/hook on
+            # exit; only one pipeline run exists at a time, so hijacking
+            # showwarning for the duration of the run is safe.
+            with warnings.catch_warnings():
+                warnings.simplefilter("always")
+                warnings.showwarning = _forward
+                self._controller.run(
+                    progress=lambda f, m: self.progress.emit(f, m),
+                    stop=lambda: self._stop_requested,
+                )
             self.finished_ok.emit()
         except Exception as exc:  # noqa: BLE001 - report any failure to the UI
             if self._stop_requested:
@@ -308,6 +323,7 @@ class RightSidebar3D(QWidget):
 
         self._worker = RunWorker(self.controller)
         self._worker.progress.connect(self._on_progress)
+        self._worker.log.connect(self.signals.log)
         self._worker.finished_ok.connect(self._on_done)
         self._worker.failed.connect(self._on_fail)
         self._worker.cancelled.connect(self._on_cancelled)

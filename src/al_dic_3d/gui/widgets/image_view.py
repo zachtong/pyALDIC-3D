@@ -1,9 +1,9 @@
 """``ImageCanvas3D`` — zoomable, layered image canvas (2D ``ImageCanvas`` idiom).
 
-Layers: background image (z0), semi-transparent field overlay (z1), optional
-node-dot markers (z1.2), refinement brush overlay (z1.5, cyan), ROI mask
-overlay (z1.8, blue), ROI bbox rectangle (z2). Scene coordinates are 1:1 with
-image pixels, so drawn shapes are directly in pixel coordinates.
+Layers: background image (z0), semi-transparent field overlay (z1), refinement
+brush overlay (z1.5, cyan), ROI mask overlay (z1.8, blue — the mask fill IS the
+ROI display). Scene coordinates are 1:1 with image pixels, so drawn shapes are
+directly in pixel coordinates.
 
 Interaction is a tool-mode state machine ported from the 2D canvas:
 ``set_tool(shape, mode)`` arms a one-shot rect / polygon / circle / circle3
@@ -128,11 +128,6 @@ class ImageCanvas3D(QGraphicsView):
         self._overlay_item.setOpacity(0.85)
         self._scene.addItem(self._overlay_item)
 
-        # Node-dot layer (z1.2): optional small markers over the dense field.
-        self._points_item = QGraphicsPixmapItem()
-        self._points_item.setZValue(1.2)
-        self._scene.addItem(self._points_item)
-
         # Brush layer (z1.5): refinement-mask strokes over frame 1 (cyan).
         self._brush_item = QGraphicsPixmapItem()
         self._brush_item.setZValue(1.5)
@@ -143,12 +138,11 @@ class ImageCanvas3D(QGraphicsView):
         self._brush_rgba: np.ndarray | None = None  # premixed display buffer
         self._brush_last: tuple[int, int] | None = None
 
-        # ROI mask layer (z1.8): blue semi-transparent boolean mask, below bbox.
+        # ROI mask layer (z1.8): blue semi-transparent boolean mask fill —
+        # the only ROI display (the bbox rectangle was removed, review F1.4).
         self._roi_mask_item = QGraphicsPixmapItem()
         self._roi_mask_item.setZValue(1.8)
         self._scene.addItem(self._roi_mask_item)
-
-        self._roi_item = None  # bbox rectangle, created lazily (z2, cosmetic pen)
 
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
@@ -197,10 +191,7 @@ class ImageCanvas3D(QGraphicsView):
     def clear_image(self) -> None:
         self._bg_item.setPixmap(QPixmap())
         self.set_overlay_pixmap(None)
-        self.set_points_pixmap(None)
         self._roi_mask_item.setPixmap(QPixmap())
-        if self._roi_item is not None:
-            self._roi_item.setRect(0, 0, 0, 0)
         self._loaded_path = None
 
     # --- field overlay ---------------------------------------------------------
@@ -220,10 +211,6 @@ class ImageCanvas3D(QGraphicsView):
 
     def set_overlay_opacity(self, alpha: float) -> None:
         self._overlay_item.setOpacity(max(0.0, min(1.0, alpha)))
-
-    def set_points_pixmap(self, pixmap: QPixmap | None) -> None:
-        """Full-image-size node-dot layer drawn over the dense field."""
-        self._points_item.setPixmap(pixmap if pixmap is not None else QPixmap())
 
     # --- ROI toolbox -------------------------------------------------------------
 
@@ -255,25 +242,6 @@ class ImageCanvas3D(QGraphicsView):
             return
         self._roi_mask_item.setPixmap(_mask_to_rgba_pixmap(mask, _ROI_OVERLAY_RGBA))
         self._roi_mask_item.setPos(0, 0)
-
-    # --- ROI bbox rectangle ------------------------------------------------------
-
-    def set_roi(self, roi: tuple[int, int, int, int] | None) -> None:
-        if roi is None:
-            if self._roi_item is not None:
-                self._roi_item.setRect(0, 0, 0, 0)
-            return
-        xmin, xmax, ymin, ymax = roi
-        self._ensure_roi_item()
-        self._roi_item.setRect(xmin, ymin, xmax - xmin, ymax - ymin)
-
-    def _ensure_roi_item(self) -> None:
-        if self._roi_item is None:
-            pen = QPen(QColor(COLORS.ACCENT))
-            pen.setWidth(2)
-            pen.setCosmetic(True)
-            self._roi_item = self._scene.addRect(0, 0, 0, 0, pen)
-            self._roi_item.setZValue(2)
 
     # --- refinement brush -------------------------------------------------------
 
