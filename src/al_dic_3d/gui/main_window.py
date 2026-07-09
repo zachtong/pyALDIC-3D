@@ -64,6 +64,16 @@ class MainWindow3D(QMainWindow):
         toolbar.brush_clear_requested.connect(self._canvas_area.clear_brush)
         self._canvas_area.canvas.drawing_finished.connect(toolbar.deactivate)
 
+        # INITIAL GUESS (F2): the "Place point…" toggle arms the one-shot seed
+        # click tool on the canvas; commit / Esc resets the toggle through
+        # drawing_finished (same lifecycle as the ROI shape tools).
+        init_w = self._left.init_guess_widget
+        init_w.place_seed_toggled.connect(self._on_place_seed_toggled)
+        init_w.clear_seed_requested.connect(self._canvas_area.clear_seed)
+        self._canvas_area.canvas.drawing_finished.connect(
+            lambda: init_w.set_seed_mode_active(False, emit=False)
+        )
+
         # Strain window lifecycle: the sidebar button opens/raises it, and a
         # completed run auto-opens it (2D idiom — non-modal, zero friction).
         self._right.open_strain_window_requested.connect(self._open_strain_window)
@@ -108,6 +118,21 @@ class MainWindow3D(QMainWindow):
             self._left.roi_toolbar.deactivate()
             return
         self._canvas_area.start_shape_tool(shape, mode)
+
+    def _on_place_seed_toggled(self, active: bool) -> None:
+        if not active:
+            self._canvas_area.cancel_seed_tool()
+            return
+        if not self._canvas_area.canvas.has_image:
+            self.signals.log.emit("load images first before placing a starting point", "warning")
+            self._left.init_guess_widget.set_seed_mode_active(False, emit=False)
+            return
+        # The seed lives on the LEFT camera, frame 1 — jump there so the click
+        # lands on the reference view (2D init_mode_user_changed idiom).
+        draft = self.controller.state.draft
+        self.signals.set_camera("L")
+        self.signals.set_current_frame(0, max(len(draft.left), 1))
+        self._canvas_area.start_seed_tool()
 
     def _on_brush_requested(self, mode: str, radius: int) -> None:
         if not self._canvas_area.canvas.has_image:

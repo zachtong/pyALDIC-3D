@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.collapsible_section import CollapsibleSection
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -34,6 +34,8 @@ from PySide6.QtWidgets import (
 
 from al_dic_3d.calibration import IMPORTERS, load_calibration
 from al_dic_3d.gui.state import GuiSignals
+from al_dic_3d.gui.widgets.camera_drop_zone import CameraDropZone
+from al_dic_3d.gui.widgets.init_guess_section import InitGuessSection3D
 from al_dic_3d.gui.widgets.roi_toolbar import ROIToolbar
 
 if TYPE_CHECKING:
@@ -90,61 +92,6 @@ class _SectionHeader(QWidget):
             self._badge.hide()
 
 
-class _CameraDropZone(QWidget):
-    """Compact drop zone for ONE camera folder (dashed border, hover accent)."""
-
-    folder_selected = Signal(str)
-
-    def __init__(self, caption: str, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        self.setAcceptDrops(True)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setMinimumHeight(64)
-        # Custom QWidget subclasses do not paint QSS background/border without this.
-        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setStyleSheet(
-            f"""
-            _CameraDropZone {{
-                background: {COLORS.BG_PANEL};
-                border: 1px dashed {COLORS.BORDER};
-                border-radius: 6px;
-            }}
-            _CameraDropZone:hover {{
-                border-color: {COLORS.ACCENT};
-                background: {COLORS.BG_INPUT};
-            }}
-            """
-        )
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.setSpacing(2)
-        icon = QLabel("\U0001f4c2")
-        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon.setStyleSheet("font-size: 16px; background: transparent;")
-        layout.addWidget(icon)
-        text = QLabel(caption)
-        text.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        text.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px; background: transparent;")
-        layout.addWidget(text)
-
-    def mousePressEvent(self, _event) -> None:  # noqa: N802 (Qt override)
-        folder = QFileDialog.getExistingDirectory(self, self.tr("Select image folder"), "")
-        if folder:
-            self.folder_selected.emit(folder)
-
-    def dragEnterEvent(self, event) -> None:  # noqa: N802 (Qt override)
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
-
-    def dropEvent(self, event) -> None:  # noqa: N802 (Qt override)
-        urls = event.mimeData().urls()
-        if not urls:
-            return
-        path = Path(urls[0].toLocalFile())
-        self.folder_selected.emit(str(path if path.is_dir() else path.parent))
-
-
 class LeftSidebar3D(QWidget):
     """Fixed-width sidebar: IMAGES (L/R) + CALIBRATION + WORKFLOW + ROI + PARAMETERS + ADVANCED."""
 
@@ -173,8 +120,8 @@ class LeftSidebar3D(QWidget):
         drop_layout = QHBoxLayout(drop_row)
         drop_layout.setContentsMargins(8, 0, 8, 0)
         drop_layout.setSpacing(6)
-        self._left_drop = _CameraDropZone(self.tr("Drop LEFT camera\nfolder or click"))
-        self._right_drop = _CameraDropZone(self.tr("Drop RIGHT camera\nfolder or click"))
+        self._left_drop = CameraDropZone(self.tr("Drop LEFT camera\nfolder or click"))
+        self._right_drop = CameraDropZone(self.tr("Drop RIGHT camera\nfolder or click"))
         drop_layout.addWidget(self._left_drop)
         drop_layout.addWidget(self._right_drop)
         layout.addWidget(drop_row)
@@ -249,6 +196,13 @@ class LeftSidebar3D(QWidget):
         self._workflow_section = CollapsibleSection(self.tr("WORKFLOW TYPE"), expanded=True)
         self._workflow_section.add_widget(self._build_workflow())
         sections.addWidget(self._workflow_section)
+
+        # INITIAL GUESS below WORKFLOW TYPE (2D placement idiom): users pick the
+        # seeding mode before reaching ROI drawing.
+        self._init_guess_widget = InitGuessSection3D(controller, signals)
+        self._init_section = CollapsibleSection(self.tr("INITIAL GUESS"), expanded=True)
+        self._init_section.add_widget(self._init_guess_widget)
+        sections.addWidget(self._init_section)
 
         self._roi_section = CollapsibleSection(self.tr("REGION OF INTEREST"), expanded=True)
         self._roi_section.add_widget(self._build_roi())
@@ -477,6 +431,11 @@ class LeftSidebar3D(QWidget):
     def roi_toolbar(self) -> ROIToolbar:
         """The main window wires this toolbar to the canvas drawing tools."""
         return self._roi_toolbar
+
+    @property
+    def init_guess_widget(self) -> InitGuessSection3D:
+        """The main window wires seed placement to the canvas click tool."""
+        return self._init_guess_widget
 
     def _sync_roi_label(self) -> None:
         roi = self.controller.state.draft.roi
@@ -786,6 +745,7 @@ class LeftSidebar3D(QWidget):
             w.blockSignals(False)
         if draft.calibration_file is not None:
             self._preview_calibration()
+        self._init_guess_widget.refresh_from_draft()
         self.refresh_images()
         self._update_search_tooltips()
         self._sync_roi_label()

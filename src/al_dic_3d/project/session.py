@@ -92,6 +92,8 @@ def _config_from_json(d: dict | None) -> RunConfig | None:
         kw["roi"] = tuple(kw["roi"])
     if kw.get("disparity_offset") is not None:
         kw["disparity_offset"] = tuple(kw["disparity_offset"])
+    if kw.get("seed_point") is not None:
+        kw["seed_point"] = tuple(kw["seed_point"])
     return RunConfig(**kw)
 
 
@@ -123,6 +125,8 @@ def _draft_from_json(d: dict | None) -> ProjectDraft:
         kw["roi"] = tuple(kw["roi"])
     if kw.get("disparity_offset") is not None:
         kw["disparity_offset"] = tuple(kw["disparity_offset"])
+    if kw.get("seed_point") is not None:
+        kw["seed_point"] = tuple(kw["seed_point"])
     return ProjectDraft(**kw)
 
 

@@ -76,6 +76,13 @@ class RunConfig:
     use_global_step: bool = True
     admm_max_iter: int = 3
     fft_search: int = 20  # temporal FFT integer-search half-width (px)
+    # Initial guess (F2): "seed" | "fft" | "previous". "seed" template-matches
+    # the seed_point patch for the stereo offset + first-pair motion; without a
+    # seed_point it falls back to "fft" with a warning (never blocks). Engine
+    # mapping: al_dic_3d.matching.seed module docstring. Headless default stays
+    # "fft" (pre-F2 behavior); the GUI draft defaults to "seed".
+    init_guess: str = "fft"
+    seed_point: tuple[float, float] | None = None  # (x, y) on LEFT frame 1
     temporal_gate_znssd: float = 1.0  # honesty gate on cumulative tracks; <=0 off
     refine_inner: bool = False
     refine_outer: bool = False
@@ -149,6 +156,15 @@ def load_config(path: str | Path) -> RunConfig:
     match = table.get("matching", {})
     offset = match.get("disparity_offset")
     disparity_offset = (float(offset[0]), float(offset[1])) if offset is not None else None
+    init_guess = str(match.get("init_guess", "fft"))
+    from al_dic_3d.matching.seed import INIT_GUESS_MODES
+
+    if init_guess not in INIT_GUESS_MODES:
+        raise ValueError(
+            f"[matching].init_guess must be one of {INIT_GUESS_MODES}, got {init_guess!r}"
+        )
+    seed = match.get("seed_point")
+    seed_point = (float(seed[0]), float(seed[1])) if seed is not None else None
     seq = table.get("sequence", {})
     out = table.get("output", {})
     qual = table.get("quality", {})
@@ -173,6 +189,8 @@ def load_config(path: str | Path) -> RunConfig:
         use_global_step=bool(match.get("use_global_step", True)),
         admm_max_iter=int(match.get("admm_max_iter", 3)),
         fft_search=int(match.get("fft_search", 20)),
+        init_guess=init_guess,
+        seed_point=seed_point,
         temporal_gate_znssd=float(match.get("temporal_gate_znssd", 1.0)),
         refine_inner=bool(match.get("refine_inner", False)),
         refine_outer=bool(match.get("refine_outer", False)),
@@ -437,6 +455,8 @@ def run_pipeline(
         strategy=cfg.strategy,
         reference_mode=cfg.reference_mode,
         disparity_offset=cfg.disparity_offset,
+        init_guess=cfg.init_guess,  # type: ignore[arg-type]
+        seed_point=cfg.seed_point,
     )
     cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress, stop=stop)
     if stop is not None and stop():

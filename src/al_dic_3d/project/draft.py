@@ -39,6 +39,12 @@ class ProjectDraft:
     winsize_min: int = 8
     stereo_search: int = 48
     disparity_offset: tuple[float, float] | None = None
+    # Initial guess (F2): the GUI default is "seed" — the user clicks ONE point
+    # on the LEFT camera, frame 1 (seed_point); it seeds BOTH the stereo L->R
+    # offset and the first-pair motion. Auto-falls back to "fft" at run time
+    # when no point was placed (warning, never blocks).
+    init_guess: str = "seed"  # "seed" | "fft" | "previous"
+    seed_point: tuple[float, float] | None = None  # (x, y) on LEFT frame 1
     quality_gate: bool = False
     use_global_step: bool = True  # AL-DIC global step (ADMM), audit default
     admm_max_iter: int = 3
@@ -120,6 +126,8 @@ class ProjectDraft:
             winsize_min=self.winsize_min,
             stereo_search=self.stereo_search,
             disparity_offset=self.disparity_offset,
+            init_guess=self.init_guess,
+            seed_point=tuple(self.seed_point) if self.seed_point is not None else None,
             quality_gate=self.quality_gate,
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,

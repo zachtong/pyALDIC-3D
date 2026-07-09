@@ -65,6 +65,11 @@ class CorrespondenceConfig:
     stereo_solver: Literal["local_only", "full_aldic"] = "local_only"
     epipolar_seed: bool = True  # bound the FFT search to an epipolar band
     disparity_offset: tuple[float, float] | None = None  # coarse prior, big baselines
+    # Initial-guess mode (F2): "seed" needs seed_point (left frame-1 pixel);
+    # without one it falls back to "fft" with a warning. Mapping to the engine:
+    # al_dic_3d.matching.seed module docstring.
+    init_guess: Literal["seed", "fft", "previous"] = "fft"
+    seed_point: tuple[float, float] | None = None  # (x, y) on LEFT frame 1
     refresh_interval: int | None = None  # adaptive: periodic re-anchor
     quality: QualityGate = field(default_factory=QualityGate)
 

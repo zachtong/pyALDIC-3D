@@ -468,6 +468,14 @@
     </message>
 </context>
 <context>
+    <name>CameraDropZone</name>
+    <message>
+        <location filename="../../gui/widgets/camera_drop_zone.py" line="55"/>
+        <source>Select image folder</source>
+        <translation>이미지 폴더 선택</translation>
+    </message>
+</context>
+<context>
     <name>CameraRow</name>
     <message>
         <location filename="../../gui/dialogs/export_tabs/common.py" line="413"/>
@@ -527,22 +535,22 @@
         <translation>측정점 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="264"/>
+        <location filename="../../gui/panels/canvas_area.py" line="270"/>
         <source>Save Mask</source>
         <translation>마스크 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="264"/>
+        <location filename="../../gui/panels/canvas_area.py" line="270"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 이미지 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="522"/>
+        <location filename="../../gui/panels/canvas_area.py" line="572"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="528"/>
+        <location filename="../../gui/panels/canvas_area.py" line="578"/>
         <source>Selected field is not available.</source>
         <translation>선택한 필드를 사용할 수 없습니다.</translation>
     </message>
@@ -565,18 +573,39 @@
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="41"/>
+        <source>Init</source>
+        <translation>초기 추정</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="42"/>
         <source>Subset</source>
         <translation>서브셋</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="77"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="78"/>
         <source>ADMM ({0} iter)</source>
         <translation>ADMM({0}회 반복)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="79"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="83"/>
+        <source>Starting Point</source>
+        <translation>시드점</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="84"/>
+        <source>Previous frame</source>
+        <translation>이전 프레임</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="85"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="87"/>
+        <source>FFT</source>
+        <translation>FFT</translation>
     </message>
     <message>
         <source>Track Both</source>
@@ -591,12 +620,12 @@
         <translation>기준 프레임 직접 매칭</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
         <source>Accumulative</source>
         <translation>누적형</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
         <source>Incremental</source>
         <translation>증분형</translation>
     </message>
@@ -996,126 +1025,222 @@
     </message>
 </context>
 <context>
+    <name>InitGuessSection3D</name>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
+        <source>Starting Point</source>
+        <translation>시드점</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
+        <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
+is matched automatically into the right camera (stereo offset)
+and into frame 2 (motion seed) — no search tuning needed.
+Best for wide stereo baselines or large first-frame motion.
+If no point is placed, the run falls back to FFT.</source>
+        <translation>왼쪽 카메라 1번 프레임에서 한 점을 클릭하십시오. 그 주변 영역이
+오른쪽 카메라(스테레오 오프셋)와 2번 프레임(운동 시드)으로
+자동 매칭되므로 탐색 파라미터 조정이 필요 없습니다.
+넓은 기선이나 첫 프레임의 큰 움직임에 적합합니다.
+점을 배치하지 않으면 실행 시 FFT로 대체됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <source>Place point…</source>
+        <translation>시드점 배치…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
+        <source>Enter placement mode on the canvas. Click once on the LEFT
+camera, frame 1 — a new click replaces the point; Esc cancels.</source>
+        <translation>캔버스 배치 모드로 들어갑니다. 왼쪽 카메라 1번 프레임에서
+한 번 클릭하십시오 — 새로 클릭하면 기존 점이 교체되고, Esc로 취소합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="86"/>
+        <source>Clear</source>
+        <translation>지우기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="87"/>
+        <source>Remove the Starting Point</source>
+        <translation>시드점 제거</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="96"/>
+        <source>FFT (cross-correlation)</source>
+        <translation>FFT(상호상관)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
+        <source>Full-grid cross-correlation seeds frame 1 (and every reference
+switch in incremental mode); later frames warm-start from the
+previous solution. Robust default — the search radius is the
+Temporal Search parameter.</source>
+        <translation>전체 그리드 상호상관이 1번 프레임(증분 모드에서는 기준 프레임이
+바뀔 때마다)의 초기값을 제공합니다. 이후 프레임은 이전 해에서
+웜스타트합니다. 안정적인 기본값 — 탐색 반경은 '시간 탐색'
+매개변수로 정합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="108"/>
+        <source>Previous frame</source>
+        <translation>이전 프레임</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
+        <source>Start every frame from the previous frame&apos;s solution — no
+cross-correlation at all. Fastest; can silently freeze on large
+motion or decorrelation — the validity gate will flag affected
+frames.</source>
+        <translation>모든 프레임을 이전 프레임의 해에서 시작합니다 — 상호상관을
+전혀 수행하지 않습니다. 가장 빠르지만 큰 움직임이나 스페클
+상관 저하 시 조용히 멈출 수 있습니다 — 유효성 게이트가 해당
+프레임을 표시합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <source>Placing… (click to exit)</source>
+        <translation>배치 중…(클릭하여 종료)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="167"/>
+        <source>No point placed — FFT fallback at run</source>
+        <translation>점이 배치되지 않음 — 실행 시 FFT로 대체</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="170"/>
+        <source>Point: ({0}, {1}) px</source>
+        <translation>점: ({0}, {1}) px</translation>
+    </message>
+</context>
+<context>
     <name>LeftSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="169"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="116"/>
         <source>IMAGES</source>
         <translation>이미지</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="176"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="123"/>
         <source>Drop LEFT camera
 folder or click</source>
         <translation>왼쪽 카메라 폴더를
 끌어놓거나 클릭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="177"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="124"/>
         <source>Drop RIGHT camera
 folder or click</source>
         <translation>오른쪽 카메라 폴더를
 끌어놓거나 클릭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="182"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="129"/>
         <source>Natural Sort (1, 2, …, 10)</source>
         <translation>자연 정렬 (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="190"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="137"/>
         <source>Left</source>
         <translation>왼쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="190"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="137"/>
         <source>Right</source>
         <translation>오른쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="219"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="720"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="166"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="681"/>
         <source>No images loaded</source>
         <translation>이미지가 로드되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="245"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="192"/>
         <source>CALIBRATION</source>
         <translation>보정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="196"/>
         <source>WORKFLOW TYPE</source>
         <translation>워크플로 유형</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="253"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="203"/>
+        <source>INITIAL GUESS</source>
+        <translation>초기 추정</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="207"/>
         <source>REGION OF INTEREST</source>
         <translation>관심 영역</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="257"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="211"/>
         <source>PARAMETERS</source>
         <translation>매개변수</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="261"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="215"/>
         <source>ADVANCED</source>
         <translation>고급 설정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="287"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="241"/>
         <source>Calibrate from images…</source>
         <translation>이미지에서 캘리브레이션…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="294"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="248"/>
         <source>Format</source>
         <translation>형식</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="305"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="259"/>
         <source>Import calibration…</source>
         <translation>보정 가져오기…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="309"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="263"/>
         <source>Manual parameters…</source>
         <translation>파라미터 수동 입력…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="313"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="267"/>
         <source>No calibration loaded</source>
         <translation>보정이 로드되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="351"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="305"/>
         <source>Choose calibration file</source>
         <translation>보정 파일 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="353"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="307"/>
         <source>Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</source>
         <translation>보정 파일 (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="367"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="321"/>
         <source>Error: {0}</source>
         <translation>오류: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="375"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="329"/>
         <source>{0}
 fx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm</source>
         <translation>{0}
 fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="399"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="353"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="402"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="356"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1133,63 +1258,63 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
 노이즈 이미지, 변형률 정확도가 중요한 경우에 적합합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="411"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="365"/>
         <source>Solver</source>
         <translation>솔버</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="471"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="484"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="425"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="443"/>
         <source>bbox: not set</source>
         <translation>경계 상자: 미설정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="487"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
         <source>bbox: {0}–{1}, {2}–{3} px</source>
         <translation>경계 상자: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="505"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="464"/>
         <source>IC-GN subset window size in pixels (odd number)</source>
         <translation>IC-GN 서브셋 윈도우 크기(픽셀, 홀수)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="512"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="471"/>
         <source>Node spacing in pixels (must be power of 2)</source>
         <translation>노드 간격(픽셀, 2의 거듭제곱이어야 함)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="570"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="529"/>
         <source>Track Both</source>
         <translation>양쪽 카메라 추적</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="571"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>Stereo Each Frame</source>
         <translation>프레임별 스테레오 매칭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="572"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="531"/>
         <source>Reference Direct</source>
         <translation>기준 프레임 직접 매칭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="573"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
         <source>Strategy</source>
         <translation>전략</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="391"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="345"/>
         <source>Accumulative</source>
         <translation>누적형</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="392"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="346"/>
         <source>Incremental</source>
         <translation>증분형</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="393"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="347"/>
         <source>Tracking Mode</source>
         <translation>추적 모드</translation>
     </message>
@@ -1198,12 +1323,12 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>표면 변형률 계산</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="415"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="369"/>
         <source>Quality gates (ZNSSD / outliers)</source>
         <translation>품질 게이트(ZNSSD / 이상점)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="453"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="407"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>왼쪽 카메라 1번 프레임에 그립니다 — 이후 프레임과 오른쪽 카메라는 여기서 유도됩니다.</translation>
     </message>
@@ -1220,22 +1345,22 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>x 최소 / x 최대 / y 최소 / y 최대 (px)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="506"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="465"/>
         <source>Subset Size</source>
         <translation>서브셋 크기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="513"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="472"/>
         <source>Subset Step</source>
         <translation>서브셋 간격</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="519"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="478"/>
         <source>Stereo Search</source>
         <translation>스테레오 탐색</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="487"/>
         <source>Temporal Search</source>
         <translation>시간 탐색</translation>
     </message>
@@ -1248,22 +1373,22 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>ADMM 반복 횟수</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="491"/>
         <source>Mesh refinement</source>
         <translation>메시 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="498"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>마스크 경계(구멍)에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="500"/>
         <source>Refine at ROI edges</source>
         <translation>ROI 가장자리에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="506"/>
         <source>Refinement Level</source>
         <translation>세분화 레벨</translation>
     </message>
@@ -1276,22 +1401,22 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>그리기 지우기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="580"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = 단일 패스(가장 빠름), 3 = 기본값, 5 이상은 수익 감소</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="582"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
         <source>AL-DIC Iterations</source>
         <translation>AL-DIC 반복 횟수</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="584"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="543"/>
         <source>Only affects AL-DIC solver. Ignored by Local DIC.</source>
         <translation>AL-DIC 솔버에만 적용됩니다. Local DIC에서는 무시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="659"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="620"/>
         <source>NCC search half-width (pixels) around each node for the
 left-to-right stereo match. Set larger than the largest
 expected stereo disparity.</source>
@@ -1299,7 +1424,7 @@ expected stereo disparity.</source>
 예상되는 최대 시차보다 크게 설정하십시오.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="664"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="625"/>
         <source>Maximum per-frame displacement the temporal FFT search can
 detect (pixels). Set comfortably larger than the expected
 inter-frame motion.</source>
@@ -1307,26 +1432,26 @@ inter-frame motion.</source>
 예상 프레임 간 이동보다 충분히 크게 설정하십시오.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="674"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="635"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>현재 이미지에서는 {0} px를 초과해도 탐색이 더 넓어지지 않습니다
 (탐색 창이 이미지 경계에서 잘립니다).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="678"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="639"/>
         <source>Current images: the engine caps this at {0} px at run start
 (max(10, min(H, W) / 4 - subset)).</source>
         <translation>현재 이미지에서는 실행 시작 시 엔진이 이 값을 {0} px로 제한합니다
 (max(10, min(H, W) / 4 - 서브셋 크기)).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="725"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="686"/>
         <source>Paired: {0} frames per camera</source>
         <translation>페어링됨: 카메라당 {0} 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="731"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="692"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>불일치: 왼쪽 {0} / 오른쪽 {1} 프레임</translation>
     </message>
@@ -1339,53 +1464,53 @@ inter-frame motion.</source>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="122"/>
+        <location filename="../../gui/main_window.py" line="147"/>
         <source>&amp;File</source>
         <translation>파일(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="124"/>
+        <location filename="../../gui/main_window.py" line="149"/>
         <source>New Project</source>
         <translation>새 프로젝트</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="129"/>
+        <location filename="../../gui/main_window.py" line="154"/>
         <source>Open Project…</source>
         <translation>프로젝트 열기…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="134"/>
+        <location filename="../../gui/main_window.py" line="159"/>
         <source>Save Project…</source>
         <translation>프로젝트 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="140"/>
+        <location filename="../../gui/main_window.py" line="165"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="146"/>
+        <location filename="../../gui/main_window.py" line="171"/>
         <source>&amp;Settings</source>
         <translation>설정(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="147"/>
+        <location filename="../../gui/main_window.py" line="172"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="197"/>
+        <location filename="../../gui/main_window.py" line="222"/>
         <source>Open Project</source>
         <translation>프로젝트 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="197"/>
-        <location filename="../../gui/main_window.py" line="214"/>
+        <location filename="../../gui/main_window.py" line="222"/>
+        <location filename="../../gui/main_window.py" line="239"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 프로젝트 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="212"/>
+        <location filename="../../gui/main_window.py" line="237"/>
         <source>Save Project</source>
         <translation>프로젝트 저장</translation>
     </message>
@@ -2313,7 +2438,6 @@ inter-frame motion.</source>
 <context>
     <name>_CameraDropZone</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="132"/>
         <source>Select image folder</source>
         <translation>이미지 폴더 선택</translation>
     </message>

@@ -30,7 +30,12 @@ from al_dic_3d.matching.contracts import (
 )
 from al_dic_3d.matching.primitives import make_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
-from al_dic_3d.matching.strategies._common import bbox_roi, mask_stream
+from al_dic_3d.matching.strategies._common import (
+    bbox_roi,
+    mask_stream,
+    resolve_init,
+    temporal_u0,
+)
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import temporal_track
 
@@ -101,9 +106,19 @@ class StereoEachFrameStrategy:
             fft_search=self.fft_search,
         )
 
+        # Initial-guess resolution (F2): effective mode + seed-derived stereo
+        # offset (an explicit cfg.disparity_offset overrides the seed match).
+        init_mode, stereo_offset = resolve_init(cfg, left[0], right[0])
+
         # The ONLY temporal chain: the left camera.
+        u0_L = temporal_u0(init_mode, left[0], left[1], cfg.seed_point, n_pts)
         tf_L = temporal_track(
-            left, mesh_L, para_L, masks=mask_stream(seq, "L"), stop=stop,
+            left,
+            mesh_L,
+            para_L,
+            masks=mask_stream(seq, "L"),
+            u0=u0_L,
+            stop=stop,
             gate_znssd=self.temporal_gate_znssd,
         )
         if not np.allclose(tf_L.ref_coords, coords_L, atol=1e-6):
@@ -128,7 +143,7 @@ class StereoEachFrameStrategy:
                     right[0],
                     coords_L,
                     para_L,
-                    disparity_offset=cfg.disparity_offset,
+                    disparity_offset=stereo_offset,
                     search_radius=self.stereo_search,
                     frame_idx=0,
                 )

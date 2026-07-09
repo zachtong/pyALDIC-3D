@@ -146,6 +146,11 @@ class CanvasArea3D(QWidget):
         # ROI mask engine (created lazily once an image defines the shape).
         self._roi_ctrl: ROIController | None = None
 
+        # RIGHT-camera ROI support (F2.3): the left mask warped through the
+        # frame-1 correspondence. Cached; dropped on ROI edits / new results.
+        self._right_mask_cache: np.ndarray | None = None
+        self._right_mask_dirty = True
+
         # Mesh preview state (debounced rebuild; hover lookup arrays).
         self._mesh_timer = QTimer(self)
         self._mesh_timer.setSingleShot(True)
@@ -165,6 +170,7 @@ class CanvasArea3D(QWidget):
         btn_out.clicked.connect(self._canvas.zoom_out)
 
         self._canvas.roi_mask_edited.connect(self.commit_roi_mask)
+        self._canvas.seed_clicked.connect(self._on_seed_clicked)
         self._canvas.notice.connect(signals.log)
         self._canvas.brush_changed.connect(self._on_brush_changed)
         self._canvas.view_changed.connect(self._sync_mesh_view_transform)
@@ -275,6 +281,7 @@ class CanvasArea3D(QWidget):
     def _on_roi_changed(self) -> None:
         """ROI edits change the dense-field support: drop mask-derived caches."""
         self._viz_ctrl.invalidate_masks()
+        self._right_mask_dirty = True
         self._sync_roi()
         if self.controller.state.result is not None:
             self.render()
@@ -291,6 +298,47 @@ class CanvasArea3D(QWidget):
                 self._roi_ctrl.mask = np.asarray(mask) > 0
             self._canvas.update_roi_overlay()
         self._schedule_mesh_preview()
+
+    # ---- seed point (F2) -------------------------------------------------------------
+
+    def start_seed_tool(self) -> None:
+        """Arm the one-shot seed click tool on the canvas (Esc cancels)."""
+        self._canvas.set_seed_tool(True)
+
+    def cancel_seed_tool(self) -> None:
+        self._canvas.set_seed_tool(False)
+
+    def clear_seed(self) -> None:
+        """Drop the Starting Point from the draft and the canvas."""
+        draft = self.controller.state.draft
+        if draft.seed_point is None:
+            return
+        draft.seed_point = None
+        self._canvas.set_seed_marker(None)
+        self.controller.state.mark_dirty()
+        self.signals.log.emit("starting point cleared", "info")
+        self.signals.params_changed.emit()
+
+    def _on_seed_clicked(self, x: float, y: float) -> None:
+        """Persist the placed seed (replaces any previous point)."""
+        draft = self.controller.state.draft
+        draft.seed_point = (float(x), float(y))
+        self.controller.state.mark_dirty()
+        self.signals.log.emit(f"starting point placed at ({x:.1f}, {y:.1f})", "info")
+        self._sync_seed_marker()
+        self.signals.params_changed.emit()
+
+    def _sync_seed_marker(self) -> None:
+        """Marker shows on the LEFT camera's frame 1 only (the seed's home view)."""
+        draft = self.controller.state.draft
+        show = (
+            self._stack.currentIndex() == 0
+            and self.signals.current_camera == "L"
+            and self.signals.current_frame == 0
+            and self._canvas.has_image
+            and draft.seed_point is not None
+        )
+        self._canvas.set_seed_marker(draft.seed_point if show else None)
 
     # ---- refinement brush ---------------------------------------------------------
 
@@ -481,6 +529,7 @@ class CanvasArea3D(QWidget):
         if result is not None:
             self._field_range_cache: dict = {}
         self._viz_ctrl.clear_all()
+        self._right_mask_dirty = True
         self.render()
 
     # ---- rendering ------------------------------------------------------------------
@@ -514,6 +563,7 @@ class CanvasArea3D(QWidget):
 
         self._render_overlay(k)
         self._sync_roi()
+        self._sync_seed_marker()
 
     def _render_3d(self) -> None:
         result = self.controller.state.result
@@ -577,6 +627,26 @@ class CanvasArea3D(QWidget):
         self._canvas.set_overlay_pixmap(None)
         self._colorbar.setVisible(False)
 
+    def _right_roi_mask(self, result) -> np.ndarray | None:
+        """The left ROI mask warped into the RIGHT camera (cached; None -> fallback)."""
+        drawn = self.controller.state.draft.roi_mask_array
+        if drawn is None or result is None:
+            return None
+        if not self._right_mask_dirty:
+            return self._right_mask_cache
+        from al_dic_3d.viz3d.maskwarp import warp_mask_left_to_right
+
+        cs = result.correspondence
+        mask = np.asarray(drawn) > 0
+        try:
+            warped = warp_mask_left_to_right(mask, cs.xL[0], cs.xR[0], mask.shape)
+        except Exception as exc:  # noqa: BLE001 - warp is display support, never fatal
+            self.signals.log.emit(f"right-mask warp failed: {exc}", "warning")
+            warped = None
+        self._right_mask_cache = warped
+        self._right_mask_dirty = False
+        return warped
+
     def _render_overlay(self, k: int) -> None:
         result = self.controller.state.result
         if result is None:
@@ -604,13 +674,16 @@ class CanvasArea3D(QWidget):
             ref_uv = (d[:, 0], d[:, 1])
 
         # LEFT camera: the user-drawn reference ROI mask bounds the field.
-        # RIGHT camera: no drawn mask exists (ROI tools live on the left
-        # view), so the renderer falls back to the valid-node hull support.
+        # RIGHT camera (F2.3): the left mask warped into right pixel space via
+        # the frame-1 correspondence (holes preserved); when unavailable the
+        # renderer falls back to the F1.5 valid-node support.
         roi_mask = None
         if cam == "L":
             drawn = self.controller.state.draft.roi_mask_array
             if drawn is not None:
                 roi_mask = np.asarray(drawn) > 0
+        else:
+            roi_mask = self._right_roi_mask(result)
 
         # Auto colorbar range from VISIBLE nodes only (2D visible_values
         # contract): clipped-by-mask nodes must not stretch the range. The

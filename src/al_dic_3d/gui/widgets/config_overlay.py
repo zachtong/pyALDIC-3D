@@ -38,6 +38,7 @@ class ConfigOverlay3D(QFrame):
 
         self._mode_lbl = self._make_row(layout, self.tr("Mode"))
         self._solver_lbl = self._make_row(layout, self.tr("Solver"))
+        self._init_lbl = self._make_row(layout, self.tr("Init"))
         self._subset_lbl = self._make_row(layout, self.tr("Subset"))
         self.adjustSize()
         self.refresh()
@@ -78,6 +79,12 @@ class ConfigOverlay3D(QFrame):
             if draft.use_global_step
             else self.tr("Local DIC")
         )
+        init_names = {
+            "seed": self.tr("Starting Point"),
+            "previous": self.tr("Previous frame"),
+            "fft": self.tr("FFT"),
+        }
+        self._init_lbl.setText(init_names.get(getattr(draft, "init_guess", "fft"), self.tr("FFT")))
         # Match the sidebar's ODD display convention (engine winsize + 1).
         self._subset_lbl.setText(f"{int(draft.winsize) + 1} / {draft.winstepsize} px")
         self.adjustSize()

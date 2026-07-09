@@ -2871,6 +2871,153 @@ _BATCH_F1: dict[str, dict[str, str]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Batch F2 — INITIAL GUESS section (seed point / FFT / previous frame).
+# 2D-shared strings copied verbatim from the 2D catalogs: "FFT (cross-
+# correlation)", "Placing… (click to exit)", INITIAL GUESS header, and the
+# Starting-Point terminology (种子点 / シード点 / 시드점 / Startpunkt / point
+# de départ / punto de inicio), singularized where grammar requires.
+# ---------------------------------------------------------------------------
+
+_F2_SEED_TIP = (
+    "Click ONE point on the LEFT camera, frame 1. Its neighborhood\n"
+    "is matched automatically into the right camera (stereo offset)\n"
+    "and into frame 2 (motion seed) — no search tuning needed.\n"
+    "Best for wide stereo baselines or large first-frame motion.\n"
+    "If no point is placed, the run falls back to FFT."
+)
+_F2_PLACE_TIP = (
+    "Enter placement mode on the canvas. Click once on the LEFT\n"
+    "camera, frame 1 — a new click replaces the point; Esc cancels."
+)
+_F2_FFT_TIP = (
+    "Full-grid cross-correlation seeds frame 1 (and every reference\n"
+    "switch in incremental mode); later frames warm-start from the\n"
+    "previous solution. Robust default — the search radius is the\n"
+    "Temporal Search parameter."
+)
+_F2_PREV_TIP = (
+    "Start every frame from the previous frame's solution — no\n"
+    "cross-correlation at all. Fastest; can silently freeze on large\n"
+    "motion or decorrelation — the validity gate will flag affected\n"
+    "frames."
+)
+
+_BATCH_F2: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "INITIAL GUESS": "初始猜测",
+        "Init": "初始猜测",
+        "Starting Point": "种子点",
+        "FFT (cross-correlation)": "FFT（互相关）",
+        "FFT": "FFT",
+        "Place point…": "放置种子点…",
+        "Placing… (click to exit)": "放置中…（再次点击退出）",
+        "Remove the Starting Point": "移除种子点",
+        "No point placed — FFT fallback at run": "未放置种子点——运行时回退为 FFT",
+        "Point: ({0}, {1}) px": "点：({0}, {1}) px",
+        _F2_SEED_TIP: "在左相机第 1 帧上点击一个点。软件会自动将其邻域\n匹配到右相机（立体偏移）以及第 2 帧（运动种子）——\n无需调整搜索参数。适合宽基线立体或首帧大位移场景。\n若未放置种子点，运行时将回退为 FFT。",
+        _F2_PLACE_TIP: "进入画布放置模式。在左相机第 1 帧上单击一次——\n新的点击会替换旧点；按 Esc 取消。",
+        _F2_FFT_TIP: "全网格互相关为第 1 帧（增量模式下每次参考帧切换时也会）\n提供初值；后续帧从上一帧的解热启动。稳健的默认选项——\n搜索半径由“时序搜索”参数决定。",
+        _F2_PREV_TIP: "每一帧都从上一帧的解开始——完全不做互相关。\n速度最快；在大位移或散斑退相关时可能静默冻结——\n有效性门控会标记受影响的帧。",
+    },
+    "zh_TW": {
+        "INITIAL GUESS": "初始猜測",
+        "Init": "初始猜測",
+        "Starting Point": "種子點",
+        "FFT (cross-correlation)": "FFT（互相關）",
+        "FFT": "FFT",
+        "Place point…": "放置種子點…",
+        "Placing… (click to exit)": "放置中…（再次點擊離開）",
+        "Remove the Starting Point": "移除種子點",
+        "No point placed — FFT fallback at run": "未放置種子點——執行時回退為 FFT",
+        "Point: ({0}, {1}) px": "點：({0}, {1}) px",
+        _F2_SEED_TIP: "在左相機第 1 幀上點擊一個點。軟體會自動將其鄰域\n匹配到右相機（立體偏移）以及第 2 幀（運動種子）——\n無需調整搜尋參數。適合寬基線立體或首幀大位移場景。\n若未放置種子點，執行時將回退為 FFT。",
+        _F2_PLACE_TIP: "進入畫布放置模式。在左相機第 1 幀上點擊一次——\n新的點擊會取代舊點；按 Esc 取消。",
+        _F2_FFT_TIP: "全網格互相關為第 1 幀（增量模式下每次參考幀切換時也會）\n提供初值；後續幀從上一幀的解熱啟動。穩健的預設選項——\n搜尋半徑由「時序搜尋」參數決定。",
+        _F2_PREV_TIP: "每一幀都從上一幀的解開始——完全不做互相關。\n速度最快；在大位移或散斑退相關時可能靜默凍結——\n有效性門檻會標記受影響的幀。",
+    },
+    "ja": {
+        "INITIAL GUESS": "初期推定",
+        "Init": "初期推定",
+        "Starting Point": "シード点",
+        "FFT (cross-correlation)": "FFT(相互相関)",
+        "FFT": "FFT",
+        "Place point…": "シード点を配置…",
+        "Placing… (click to exit)": "配置中…(クリックで終了)",
+        "Remove the Starting Point": "シード点を削除",
+        "No point placed — FFT fallback at run": "点が未配置 — 実行時は FFT にフォールバック",
+        "Point: ({0}, {1}) px": "点: ({0}, {1}) px",
+        _F2_SEED_TIP: "左カメラの第 1 フレーム上で 1 点をクリックします。その近傍は\n右カメラ（ステレオオフセット）と第 2 フレーム（運動シード）へ\n自動的にマッチングされ、探索パラメータの調整は不要です。\n広い基線長や第 1 フレームの大きな運動に適しています。\n点が未配置の場合、実行時は FFT にフォールバックします。",
+        _F2_PLACE_TIP: "キャンバスの配置モードに入ります。左カメラの第 1 フレームで\n1 回クリックします — 新しいクリックで置き換え、Esc でキャンセル。",
+        _F2_FFT_TIP: "全グリッドの相互相関が第 1 フレーム（逐次モードでは参照フレーム\n切替時にも）の初期値を与えます。以降のフレームは前フレームの解から\nウォームスタートします。堅牢な既定 — 探索半径は「時系列探索」\nパラメータで決まります。",
+        _F2_PREV_TIP: "各フレームを前フレームの解から開始します — 相互相関は一切\n実行しません。最速ですが、大きな運動やスペックルの相関低下では\n沈黙のまま凍結することがあります — 有効性ゲートが該当フレームに\nフラグを立てます。",
+    },
+    "ko": {
+        "INITIAL GUESS": "초기 추정",
+        "Init": "초기 추정",
+        "Starting Point": "시드점",
+        "FFT (cross-correlation)": "FFT(상호상관)",
+        "FFT": "FFT",
+        "Place point…": "시드점 배치…",
+        "Placing… (click to exit)": "배치 중…(클릭하여 종료)",
+        "Remove the Starting Point": "시드점 제거",
+        "No point placed — FFT fallback at run": "점이 배치되지 않음 — 실행 시 FFT로 대체",
+        "Point: ({0}, {1}) px": "점: ({0}, {1}) px",
+        _F2_SEED_TIP: "왼쪽 카메라 1번 프레임에서 한 점을 클릭하십시오. 그 주변 영역이\n오른쪽 카메라(스테레오 오프셋)와 2번 프레임(운동 시드)으로\n자동 매칭되므로 탐색 파라미터 조정이 필요 없습니다.\n넓은 기선이나 첫 프레임의 큰 움직임에 적합합니다.\n점을 배치하지 않으면 실행 시 FFT로 대체됩니다.",
+        _F2_PLACE_TIP: "캔버스 배치 모드로 들어갑니다. 왼쪽 카메라 1번 프레임에서\n한 번 클릭하십시오 — 새로 클릭하면 기존 점이 교체되고, Esc로 취소합니다.",
+        _F2_FFT_TIP: "전체 그리드 상호상관이 1번 프레임(증분 모드에서는 기준 프레임이\n바뀔 때마다)의 초기값을 제공합니다. 이후 프레임은 이전 해에서\n웜스타트합니다. 안정적인 기본값 — 탐색 반경은 '시간 탐색'\n매개변수로 정합니다.",
+        _F2_PREV_TIP: "모든 프레임을 이전 프레임의 해에서 시작합니다 — 상호상관을\n전혀 수행하지 않습니다. 가장 빠르지만 큰 움직임이나 스페클\n상관 저하 시 조용히 멈출 수 있습니다 — 유효성 게이트가 해당\n프레임을 표시합니다.",
+    },
+    "de": {
+        "INITIAL GUESS": "STARTSCHÄTZUNG",
+        "Init": "Startschätzung",
+        "Starting Point": "Startpunkt",
+        "FFT (cross-correlation)": "FFT (Kreuzkorrelation)",
+        "FFT": "FFT",
+        "Place point…": "Punkt platzieren…",
+        "Placing… (click to exit)": "Platzieren… (zum Beenden klicken)",
+        "Remove the Starting Point": "Startpunkt entfernen",
+        "No point placed — FFT fallback at run": "Kein Punkt gesetzt — beim Lauf FFT-Fallback",
+        "Point: ({0}, {1}) px": "Punkt: ({0}, {1}) px",
+        _F2_SEED_TIP: "Klicken Sie EINEN Punkt auf der LINKEN Kamera, Frame 1. Seine\nUmgebung wird automatisch in die rechte Kamera (Stereo-Versatz)\nund in Frame 2 (Bewegungs-Seed) eingepasst — keine Suchparameter\nnötig. Ideal für breite Basislinien oder große Bewegung im ersten\nFrame. Ohne gesetzten Punkt fällt der Lauf auf FFT zurück.",
+        _F2_PLACE_TIP: "Platzierungsmodus auf der Leinwand. Einmal auf der LINKEN Kamera,\nFrame 1 klicken — ein neuer Klick ersetzt den Punkt; Esc bricht ab.",
+        _F2_FFT_TIP: "Die Kreuzkorrelation über das volle Gitter liefert den Startwert für\nFrame 1 (und bei jedem Referenzwechsel im inkrementellen Modus);\nspätere Frames starten warm von der vorherigen Lösung. Robuster\nStandard — der Suchradius ist der Parameter „Zeitliche Suche“.",
+        _F2_PREV_TIP: "Jeder Frame startet von der Lösung des vorherigen Frames — ganz\nohne Kreuzkorrelation. Am schnellsten; kann bei großer Bewegung\noder Dekorrelation still einfrieren — das Validitätsgate markiert\nbetroffene Frames.",
+    },
+    "fr": {
+        "INITIAL GUESS": "ESTIMATION INITIALE",
+        "Init": "Estimation initiale",
+        "Starting Point": "Point de départ",
+        "FFT (cross-correlation)": "FFT (corrélation croisée)",
+        "FFT": "FFT",
+        "Place point…": "Placer le point…",
+        "Placing… (click to exit)": "Placement… (cliquez pour sortir)",
+        "Remove the Starting Point": "Supprimer le point de départ",
+        "No point placed — FFT fallback at run": "Aucun point placé — repli FFT à l'exécution",
+        "Point: ({0}, {1}) px": "Point : ({0}, {1}) px",
+        _F2_SEED_TIP: "Cliquez UN point sur la caméra GAUCHE, image 1. Son voisinage est\napparié automatiquement dans la caméra droite (décalage stéréo) et\ndans l'image 2 (amorce de mouvement) — aucun réglage de recherche\nnécessaire. Idéal pour les larges bases stéréo ou les grands\nmouvements initiaux. Sans point placé, l'exécution retombe sur la FFT.",
+        _F2_PLACE_TIP: "Mode placement sur le canevas. Cliquez une fois sur la caméra\nGAUCHE, image 1 — un nouveau clic remplace le point ; Échap annule.",
+        _F2_FFT_TIP: "La corrélation croisée sur toute la grille amorce l'image 1 (et\nchaque changement de référence en mode incrémental) ; les images\nsuivantes repartent de la solution précédente. Défaut robuste — le\nrayon de recherche est le paramètre « Recherche temporelle ».",
+        _F2_PREV_TIP: "Chaque image démarre de la solution de l'image précédente — aucune\ncorrélation croisée. Le plus rapide ; peut se figer silencieusement en\ncas de grand mouvement ou de décorrélation — le contrôle de validité\nsignalera les images touchées.",
+    },
+    "es": {
+        "INITIAL GUESS": "ESTIMACIÓN INICIAL",
+        "Init": "Estimación inicial",
+        "Starting Point": "Punto de inicio",
+        "FFT (cross-correlation)": "FFT (correlación cruzada)",
+        "FFT": "FFT",
+        "Place point…": "Colocar punto…",
+        "Placing… (click to exit)": "Colocando… (clic para salir)",
+        "Remove the Starting Point": "Eliminar el punto de inicio",
+        "No point placed — FFT fallback at run": "Sin punto colocado — al ejecutar se usa FFT",
+        "Point: ({0}, {1}) px": "Punto: ({0}, {1}) px",
+        _F2_SEED_TIP: "Haga clic en UN punto en la cámara IZQUIERDA, fotograma 1. Su\nvecindario se empareja automáticamente en la cámara derecha\n(desplazamiento estéreo) y en el fotograma 2 (semilla de movimiento):\nsin ajustar parámetros de búsqueda. Ideal para líneas base anchas o\ngrandes movimientos iniciales. Sin punto colocado, la ejecución\nrecurre a la FFT.",
+        _F2_PLACE_TIP: "Modo de colocación en el lienzo. Haga clic una vez en la cámara\nIZQUIERDA, fotograma 1 — un nuevo clic reemplaza el punto; Esc cancela.",
+        _F2_FFT_TIP: "La correlación cruzada de rejilla completa siembra el fotograma 1 (y\ncada cambio de referencia en modo incremental); los fotogramas\nposteriores parten de la solución anterior. Valor predeterminado\nrobusto — el radio de búsqueda es el parámetro «Búsqueda temporal».",
+        _F2_PREV_TIP: "Cada fotograma parte de la solución del fotograma anterior — sin\nninguna correlación cruzada. Lo más rápido; puede congelarse en\nsilencio con movimientos grandes o descorrelación — la puerta de\nvalidez marcará los fotogramas afectados.",
+    },
+}
+
 for _loc, _entries in _CALIB.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_C3.items():
@@ -2890,6 +3037,8 @@ for _loc, _entries in _BATCH_E2.items():
 for _loc, _entries in _BATCH_E3.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _BATCH_F1.items():
+    TRANSLATIONS[_loc].update(_entries)
+for _loc, _entries in _BATCH_F2.items():
     TRANSLATIONS[_loc].update(_entries)
 
 

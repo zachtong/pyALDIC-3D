@@ -195,6 +195,125 @@ def test_run_and_overlay_render(qapp, scene):
     win.close()
 
 
+def test_init_guess_section_maps_to_draft(qapp, scene):
+    win = _loaded_window(scene)
+    draft = win.controller.state.draft
+    widget = win._left.init_guess_widget
+
+    # Starting Point is the DEFAULT: radio checked, seed panel visible.
+    assert draft.init_guess == "seed"
+    assert widget._rb_seed.isChecked() and widget._seed_panel.isVisible()
+
+    widget._rb_prev.setChecked(True)
+    assert draft.init_guess == "previous"
+    assert not widget._seed_panel.isVisible()
+    widget._rb_fft.setChecked(True)
+    assert draft.init_guess == "fft"
+    widget._rb_seed.setChecked(True)
+    assert draft.init_guess == "seed"
+
+    # The config card mirrors the choice through its INIT row.
+    win._canvas_area._config_overlay.refresh()
+    assert win._canvas_area._config_overlay._init_lbl.text() == "Starting Point"
+    win.close()
+
+
+def test_seed_placement_one_shot_updates_draft(qapp, scene):
+    from PySide6.QtCore import QPointF
+
+    win = _loaded_window(scene)
+    draft = win.controller.state.draft
+    widget = win._left.init_guess_widget
+    canvas = win._canvas_area.canvas
+
+    # Toggling "Place point…" arms the canvas seed tool and jumps to L frame 1.
+    win.signals.set_camera("R")
+    widget._btn_place.setChecked(True)
+    assert canvas._tool == "seed"
+    assert win.signals.current_camera == "L" and win.signals.current_frame == 0
+
+    # One click places the point, resets the tool, and releases the toggle.
+    canvas._commit_seed_click(QPointF(84.0, 61.0))
+    assert draft.seed_point == (84.0, 61.0)
+    assert canvas._tool == "select"
+    assert not widget._btn_place.isChecked()
+    assert canvas._seed_marker is not None  # accent marker at the point
+
+    # A second placement replaces the previous point (never accumulates).
+    widget._btn_place.setChecked(True)
+    canvas._commit_seed_click(QPointF(90.0, 70.0))
+    assert draft.seed_point == (90.0, 70.0)
+
+    # Esc cancels the armed tool without touching the stored point.
+    widget._btn_place.setChecked(True)
+    canvas.set_seed_tool(False)
+    canvas.drawing_finished.emit()
+    assert draft.seed_point == (90.0, 70.0) and not widget._btn_place.isChecked()
+
+    # Clear drops the point and the marker.
+    widget.clear_seed_requested.emit()
+    assert draft.seed_point is None
+    assert canvas._seed_marker is None
+    win.close()
+
+
+def test_seed_survives_gui_session_roundtrip(qapp, scene, tmp_path):
+    win = _loaded_window(scene)
+    win.controller.state.draft.seed_point = (12.5, 34.0)
+    win.controller.state.draft.init_guess = "seed"
+    from al_dic_3d.project import load_session, save_session
+
+    path = save_session(win.controller.state, tmp_path / "seed.aldic3d")
+    loaded = load_session(path)
+    assert loaded.draft.seed_point == (12.5, 34.0)
+    assert loaded.draft.init_guess == "seed"
+    win.close()
+
+
+def test_right_camera_mask_warp_keeps_hole(qapp, scene):
+    win = _loaded_window(scene)
+    area = win._canvas_area
+
+    # Draw a holed ROI mask on the LEFT camera, frame 1.
+    ctrl = area.roi_ctrl
+    ctrl.add_rectangle(40, 40, 160, 160, "add")
+    ctrl.add_circle(100, 100, 15, "cut")
+    area.commit_roi_mask()
+
+    win.controller.run()
+    win._right._on_done()
+    result = win.controller.state.result
+
+    warped = area._right_roi_mask(result)
+    assert warped is not None and warped.dtype == bool and warped.any()
+
+    # The hole survives the warp. In-hole nodes are invalid (no texture under
+    # the mask), so map the hole CENTER into the right image with the median
+    # disparity of the nearest finite correspondences (smooth stereo field).
+    cs = result.correspondence
+    xl0, xr0 = cs.xL[0], cs.xR[0]
+    ok = np.isfinite(xl0).all(axis=1) & np.isfinite(xr0).all(axis=1)
+
+    def right_of(px: float, py: float) -> tuple[int, int]:
+        d = np.linalg.norm(xl0 - [px, py], axis=1)
+        d[~ok] = np.inf
+        near = np.argsort(d)[:6]
+        disp = np.median(xr0[near] - xl0[near], axis=0)
+        return int(round(px + disp[0])), int(round(py + disp[1]))
+
+    hx, hy = right_of(100.0, 100.0)  # hole center
+    sx, sy = right_of(70.0, 70.0)  # solid region
+    assert not warped[hy, hx]  # hole stays transparent
+    assert warped[sy, sx]  # solid region stays opaque
+
+    # The RIGHT-camera dense render consumes the warped mask without error.
+    win.signals.set_camera("R")
+    win.signals.set_current_frame(1, 3)
+    area.render()
+    assert not area.canvas._overlay_item.pixmap().isNull()
+    win.close()
+
+
 def test_field_range_is_stable_across_frames(qapp, scene):
     win = _loaded_window(scene)
     win.controller.run()

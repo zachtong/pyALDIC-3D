@@ -468,6 +468,14 @@
     </message>
 </context>
 <context>
+    <name>CameraDropZone</name>
+    <message>
+        <location filename="../../gui/widgets/camera_drop_zone.py" line="55"/>
+        <source>Select image folder</source>
+        <translation>Bildordner wählen</translation>
+    </message>
+</context>
+<context>
     <name>CameraRow</name>
     <message>
         <location filename="../../gui/dialogs/export_tabs/common.py" line="413"/>
@@ -527,22 +535,22 @@
         <translation>Messpunkte anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="264"/>
+        <location filename="../../gui/panels/canvas_area.py" line="270"/>
         <source>Save Mask</source>
         <translation>Maske speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="264"/>
+        <location filename="../../gui/panels/canvas_area.py" line="270"/>
         <source>PNG image (*.png)</source>
         <translation>PNG-Bild (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="522"/>
+        <location filename="../../gui/panels/canvas_area.py" line="572"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D-Ansicht — führen Sie eine Analyse aus, um die rekonstruierte Oberfläche zu sehen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="528"/>
+        <location filename="../../gui/panels/canvas_area.py" line="578"/>
         <source>Selected field is not available.</source>
         <translation>Das gewählte Feld ist nicht verfügbar.</translation>
     </message>
@@ -565,18 +573,39 @@
     </message>
     <message>
         <location filename="../../gui/widgets/config_overlay.py" line="41"/>
+        <source>Init</source>
+        <translation>Startschätzung</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="42"/>
         <source>Subset</source>
         <translation>Subset</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="77"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="78"/>
         <source>ADMM ({0} iter)</source>
         <translation>ADMM ({0} Iter.)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="79"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="83"/>
+        <source>Starting Point</source>
+        <translation>Startpunkt</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="84"/>
+        <source>Previous frame</source>
+        <translation>Vorheriger Frame</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/config_overlay.py" line="85"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="87"/>
+        <source>FFT</source>
+        <translation>FFT</translation>
     </message>
     <message>
         <source>Track Both</source>
@@ -591,12 +620,12 @@
         <translation>Referenz direkt</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
         <source>Accumulative</source>
         <translation>Akkumulativ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="74"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
         <source>Incremental</source>
         <translation>Inkrementell</translation>
     </message>
@@ -996,126 +1025,222 @@
     </message>
 </context>
 <context>
+    <name>InitGuessSection3D</name>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
+        <source>Starting Point</source>
+        <translation>Startpunkt</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
+        <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
+is matched automatically into the right camera (stereo offset)
+and into frame 2 (motion seed) — no search tuning needed.
+Best for wide stereo baselines or large first-frame motion.
+If no point is placed, the run falls back to FFT.</source>
+        <translation>Klicken Sie EINEN Punkt auf der LINKEN Kamera, Frame 1. Seine
+Umgebung wird automatisch in die rechte Kamera (Stereo-Versatz)
+und in Frame 2 (Bewegungs-Seed) eingepasst — keine Suchparameter
+nötig. Ideal für breite Basislinien oder große Bewegung im ersten
+Frame. Ohne gesetzten Punkt fällt der Lauf auf FFT zurück.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <source>Place point…</source>
+        <translation>Punkt platzieren…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
+        <source>Enter placement mode on the canvas. Click once on the LEFT
+camera, frame 1 — a new click replaces the point; Esc cancels.</source>
+        <translation>Platzierungsmodus auf der Leinwand. Einmal auf der LINKEN Kamera,
+Frame 1 klicken — ein neuer Klick ersetzt den Punkt; Esc bricht ab.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="86"/>
+        <source>Clear</source>
+        <translation>Leeren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="87"/>
+        <source>Remove the Starting Point</source>
+        <translation>Startpunkt entfernen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="96"/>
+        <source>FFT (cross-correlation)</source>
+        <translation>FFT (Kreuzkorrelation)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
+        <source>Full-grid cross-correlation seeds frame 1 (and every reference
+switch in incremental mode); later frames warm-start from the
+previous solution. Robust default — the search radius is the
+Temporal Search parameter.</source>
+        <translation>Die Kreuzkorrelation über das volle Gitter liefert den Startwert für
+Frame 1 (und bei jedem Referenzwechsel im inkrementellen Modus);
+spätere Frames starten warm von der vorherigen Lösung. Robuster
+Standard — der Suchradius ist der Parameter „Zeitliche Suche“.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="108"/>
+        <source>Previous frame</source>
+        <translation>Vorheriger Frame</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
+        <source>Start every frame from the previous frame&apos;s solution — no
+cross-correlation at all. Fastest; can silently freeze on large
+motion or decorrelation — the validity gate will flag affected
+frames.</source>
+        <translation>Jeder Frame startet von der Lösung des vorherigen Frames — ganz
+ohne Kreuzkorrelation. Am schnellsten; kann bei großer Bewegung
+oder Dekorrelation still einfrieren — das Validitätsgate markiert
+betroffene Frames.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <source>Placing… (click to exit)</source>
+        <translation>Platzieren… (zum Beenden klicken)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="167"/>
+        <source>No point placed — FFT fallback at run</source>
+        <translation>Kein Punkt gesetzt — beim Lauf FFT-Fallback</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="170"/>
+        <source>Point: ({0}, {1}) px</source>
+        <translation>Punkt: ({0}, {1}) px</translation>
+    </message>
+</context>
+<context>
     <name>LeftSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="169"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="116"/>
         <source>IMAGES</source>
         <translation>BILDER</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="176"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="123"/>
         <source>Drop LEFT camera
 folder or click</source>
         <translation>LINKEN Kameraordner
 ablegen oder klicken</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="177"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="124"/>
         <source>Drop RIGHT camera
 folder or click</source>
         <translation>RECHTEN Kameraordner
 ablegen oder klicken</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="182"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="129"/>
         <source>Natural Sort (1, 2, …, 10)</source>
         <translation>Natürliche Sortierung (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="190"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="137"/>
         <source>Left</source>
         <translation>Links</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="190"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="137"/>
         <source>Right</source>
         <translation>Rechts</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="219"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="720"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="166"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="681"/>
         <source>No images loaded</source>
         <translation>Keine Bilder geladen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="245"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="192"/>
         <source>CALIBRATION</source>
         <translation>KALIBRIERUNG</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="196"/>
         <source>WORKFLOW TYPE</source>
         <translation>WORKFLOW-TYP</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="253"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="203"/>
+        <source>INITIAL GUESS</source>
+        <translation>STARTSCHÄTZUNG</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="207"/>
         <source>REGION OF INTEREST</source>
         <translation>INTERESSENBEREICH</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="257"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="211"/>
         <source>PARAMETERS</source>
         <translation>PARAMETER</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="261"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="215"/>
         <source>ADVANCED</source>
         <translation>ERWEITERT</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="287"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="241"/>
         <source>Calibrate from images…</source>
         <translation>Aus Bildern kalibrieren…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="294"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="248"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="305"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="259"/>
         <source>Import calibration…</source>
         <translation>Kalibrierung importieren…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="309"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="263"/>
         <source>Manual parameters…</source>
         <translation>Parameter manuell eingeben…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="313"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="267"/>
         <source>No calibration loaded</source>
         <translation>Keine Kalibrierung geladen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="351"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="305"/>
         <source>Choose calibration file</source>
         <translation>Kalibrierdatei wählen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="353"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="307"/>
         <source>Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</source>
         <translation>Kalibrierdateien (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="367"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="321"/>
         <source>Error: {0}</source>
         <translation>Fehler: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="375"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="329"/>
         <source>{0}
 fx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm</source>
         <translation>{0}
 fx {1:.0f}  fy {2:.0f}  |  Basislinie {3:.1f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="399"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="353"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="402"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="356"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1134,63 +1259,63 @@ zwischen Subsets. Optimal für große Verformungen,
 verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="411"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="365"/>
         <source>Solver</source>
         <translation>Löser</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="471"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="484"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="425"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="443"/>
         <source>bbox: not set</source>
         <translation>Begrenzungsrahmen: nicht gesetzt</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="487"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
         <source>bbox: {0}–{1}, {2}–{3} px</source>
         <translation>Begrenzungsrahmen: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="505"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="464"/>
         <source>IC-GN subset window size in pixels (odd number)</source>
         <translation>IC-GN-Subset-Fenstergröße in Pixeln (ungerade Zahl)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="512"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="471"/>
         <source>Node spacing in pixels (must be power of 2)</source>
         <translation>Knotenabstand in Pixeln (muss eine Zweierpotenz sein)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="570"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="529"/>
         <source>Track Both</source>
         <translation>Beide Kameras verfolgen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="571"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="530"/>
         <source>Stereo Each Frame</source>
         <translation>Stereo je Frame</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="572"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="531"/>
         <source>Reference Direct</source>
         <translation>Referenz direkt</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="573"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
         <source>Strategy</source>
         <translation>Strategie</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="391"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="345"/>
         <source>Accumulative</source>
         <translation>Akkumulativ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="392"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="346"/>
         <source>Incremental</source>
         <translation>Inkrementell</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="393"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="347"/>
         <source>Tracking Mode</source>
         <translation>Tracking-Modus</translation>
     </message>
@@ -1199,12 +1324,12 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <translation>Oberflächendehnung berechnen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="415"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="369"/>
         <source>Quality gates (ZNSSD / outliers)</source>
         <translation>Qualitätsprüfungen (ZNSSD / Ausreißer)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="453"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="407"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>Auf der LINKEN Kamera, Frame 1 zeichnen — alle späteren Frames und die rechte Kamera folgen daraus.</translation>
     </message>
@@ -1221,22 +1346,22 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <translation>x min / x max / y min / y max (px)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="506"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="465"/>
         <source>Subset Size</source>
         <translation>Subset-Größe</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="513"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="472"/>
         <source>Subset Step</source>
         <translation>Subset-Schrittweite</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="519"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="478"/>
         <source>Stereo Search</source>
         <translation>Stereo-Suche</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="487"/>
         <source>Temporal Search</source>
         <translation>Zeitliche Suche</translation>
     </message>
@@ -1249,22 +1374,22 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <translation>ADMM-Iterationen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="532"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="491"/>
         <source>Mesh refinement</source>
         <translation>Netzverfeinerung</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="498"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>An Maskengrenzen (Löchern) verfeinern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="500"/>
         <source>Refine at ROI edges</source>
         <translation>An ROI-Rändern verfeinern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="506"/>
         <source>Refinement Level</source>
         <translation>Verfeinerungsstufe</translation>
     </message>
@@ -1277,22 +1402,22 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <translation>Malspur löschen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="580"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="539"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = einmaliger Durchlauf (schnellste), 3 = Standard, 5+ = abnehmender Ertrag</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="582"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="541"/>
         <source>AL-DIC Iterations</source>
         <translation>AL-DIC-Iterationen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="584"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="543"/>
         <source>Only affects AL-DIC solver. Ignored by Local DIC.</source>
         <translation>Betrifft nur den AL-DIC-Löser. Wird von Local DIC ignoriert.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="659"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="620"/>
         <source>NCC search half-width (pixels) around each node for the
 left-to-right stereo match. Set larger than the largest
 expected stereo disparity.</source>
@@ -1301,7 +1426,7 @@ Links-rechts-Stereoabgleich. Größer als die größte
 erwartete Stereo-Disparität wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="664"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="625"/>
         <source>Maximum per-frame displacement the temporal FFT search can
 detect (pixels). Set comfortably larger than the expected
 inter-frame motion.</source>
@@ -1310,26 +1435,26 @@ erkennen kann (Pixel). Deutlich größer als die erwartete
 Bewegung zwischen Frames wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="674"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="635"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>Aktuelle Bilder: Werte über {0} px vergrößern die Suche nicht weiter
 (das Suchfenster wird an den Bildrändern beschnitten).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="678"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="639"/>
         <source>Current images: the engine caps this at {0} px at run start
 (max(10, min(H, W) / 4 - subset)).</source>
         <translation>Aktuelle Bilder: Die Engine begrenzt diesen Wert beim Start auf {0} px
 (max(10, min(H, W) / 4 - Subsetgröße)).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="725"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="686"/>
         <source>Paired: {0} frames per camera</source>
         <translation>Gepaart: {0} Frames pro Kamera</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="731"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="692"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>Nicht übereinstimmend: {0} links vs. {1} rechts</translation>
     </message>
@@ -1342,53 +1467,53 @@ Bewegung zwischen Frames wählen.</translation>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="122"/>
+        <location filename="../../gui/main_window.py" line="147"/>
         <source>&amp;File</source>
         <translation>&amp;Datei</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="124"/>
+        <location filename="../../gui/main_window.py" line="149"/>
         <source>New Project</source>
         <translation>Neues Projekt</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="129"/>
+        <location filename="../../gui/main_window.py" line="154"/>
         <source>Open Project…</source>
         <translation>Projekt öffnen…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="134"/>
+        <location filename="../../gui/main_window.py" line="159"/>
         <source>Save Project…</source>
         <translation>Projekt speichern…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="140"/>
+        <location filename="../../gui/main_window.py" line="165"/>
         <source>Quit</source>
         <translation>Beenden</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="146"/>
+        <location filename="../../gui/main_window.py" line="171"/>
         <source>&amp;Settings</source>
         <translation>&amp;Einstellungen</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="147"/>
+        <location filename="../../gui/main_window.py" line="172"/>
         <source>Language</source>
         <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="197"/>
+        <location filename="../../gui/main_window.py" line="222"/>
         <source>Open Project</source>
         <translation>Projekt öffnen</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="197"/>
-        <location filename="../../gui/main_window.py" line="214"/>
+        <location filename="../../gui/main_window.py" line="222"/>
+        <location filename="../../gui/main_window.py" line="239"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D-Projekt (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="212"/>
+        <location filename="../../gui/main_window.py" line="237"/>
         <source>Save Project</source>
         <translation>Projekt speichern</translation>
     </message>
@@ -2316,7 +2441,6 @@ Bewegung zwischen Frames wählen.</translation>
 <context>
     <name>_CameraDropZone</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="132"/>
         <source>Select image folder</source>
         <translation>Bildordner wählen</translation>
     </message>
