@@ -29,11 +29,15 @@ class TemporalField:
 
     ``u_accum[0]`` is all-zero (the reference frame); ``u_accum[k]`` is the
     frame-0 -> frame-k cumulative displacement on ``ref_coords`` nodes.
+    ``n_gated`` counts, per frame, the nodes invalidated by the ZNSSD honesty
+    gate (F3.1: the gate must be visible, never a silent NaN) — ``None`` when
+    the gate was disabled.
     """
 
     ref_coords: NDArray[np.float64]  # (n, 2) [x, y] frame-1 mesh nodes
     u_accum: NDArray[np.float64]  # (n_frames, n, 2) [u, v]; [0] == 0
     valid: NDArray[np.bool_]  # (n_frames, n)
+    n_gated: NDArray[np.int64] | None = None  # (n_frames,) honesty-gate kills
 
     @property
     def n_frames(self) -> int:
@@ -172,10 +176,11 @@ def temporal_track(
         u_accum[k, :, 1] = vv
         valid[k] = np.isfinite(uu) & np.isfinite(vv)
 
+    n_gated = None
     if gate_znssd > 0:
-        _gate_by_znssd(frames, mask0, ref_coords, u_accum, valid, para, gate_znssd)
+        n_gated = _gate_by_znssd(frames, mask0, ref_coords, u_accum, valid, para, gate_znssd)
 
-    return TemporalField(ref_coords=ref_coords, u_accum=u_accum, valid=valid)
+    return TemporalField(ref_coords=ref_coords, u_accum=u_accum, valid=valid, n_gated=n_gated)
 
 
 def _gate_by_znssd(
@@ -186,7 +191,7 @@ def _gate_by_znssd(
     valid: NDArray[np.bool_],
     para: DICPara,
     threshold: float,
-) -> None:
+) -> NDArray[np.int64]:
     """Invalidate (in place) tracked nodes whose frame-0 -> frame-k correlation fails.
 
     Independent verification of the shipped quantity itself: the frame-0 subset
@@ -194,12 +199,16 @@ def _gate_by_znssd(
     failure shapes seen on S3: accumulative sibling-warm-start freeze (IC-GN
     "converges" with a zero update on a decorrelated pattern) and incremental
     garbage increments faithfully composed into the cumulative field.
+
+    Returns the per-frame count of nodes the gate killed (F3.1: gate kills feed
+    the run diagnostics instead of vanishing as anonymous NaN).
     """
     from al_dic_3d.matching.primitives import _znssd
 
     ref = np.ascontiguousarray(frames[0], dtype=np.float64)
     n = ref_coords.shape[0]
     zeros_f = np.zeros((n, 4), dtype=np.float64)
+    n_gated = np.zeros(u_accum.shape[0], dtype=np.int64)
     for k in range(1, u_accum.shape[0]):
         pre = valid[k].copy()
         if not pre.any():
@@ -218,6 +227,8 @@ def _gate_by_znssd(
         if bad.any():
             u_accum[k, bad] = np.nan
             valid[k, bad] = False
+            n_gated[k] = int(bad.sum())
+    return n_gated
 
 
 def resample_to_points(

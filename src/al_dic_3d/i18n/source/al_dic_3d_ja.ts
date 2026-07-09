@@ -501,56 +501,66 @@
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="97"/>
+        <location filename="../../gui/panels/canvas_area.py" line="98"/>
         <source>Fit</source>
         <translation>フィット</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="112"/>
+        <location filename="../../gui/panels/canvas_area.py" line="113"/>
         <source>Show Grid</source>
         <translation>グリッドを表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Show/hide computational mesh grid</source>
         <translation>計算メッシュグリッドの表示/非表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="119"/>
         <source>Show Subset</source>
         <translation>サブセットを表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="120"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>ホバー時にサブセットウィンドウを表示(グリッド必須)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="126"/>
         <source>3D View</source>
         <translation>3D ビュー</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="127"/>
+        <source>Show the reconstructed surface in 3D</source>
+        <translation>再構成された曲面を 3D で表示</translation>
     </message>
     <message>
         <source>Show Points</source>
         <translation>測定点を表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="270"/>
+        <location filename="../../gui/panels/canvas_area.py" line="283"/>
         <source>Save Mask</source>
         <translation>マスクを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="270"/>
+        <location filename="../../gui/panels/canvas_area.py" line="283"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 画像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="572"/>
+        <location filename="../../gui/panels/canvas_area.py" line="547"/>
+        <source>Analysis produced no valid points — nothing to display. See the log.</source>
+        <translation>解析で有効な点が得られませんでした — 表示できる内容がありません。ログを確認してください。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="595"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="578"/>
+        <location filename="../../gui/panels/canvas_area.py" line="601"/>
         <source>Selected field is not available.</source>
         <translation>選択した項目は利用できません。</translation>
     </message>
@@ -1895,147 +1905,187 @@ inter-frame motion.</source>
 <context>
     <name>RightSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="110"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="114"/>
         <source>Run 3D Analysis</source>
         <translation>3D 解析を実行</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="117"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="121"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="125"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="129"/>
         <source>Export Results</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="133"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="137"/>
         <source>Open Strain Window</source>
         <translation>ひずみウィンドウを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="145"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="149"/>
         <source>PROGRESS</source>
         <translation>進捗</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="152"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="156"/>
         <source>Ready</source>
         <translation>準備完了</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="157"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="161"/>
         <source>ELAPSED  --:--</source>
         <translation>経過  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="160"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="164"/>
         <source>REMAINING  --:--</source>
         <translation>残り  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="166"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="170"/>
         <source>FIELD</source>
         <translation>表示項目</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="172"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="176"/>
         <source>Show on deformed frame</source>
         <translation>変形後フレームに表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="179"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="183"/>
         <source>Camera</source>
         <translation>カメラ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="183"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="184"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="199"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="203"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="202"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="206"/>
         <source>Colormap</source>
         <translation>カラーマップ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="212"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="216"/>
         <source>Auto range</source>
         <translation>自動レンジ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="219"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="223"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="232"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="236"/>
         <source>LOG</source>
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="239"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="243"/>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="289"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="302"/>
         <source>Not ready — {0}</source>
         <translation>未準備 — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="291"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="304"/>
         <source>Ready to run.</source>
         <translation>実行できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="313"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
         <source>Not ready: {0}</source>
         <translation>未準備：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="321"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="334"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 解析を開始しています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="336"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="349"/>
         <source>Cancelling…</source>
         <translation>キャンセルしています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="348"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="377"/>
         <source>Analysis complete</source>
         <translation>解析が完了しました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="357"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="385"/>
+        <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
+        <translation>第 1 フレームのステレオマッチング: {0}/{1} 点が一致 ({2}%)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="393"/>
+        <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
+        <translation>カメラ {0}: 有効性ゲートが {1} 個のノードフレームを除外 (第 1 フレームとの相関検証に失敗)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="400"/>
+        <source>Frame {0}: only {1}% of points valid</source>
+        <translation>フレーム {0}: 有効な点は {1}% のみ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="407"/>
+        <source>Quality gate (ZNSSD) removed {0} positions</source>
+        <translation>品質ゲート (ZNSSD) が {0} 個の位置を除外</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="408"/>
+        <source>Reprojection gate removed {0} positions</source>
+        <translation>再投影ゲートが {0} 個の位置を除外</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="409"/>
+        <source>3D outlier filter removed {0} positions</source>
+        <translation>3D 外れ値フィルタが {0} 個の位置を除外</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="417"/>
+        <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
+        <translation>どのフレームにも有効な点がありません — 実行結果は空です。ROI・マスク・シード設定を確認してください (詳細は上記)。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="425"/>
+        <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
+        <translation>解析完了 — {0} フレーム、有効率の中央値 {1}%、{2} フレームが {3}% 未満 (上記参照)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="440"/>
         <source>Failed: {0}</source>
         <translation>失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="366"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="449"/>
         <source>Run cancelled</source>
         <translation>実行をキャンセルしました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="373"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="456"/>
         <source>ELAPSED  {0}</source>
         <translation>経過  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="379"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
         <source>REMAINING  {0}</source>
         <translation>残り  {0}</translation>
     </message>
@@ -2187,163 +2237,163 @@ inter-frame motion.</source>
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="155"/>
+        <location filename="../../gui/strain_window.py" line="158"/>
         <source>Strain Post-Processing</source>
         <translation>ひずみ後処理</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="178"/>
+        <location filename="../../gui/strain_window.py" line="181"/>
         <source>Fit</source>
         <translation>フィット</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="179"/>
+        <location filename="../../gui/strain_window.py" line="182"/>
         <source>Fit image to viewport</source>
         <translation>画像をビューポートに合わせる</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="183"/>
+        <location filename="../../gui/strain_window.py" line="186"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>100% (1:1) ズーム</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="186"/>
+        <location filename="../../gui/strain_window.py" line="189"/>
         <source>Zoom in</source>
         <translation>拡大</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="190"/>
+        <location filename="../../gui/strain_window.py" line="193"/>
         <source>Zoom out</source>
         <translation>縮小</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="221"/>
+        <location filename="../../gui/strain_window.py" line="224"/>
         <source>STRAIN PARAMETERS</source>
         <translation>ひずみパラメータ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="230"/>
+        <location filename="../../gui/strain_window.py" line="233"/>
         <source>Compute Strain</source>
         <translation>ひずみを計算</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="236"/>
+        <location filename="../../gui/strain_window.py" line="239"/>
         <source>Export Results</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="240"/>
+        <location filename="../../gui/strain_window.py" line="243"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>変位とひずみ結果を NPZ / MAT / CSV にエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="262"/>
+        <location filename="../../gui/strain_window.py" line="265"/>
         <source>FIELD</source>
         <translation>表示項目</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="268"/>
+        <location filename="../../gui/strain_window.py" line="271"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="272"/>
+        <location filename="../../gui/strain_window.py" line="275"/>
         <source>LOG</source>
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="304"/>
+        <location filename="../../gui/strain_window.py" line="307"/>
         <source>Show on deformed frame</source>
         <translation>変形後フレームに表示</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="312"/>
+        <location filename="../../gui/strain_window.py" line="315"/>
         <source>Colormap</source>
         <translation>カラーマップ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="314"/>
+        <location filename="../../gui/strain_window.py" line="317"/>
         <source>Auto range</source>
         <translation>自動レンジ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="330"/>
+        <location filename="../../gui/strain_window.py" line="333"/>
         <source>Min</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="332"/>
+        <location filename="../../gui/strain_window.py" line="335"/>
         <source>Max</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="342"/>
+        <location filename="../../gui/strain_window.py" line="345"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="411"/>
-        <location filename="../../gui/strain_window.py" line="457"/>
-        <location filename="../../gui/strain_window.py" line="544"/>
+        <location filename="../../gui/strain_window.py" line="414"/>
+        <location filename="../../gui/strain_window.py" line="460"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>Strain compute failed: {0}</source>
         <translation>ひずみ計算に失敗しました：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="423"/>
-        <location filename="../../gui/strain_window.py" line="508"/>
+        <location filename="../../gui/strain_window.py" line="426"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>先に 3D 解析を実行してください — 後処理する結果がありません。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="519"/>
-        <location filename="../../gui/strain_window.py" line="546"/>
+        <location filename="../../gui/strain_window.py" line="429"/>
+        <location filename="../../gui/strain_window.py" line="522"/>
+        <location filename="../../gui/strain_window.py" line="549"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>画像上で原点、+X、+Y の順にクリックしてください</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="432"/>
+        <location filename="../../gui/strain_window.py" line="435"/>
         <source>Computing strain…</source>
         <translation>ひずみを計算中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="445"/>
+        <location filename="../../gui/strain_window.py" line="448"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="462"/>
+        <location filename="../../gui/strain_window.py" line="465"/>
         <source>Strain computation complete.</source>
         <translation>ひずみ計算が完了しました。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="470"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ パラメータが変更されました — 「ひずみを計算」をクリックしてください</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="537"/>
-        <location filename="../../gui/strain_window.py" line="554"/>
+        <location filename="../../gui/strain_window.py" line="540"/>
+        <location filename="../../gui/strain_window.py" line="557"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 点を選択済み</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="556"/>
+        <location filename="../../gui/strain_window.py" line="559"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="567"/>
+        <location filename="../../gui/strain_window.py" line="570"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="567"/>
+        <location filename="../../gui/strain_window.py" line="570"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="567"/>
+        <location filename="../../gui/strain_window.py" line="570"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
@@ -2351,14 +2401,19 @@ inter-frame motion.</source>
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="113"/>
+        <location filename="../../gui/widgets/view3d.py" line="83"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="137"/>
+        <location filename="../../gui/widgets/view3d.py" line="107"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D ビューを利用できません：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="136"/>
+        <source>No valid 3D points in this frame — nothing to display.</source>
+        <translation>このフレームに有効な 3D 点がありません — 表示できる内容がありません。</translation>
     </message>
 </context>
 <context>

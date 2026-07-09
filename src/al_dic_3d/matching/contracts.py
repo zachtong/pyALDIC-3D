@@ -80,6 +80,11 @@ class CorrespondenceSet:
 
     ``NaN`` marks invalid; arrays are ``float64`` (positions/quality) and ``uint8``
     (source). This is the ONLY type downstream modules may consume.
+
+    ``diagnostics`` (F3.1) carries the strategy's per-frame failure accounting
+    as plain JSON-serializable row dicts (see
+    :mod:`al_dic_3d.matching.diagnostics`); downstream compute ignores it —
+    only the runner/CLI/GUI read it to report WHY points went invalid.
     """
 
     strategy: str
@@ -87,6 +92,7 @@ class CorrespondenceSet:
     xR: NDArray[np.float64]  # (n_frames, n_pts, 2)
     quality: NDArray[np.float64]  # (n_frames, n_pts) ZNSSD
     source: NDArray[np.uint8]  # (n_frames, n_pts): TRACKED/STEREO_REFRESH/RESCUED/INVALID
+    diagnostics: tuple[dict, ...] = ()  # JSON-serializable failure accounting
 
     def __post_init__(self) -> None:
         if self.xL.shape != self.xR.shape or self.xL.ndim != 3 or self.xL.shape[2] != 2:

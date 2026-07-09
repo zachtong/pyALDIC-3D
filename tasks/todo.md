@@ -38,6 +38,23 @@
 #   honesty-gate kills must be VISIBLE; [5] 3D view root-cause (quad path vs
 #   delaunay fallback with holed ROI; canvas ref_coords pass-through) + rebuild;
 #   3D View toolbar button -> checkbox next to Show Grid/Show Subset
+# F3 DONE 2026-07-08 (not committed): [7] matching/diagnostics.py (rows on
+#   CorrespondenceSet.diagnostics -> meta diagnostics/summary/gates, JSON-safe);
+#   honesty gate returns per-frame kill counts (TemporalField.n_gated); all 3
+#   strategies attach rows + loud all-invalid frame-1 stereo guard w/ params;
+#   CLI prints summary_lines (exit 1 on all-empty); GUI _on_done writes tr()'d
+#   summary (stereo rate / gate kills w/ reason / low-validity frames / gate
+#   demotions / verdict); RunWorker+StrainWorker emit ExcType: msg + traceback
+#   to stderr; 'warning' level alias now colored; strain LOG auto-expands on
+#   error; empty result -> canvas notice + View3D message + log error.
+#   [5] ROOT CAUSE: canvas _render_3d never passed the drawn ROI mask (holes
+#   only survived if points were NaN; Delaunay fallback spanned them) ->
+#   shared viz3d.build_surface_polydata (quads + filter_cells_by_mask +
+#   edge-capped tri fallback, used by View3D AND export/render3d); 3D auto
+#   range now = 2D visible_values contract (per-frame, writes shared signals;
+#   stable-range helper removed); 3D View button -> QCheckBox by Show Subset.
+#   331 tests green, ruff clean, i18n 472x7 100% + scan clean, gui_screenshot
+#   OK (summary lines + zh_CN verified in shots).
 
 # GUI PARITY PLAN (user 6-point review 2026-07-08; investigated via 4 readers)
 # Batch A - quick wins (~half day): items 1+2+3+6

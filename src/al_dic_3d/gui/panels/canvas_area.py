@@ -25,11 +25,12 @@ import numpy as np
 from al_dic.gui.icons import icon_maximize, icon_zoom_in, icon_zoom_out
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.colorbar_overlay import ColorbarOverlay
-from PySide6.QtCore import QEvent, QTimer
+from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
     QHBoxLayout,
+    QLabel,
     QPushButton,
     QStackedWidget,
     QVBoxLayout,
@@ -121,11 +122,12 @@ class CanvasArea3D(QWidget):
         self._subset_cb.toggled.connect(self._on_subset_toggled)
         tb.addWidget(self._subset_cb)
 
-        self._view3d_btn = QPushButton(self.tr("3D View"))
-        self._view3d_btn.setCheckable(True)
-        self._view3d_btn.setFixedWidth(76)
-        self._view3d_btn.toggled.connect(self._on_view_mode)
-        tb.addWidget(self._view3d_btn)
+        # F3.2: a view TOGGLE like Show Grid / Show Subset, not a button.
+        self._view3d_cb = QCheckBox(self.tr("3D View"))
+        self._view3d_cb.setToolTip(self.tr("Show the reconstructed surface in 3D"))
+        self._view3d_cb.setChecked(False)
+        self._view3d_cb.toggled.connect(self._on_view_mode)
+        tb.addWidget(self._view3d_cb)
         layout.addWidget(toolbar)
 
         # ---- canvas (2D) / 3D view stack + overlays ----
@@ -139,6 +141,17 @@ class CanvasArea3D(QWidget):
         self._colorbar = ColorbarOverlay(self._canvas.viewport())
         self._config_overlay = ConfigOverlay3D(controller, self._canvas.viewport())
         self._mesh_overlay = MeshOverlay(self._canvas.viewport())
+        # F3.1 empty-result guard: when a run yields NO valid point anywhere,
+        # the result panel must say so — never silently render nothing.
+        self._empty_notice = QLabel(self._canvas.viewport())
+        self._empty_notice.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._empty_notice.setWordWrap(True)
+        self._empty_notice.setStyleSheet(
+            f"color: {COLORS.DANGER}; background: rgba(0, 0, 0, 150); "
+            f"font-size: 13px; padding: 12px;"
+        )
+        self._empty_notice.setVisible(False)
+        self._result_empty = False
         self._canvas.viewport().installEventFilter(self)
         self._rig_cache = None  # loaded lazily for the 3D frusta
         self._viz_ctrl = VizController3D()  # dense field renderer + caches
@@ -526,8 +539,13 @@ class CanvasArea3D(QWidget):
 
     def _on_results(self) -> None:
         result = self.controller.state.result
-        if result is not None:
-            self._field_range_cache: dict = {}
+        # F3.1: an all-invalid run must be called out on the canvas itself.
+        self._result_empty = result is not None and not bool(
+            np.isfinite(result.reconstruction.points).any()
+        )
+        self._empty_notice.setText(
+            self.tr("Analysis produced no valid points — nothing to display. See the log.")
+        )
         self._viz_ctrl.clear_all()
         self._right_mask_dirty = True
         self.render()
@@ -536,6 +554,11 @@ class CanvasArea3D(QWidget):
 
     def render(self) -> None:
         """Redraw the current view (2D frame + overlay, or the 3D surface)."""
+        show_notice = self._result_empty and self._stack.currentIndex() == 0
+        if show_notice:
+            vp = self._canvas.viewport()
+            self._empty_notice.setGeometry(0, vp.height() // 2 - 40, vp.width(), 80)
+        self._empty_notice.setVisible(show_notice)
         if self._stack.currentIndex() == 1:
             self._render_3d()
             return
@@ -577,8 +600,23 @@ class CanvasArea3D(QWidget):
         if vals is None:
             self._view3d.show_message(self.tr("Selected field is not available."))
             return
+
+        # F3.2: the drawn LEFT reference ROI mask bounds the surface exactly
+        # like the 2D dense view (holes stay open), and the auto color range
+        # comes from the VISIBLE nodes of THIS frame and is written back to
+        # the shared signals — 2D and 3D show identical field/colormap/range.
+        roi_mask = None
+        drawn = self.controller.state.draft.roi_mask_array
+        if drawn is not None:
+            roi_mask = np.asarray(drawn) > 0
         if self.signals.color_auto:
-            vmin, vmax = self._field_range(result)
+            vis = visible_values(vals, result.ref_coords, roi_mask)
+            finite = vis[np.isfinite(vis)]
+            if finite.size:
+                vmin, vmax = float(finite.min()), float(finite.max())
+            else:
+                vmin, vmax = 0.0, 1.0
+            self.signals.color_min, self.signals.color_max = vmin, vmax
         else:
             vmin, vmax = self.signals.color_min, self.signals.color_max
         self._view3d.update_view(
@@ -590,6 +628,7 @@ class CanvasArea3D(QWidget):
             vmax=vmax,
             rig=self._load_rig(),
             ref_coords=result.ref_coords,
+            roi_mask=roi_mask,
         )
 
     def _field_values(self, result, k: int) -> np.ndarray | None:
@@ -602,26 +641,6 @@ class CanvasArea3D(QWidget):
         if field in _STRAIN_IDS and result.strain is not None:
             return getattr(result.strain, field)[k]
         return None
-
-    def _field_range(self, result) -> tuple[float, float]:
-        """Stable color range over ALL frames (playback doesn't re-scale)."""
-        field = self.signals.display_field
-        cache = getattr(self, "_field_range_cache", None)
-        if cache is None:
-            cache = self._field_range_cache = {}
-        if field in cache:
-            return cache[field]
-        lo, hi = np.inf, -np.inf
-        for k in range(result.reconstruction.n_frames):
-            vals = self._field_values(result, k)
-            if vals is None or not np.isfinite(vals).any():
-                continue
-            lo = min(lo, float(np.nanmin(vals)))
-            hi = max(hi, float(np.nanmax(vals)))
-        if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
-            lo, hi = 0.0, 1.0
-        cache[field] = (lo, hi)
-        return lo, hi
 
     def _clear_overlay(self) -> None:
         self._canvas.set_overlay_pixmap(None)
@@ -744,5 +763,6 @@ class CanvasArea3D(QWidget):
         if obj is self._canvas.viewport() and event.type() == QEvent.Type.Resize:
             self._colorbar.setGeometry(0, 0, obj.width(), obj.height())
             self._mesh_overlay.setGeometry(0, 0, obj.width(), obj.height())
+            self._empty_notice.setGeometry(0, obj.height() // 2 - 40, obj.width(), 80)
             self._config_overlay.reposition()
         return super().eventFilter(obj, event)

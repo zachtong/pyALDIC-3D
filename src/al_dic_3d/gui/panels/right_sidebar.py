@@ -56,6 +56,7 @@ class RunWorker(QThread):
         self._stop_requested = True
 
     def run(self) -> None:  # QThread entry point (worker thread)
+        import traceback
         import warnings
 
         def _forward(message, category, filename, lineno, file=None, line=None):  # noqa: ARG001
@@ -80,7 +81,10 @@ class RunWorker(QThread):
             if self._stop_requested:
                 self.cancelled.emit()
             else:
-                self.failed.emit(str(exc))
+                # F3.1: the user gets the exception TYPE + message in the log;
+                # the full traceback goes to stderr for bug reports.
+                traceback.print_exc()
+                self.failed.emit(f"{type(exc).__name__}: {exc}")
 
 
 class RightSidebar3D(QWidget):
@@ -250,7 +254,7 @@ class RightSidebar3D(QWidget):
         layout.addWidget(self._console, stretch=1)
 
         # ---- wiring ----
-        self.signals.log.connect(self._console.append_log)
+        self.signals.log.connect(self._append_log)
         for sig in (
             self.signals.images_changed,
             self.signals.roi_changed,
@@ -270,6 +274,15 @@ class RightSidebar3D(QWidget):
         self.refresh_readiness()
 
     # ---- helpers -------------------------------------------------------------
+
+    def _append_log(self, message: str, level: str = "info") -> None:
+        """Console sink — maps the 'warning' alias onto ConsoleLog's 'warn' color.
+
+        Half the code base emits level 'warning'; ConsoleLog only colors
+        'warn', so those messages silently rendered as info-grey (part of the
+        F3.1 'failures are invisible' complaint).
+        """
+        self._console.append_log(message, "warn" if level == "warning" else level)
 
     def _section(self, layout: QVBoxLayout, text: str) -> None:
         lbl = QLabel(text)
@@ -310,7 +323,7 @@ class RightSidebar3D(QWidget):
             return
         issues = self.controller.state.draft.issues()
         if issues:
-            self._console.append_log(self.tr("Not ready: {0}").format("; ".join(issues)), "warning")
+            self._append_log(self.tr("Not ready: {0}").format("; ".join(issues)), "warn")
             return
         self.signals.set_run_state("running")
         self._run_btn.setEnabled(False)
@@ -318,7 +331,7 @@ class RightSidebar3D(QWidget):
         self._progress_bar.setValue(0)
         self._run_started = time.perf_counter()
         self._timer.start()
-        self._console.append_log(self.tr("Starting 3D analysis…"))
+        self._append_log(self.tr("Starting 3D analysis…"))
         self.refresh_readiness()
 
         self._worker = RunWorker(self.controller)
@@ -333,7 +346,7 @@ class RightSidebar3D(QWidget):
         if self._worker is not None and self._worker.isRunning():
             self._worker.request_stop()
             self._cancel_btn.setEnabled(False)
-            self._console.append_log(self.tr("Cancelling…"), "warn")
+            self._append_log(self.tr("Cancelling…"), "warn")
 
     def _on_progress(self, fraction: float, message: str) -> None:
         self._progress_bar.setValue(int(fraction * 1000))
@@ -345,16 +358,86 @@ class RightSidebar3D(QWidget):
         self._progress_bar.setValue(1000)
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
-        self._console.append_log(self.tr("Analysis complete"), "success")
+        self._log_run_summary()
         self.signals.set_run_state("done")
         self.signals.results_changed.emit()
         self.refresh_readiness()
+
+    def _log_run_summary(self) -> None:
+        """F3.1: the post-run failure accounting, written into the log console.
+
+        Mirrors :func:`al_dic_3d.matching.diagnostics.summary_lines` (the CLI
+        wording) with tr()-wrapped templates: frame-1 stereo stats, honesty-gate
+        kills with the reason, low-validity frames, quality-gate demotions, and
+        a one-line verdict. An all-empty run logs an ERROR, never a quiet
+        'complete'.
+        """
+        result = self.controller.state.result
+        if result is None:
+            self._append_log(self.tr("Analysis complete"), "success")
+            return
+        from al_dic_3d.matching.diagnostics import LOW_VALIDITY_FRAC, summarize_run
+
+        s = summarize_run(result.correspondence, result.reconstruction.points)
+        if s.stereo_n_pts:
+            frac = s.stereo_n_valid / s.stereo_n_pts
+            self._append_log(
+                self.tr("Frame-1 stereo match: {0}/{1} points matched ({2}%)").format(
+                    s.stereo_n_valid, s.stereo_n_pts, f"{frac * 100:.0f}"
+                ),
+                "warn" if frac < LOW_VALIDITY_FRAC else "info",
+            )
+        for cam, n in sorted(s.gated_by_cam.items()):
+            self._append_log(
+                self.tr(
+                    "Camera {0}: validity gate removed {1} node-frames "
+                    "(correlation vs frame 1 failed)"
+                ).format(cam, n),
+                "warn",
+            )
+        for k in s.low_frames:
+            self._append_log(
+                self.tr("Frame {0}: only {1}% of points valid").format(
+                    k, f"{s.valid_frac[k] * 100:.0f}"
+                ),
+                "warn",
+            )
+        gates = result.meta.get("gates") or {}
+        for key, template in (
+            ("znssd_demoted", self.tr("Quality gate (ZNSSD) removed {0} positions")),
+            ("reproj_demoted", self.tr("Reprojection gate removed {0} positions")),
+            ("outliers_removed", self.tr("3D outlier filter removed {0} positions")),
+        ):
+            n = int(gates.get(key, 0))
+            if n:
+                self._append_log(template.format(n), "info")
+        if s.all_empty:
+            self._append_log(
+                self.tr(
+                    "No valid points in ANY frame — the run produced an empty "
+                    "result. Check ROI, masks and seeding (details above)."
+                ),
+                "error",
+            )
+        else:
+            self._append_log(
+                self.tr(
+                    "Analysis complete — {0} frames, median validity {1}%, "
+                    "{2} frame(s) below {3}% (see above)"
+                ).format(
+                    s.n_frames,
+                    f"{s.median_valid_frac * 100:.0f}",
+                    len(s.low_frames),
+                    f"{LOW_VALIDITY_FRAC * 100:.0f}",
+                ),
+                "success",
+            )
 
     def _on_fail(self, message: str) -> None:
         self._timer.stop()
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
-        self._console.append_log(self.tr("Failed: {0}").format(message), "error")
+        self._append_log(self.tr("Failed: {0}").format(message), "error")
         self.signals.set_run_state("failed")
         self.refresh_readiness()
 
@@ -363,7 +446,7 @@ class RightSidebar3D(QWidget):
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
         self._progress_bar.setValue(0)
-        self._console.append_log(self.tr("Run cancelled"), "warn")
+        self._append_log(self.tr("Run cancelled"), "warn")
         self.signals.set_run_state("idle")
         self.refresh_readiness()
 

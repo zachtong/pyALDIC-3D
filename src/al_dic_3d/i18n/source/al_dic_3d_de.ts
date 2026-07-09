@@ -501,56 +501,66 @@
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="97"/>
+        <location filename="../../gui/panels/canvas_area.py" line="98"/>
         <source>Fit</source>
         <translation>Anpassen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="112"/>
+        <location filename="../../gui/panels/canvas_area.py" line="113"/>
         <source>Show Grid</source>
         <translation>Gitter anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Show/hide computational mesh grid</source>
         <translation>Berechnungsnetz ein-/ausblenden</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="119"/>
         <source>Show Subset</source>
         <translation>Subset anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="120"/>
         <source>Show subset window on hover (requires Grid)</source>
         <translation>Subset-Fenster beim Überfahren anzeigen (erfordert Gitter)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="126"/>
         <source>3D View</source>
         <translation>3D-Ansicht</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="127"/>
+        <source>Show the reconstructed surface in 3D</source>
+        <translation>Rekonstruierte Oberfläche in 3D anzeigen</translation>
     </message>
     <message>
         <source>Show Points</source>
         <translation>Messpunkte anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="270"/>
+        <location filename="../../gui/panels/canvas_area.py" line="283"/>
         <source>Save Mask</source>
         <translation>Maske speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="270"/>
+        <location filename="../../gui/panels/canvas_area.py" line="283"/>
         <source>PNG image (*.png)</source>
         <translation>PNG-Bild (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="572"/>
+        <location filename="../../gui/panels/canvas_area.py" line="547"/>
+        <source>Analysis produced no valid points — nothing to display. See the log.</source>
+        <translation>Die Analyse lieferte keine gültigen Punkte — nichts anzuzeigen. Siehe Protokoll.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="595"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D-Ansicht — führen Sie eine Analyse aus, um die rekonstruierte Oberfläche zu sehen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="578"/>
+        <location filename="../../gui/panels/canvas_area.py" line="601"/>
         <source>Selected field is not available.</source>
         <translation>Das gewählte Feld ist nicht verfügbar.</translation>
     </message>
@@ -1899,147 +1909,187 @@ Bewegung zwischen Frames wählen.</translation>
 <context>
     <name>RightSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="110"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="114"/>
         <source>Run 3D Analysis</source>
         <translation>3D-Analyse starten</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="117"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="121"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="125"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="129"/>
         <source>Export Results</source>
         <translation>Ergebnisse exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="133"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="137"/>
         <source>Open Strain Window</source>
         <translation>Dehnungsfenster öffnen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="145"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="149"/>
         <source>PROGRESS</source>
         <translation>FORTSCHRITT</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="152"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="156"/>
         <source>Ready</source>
         <translation>Bereit</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="157"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="161"/>
         <source>ELAPSED  --:--</source>
         <translation>VERSTRICHEN  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="160"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="164"/>
         <source>REMAINING  --:--</source>
         <translation>VERBLEIBEND  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="166"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="170"/>
         <source>FIELD</source>
         <translation>FELD</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="172"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="176"/>
         <source>Show on deformed frame</source>
         <translation>Auf deformiertem Frame anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="179"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="183"/>
         <source>Camera</source>
         <translation>Kamera</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="183"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
         <source>Left</source>
         <translation>Links</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="184"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
         <source>Right</source>
         <translation>Rechts</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="199"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="203"/>
         <source>VISUALIZATION</source>
         <translation>VISUALISIERUNG</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="202"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="206"/>
         <source>Colormap</source>
         <translation>Farbskala</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="212"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="216"/>
         <source>Auto range</source>
         <translation>Auto-Bereich</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="219"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="223"/>
         <source>Opacity</source>
         <translation>Deckkraft</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="232"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="236"/>
         <source>LOG</source>
         <translation>PROTOKOLL</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="239"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="243"/>
         <source>Clear</source>
         <translation>Leeren</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="289"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="302"/>
         <source>Not ready — {0}</source>
         <translation>Nicht bereit — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="291"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="304"/>
         <source>Ready to run.</source>
         <translation>Bereit zur Ausführung.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="313"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
         <source>Not ready: {0}</source>
         <translation>Nicht bereit: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="321"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="334"/>
         <source>Starting 3D analysis…</source>
         <translation>3D-Analyse wird gestartet…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="336"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="349"/>
         <source>Cancelling…</source>
         <translation>Wird abgebrochen…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="348"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="377"/>
         <source>Analysis complete</source>
         <translation>Analyse abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="357"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="385"/>
+        <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
+        <translation>Stereo-Zuordnung Frame 1: {0}/{1} Punkte zugeordnet ({2} %)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="393"/>
+        <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
+        <translation>Kamera {0}: Validitätsgate entfernte {1} Knoten-Frames (Korrelation mit Frame 1 fehlgeschlagen)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="400"/>
+        <source>Frame {0}: only {1}% of points valid</source>
+        <translation>Frame {0}: nur {1} % der Punkte gültig</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="407"/>
+        <source>Quality gate (ZNSSD) removed {0} positions</source>
+        <translation>Qualitätsgate (ZNSSD) entfernte {0} Positionen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="408"/>
+        <source>Reprojection gate removed {0} positions</source>
+        <translation>Reprojektionsgate entfernte {0} Positionen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="409"/>
+        <source>3D outlier filter removed {0} positions</source>
+        <translation>3D-Ausreißerfilter entfernte {0} Positionen</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="417"/>
+        <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
+        <translation>Keine gültigen Punkte in IRGENDEINEM Frame — der Lauf lieferte ein leeres Ergebnis. Prüfen Sie ROI, Masken und Startpunkt (Details oben).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="425"/>
+        <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
+        <translation>Analyse abgeschlossen — {0} Frames, mediane Validität {1} %, {2} Frame(s) unter {3} % (siehe oben)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="440"/>
         <source>Failed: {0}</source>
         <translation>Fehlgeschlagen: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="366"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="449"/>
         <source>Run cancelled</source>
         <translation>Lauf abgebrochen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="373"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="456"/>
         <source>ELAPSED  {0}</source>
         <translation>VERSTRICHEN  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="379"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
         <source>REMAINING  {0}</source>
         <translation>VERBLEIBEND  {0}</translation>
     </message>
@@ -2191,163 +2241,163 @@ Bewegung zwischen Frames wählen.</translation>
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="155"/>
+        <location filename="../../gui/strain_window.py" line="158"/>
         <source>Strain Post-Processing</source>
         <translation>Dehnungs-Nachbearbeitung</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="178"/>
+        <location filename="../../gui/strain_window.py" line="181"/>
         <source>Fit</source>
         <translation>Anpassen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="179"/>
+        <location filename="../../gui/strain_window.py" line="182"/>
         <source>Fit image to viewport</source>
         <translation>Bild an den Ansichtsbereich anpassen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="183"/>
+        <location filename="../../gui/strain_window.py" line="186"/>
         <source>Zoom to 100% (1:1)</source>
         <translation>Auf 100% (1:1) zoomen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="186"/>
+        <location filename="../../gui/strain_window.py" line="189"/>
         <source>Zoom in</source>
         <translation>Vergrößern</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="190"/>
+        <location filename="../../gui/strain_window.py" line="193"/>
         <source>Zoom out</source>
         <translation>Verkleinern</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="221"/>
+        <location filename="../../gui/strain_window.py" line="224"/>
         <source>STRAIN PARAMETERS</source>
         <translation>DEHNUNGSPARAMETER</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="230"/>
+        <location filename="../../gui/strain_window.py" line="233"/>
         <source>Compute Strain</source>
         <translation>Dehnung berechnen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="236"/>
+        <location filename="../../gui/strain_window.py" line="239"/>
         <source>Export Results</source>
         <translation>Ergebnisse exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="240"/>
+        <location filename="../../gui/strain_window.py" line="243"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>Verschiebungs- und Dehnungsergebnisse als NPZ / MAT / CSV exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="262"/>
+        <location filename="../../gui/strain_window.py" line="265"/>
         <source>FIELD</source>
         <translation>FELD</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="268"/>
+        <location filename="../../gui/strain_window.py" line="271"/>
         <source>VISUALIZATION</source>
         <translation>VISUALISIERUNG</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="272"/>
+        <location filename="../../gui/strain_window.py" line="275"/>
         <source>LOG</source>
         <translation>PROTOKOLL</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="304"/>
+        <location filename="../../gui/strain_window.py" line="307"/>
         <source>Show on deformed frame</source>
         <translation>Auf deformiertem Frame anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="312"/>
+        <location filename="../../gui/strain_window.py" line="315"/>
         <source>Colormap</source>
         <translation>Farbskala</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="314"/>
+        <location filename="../../gui/strain_window.py" line="317"/>
         <source>Auto range</source>
         <translation>Auto-Bereich</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="330"/>
+        <location filename="../../gui/strain_window.py" line="333"/>
         <source>Min</source>
         <translation>Min</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="332"/>
+        <location filename="../../gui/strain_window.py" line="335"/>
         <source>Max</source>
         <translation>Max</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="342"/>
+        <location filename="../../gui/strain_window.py" line="345"/>
         <source>Opacity</source>
         <translation>Deckkraft</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="411"/>
-        <location filename="../../gui/strain_window.py" line="457"/>
-        <location filename="../../gui/strain_window.py" line="544"/>
+        <location filename="../../gui/strain_window.py" line="414"/>
+        <location filename="../../gui/strain_window.py" line="460"/>
+        <location filename="../../gui/strain_window.py" line="547"/>
         <source>Strain compute failed: {0}</source>
         <translation>Dehnungsberechnung fehlgeschlagen: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="423"/>
-        <location filename="../../gui/strain_window.py" line="508"/>
+        <location filename="../../gui/strain_window.py" line="426"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>Zuerst die 3D-Analyse ausführen — keine Ergebnisse zur Nachbearbeitung.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="519"/>
-        <location filename="../../gui/strain_window.py" line="546"/>
+        <location filename="../../gui/strain_window.py" line="429"/>
+        <location filename="../../gui/strain_window.py" line="522"/>
+        <location filename="../../gui/strain_window.py" line="549"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>Klicken Sie im Bild auf den Ursprung, dann +X, dann +Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="432"/>
+        <location filename="../../gui/strain_window.py" line="435"/>
         <source>Computing strain…</source>
         <translation>Dehnung wird berechnet…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="445"/>
+        <location filename="../../gui/strain_window.py" line="448"/>
         <source>Complete</source>
         <translation>Abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="462"/>
+        <location filename="../../gui/strain_window.py" line="465"/>
         <source>Strain computation complete.</source>
         <translation>Dehnungsberechnung abgeschlossen.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="470"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ Parameter geändert — „Dehnung berechnen“ klicken</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="537"/>
-        <location filename="../../gui/strain_window.py" line="554"/>
+        <location filename="../../gui/strain_window.py" line="540"/>
+        <location filename="../../gui/strain_window.py" line="557"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 Punkte gewählt</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="556"/>
+        <location filename="../../gui/strain_window.py" line="559"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="567"/>
+        <location filename="../../gui/strain_window.py" line="570"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="567"/>
+        <location filename="../../gui/strain_window.py" line="570"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="567"/>
+        <location filename="../../gui/strain_window.py" line="570"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
@@ -2355,14 +2405,19 @@ Bewegung zwischen Frames wählen.</translation>
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="113"/>
+        <location filename="../../gui/widgets/view3d.py" line="83"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D-Ansicht — führen Sie eine Analyse aus, um die rekonstruierte Oberfläche zu sehen.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="137"/>
+        <location filename="../../gui/widgets/view3d.py" line="107"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D-Ansicht nicht verfügbar: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="136"/>
+        <source>No valid 3D points in this frame — nothing to display.</source>
+        <translation>Keine gültigen 3D-Punkte in diesem Frame — nichts anzuzeigen.</translation>
     </message>
 </context>
 <context>

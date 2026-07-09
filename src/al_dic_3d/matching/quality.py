@@ -32,4 +32,11 @@ def apply_znssd_gate(cs: CorrespondenceSet, znssd_max: float) -> CorrespondenceS
     xR[bad] = np.nan
     quality[bad] = np.nan
     source[bad] = INVALID
-    return CorrespondenceSet(strategy=cs.strategy, xL=xL, xR=xR, quality=quality, source=source)
+    return CorrespondenceSet(
+        strategy=cs.strategy,
+        xL=xL,
+        xR=xR,
+        quality=quality,
+        source=source,
+        diagnostics=cs.diagnostics,  # F3.1: never lose the failure accounting
+    )

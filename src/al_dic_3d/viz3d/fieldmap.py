@@ -34,6 +34,8 @@ from matplotlib import colormaps
 from numpy.typing import NDArray
 from scipy.spatial import Delaunay
 
+from al_dic_3d.viz3d.surface import MAX_EDGE_FACTOR, median_nn_spacing
+
 
 def apply_colormap(
     data: NDArray[np.float64],
@@ -82,24 +84,6 @@ def visible_values(
     return out
 
 
-# Support triangles with an edge longer than this multiple of the node step are
-# dropped: Delaunay spans node-free ROI holes with long triangles, and without
-# the cap those holes get filled instead of staying transparent. 2.5x leaves
-# regular grids (longest edge = sqrt(2) x step) and moderately distorted
-# disparity-warped clouds untouched.
-_MAX_EDGE_FACTOR = 2.5
-
-
-def _median_nn_spacing(pts: NDArray[np.float64]) -> float:
-    """Median nearest-neighbor distance — the de-facto node step of a cloud."""
-    if pts.shape[0] < 2:
-        return 0.0
-    from scipy.spatial import cKDTree
-
-    dist, _ = cKDTree(pts).query(pts, k=2)
-    return float(np.median(dist[:, 1]))
-
-
 def valid_node_support_mask(
     nodes: NDArray[np.float64],
     values: NDArray[np.float64],
@@ -133,12 +117,12 @@ def valid_node_support_mask(
     except Exception:  # degenerate (collinear) node sets have no support
         return mask.astype(bool)
     good = ok[tri.simplices].all(axis=1)
-    step = float(mesh_step) if mesh_step else _median_nn_spacing(pts)
+    step = float(mesh_step) if mesh_step else median_nn_spacing(pts)
     if step > 0.0:
         tri_pts = pts[tri.simplices]  # (n_tri, 3, 2)
         edges = tri_pts - np.roll(tri_pts, 1, axis=1)
         longest = np.sqrt((edges**2).sum(axis=2)).max(axis=1)
-        good &= longest <= _MAX_EDGE_FACTOR * step
+        good &= longest <= MAX_EDGE_FACTOR * step
     if np.any(good):
         polys = np.round(pts[tri.simplices[good]]).astype(np.int32)
         cv2.fillPoly(mask, list(polys), 1)

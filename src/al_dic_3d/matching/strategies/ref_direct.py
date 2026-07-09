@@ -30,6 +30,7 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceConfig,
     CorrespondenceSet,
 )
+from al_dic_3d.matching.diagnostics import frame_row, stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
@@ -132,6 +133,7 @@ class RefDirectStrategy:
         quality = np.full((n_frames, n_pts), np.nan, dtype=np.float64)
         source = np.full((n_frames, n_pts), INVALID, dtype=np.uint8)
 
+        diag: list[dict] = list(temporal_rows("L", tf_L))
         prev_m = np.zeros((n_pts, 2), dtype=np.float64)  # chain seed for M(L1 -> R_k)
         for k in range(n_frames):
             if stop is not None and stop():
@@ -151,6 +153,14 @@ class RefDirectStrategy:
                     frame_idx=0,
                 )
                 m_k, znssd_k, valid_m = field.d, field.znssd, field.valid
+                diag += stereo_rows(field)
+                if not valid_m.any():
+                    raise RuntimeError(
+                        f"frame-1 stereo match found no valid correspondences "
+                        f"(0/{n_pts} candidates matched L1->R1; search_radius="
+                        f"{self.stereo_search}, disparity offset={stereo_offset}) — "
+                        f"check the seed point / disparity prior and stereo overlap."
+                    )
             else:
                 # Direct L1 -> R_k match at the reference nodes X_L, chain-seeded
                 # from m^{k-1} (seed keeps up with the accumulating deformation).
@@ -159,6 +169,10 @@ class RefDirectStrategy:
                 )
 
             m_ok = valid_m & np.isfinite(m_k).all(axis=1)  # cross-match converged
+            if k > 0:
+                diag.append(
+                    frame_row(k, "cross", n_pts, int(m_ok.sum()), note="direct L1->Rk match")
+                )
             good = valid_l & m_ok  # a usable correspondence also needs the left position
             xL[k][good] = xl_k[good]
             xR[k][good] = coords_L[good] + m_k[good]  # x_R^k = X_L + m^k
@@ -173,4 +187,11 @@ class RefDirectStrategy:
             if progress is not None:
                 progress((k + 1) / n_frames, f"ref_direct {k + 1}/{n_frames}")
 
-        return CorrespondenceSet(strategy=self.name, xL=xL, xR=xR, quality=quality, source=source)
+        return CorrespondenceSet(
+            strategy=self.name,
+            xL=xL,
+            xR=xR,
+            quality=quality,
+            source=source,
+            diagnostics=tuple(diag),
+        )

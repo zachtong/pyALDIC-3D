@@ -42,7 +42,7 @@ from al_dic_3d.export.animation import StreamingAnimWriter, animation_fps
 from al_dic_3d.export.colorbar import colorbar_label
 from al_dic_3d.export.tables import field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
-from al_dic_3d.viz3d.surface import as_vtk_faces, build_quad_connectivity, filter_cells_finite
+from al_dic_3d.viz3d.surface import build_surface_polydata
 
 if TYPE_CHECKING:
     from al_dic_3d.runner import RunResult
@@ -63,34 +63,12 @@ def build_surface(
 ):
     """Surface (``pv.PolyData``) from finite 3D points + scalars (Qt-free).
 
-    Same construction as the interactive ``View3D``: regular-grid quads from
-    ``ref_coords`` when possible (cells touching a NaN point or NaN scalar are
-    dropped), else a Delaunay triangulation of the finite points. Returns
-    ``None`` when fewer than 3 finite points exist.
+    Same construction as the interactive ``View3D`` — both delegate to the
+    shared :func:`al_dic_3d.viz3d.surface.build_surface_polydata` (F3.2), so
+    exported frames carry the exact geometry the canvas shows. Returns ``None``
+    when fewer than 3 finite points exist.
     """
-    import pyvista as pv
-
-    pts = np.asarray(points_3d, dtype=np.float64).reshape(-1, 3)
-    vals = np.asarray(values, dtype=np.float64).reshape(-1)
-    if ref_coords is not None:
-        cells = build_quad_connectivity(np.asarray(ref_coords, dtype=np.float64))
-        cells = filter_cells_finite(cells, pts)
-        if len(cells):
-            cells = cells[np.isfinite(vals[cells]).all(axis=1)]
-        if len(cells):
-            used = np.unique(cells)
-            remap = np.zeros(len(pts), dtype=np.int64)
-            remap[used] = np.arange(len(used))
-            surf = pv.PolyData(pts[used], faces=as_vtk_faces(remap[cells]))
-            surf[name] = vals[used]
-            return surf
-    finite = np.isfinite(pts).all(axis=1) & np.isfinite(vals)
-    if finite.sum() < 3:
-        return None
-    cloud = pv.PolyData(pts[finite])
-    cloud[name] = vals[finite]
-    surf = cloud.delaunay_2d()
-    return surf if surf.n_cells > 0 else cloud
+    return build_surface_polydata(points_3d, values, name, ref_coords)
 
 
 def _make_plotter(window_size: tuple[int, int], background: str):

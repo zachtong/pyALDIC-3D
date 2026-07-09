@@ -463,10 +463,20 @@ def run_pipeline(
         raise RuntimeError("cancelled")
     ref_coords = np.asarray(mesh_L.coordinates_fem, dtype=np.float64)
 
+    def _n_valid_positions(points) -> int:
+        return int(np.isfinite(points).all(axis=2).sum())
+
+    def _n_valid_pairs(c) -> int:
+        return int((np.isfinite(c.xL).all(axis=2) & np.isfinite(c.xR).all(axis=2)).sum())
+
     # Optional robustness gates: ZNSSD on the correspondence (pre-reconstruction),
-    # then reprojection + 3D-outlier on the reconstruction (post).
+    # then reprojection + 3D-outlier on the reconstruction (post). Every gate's
+    # demotion COUNT is recorded (F3.1) — a gate must never eat points silently.
+    gates: dict[str, int] = {}
     if cfg.quality_gate:
+        n0 = _n_valid_pairs(cs)
         cs = apply_znssd_gate(cs, cfg.znssd_max)
+        gates["znssd_demoted"] = n0 - _n_valid_pairs(cs)
     rec = reconstruct_correspondence(cs, rig, cam_left=cfg.cam_left, cam_right=cfg.cam_right)
     if cfg.quality_gate:
         focals = [
@@ -475,8 +485,12 @@ def run_pipeline(
             for f in (rig.cameras[cam].fx, rig.cameras[cam].fy)
         ]
         max_reproj_norm = cfg.reproj_max_px / float(np.mean(focals))  # px -> normalized
+        n0 = _n_valid_positions(rec.points)
         rec = apply_reproj_gate(rec, max_reproj_norm)
+        n1 = _n_valid_positions(rec.points)
         rec = remove_3d_outliers(rec, ref_coords, threshold=cfg.outlier_threshold)
+        gates["reproj_demoted"] = n0 - n1
+        gates["outliers_removed"] = n1 - _n_valid_positions(rec.points)
 
     strain = None
     if cfg.compute_strain:
@@ -488,6 +502,13 @@ def run_pipeline(
             smooth_sigma=cfg.strain_smooth_sigma,
         )
 
+    # F3.1: the post-run failure accounting — per-stage rows from the strategy
+    # plus a summary over the FINAL reconstructed points. JSON-serializable so
+    # it survives the session file and the parameters export.
+    from al_dic_3d.matching.diagnostics import summarize_run
+
+    summary = summarize_run(cs, rec.points)
+
     tracked = int((rec.source != 3).sum())  # 3 == INVALID
     meta = {
         "strategy": cfg.strategy,
@@ -498,6 +519,9 @@ def run_pipeline(
         "compute_strain": cfg.compute_strain,
         "image_size": (img_h, img_w),
         "base_dir": str(seq_base),
+        "diagnostics": [dict(r) for r in cs.diagnostics],
+        "summary": summary.to_meta(),
+        "gates": gates,
     }
     return RunResult(
         strategy=cfg.strategy,

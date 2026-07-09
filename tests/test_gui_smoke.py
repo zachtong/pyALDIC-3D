@@ -314,15 +314,104 @@ def test_right_camera_mask_warp_keeps_hole(qapp, scene):
     win.close()
 
 
-def test_field_range_is_stable_across_frames(qapp, scene):
+def test_view3d_checkbox_switches_stack_and_matches_2d_view(qapp, scene, monkeypatch):
+    # F3.2: the toggle is a CHECKBOX next to Show Grid / Show Subset, and the
+    # 3D render receives the drawn ROI mask + the SAME field/colormap/range as
+    # the 2D dense view (shared signals).
+    from PySide6.QtWidgets import QCheckBox
+
+    win = _loaded_window(scene)
+    area = win._canvas_area
+    assert isinstance(area._view3d_cb, QCheckBox)
+    assert not hasattr(area, "_view3d_btn")  # the toolbar button is gone
+
+    ctrl = area.roi_ctrl
+    ctrl.add_rectangle(40, 40, 160, 160, "add")
+    ctrl.add_circle(100, 100, 15, "cut")  # holed ROI
+    area.commit_roi_mask()
+
+    win.controller.run()
+    win._right._on_done()
+
+    # Render the 2D view first: auto range writes the shared signals.
+    win.signals.set_current_frame(1, 3)
+    area.render()
+    lo_2d, hi_2d = win.signals.color_min, win.signals.color_max
+
+    calls = {}
+
+    def record_update(points, vals, **kw):
+        calls.update(kw)
+        calls["points"] = points
+
+    monkeypatch.setattr(area._view3d, "update_view", record_update)
+    area._view3d_cb.setChecked(True)
+    assert area._stack.currentIndex() == 1  # stack switched to the 3D page
+    assert calls["roi_mask"] is not None and calls["roi_mask"].dtype == bool
+    assert not calls["roi_mask"][100, 100]  # the drawn hole reaches the 3D view
+    assert calls["ref_coords"] is not None
+    assert calls["cmap"] == win.signals.colormap
+    # Same frame, same field, same auto-range contract as the 2D view.
+    assert calls["vmin"] == pytest.approx(lo_2d) and calls["vmax"] == pytest.approx(hi_2d)
+    assert (calls["vmin"], calls["vmax"]) == (win.signals.color_min, win.signals.color_max)
+
+    area._view3d_cb.setChecked(False)
+    assert area._stack.currentIndex() == 0  # back to the 2D canvas
+    win.close()
+
+
+def test_run_summary_written_to_log(qapp, scene):
+    # F3.1: finishing a run writes a validity summary into the log console.
     win = _loaded_window(scene)
     win.controller.run()
     win._right._on_done()
+    text = win._right._console.toPlainText()
+    assert "Frame-1 stereo match:" in text
+    assert "Analysis complete —" in text and "median validity" in text
+    win.close()
+
+
+def test_empty_result_logs_error_and_shows_canvas_notice(qapp, scene):
+    # F3.1 empty-result guard: all-NaN reconstruction -> explicit error line
+    # in the log + a visible notice on the canvas, never silent nothing.
+    from dataclasses import replace
+
+    win = _loaded_window(scene)
+    win.controller.run()
     result = win.controller.state.result
-    lo1, hi1 = win._canvas_area._field_range(result)
-    win.signals.set_current_frame(2, 3)
-    lo2, hi2 = win._canvas_area._field_range(result)
-    assert (lo1, hi1) == (lo2, hi2)  # playback does not re-scale colors
-    disp = result.reconstruction.displacement
-    assert lo1 <= np.nanmin(disp[:, :, 0]) + 1e-9
+    rec = result.reconstruction
+    nan_pts = np.full_like(rec.points, np.nan)
+    empty_rec = replace(
+        rec,
+        points=nan_pts,
+        displacement=np.full_like(rec.displacement, np.nan),
+        reproj_error=np.full_like(rec.reproj_error, np.nan),
+    )
+    win.controller.state.result = replace(result, reconstruction=empty_rec)
+
+    win._right._on_done()  # summary path sees the empty reconstruction
+    text = win._right._console.toPlainText()
+    assert "No valid points in ANY frame" in text
+
+    win._canvas_area.render()
+    assert win._canvas_area._result_empty
+    assert win._canvas_area._empty_notice.isVisible()
+    win.close()
+
+
+def test_run_worker_failure_reports_exception_type(qapp, scene):
+    # F3.1: a worker crash surfaces the exception TYPE + message to the UI.
+    from al_dic_3d.gui.panels.right_sidebar import RunWorker
+
+    win = _loaded_window(scene)
+
+    class Boom:
+        def run(self, progress=None, stop=None):  # noqa: ARG002
+            raise ValueError("boom: bad calibration matrix")
+
+    worker = RunWorker(Boom())
+    got: list[str] = []
+    worker.failed.connect(got.append)
+    worker.run()  # synchronous call (no thread needed for the error path)
+    assert got == ["ValueError: boom: bad calibration matrix"]
     win.close()

@@ -124,6 +124,9 @@ class _StrainWorker(QThread):
         try:
             self.finished_ok.emit(self._ctrl.compute(self._override))
         except Exception as exc:  # noqa: BLE001 - report any failure to the UI
+            import traceback
+
+            traceback.print_exc()  # full traceback to stderr (F3.1)
             self.failed.emit(f"{type(exc).__name__}: {exc}")
 
 
@@ -742,4 +745,8 @@ class StrainWindow3D(QMainWindow):
     # ------------------------------------------------------------------
 
     def _log(self, message: str, level: str = "info") -> None:
-        self._console.append_log(message, level)
+        # 'warning' is an alias ConsoleLog does not color; errors force the
+        # collapsed LOG section open so a failed compute is never invisible.
+        self._console.append_log(message, "warn" if level == "warning" else level)
+        if level == "error":
+            self._log_section.set_expanded(True)

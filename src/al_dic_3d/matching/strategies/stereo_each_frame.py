@@ -28,6 +28,7 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceConfig,
     CorrespondenceSet,
 )
+from al_dic_3d.matching.diagnostics import frame_row, stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
@@ -129,6 +130,7 @@ class StereoEachFrameStrategy:
         quality = np.full((n_frames, n_pts), np.nan, dtype=np.float64)
         source = np.full((n_frames, n_pts), INVALID, dtype=np.uint8)
 
+        diag: list[dict] = list(temporal_rows("L", tf_L))
         prev_d = np.zeros((n_pts, 2), dtype=np.float64)  # warm-start seed (last good disparity)
         for k in range(n_frames):
             if stop is not None and stop():
@@ -148,11 +150,28 @@ class StereoEachFrameStrategy:
                     frame_idx=0,
                 )
                 d_k, znssd_k, valid_s = field.d, field.znssd, field.valid
+                diag += stereo_rows(field)
+                if not valid_s.any():
+                    raise RuntimeError(
+                        f"frame-1 stereo match found no valid correspondences "
+                        f"(0/{n_pts} candidates matched L1->R1; search_radius="
+                        f"{self.stereo_search}, disparity offset={stereo_offset}) — "
+                        f"check the seed point / disparity prior and stereo overlap."
+                    )
             else:
                 # Warm-start from the previous frame's disparity (slowly varying);
                 # scattered local IC-GN at x_L^k -> no NCC, no resampling.
                 d_k, znssd_k, valid_s = match_points(
                     left[k], right[k], xl_k, np.nan_to_num(prev_d, nan=0.0), para_L, tol=1e-3
+                )
+                diag.append(
+                    frame_row(
+                        k,
+                        "stereo",
+                        n_pts,
+                        int((valid_s & np.isfinite(d_k).all(axis=1)).sum()),
+                        note="per-frame stereo refresh",
+                    )
                 )
 
             good = valid_l & valid_s
@@ -171,4 +190,11 @@ class StereoEachFrameStrategy:
             if progress is not None:
                 progress((k + 1) / n_frames, f"stereo_each_frame {k + 1}/{n_frames}")
 
-        return CorrespondenceSet(strategy=self.name, xL=xL, xR=xR, quality=quality, source=source)
+        return CorrespondenceSet(
+            strategy=self.name,
+            xL=xL,
+            xR=xR,
+            quality=quality,
+            source=source,
+            diagnostics=tuple(diag),
+        )

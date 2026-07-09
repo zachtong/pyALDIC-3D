@@ -180,9 +180,21 @@ def _run_command(args: argparse.Namespace) -> int:
         f"strategy={m['strategy']} frames={m['n_frames']} points={m['n_pts']} "
         f"tracked={m['n_tracked_positions']}/{total}"
     )
+
+    # F3.1: post-run failure accounting — every silent kill becomes a line.
+    from al_dic_3d.matching.diagnostics import summarize_run, summary_lines
+
+    summary = summarize_run(result.correspondence, result.reconstruction.points)
+    for level, msg in summary_lines(summary, m.get("gates")):
+        if level in ("warning", "error"):
+            print(f"{level}: {msg}", file=sys.stderr)
+        else:
+            print(msg)
+
     for key in ("params", *formats):
         print(f"wrote {paths[key]}")
-    return 0
+    # An all-empty result is a failure even though the pipeline ran to the end.
+    return 1 if summary.all_empty else 0
 
 
 def _board_spec_from_args(args: argparse.Namespace, parser_error) -> object:

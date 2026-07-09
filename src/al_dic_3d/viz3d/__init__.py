@@ -15,11 +15,21 @@ Layer: visualization (GUI).  Lands: Phase 4.  Spec: docs/architecture/01 §B.1, 
 from al_dic_3d.viz3d.surface import (
     as_vtk_faces,
     build_quad_connectivity,
+    build_surface_polydata,
+    build_tri_connectivity,
+    filter_cells_by_mask,
+    filter_cells_edge_cap,
     filter_cells_finite,
+    nodes_in_mask,
 )
 
 __all__ = [
     "as_vtk_faces",
     "build_quad_connectivity",
+    "build_surface_polydata",
+    "build_tri_connectivity",
+    "filter_cells_by_mask",
+    "filter_cells_edge_cap",
     "filter_cells_finite",
+    "nodes_in_mask",
 ]

@@ -43,9 +43,7 @@ def _run_shift(shift: int, fft_search: int, gate: float = 1.0):
     f0 = _speckle(h, w)
     f1 = np.roll(f0, shift, axis=0)
     lo, hi = 120, 300  # interior ROI, clear of the roll wrap seam
-    para = make_dicpara(
-        img_size=(h, w), roi=(lo, hi, lo, hi), fft_search=fft_search
-    )
+    para = make_dicpara(img_size=(h, w), roi=(lo, hi, lo, hi), fft_search=fft_search)
     mesh = build_grid_mesh(para, h, w)
     tf = temporal_track([f0, f1], mesh, para, gate_znssd=gate)
     dy = tf.u_accum[1, :, 1]
@@ -82,6 +80,14 @@ def test_honesty_gate_flags_untrackable_frame():
 
     assert frac_ungated > 0.9, "engine laundering assumption changed?"
     assert frac_gated < 0.2, f"gate left {frac_gated:.0%} of an untrackable frame valid"
+
+    # F3.1: the gate reports HOW MANY nodes it killed, per frame — the kills
+    # feed the run diagnostics instead of vanishing as anonymous NaN.
+    assert tf_raw.n_gated is None  # gate disabled -> no accounting
+    assert tf.n_gated is not None and tf.n_gated.shape == (2,)
+    assert int(tf.n_gated[0]) == 0  # reference frame is never gated
+    n_killed = int(tf_raw.valid[1].sum()) - int(tf.valid[1].sum())
+    assert int(tf.n_gated[1]) == n_killed > 0
 
 
 def test_incremental_composition_large_increments():

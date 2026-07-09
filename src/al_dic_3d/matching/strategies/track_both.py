@@ -29,6 +29,7 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceConfig,
     CorrespondenceSet,
 )
+from al_dic_3d.matching.diagnostics import stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
@@ -131,7 +132,12 @@ class TrackBothStrategy:
         right_pts = disp.right_pts  # (n_pts, 2); NaN where the stereo link failed
         base_valid = disp.valid  # (n_pts,)
         if not base_valid.any():
-            raise RuntimeError("frame-1 stereo match found no valid correspondences")
+            raise RuntimeError(
+                f"frame-1 stereo match found no valid correspondences "
+                f"(0/{n_pts} candidates matched L1->R1; search_radius="
+                f"{self.stereo_search}, disparity offset={stereo_offset}) — "
+                f"check the seed point / disparity prior and stereo overlap."
+            )
 
         # (2a) left temporal track — corr points ARE the mesh_L nodes (no resample).
         u0_L = temporal_u0(init_mode, left[0], left[1], cfg.seed_point, n_pts)
@@ -222,10 +228,17 @@ class TrackBothStrategy:
             if progress is not None:
                 progress((k + 1) / n_frames, f"track_both frame {k + 1}/{n_frames}")
 
+        # F3.1: per-stage failure accounting rides along with the result.
+        diagnostics = (
+            *stereo_rows(disp),
+            *temporal_rows("L", tf_L),
+            *temporal_rows("R", tf_R),
+        )
         return CorrespondenceSet(
             strategy=self.name,
             xL=xL,
             xR=xR,
             quality=quality,
             source=source,
+            diagnostics=diagnostics,
         )

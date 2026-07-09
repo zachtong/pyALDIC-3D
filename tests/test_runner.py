@@ -104,6 +104,17 @@ def test_run_pipeline_end_to_end_recovers_3d(tmp_path):
     assert result.meta["n_tracked_positions"] > 0
     assert seen and seen[-1] == pytest.approx(1.0)  # progress reached 100%
 
+    # F3.1: the failure accounting rides in meta and is JSON-serializable
+    # (session.json writes meta verbatim; the parameters export sanitises it).
+    import json
+
+    m = result.meta
+    assert m["summary"]["n_frames"] == 3 and not m["summary"]["all_empty"]
+    cams = {r["cam"] for r in m["diagnostics"]}
+    assert "stereo" in cams and "L" in cams  # frame-1 match + temporal rows
+    assert all(r["n_valid"] <= r["n_pts"] for r in m["diagnostics"])
+    json.dumps({"diagnostics": m["diagnostics"], "summary": m["summary"], "gates": m["gates"]})
+
     gt = synth_stereo.gt_world_points(scene, result.ref_coords)
     tracked = result.correspondence.source != INVALID  # (nf, n)
 

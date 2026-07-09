@@ -3018,6 +3018,107 @@ _BATCH_F2: dict[str, dict[str, str]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Batch F3 — failure-reporting audit (post-run log summary, empty-result
+# notices) + the 3D View checkbox tooltip. Terminology follows the existing
+# catalogs (有效性门控 / 品質門檻 / 有効性ゲート / 유효성 게이트 /
+# Validitätsgate / contrôle de validité / puerta de validez from the F2 batch).
+# ---------------------------------------------------------------------------
+
+_BATCH_F3: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Show the reconstructed surface in 3D": "以 3D 方式显示重建曲面",
+        "Analysis produced no valid points — nothing to display. See the log.": "分析未产生任何有效点——没有可显示的内容。请查看日志。",
+        "Frame-1 stereo match: {0}/{1} points matched ({2}%)": "第 1 帧立体匹配：{0}/{1} 个点匹配成功（{2}%）",
+        "Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)": "相机 {0}：有效性门控移除了 {1} 个节点帧（与第 1 帧的相关性校验失败）",
+        "Frame {0}: only {1}% of points valid": "第 {0} 帧：仅 {1}% 的点有效",
+        "Quality gate (ZNSSD) removed {0} positions": "质量门控（ZNSSD）移除了 {0} 个位置",
+        "Reprojection gate removed {0} positions": "重投影门控移除了 {0} 个位置",
+        "3D outlier filter removed {0} positions": "3D 离群点过滤移除了 {0} 个位置",
+        "No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).": "所有帧均无有效点——本次运行产生了空结果。请检查 ROI、掩膜与种子点设置（详见上方信息）。",
+        "Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)": "分析完成——共 {0} 帧，中位有效率 {1}%，{2} 帧低于 {3}%（见上方）",
+        "No valid 3D points in this frame — nothing to display.": "此帧没有有效的 3D 点——没有可显示的内容。",
+    },
+    "zh_TW": {
+        "Show the reconstructed surface in 3D": "以 3D 方式顯示重建曲面",
+        "Analysis produced no valid points — nothing to display. See the log.": "分析未產生任何有效點——沒有可顯示的內容。請查看日誌。",
+        "Frame-1 stereo match: {0}/{1} points matched ({2}%)": "第 1 幀立體匹配：{0}/{1} 個點匹配成功（{2}%）",
+        "Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)": "相機 {0}：有效性門檻移除了 {1} 個節點幀（與第 1 幀的相關性驗證失敗）",
+        "Frame {0}: only {1}% of points valid": "第 {0} 幀：僅 {1}% 的點有效",
+        "Quality gate (ZNSSD) removed {0} positions": "品質門檻（ZNSSD）移除了 {0} 個位置",
+        "Reprojection gate removed {0} positions": "重投影門檻移除了 {0} 個位置",
+        "3D outlier filter removed {0} positions": "3D 離群點過濾移除了 {0} 個位置",
+        "No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).": "所有幀均無有效點——本次執行產生了空結果。請檢查 ROI、遮罩與種子點設定（詳見上方訊息）。",
+        "Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)": "分析完成——共 {0} 幀，中位有效率 {1}%，{2} 幀低於 {3}%（見上方）",
+        "No valid 3D points in this frame — nothing to display.": "此幀沒有有效的 3D 點——沒有可顯示的內容。",
+    },
+    "ja": {
+        "Show the reconstructed surface in 3D": "再構成された曲面を 3D で表示",
+        "Analysis produced no valid points — nothing to display. See the log.": "解析で有効な点が得られませんでした — 表示できる内容がありません。ログを確認してください。",
+        "Frame-1 stereo match: {0}/{1} points matched ({2}%)": "第 1 フレームのステレオマッチング: {0}/{1} 点が一致 ({2}%)",
+        "Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)": "カメラ {0}: 有効性ゲートが {1} 個のノードフレームを除外 (第 1 フレームとの相関検証に失敗)",
+        "Frame {0}: only {1}% of points valid": "フレーム {0}: 有効な点は {1}% のみ",
+        "Quality gate (ZNSSD) removed {0} positions": "品質ゲート (ZNSSD) が {0} 個の位置を除外",
+        "Reprojection gate removed {0} positions": "再投影ゲートが {0} 個の位置を除外",
+        "3D outlier filter removed {0} positions": "3D 外れ値フィルタが {0} 個の位置を除外",
+        "No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).": "どのフレームにも有効な点がありません — 実行結果は空です。ROI・マスク・シード設定を確認してください (詳細は上記)。",
+        "Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)": "解析完了 — {0} フレーム、有効率の中央値 {1}%、{2} フレームが {3}% 未満 (上記参照)",
+        "No valid 3D points in this frame — nothing to display.": "このフレームに有効な 3D 点がありません — 表示できる内容がありません。",
+    },
+    "ko": {
+        "Show the reconstructed surface in 3D": "재구성된 표면을 3D로 표시",
+        "Analysis produced no valid points — nothing to display. See the log.": "분석에서 유효한 점이 없습니다 — 표시할 내용이 없습니다. 로그를 확인하십시오.",
+        "Frame-1 stereo match: {0}/{1} points matched ({2}%)": "1번 프레임 스테레오 매칭: {0}/{1}개 점 매칭됨 ({2}%)",
+        "Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)": "카메라 {0}: 유효성 게이트가 노드 프레임 {1}개를 제거함 (1번 프레임과의 상관 검증 실패)",
+        "Frame {0}: only {1}% of points valid": "프레임 {0}: 점의 {1}%만 유효",
+        "Quality gate (ZNSSD) removed {0} positions": "품질 게이트(ZNSSD)가 위치 {0}개를 제거함",
+        "Reprojection gate removed {0} positions": "재투영 게이트가 위치 {0}개를 제거함",
+        "3D outlier filter removed {0} positions": "3D 이상치 필터가 위치 {0}개를 제거함",
+        "No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).": "어느 프레임에도 유효한 점이 없습니다 — 실행 결과가 비어 있습니다. ROI, 마스크, 시드 설정을 확인하십시오(자세한 내용은 위 참조).",
+        "Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)": "분석 완료 — 프레임 {0}개, 유효율 중앙값 {1}%, {2}개 프레임이 {3}% 미만 (위 참조)",
+        "No valid 3D points in this frame — nothing to display.": "이 프레임에는 유효한 3D 점이 없습니다 — 표시할 내용이 없습니다.",
+    },
+    "de": {
+        "Show the reconstructed surface in 3D": "Rekonstruierte Oberfläche in 3D anzeigen",
+        "Analysis produced no valid points — nothing to display. See the log.": "Die Analyse lieferte keine gültigen Punkte — nichts anzuzeigen. Siehe Protokoll.",
+        "Frame-1 stereo match: {0}/{1} points matched ({2}%)": "Stereo-Zuordnung Frame 1: {0}/{1} Punkte zugeordnet ({2} %)",
+        "Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)": "Kamera {0}: Validitätsgate entfernte {1} Knoten-Frames (Korrelation mit Frame 1 fehlgeschlagen)",
+        "Frame {0}: only {1}% of points valid": "Frame {0}: nur {1} % der Punkte gültig",
+        "Quality gate (ZNSSD) removed {0} positions": "Qualitätsgate (ZNSSD) entfernte {0} Positionen",
+        "Reprojection gate removed {0} positions": "Reprojektionsgate entfernte {0} Positionen",
+        "3D outlier filter removed {0} positions": "3D-Ausreißerfilter entfernte {0} Positionen",
+        "No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).": "Keine gültigen Punkte in IRGENDEINEM Frame — der Lauf lieferte ein leeres Ergebnis. Prüfen Sie ROI, Masken und Startpunkt (Details oben).",
+        "Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)": "Analyse abgeschlossen — {0} Frames, mediane Validität {1} %, {2} Frame(s) unter {3} % (siehe oben)",
+        "No valid 3D points in this frame — nothing to display.": "Keine gültigen 3D-Punkte in diesem Frame — nichts anzuzeigen.",
+    },
+    "fr": {
+        "Show the reconstructed surface in 3D": "Afficher la surface reconstruite en 3D",
+        "Analysis produced no valid points — nothing to display. See the log.": "L'analyse n'a produit aucun point valide — rien à afficher. Voir le journal.",
+        "Frame-1 stereo match: {0}/{1} points matched ({2}%)": "Appariement stéréo image 1 : {0}/{1} points appariés ({2} %)",
+        "Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)": "Caméra {0} : le contrôle de validité a supprimé {1} nœuds-images (corrélation avec l'image 1 échouée)",
+        "Frame {0}: only {1}% of points valid": "Image {0} : seulement {1} % de points valides",
+        "Quality gate (ZNSSD) removed {0} positions": "Le contrôle qualité (ZNSSD) a supprimé {0} positions",
+        "Reprojection gate removed {0} positions": "Le contrôle de reprojection a supprimé {0} positions",
+        "3D outlier filter removed {0} positions": "Le filtre de points aberrants 3D a supprimé {0} positions",
+        "No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).": "Aucun point valide dans AUCUNE image — l'exécution a produit un résultat vide. Vérifiez la ROI, les masques et le point de départ (détails ci-dessus).",
+        "Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)": "Analyse terminée — {0} images, validité médiane {1} %, {2} image(s) sous {3} % (voir ci-dessus)",
+        "No valid 3D points in this frame — nothing to display.": "Aucun point 3D valide dans cette image — rien à afficher.",
+    },
+    "es": {
+        "Show the reconstructed surface in 3D": "Mostrar la superficie reconstruida en 3D",
+        "Analysis produced no valid points — nothing to display. See the log.": "El análisis no produjo puntos válidos — nada que mostrar. Consulte el registro.",
+        "Frame-1 stereo match: {0}/{1} points matched ({2}%)": "Emparejamiento estéreo del fotograma 1: {0}/{1} puntos emparejados ({2} %)",
+        "Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)": "Cámara {0}: la puerta de validez eliminó {1} nodos-fotograma (falló la correlación con el fotograma 1)",
+        "Frame {0}: only {1}% of points valid": "Fotograma {0}: solo el {1}% de los puntos es válido",
+        "Quality gate (ZNSSD) removed {0} positions": "La puerta de calidad (ZNSSD) eliminó {0} posiciones",
+        "Reprojection gate removed {0} positions": "La puerta de reproyección eliminó {0} posiciones",
+        "3D outlier filter removed {0} positions": "El filtro de valores atípicos 3D eliminó {0} posiciones",
+        "No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).": "Ningún punto válido en NINGÚN fotograma — la ejecución produjo un resultado vacío. Revise la ROI, las máscaras y el punto de inicio (detalles arriba).",
+        "Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)": "Análisis completado — {0} fotogramas, validez mediana {1}%, {2} fotograma(s) por debajo del {3}% (ver arriba)",
+        "No valid 3D points in this frame — nothing to display.": "No hay puntos 3D válidos en este fotograma — nada que mostrar.",
+    },
+}
+
 for _loc, _entries in _CALIB.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _CALIB_C3.items():
@@ -3039,6 +3140,8 @@ for _loc, _entries in _BATCH_E3.items():
 for _loc, _entries in _BATCH_F1.items():
     TRANSLATIONS[_loc].update(_entries)
 for _loc, _entries in _BATCH_F2.items():
+    TRANSLATIONS[_loc].update(_entries)
+for _loc, _entries in _BATCH_F3.items():
     TRANSLATIONS[_loc].update(_entries)
 
 
