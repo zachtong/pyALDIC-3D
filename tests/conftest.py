@@ -6,6 +6,7 @@ Holds the cross-file GUI-safety default below; synthetic-scene helpers live in
 
 from __future__ import annotations
 
+import gc
 import sys
 
 import pytest
@@ -36,6 +37,55 @@ def _headless_close_guards(monkeypatch):
         monkeypatch.setattr(
             ls.LeftSidebar3D, "_confirm_invalidate_results", lambda self, n_pairs: True
         )
+
+
+@pytest.fixture(autouse=True)
+def _qt_native_teardown(_headless_close_guards):
+    """Destroy leaked Qt widget trees NATIVELY after every test (crash fix).
+
+    Widget trees like ``ExportDialog`` hold Python reference cycles
+    (``tab._dialog`` <-> ``dialog._tabs``), so they die in the CYCLIC garbage
+    collector, not by refcount. On Windows + PySide6 6.11, letting the GC
+    destroy a C++ ``QWidget`` tree from a wrapper's ``tp_dealloc`` corrupts
+    the native heap (STATUS_HEAP_CORRUPTION inside Qt6Widgets' destructor
+    cascade). The corruption then detonates at an ARBITRARY later free — the
+    intermittent access violations seen in ``wait_for_export``'s
+    ``processEvents`` and at interpreter shutdown. Reproducer: two plain
+    ``ExportDialog`` construct -> ``gc.collect()`` rounds; ``gc.disable()``
+    or deleteLater-first destruction removes the crash entirely.
+
+    So after each test, on the GUI thread: deliver pending queued signals,
+    close leaked top-level widgets (their close guards join workers; the
+    prompts are stubbed by ``_headless_close_guards``, which this fixture
+    depends on so the stubs are still active here), join stray pool tasks,
+    then hand every leaked C++ widget tree to Qt via ``deleteLater`` and
+    flush it. The ``gc.collect()`` afterwards only frees INVALIDATED
+    wrappers — Python never deletes a live C++ widget tree itself. No
+    fixture in this suite holds a widget beyond function scope, so any
+    top-level widget still alive here is by definition a leak.
+    """
+    yield
+    if "PySide6" not in sys.modules:  # no Qt imported -> no Qt garbage
+        return
+    from PySide6.QtCore import QCoreApplication, QEvent, QThreadPool
+    from PySide6.QtWidgets import QApplication
+
+    app = QCoreApplication.instance()
+    if app is None:
+        return
+    QCoreApplication.processEvents()  # deliver queued signals to live receivers
+    if isinstance(app, QApplication):
+        for widget in app.topLevelWidgets():
+            widget.close()  # runs the G1/G3 close guards -> joins workers
+    QThreadPool.globalInstance().waitForDone(10_000)
+    if isinstance(app, QApplication):
+        for widget in app.topLevelWidgets():
+            widget.deleteLater()  # Qt (not Python) deletes the C++ tree
+    QCoreApplication.processEvents()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    gc.collect()  # cycles die now; wrappers are already invalidated
+    QCoreApplication.processEvents()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 @pytest.fixture(autouse=True)

@@ -264,8 +264,16 @@ class ExportDialog(QDialog):
             if time.monotonic() > deadline:
                 return False
             for tab in self._all_tabs():
-                if tab._worker is not None:
-                    tab._worker.wait(50)
+                worker = tab._worker
+                if worker is not None:
+                    worker.wait(50)
+        # Fully join every worker (``isRunning()`` can drop a beat before the
+        # native thread is joinable) so no worker thread outlives this call,
+        # THEN pump once more to deliver the queued finished_ok/failed slots.
+        for tab in self._all_tabs():
+            worker = tab._worker
+            if worker is not None:
+                worker.wait()
         QCoreApplication.processEvents()
         return True
 
