@@ -38,7 +38,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.controllers.roi_controller import ROIController
-from al_dic_3d.gui.controllers.viz_controller import VizController3D, visible_values
+from al_dic_3d.gui.controllers.viz_controller import VizController3D, auto_range, visible_values
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
@@ -98,33 +98,63 @@ class CanvasArea3D(QWidget):
         btn_fit = QPushButton(self.tr("Fit"))
         btn_fit.setFixedWidth(60)
         btn_fit.setIcon(icon_maximize())
-        btn_100 = QPushButton("100%")
-        btn_100.setFixedWidth(60)
+        btn_fit.setToolTip(self.tr("Fit the image to the viewport (Ctrl+0)"))
+        # G2.4: the "100%" button doubles as a live zoom readout — its label
+        # follows the current zoom percent; clicking still resets to 100 %.
+        self._zoom_btn = QPushButton("100%")
+        self._zoom_btn.setFixedWidth(60)
+        self._zoom_btn.setToolTip(
+            self.tr(
+                "Current zoom — click to reset to 100% (1:1 pixels).\n"
+                "Wheel: zoom · Right/middle drag: pan · Space: pan mode"
+            )
+        )
         btn_in = QPushButton()
         btn_in.setFixedWidth(28)
         btn_in.setIcon(icon_zoom_in())
+        btn_in.setToolTip(self.tr("Zoom in (Ctrl+=)"))
         btn_out = QPushButton()
         btn_out.setFixedWidth(28)
         btn_out.setIcon(icon_zoom_out())
-        for b in (btn_fit, btn_100, btn_in, btn_out):
+        btn_out.setToolTip(self.tr("Zoom out (Ctrl+-)"))
+        for b in (btn_fit, self._zoom_btn, btn_in, btn_out):
             tb.addWidget(b)
         tb.addStretch()
 
         self._grid_cb = QCheckBox(self.tr("Show Grid"))
-        self._grid_cb.setToolTip(self.tr("Show/hide computational mesh grid"))
+        self._grid_cb.setToolTip(
+            self.tr(
+                "Show the computational mesh preview on the reference view\n"
+                "(left camera, frame 1). Rebuilt live from the current Subset\n"
+                "Step / refinement settings — what you see is the run's mesh.\n"
+                "Default on; turn off to declutter the canvas."
+            )
+        )
         self._grid_cb.setChecked(True)
         self._grid_cb.toggled.connect(self._on_grid_toggled)
         tb.addWidget(self._grid_cb)
 
         self._subset_cb = QCheckBox(self.tr("Show Subset"))
-        self._subset_cb.setToolTip(self.tr("Show subset window on hover (requires Grid)"))
+        self._subset_cb.setToolTip(
+            self.tr(
+                "Hovering a mesh node shows its correlation subset window\n"
+                "(the Subset Size box). Needs Show Grid. Use it to judge\n"
+                "whether the subset spans enough speckle texture."
+            )
+        )
         self._subset_cb.setChecked(False)
         self._subset_cb.toggled.connect(self._on_subset_toggled)
         tb.addWidget(self._subset_cb)
 
         # F3.2: a view TOGGLE like Show Grid / Show Subset, not a button.
         self._view3d_cb = QCheckBox(self.tr("3D View"))
-        self._view3d_cb.setToolTip(self.tr("Show the reconstructed surface in 3D"))
+        self._view3d_cb.setToolTip(
+            self.tr(
+                "Switch the canvas to the reconstructed 3D surface (colored by\n"
+                "the selected field, with the camera frusta). Uncheck to return\n"
+                "to the 2D image view. Requires results."
+            )
+        )
         self._view3d_cb.setChecked(False)
         self._view3d_cb.toggled.connect(self._on_view_mode)
         tb.addWidget(self._view3d_cb)
@@ -178,9 +208,10 @@ class CanvasArea3D(QWidget):
 
         # ---- wiring ----
         btn_fit.clicked.connect(self._canvas.fit_to_view)
-        btn_100.clicked.connect(self._canvas.zoom_to_100)
+        self._zoom_btn.clicked.connect(self._canvas.zoom_to_100)
         btn_in.clicked.connect(self._canvas.zoom_in)
         btn_out.clicked.connect(self._canvas.zoom_out)
+        self._canvas.view_changed.connect(self._update_zoom_readout)
 
         self._canvas.roi_mask_edited.connect(self.commit_roi_mask)
         self._canvas.seed_clicked.connect(self._on_seed_clicked)
@@ -201,6 +232,14 @@ class CanvasArea3D(QWidget):
     @property
     def canvas(self) -> ImageCanvas3D:
         return self._canvas
+
+    def _update_zoom_readout(self) -> None:
+        """G2.4: the '100%' button label follows the live zoom level."""
+        self._zoom_btn.setText(f"{self._canvas.zoom_level * 100:.0f}%")
+
+    def toggle_playback(self) -> None:
+        """Space shortcut relay (G2.5): play/pause the frame navigator."""
+        self._frame_nav.toggle_playback()
 
     # ---- ROI toolbox --------------------------------------------------------------
 
@@ -603,19 +642,15 @@ class CanvasArea3D(QWidget):
 
         # F3.2: the drawn LEFT reference ROI mask bounds the surface exactly
         # like the 2D dense view (holes stay open), and the auto color range
-        # comes from the VISIBLE nodes of THIS frame and is written back to
-        # the shared signals — 2D and 3D show identical field/colormap/range.
+        # comes from the VISIBLE nodes of THIS frame (2–98 percentile, G2.3)
+        # and is written back to the shared signals — 2D and 3D show identical
+        # field/colormap/range, and the Min/Max spins seed from live values.
         roi_mask = None
         drawn = self.controller.state.draft.roi_mask_array
         if drawn is not None:
             roi_mask = np.asarray(drawn) > 0
         if self.signals.color_auto:
-            vis = visible_values(vals, result.ref_coords, roi_mask)
-            finite = vis[np.isfinite(vis)]
-            if finite.size:
-                vmin, vmax = float(finite.min()), float(finite.max())
-            else:
-                vmin, vmax = 0.0, 1.0
+            vmin, vmax = auto_range(visible_values(vals, result.ref_coords, roi_mask))
             self.signals.color_min, self.signals.color_max = vmin, vmax
         else:
             vmin, vmax = self.signals.color_min, self.signals.color_max
@@ -705,15 +740,11 @@ class CanvasArea3D(QWidget):
             roi_mask = self._right_roi_mask(result)
 
         # Auto colorbar range from VISIBLE nodes only (2D visible_values
-        # contract): clipped-by-mask nodes must not stretch the range. The
+        # contract), clipped to the 2–98 percentile (G2.3, 2D parity):
+        # clipped-by-mask nodes and outliers must not stretch the range. The
         # range is written back so switching Auto off starts from live values.
         if self.signals.color_auto:
-            vis = visible_values(vals, ref_pts, roi_mask)
-            finite = vis[np.isfinite(vis)]
-            if finite.size:
-                vmin, vmax = float(finite.min()), float(finite.max())
-            else:
-                vmin, vmax = 0.0, 1.0
+            vmin, vmax = auto_range(visible_values(vals, ref_pts, roi_mask))
             self.signals.color_min, self.signals.color_max = vmin, vmax
         else:
             vmin, vmax = self.signals.color_min, self.signals.color_max

@@ -40,6 +40,17 @@ class StrainFieldSelector3D(QWidget):
         self._buttons: dict[str, QPushButton] = {}
         self._current: str = STRAIN_FIELDS_UI[0]
 
+        # Green-Lagrange surface-strain invariants, in the strain coordinate
+        # system chosen above (tangent plane / camera / specimen) — G2.1.
+        tips = {
+            "exx": self.tr("εxx — normal strain along the strain frame's x axis"),
+            "eyy": self.tr("εyy — normal strain along the strain frame's y axis"),
+            "exy": self.tr("εxy — in-plane shear strain (tensor component)"),
+            "e1": self.tr("ε₁ — major principal strain (largest in-plane eigenvalue)"),
+            "e2": self.tr("ε₂ — minor principal strain (smallest in-plane eigenvalue)"),
+            "max_shear": self.tr("γ max — maximum shear strain, (ε₁ − ε₂) / 2"),
+            "von_mises": self.tr("von Mises — equivalent strain (plane-stress invariant)"),
+        }
         grid = QGridLayout(self)
         grid.setContentsMargins(0, 0, 0, 0)
         grid.setSpacing(4)
@@ -47,6 +58,8 @@ class StrainFieldSelector3D(QWidget):
             btn = QPushButton(STRAIN_FIELD_LABELS[field_id])
             btn.setCheckable(True)
             btn.setFixedHeight(28)
+            if field_id in tips:
+                btn.setToolTip(tips[field_id])
             btn.clicked.connect(lambda _=False, f=field_id: self._on_pick(f))
             grid.addWidget(btn, i // 3, i % 3)
             self._buttons[field_id] = btn

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from al_dic.gui.window_chrome import enable_dark_title_bar
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QGuiApplication, QKeySequence
+from PySide6.QtGui import QAction, QGuiApplication, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -55,7 +55,7 @@ class MainWindow3D(QMainWindow):
         self.controller = controller or WorkflowController()
         self.signals = GuiSignals()
         self._strain_window = None  # lazy singleton (Batch C post-processing)
-        self.setWindowTitle(self.tr("pyALDIC-3D"))
+        self._update_window_title()  # G2.8: '<project>[*] — pyALDIC-3D' + dirty star
         # G1.4: 1100x700 minimum fits 1366x768 laptops (sidebars 320+280 still
         # leave the canvas ~500 px); the initial size is clamped to the screen.
         self.setMinimumSize(1100, 700)
@@ -110,8 +110,53 @@ class MainWindow3D(QMainWindow):
         self._right.open_strain_window_requested.connect(self._open_strain_window)
         self.signals.run_state_changed.connect(self._on_run_state_changed)
 
+        # G2.8: every mark_dirty site emits one of these signals right after,
+        # so the title's modified-star tracks the state without polling.
+        for sig in (
+            self.signals.images_changed,
+            self.signals.roi_changed,
+            self.signals.params_changed,
+            self.signals.calibration_changed,
+            self.signals.results_changed,
+        ):
+            sig.connect(self._update_window_title)
+
         self._build_menu()
+        self._build_shortcuts()
         self.signals.log.emit("pyALDIC-3D ready", "info")
+
+    # ---- keyboard shortcuts (G2.5) ------------------------------------------------
+
+    def _build_shortcuts(self) -> None:
+        """Window-level accelerators. Frame keys (←/→/Space) go through
+        keyPressEvent instead so focused widgets (spin boxes, the canvas's
+        Space pan mode, buttons) keep their native key handling."""
+        QShortcut(QKeySequence("F5"), self, activated=self._right._on_run)
+        QShortcut(QKeySequence("Ctrl+0"), self, activated=self._canvas_area.canvas.fit_to_view)
+        QShortcut(QKeySequence("Ctrl+="), self, activated=self._canvas_area.canvas.zoom_in)
+        QShortcut(QKeySequence("Ctrl++"), self, activated=self._canvas_area.canvas.zoom_in)
+        QShortcut(QKeySequence("Ctrl+-"), self, activated=self._canvas_area.canvas.zoom_out)
+
+    def keyPressEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        """←/→ = prev/next frame, Space = play/pause (G2.5).
+
+        Reached only when the focused child did NOT consume the key, which is
+        exactly the wanted guard: arrows in a spin box edit the value, Space on
+        the canvas drives pan mode, Space on a button clicks it.
+        """
+        key = event.key()
+        if key in (Qt.Key.Key_Left, Qt.Key.Key_Right):
+            draft = self.controller.state.draft
+            n = max(len(draft.left), len(draft.right))
+            step = -1 if key == Qt.Key.Key_Left else 1
+            self.signals.set_current_frame(self.signals.current_frame + step, n)
+            event.accept()
+            return
+        if key == Qt.Key.Key_Space and not event.isAutoRepeat():
+            self._canvas_area.toggle_playback()
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     # ---- strain window (lazy singleton) -----------------------------------------
 
@@ -278,10 +323,17 @@ class MainWindow3D(QMainWindow):
         open_action.triggered.connect(self._open_project)
         file_menu.addAction(open_action)
 
-        save_action = QAction(self.tr("Save Project…"), self)
-        save_action.setShortcut(QKeySequence.StandardKey.Save)
+        # G2.8: Save writes straight to the bound .aldic3d (no dialog); Save As
+        # is the explicit re-target with its own shortcut.
+        save_action = QAction(self.tr("Save Project"), self)
+        save_action.setShortcut(QKeySequence.StandardKey.Save)  # Ctrl+S
         save_action.triggered.connect(self._save_project)
         file_menu.addAction(save_action)
+
+        save_as_action = QAction(self.tr("Save Project As…"), self)
+        save_as_action.setShortcut(QKeySequence("Ctrl+Shift+S"))
+        save_as_action.triggered.connect(self._save_project_as)
+        file_menu.addAction(save_as_action)
 
         file_menu.addSeparator()
         quit_action = QAction(self.tr("Quit"), self)
@@ -323,6 +375,17 @@ class MainWindow3D(QMainWindow):
 
     # ---- project lifecycle -------------------------------------------------------
 
+    def _update_window_title(self) -> None:
+        """G2.8: '<project file>[*] — pyALDIC-3D'; the star shows unsaved work.
+
+        Qt substitutes the ``[*]`` placeholder with '*' when
+        ``isWindowModified()`` is true and removes it otherwise.
+        """
+        state = self.controller.state
+        name = state.project_path.name if state.project_path else self.tr("Untitled")
+        self.setWindowTitle(self.tr("{0}[*] — pyALDIC-3D").format(name))
+        self.setWindowModified(bool(state.dirty))
+
     def _resync_all(self) -> None:
         """Full view resync after new/open project."""
         self._left.refresh_all()
@@ -339,6 +402,7 @@ class MainWindow3D(QMainWindow):
         self.controller.new_project()  # fresh AppState3D: dirty is False again
         self.signals.set_run_state("idle")
         self._resync_all()
+        self._update_window_title()
         self.signals.log.emit("new project", "info")
 
     def _open_project(self) -> None:
@@ -355,10 +419,22 @@ class MainWindow3D(QMainWindow):
             self.signals.log.emit(f"open failed: {exc}", "error")
             return
         self._resync_all()
+        self._update_window_title()
         self.signals.log.emit(f"opened {path}", "success")
 
     def _save_project(self) -> bool:
-        """Save via the file dialog; False = cancelled or failed (G1.1 guard)."""
+        """G2.8 Save (Ctrl+S): write to the bound project file, no dialog.
+
+        Falls through to Save As when the project has never been saved.
+        False = cancelled or failed (the G1.1 close guard relies on this).
+        """
+        path = self.controller.state.project_path
+        if path is None:
+            return self._save_project_as()
+        return self._write_project(path)
+
+    def _save_project_as(self) -> bool:
+        """Save As (Ctrl+Shift+S): always ask for a target file."""
         path, _ = QFileDialog.getSaveFileName(
             self,
             self.tr("Save Project"),
@@ -367,10 +443,14 @@ class MainWindow3D(QMainWindow):
         )
         if not path:
             return False
+        return self._write_project(path)
+
+    def _write_project(self, path) -> bool:
         try:
             self.controller.save_project(path)
         except Exception as exc:  # noqa: BLE001 - surface save errors to the user
             self.signals.log.emit(f"save failed: {exc}", "error")
             return False
+        self._update_window_title()  # clean now; star disappears
         self.signals.log.emit(f"saved {path}", "success")
         return True

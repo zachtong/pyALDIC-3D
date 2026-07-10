@@ -43,21 +43,21 @@ class StrainNavigator3D(QWidget):
         self._prev_btn = QPushButton()
         self._prev_btn.setFixedWidth(28)
         self._prev_btn.setIcon(icon_chevron_left())
-        self._prev_btn.setToolTip(self.tr("Previous frame"))
+        self._prev_btn.setToolTip(self.tr("Previous frame (←)"))
         self._prev_btn.clicked.connect(self._on_prev)
         layout.addWidget(self._prev_btn)
 
         self._play_btn = QPushButton()
         self._play_btn.setFixedWidth(28)
         self._play_btn.setIcon(icon_play())
-        self._play_btn.setToolTip(self.tr("Play animation"))
+        self._play_btn.setToolTip(self.tr("Play animation (Space)"))
         self._play_btn.clicked.connect(self._on_play_toggle)
         layout.addWidget(self._play_btn)
 
         self._next_btn = QPushButton()
         self._next_btn.setFixedWidth(28)
         self._next_btn.setIcon(icon_chevron_right())
-        self._next_btn.setToolTip(self.tr("Next frame"))
+        self._next_btn.setToolTip(self.tr("Next frame (→)"))
         self._next_btn.clicked.connect(self._on_next)
         layout.addWidget(self._next_btn)
 
@@ -66,7 +66,7 @@ class StrainNavigator3D(QWidget):
             self._speed_combo.addItem(label)
         self._speed_combo.setCurrentIndex(1)  # default 2 fps
         self._speed_combo.setFixedWidth(68)
-        self._speed_combo.setToolTip(self.tr("Playback speed"))
+        self._speed_combo.setToolTip(self.tr("Playback speed (frames per second). Default 2 fps."))
         self._speed_combo.currentIndexChanged.connect(self._on_speed)
         layout.addWidget(self._speed_combo)
 
@@ -109,7 +109,18 @@ class StrainNavigator3D(QWidget):
         self._playing = False
         self._timer.stop()
         self._play_btn.setIcon(icon_play())
-        self._play_btn.setToolTip(self.tr("Play animation"))
+        self._play_btn.setToolTip(self.tr("Play animation (Space)"))
+
+    def toggle_playback(self) -> None:
+        """Public play/pause toggle for the strain window's Space shortcut (G2.5)."""
+        self._on_play_toggle()
+
+    def step(self, delta: int) -> None:
+        """Public prev/next relay for the strain window's ←/→ shortcuts (G2.5)."""
+        if delta < 0:
+            self._on_prev()
+        else:
+            self._on_next()
 
     # ------------------------------------------------------------------
     # Internal slots
@@ -134,7 +145,7 @@ class StrainNavigator3D(QWidget):
         elif self._n_frames >= 2:
             self._playing = True
             self._play_btn.setIcon(icon_pause())
-            self._play_btn.setToolTip(self.tr("Pause animation"))
+            self._play_btn.setToolTip(self.tr("Pause animation (Space)"))
             self._timer.start()
 
     def _on_tick(self) -> None:

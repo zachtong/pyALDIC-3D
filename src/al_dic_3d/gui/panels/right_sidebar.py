@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 from al_dic.gui.icons import icon_download, icon_play, icon_stop
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.console_log import ConsoleLog
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from PySide6.QtCore import Qt, QThread, QTimer, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -115,6 +116,12 @@ class RightSidebar3D(QWidget):
         self._run_btn.setProperty("class", "btn-primary")
         self._run_btn.setFixedHeight(36)
         self._run_btn.setIcon(icon_play())
+        self._run_btn.setToolTip(
+            self.tr(
+                "Run the full stereo correspondence + triangulation pipeline "
+                "on the loaded image pairs (F5)."
+            )
+        )
         self._run_btn.clicked.connect(self._on_run)
         layout.addWidget(self._run_btn)
 
@@ -122,6 +129,12 @@ class RightSidebar3D(QWidget):
         self._cancel_btn.setProperty("class", "btn-danger")
         self._cancel_btn.setFixedHeight(30)
         self._cancel_btn.setEnabled(False)
+        self._cancel_btn.setToolTip(
+            self.tr(
+                "Cancel the current analysis. Already-computed frames are "
+                "kept; the run is marked as IDLE (not DONE)."
+            )
+        )
         self._cancel_btn.setIcon(icon_stop())
         self._cancel_btn.clicked.connect(self._on_cancel)
         layout.addWidget(self._cancel_btn)
@@ -144,6 +157,15 @@ class RightSidebar3D(QWidget):
         self._ready_lbl.setWordWrap(True)
         self._ready_lbl.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
         layout.addWidget(self._ready_lbl)
+
+        # G2.7: amber staleness hint — the on-screen result no longer matches
+        # the draft parameters. Hash-driven; see _refresh_stale.
+        self._stale_lbl = QLabel(self.tr("Parameters changed since this result — re-run to update"))
+        self._stale_lbl.setWordWrap(True)
+        self._stale_lbl.setStyleSheet("color: #fbbf24; font-size: 10px; font-style: italic;")
+        self._stale_lbl.setVisible(False)
+        layout.addWidget(self._stale_lbl)
+        self._run_hash: str | None = None  # draft signature at run start (G2.7)
 
         # ---- PROGRESS ----
         self._section(layout, self.tr("PROGRESS"))
@@ -175,6 +197,12 @@ class RightSidebar3D(QWidget):
         # field is plotted (geometry), so it lives in FIELD, not VISUALIZATION.
         self._deformed_cb = QCheckBox(self.tr("Show on deformed frame"))
         self._deformed_cb.setChecked(True)
+        self._deformed_cb.setToolTip(
+            self.tr(
+                "When checked, overlay results on the deformed (current) frame "
+                "instead of the reference frame"
+            )
+        )
         self._deformed_cb.toggled.connect(self.signals.set_show_deformed)
         layout.addWidget(self._deformed_cb)
 
@@ -185,7 +213,19 @@ class RightSidebar3D(QWidget):
         cam_lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
         self._camera_row.addWidget(cam_lbl)
         self._cam_left_btn = QPushButton(self.tr("Left"))
+        self._cam_left_btn.setToolTip(
+            self.tr(
+                "Show the LEFT camera's images (the reference view: ROI, seed "
+                "and mesh live here). Default."
+            )
+        )
         self._cam_right_btn = QPushButton(self.tr("Right"))
+        self._cam_right_btn.setToolTip(
+            self.tr(
+                "Show the RIGHT camera's images with the field warped onto "
+                "them — a cross-check that the stereo match is sound."
+            )
+        )
         for btn in (self._cam_left_btn, self._cam_right_btn):
             btn.setCheckable(True)
             btn.setFixedHeight(26)
@@ -209,14 +249,50 @@ class RightSidebar3D(QWidget):
         cmap_row.addWidget(cmap_lbl)
         self._cmap_combo = QComboBox()
         self._cmap_combo.addItems(_COLORMAPS)
+        self._cmap_combo.setToolTip(
+            self.tr(
+                "Colormap for the field overlay and the 3D surface. Default "
+                "turbo (perceptually ordered, high contrast); pick RdBu_r or "
+                "coolwarm for signed fields centered on zero."
+            )
+        )
         self._cmap_combo.currentTextChanged.connect(self._on_cmap)
         cmap_row.addWidget(self._cmap_combo, stretch=1)
         layout.addLayout(cmap_row)
 
         self._auto_range_cb = QCheckBox(self.tr("Auto range"))
         self._auto_range_cb.setChecked(True)
+        self._auto_range_cb.setToolTip(
+            self.tr(
+                "Rescale the color range to each frame's data range "
+                "(2–98 percentile of the visible values). Default on; uncheck "
+                "to type fixed Min/Max bounds that hold across frames."
+            )
+        )
         self._auto_range_cb.toggled.connect(self._on_auto_range)
         layout.addWidget(self._auto_range_cb)
+
+        # G2.2: manual Min/Max bounds — enabled when Auto is off, seeded from
+        # the live (percentile) range so editing starts from what is shown.
+        range_row = QHBoxLayout()
+        range_row.setSpacing(4)
+        range_row.addWidget(QLabel(self.tr("Min")))
+        self._vmin_spin = LocaleSafeDoubleSpinBox()
+        self._vmax_spin = LocaleSafeDoubleSpinBox()
+        for spin, tip in (
+            (self._vmin_spin, self.tr("Lower color-range bound (only with Auto range off)")),
+            (self._vmax_spin, self.tr("Upper color-range bound (only with Auto range off)")),
+        ):
+            spin.setDecimals(4)
+            spin.setRange(-1e9, 1e9)
+            spin.setSingleStep(0.01)
+            spin.setEnabled(False)  # disabled while Auto range is on
+            spin.setToolTip(tip)
+            spin.valueChanged.connect(self._on_manual_range)
+        range_row.addWidget(self._vmin_spin, stretch=1)
+        range_row.addWidget(QLabel(self.tr("Max")))
+        range_row.addWidget(self._vmax_spin, stretch=1)
+        layout.addLayout(range_row)
 
         opacity_row = QHBoxLayout()
         opacity_row.setSpacing(4)
@@ -227,6 +303,7 @@ class RightSidebar3D(QWidget):
         self._opacity_slider = QSlider(Qt.Orientation.Horizontal)
         self._opacity_slider.setRange(0, 100)
         self._opacity_slider.setValue(int(signals.overlay_alpha * 100))
+        self._opacity_slider.setToolTip(self.tr("Overlay opacity (0 = transparent, 100 = opaque)"))
         self._opacity_slider.valueChanged.connect(self._on_opacity)
         opacity_row.addWidget(self._opacity_slider)
         layout.addLayout(opacity_row)
@@ -243,6 +320,7 @@ class RightSidebar3D(QWidget):
         clear_btn = QPushButton(self.tr("Clear"))
         clear_btn.setFixedSize(56, 20)
         clear_btn.setStyleSheet(f"font-size: 10px; color: {COLORS.TEXT_MUTED}; border: none;")
+        clear_btn.setToolTip(self.tr("Clear the log console (messages are not recoverable)"))
         clear_btn.clicked.connect(lambda: self._console.clear())
         log_header.addWidget(clear_btn)
         layout.addLayout(log_header)
@@ -266,6 +344,7 @@ class RightSidebar3D(QWidget):
         # run-state transitions: refresh_readiness alone missed the
         # project-open path (results appear without any input signal firing).
         self.signals.results_changed.connect(self._refresh_result_buttons)
+        self.signals.results_changed.connect(self._refresh_stale)
         self.signals.run_state_changed.connect(lambda _s: self._refresh_result_buttons())
 
         self._timer = QTimer(self)
@@ -296,6 +375,16 @@ class RightSidebar3D(QWidget):
         issues = self.controller.state.draft.issues()
         running = self.signals.run_state == "running"
         self._run_btn.setEnabled(not running)
+        # Stateful tooltip (2D idiom): a disabled/blocked Run explains itself.
+        if issues and not running:
+            self._run_btn.setToolTip(self.tr("Not ready — {0}").format("; ".join(issues)))
+        else:
+            self._run_btn.setToolTip(
+                self.tr(
+                    "Run the full stereo correspondence + triangulation pipeline "
+                    "on the loaded image pairs (F5)."
+                )
+            )
         if running:
             self._ready_lbl.setText("")
         elif issues:
@@ -303,6 +392,23 @@ class RightSidebar3D(QWidget):
         else:
             self._ready_lbl.setText(self.tr("Ready to run."))
         self._refresh_result_buttons()
+        self._refresh_stale()
+
+    def _refresh_stale(self) -> None:
+        """G2.7: show the amber hint when the draft diverged from the result.
+
+        The baseline hash is taken at run start; a project opened with results
+        adopts the loaded draft as its baseline (nothing changed yet). Cleared
+        whenever results disappear (new project) or a new run starts.
+        """
+        state = self.controller.state
+        if not state.has_results:
+            self._run_hash = None
+            self._stale_lbl.setVisible(False)
+            return
+        if self._run_hash is None:
+            self._run_hash = state.draft.result_signature()
+        self._stale_lbl.setVisible(state.draft.result_signature() != self._run_hash)
 
     def _refresh_result_buttons(self) -> None:
         """Enable Export / Open Strain Window whenever results exist.
@@ -315,6 +421,25 @@ class RightSidebar3D(QWidget):
         running = self.signals.run_state == "running"
         self._export_btn.setEnabled(has_results and not running)
         self._strain_window_btn.setEnabled(has_results and not running)
+        # Stateful tooltips (2D idiom): disabled buttons explain themselves.
+        if has_results and not running:
+            self._export_btn.setToolTip(
+                self.tr("Export displacement and strain results to NPZ / MAT / CSV")
+            )
+            self._strain_window_btn.setToolTip(
+                self.tr(
+                    "Compute and visualize strain in a separate post-processing "
+                    "window. Requires displacement results from a completed Run."
+                )
+            )
+        else:
+            reason = (
+                self.tr("Available after the running analysis finishes.")
+                if running
+                else self.tr("Run an analysis first — there are no results yet.")
+            )
+            self._export_btn.setToolTip(reason)
+            self._strain_window_btn.setToolTip(reason)
 
     # ---- run lifecycle ---------------------------------------------------------
 
@@ -331,11 +456,18 @@ class RightSidebar3D(QWidget):
         if issues:
             self._append_log(self.tr("Not ready: {0}").format("; ".join(issues)), "warn")
             return
+        # G2.7: baseline the draft signature; the stale hint clears now and
+        # only reappears if the user edits parameters after this run.
+        self._run_hash = self.controller.state.draft.result_signature()
+        self._stale_lbl.setVisible(False)
         self.signals.set_run_state("running")
         self._run_btn.setEnabled(False)
         self._cancel_btn.setEnabled(True)
+        self._progress_bar.setRange(0, 1000)
         self._progress_bar.setValue(0)
         self._run_started = time.perf_counter()
+        self._elapsed_lbl.setText(self.tr("ELAPSED  {0}").format("00:00"))
+        self._remaining_lbl.setText(self.tr("REMAINING  {0}").format("--:--"))
         self._timer.start()
         self._append_log(self.tr("Starting 3D analysis…"))
         self.refresh_readiness()
@@ -352,6 +484,11 @@ class RightSidebar3D(QWidget):
         if self._worker is not None and self._worker.isRunning():
             self._worker.request_stop()
             self._cancel_btn.setEnabled(False)
+            # G2.6: honest cancel feedback — the pipeline stops at the next
+            # cooperative checkpoint, so the bar goes indeterminate and the
+            # label says what is actually happening until the worker returns.
+            self._progress_bar.setRange(0, 0)
+            self._progress_lbl.setText(self.tr("Cancelling — finishing current frame…"))
             self._append_log(self.tr("Cancelling…"), "warn")
 
     def _on_progress(self, fraction: float, message: str) -> None:
@@ -361,7 +498,9 @@ class RightSidebar3D(QWidget):
 
     def _on_done(self) -> None:
         self._timer.stop()
+        self._progress_bar.setRange(0, 1000)  # restore after a G2.6 cancel race
         self._progress_bar.setValue(1000)
+        self._remaining_lbl.setText(self.tr("REMAINING  {0}").format("00:00"))
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
         self._log_run_summary()
@@ -441,6 +580,7 @@ class RightSidebar3D(QWidget):
 
     def _on_fail(self, message: str) -> None:
         self._timer.stop()
+        self._progress_bar.setRange(0, 1000)  # restore after a G2.6 cancel race
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
         self._append_log(self.tr("Failed: {0}").format(message), "error")
@@ -449,9 +589,13 @@ class RightSidebar3D(QWidget):
 
     def _on_cancelled(self) -> None:
         self._timer.stop()
+        self._progress_bar.setRange(0, 1000)  # back from the G2.6 indeterminate bar
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
         self._progress_bar.setValue(0)
+        self._progress_lbl.setText(self.tr("Ready"))
+        self._elapsed_lbl.setText(self.tr("ELAPSED  {0}").format("--:--"))
+        self._remaining_lbl.setText(self.tr("REMAINING  {0}").format("--:--"))
         self._append_log(self.tr("Run cancelled"), "warn")
         self.signals.set_run_state("idle")
         self.refresh_readiness()
@@ -485,6 +629,26 @@ class RightSidebar3D(QWidget):
 
     def _on_auto_range(self, checked: bool) -> None:
         self.signals.color_auto = checked
+        self._vmin_spin.setEnabled(not checked)
+        self._vmax_spin.setEnabled(not checked)
+        if not checked:
+            # G2.2: seed the manual bounds from the live (auto-computed
+            # percentile) range so editing starts from what is on screen.
+            for spin, val in (
+                (self._vmin_spin, self.signals.color_min),
+                (self._vmax_spin, self.signals.color_max),
+            ):
+                spin.blockSignals(True)
+                spin.setValue(val)
+                spin.blockSignals(False)
+        self.signals.display_changed.emit()
+
+    def _on_manual_range(self) -> None:
+        """G2.2: push the typed Min/Max to the shared display state."""
+        if self.signals.color_auto:
+            return  # spins are display-only while Auto is on
+        self.signals.color_min = float(self._vmin_spin.value())
+        self.signals.color_max = float(self._vmax_spin.value())
         self.signals.display_changed.emit()
 
     def _on_opacity(self, value: int) -> None:

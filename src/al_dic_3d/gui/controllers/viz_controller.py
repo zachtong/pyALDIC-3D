@@ -29,6 +29,7 @@ from PySide6.QtGui import QImage, QPixmap
 from al_dic_3d.viz3d.fieldmap import (  # noqa: F401 - re-exported compute API
     FieldmapRenderer,
     apply_colormap,
+    auto_range,
     valid_node_support_mask,
     visible_values,
 )

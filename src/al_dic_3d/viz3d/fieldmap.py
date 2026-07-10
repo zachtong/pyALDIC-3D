@@ -84,6 +84,21 @@ def visible_values(
     return out
 
 
+def auto_range(values: NDArray[np.float64]) -> tuple[float, float]:
+    """2–98 percentile color range of the finite entries (2D-app parity, G2.3).
+
+    The 2D app's auto mode clips the range to the 2nd/98th percentile so a
+    handful of outlier nodes cannot stretch the colormap; the colorbar end
+    labels show these clipped bounds (exactly like 2D). Returns ``(0.0, 1.0)``
+    when nothing is finite.
+    """
+    finite = values[np.isfinite(values)]
+    if finite.size == 0:
+        return 0.0, 1.0
+    lo, hi = np.nanpercentile(finite, [2.0, 98.0])
+    return float(lo), float(hi)
+
+
 def valid_node_support_mask(
     nodes: NDArray[np.float64],
     values: NDArray[np.float64],

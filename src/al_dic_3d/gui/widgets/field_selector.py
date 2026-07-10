@@ -61,10 +61,27 @@ class FieldSelector3D(QWidget):
         grid = QGridLayout(host)
         grid.setContentsMargins(0, 0, 0, 0)
         grid.setSpacing(4)
+        # Displacement = P^k − P^1 in the world frame (= left camera: X right,
+        # Y down, Z toward the scene) — the tooltips spell that out (G2.1).
+        tips = {
+            "U": self.tr(
+                "U — world-frame displacement along X (left camera's +X, image right), in mm"
+            ),
+            "V": self.tr(
+                "V — world-frame displacement along Y (left camera's +Y, image down), in mm"
+            ),
+            "W": self.tr(
+                "W — world-frame displacement along Z (left camera's optical "
+                "axis, toward the scene): out-of-plane motion, in mm"
+            ),
+            "mag": self.tr("|D| — displacement magnitude √(U²+V²+W²), in mm"),
+        }
         for i, (field_id, label) in enumerate(fields):
             btn = QPushButton(label)
             btn.setCheckable(True)
             btn.setFixedHeight(28)
+            if field_id in tips:
+                btn.setToolTip(tips[field_id])
             btn.clicked.connect(lambda _=False, f=field_id: self._on_pick(f))
             grid.addWidget(btn, i // columns, i % columns)
             self._buttons[field_id] = btn

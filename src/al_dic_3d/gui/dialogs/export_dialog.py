@@ -104,9 +104,11 @@ class ExportDialog(QDialog):
         self._folder_edit.setPlaceholderText(self.tr("Select output folder…"))
         folder_row.addWidget(self._folder_edit, stretch=1)
         browse_btn = QPushButton(self.tr("Browse…"))
+        browse_btn.setToolTip(self.tr("Choose the folder all exports are written into"))
         browse_btn.clicked.connect(self._on_browse)
         folder_row.addWidget(browse_btn)
         self._open_btn = QPushButton(self.tr("Open Folder"))
+        self._open_btn.setToolTip(self.tr("Open the output folder in the file explorer"))
         self._open_btn.clicked.connect(self._on_open_folder)
         folder_row.addWidget(self._open_btn)
         layout.addLayout(folder_row)
@@ -123,6 +125,31 @@ class ExportDialog(QDialog):
         self._tabs.addTab(self._animation_tab, self.tr("Animation"))
         self._tabs.addTab(self._preview_tab, self.tr("Preview & Colorbar"))
         self._tabs.addTab(self._view3d_tab, self.tr("3D View"))
+        for idx, tip in enumerate(
+            (
+                self.tr(
+                    "Numeric results: field-selective NPZ / MAT / CSV tables "
+                    "plus PLY / VTU meshes for external tools."
+                ),
+                self.tr(
+                    "Rendered per-camera field overlays as PNG images, one per "
+                    "frame, using the Preview & Colorbar style."
+                ),
+                self.tr(
+                    "GIF / MP4 animations of the field overlay across frames, "
+                    "using the Preview & Colorbar style."
+                ),
+                self.tr(
+                    "WYSIWYG style source: the colorbar and margins configured "
+                    "here are used by every Images / Animation export."
+                ),
+                self.tr(
+                    "Offscreen renders of the 3D surface view (camera frusta "
+                    "included) as images or turntable animations."
+                ),
+            )
+        ):
+            self._tabs.setTabToolTip(idx, tip)
         self._tabs.currentChanged.connect(self._on_tab_changed)
         layout.addWidget(self._tabs, stretch=1)
 

@@ -34,13 +34,9 @@ from al_dic.gui.widgets.collapsible_section import CollapsibleSection
 from al_dic.gui.widgets.colorbar_overlay import ColorbarOverlay
 from al_dic.gui.widgets.console_log import ConsoleLog
 from al_dic.gui.window_chrome import enable_dark_title_bar
-from PySide6.QtCore import QEvent, Qt, QThread, QTimer, Signal
+from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QColor, QGuiApplication, QPen
 from PySide6.QtWidgets import (
-    QCheckBox,
-    QComboBox,
-    QDoubleSpinBox,
-    QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -49,30 +45,32 @@ from PySide6.QtWidgets import (
     QPushButton,
     QScrollArea,
     QSizePolicy,
-    QSlider,
     QVBoxLayout,
     QWidget,
 )
 
 from al_dic_3d.gui.controllers.strain_controller import StrainController3D
-from al_dic_3d.gui.controllers.viz_controller import VizController3D, visible_values
+from al_dic_3d.gui.controllers.viz_controller import VizController3D, auto_range, visible_values
 from al_dic_3d.gui.state import GuiSignals
-from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
 from al_dic_3d.gui.widgets.strain_field_selector import (
     STRAIN_FIELD_LABELS,
     StrainFieldSelector3D,
 )
 from al_dic_3d.gui.widgets.strain_navigator import StrainNavigator3D
 from al_dic_3d.gui.widgets.strain_param_panel import StrainParamPanel3D
+from al_dic_3d.gui.widgets.strain_support import PickCanvas, StrainWorker
+from al_dic_3d.gui.widgets.strain_viz_panel import StrainVizPanel3D
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
     from al_dic_3d.strain3d.model import StrainResult3D
 
-_COLORMAPS = ["turbo", "viridis", "jet", "coolwarm", "plasma", "inferno", "RdBu_r"]
-
 # Pick-marker colors for the 3-point specimen frame: Origin / +X / +Y.
 _PICK_COLORS = (QColor("#3b82f6"), QColor("#ef4444"), QColor("#22c55e"))
+
+# Backward-compatible aliases (extracted to widgets/strain_support.py).
+_PickCanvas = PickCanvas
+_StrainWorker = StrainWorker
 
 
 def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
@@ -86,48 +84,6 @@ def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
         max(640, min(1280, avail_width - 40)),
         max(480, min(800, avail_height - 80)),
     )
-
-
-class _PickCanvas(ImageCanvas3D):
-    """Read-only canvas with an optional 3-point pick mode (no ROI tools armed)."""
-
-    point_picked = Signal(float, float)  # scene (x, y) of a left click in pick mode
-
-    def __init__(self, parent=None) -> None:
-        super().__init__(parent)
-        self._pick_mode = False
-
-    def set_pick_mode(self, on: bool) -> None:
-        self._pick_mode = bool(on)
-        self.setCursor(Qt.CursorShape.CrossCursor if on else Qt.CursorShape.ArrowCursor)
-
-    def mousePressEvent(self, event) -> None:  # noqa: N802 (Qt override)
-        if self._pick_mode and event.button() == Qt.MouseButton.LeftButton:
-            sp = self.mapToScene(event.position().toPoint())
-            self.point_picked.emit(sp.x(), sp.y())
-            return
-        super().mousePressEvent(event)
-
-
-class _StrainWorker(QThread):
-    """Background strain compute; state writeback happens in the window's slot."""
-
-    finished_ok = Signal(object)  # StrainResult3D
-    failed = Signal(str)
-
-    def __init__(self, ctrl: StrainController3D, override: dict) -> None:
-        super().__init__()
-        self._ctrl = ctrl
-        self._override = override
-
-    def run(self) -> None:  # QThread entry point (worker thread)
-        try:
-            self.finished_ok.emit(self._ctrl.compute(self._override))
-        except Exception as exc:  # noqa: BLE001 - report any failure to the UI
-            import traceback
-
-            traceback.print_exc()  # full traceback to stderr (F3.1)
-            self.failed.emit(f"{type(exc).__name__}: {exc}")
 
 
 class StrainWindow3D(QMainWindow):
@@ -182,9 +138,15 @@ class StrainWindow3D(QMainWindow):
         btn_fit.setToolTip(self.tr("Fit image to viewport"))
         btn_fit.setFixedWidth(60)
         btn_fit.setIcon(icon_maximize())
-        btn_100 = QPushButton("100%")
-        btn_100.setToolTip(self.tr("Zoom to 100% (1:1)"))
-        btn_100.setFixedWidth(60)
+        # G2.4: live zoom readout — the label follows the zoom percent.
+        self._zoom_btn = QPushButton("100%")
+        self._zoom_btn.setToolTip(
+            self.tr(
+                "Current zoom — click to reset to 100% (1:1 pixels).\n"
+                "Wheel: zoom · Right/middle drag: pan · Space: pan mode"
+            )
+        )
+        self._zoom_btn.setFixedWidth(60)
         btn_in = QPushButton()
         btn_in.setToolTip(self.tr("Zoom in"))
         btn_in.setFixedWidth(28)
@@ -193,7 +155,7 @@ class StrainWindow3D(QMainWindow):
         btn_out.setToolTip(self.tr("Zoom out"))
         btn_out.setFixedWidth(28)
         btn_out.setIcon(icon_zoom_out())
-        for b in (btn_fit, btn_100, btn_in, btn_out):
+        for b in (btn_fit, self._zoom_btn, btn_in, btn_out):
             zl.addWidget(b)
         zl.addStretch()
         left.addWidget(zoom_bar)
@@ -205,9 +167,12 @@ class StrainWindow3D(QMainWindow):
         self._canvas.point_picked.connect(self._on_point_picked)
 
         btn_fit.clicked.connect(self._canvas.fit_to_view)
-        btn_100.clicked.connect(self._canvas.zoom_to_100)
+        self._zoom_btn.clicked.connect(self._canvas.zoom_to_100)
         btn_in.clicked.connect(self._canvas.zoom_in)
         btn_out.clicked.connect(self._canvas.zoom_out)
+        self._canvas.view_changed.connect(
+            lambda: self._zoom_btn.setText(f"{self._canvas.zoom_level * 100:.0f}%")
+        )
 
         self._nav = StrainNavigator3D()
         self._nav.frame_changed.connect(self._on_frame_nav)
@@ -299,51 +264,24 @@ class StrainWindow3D(QMainWindow):
     # ------------------------------------------------------------------
 
     def _build_viz_panel(self) -> QWidget:
-        host = QWidget()
-        form = QFormLayout(host)
-        form.setContentsMargins(0, 0, 0, 0)
-        form.setSpacing(6)
+        # Widgets live in the extracted (behavior-free) panel; ALL wiring stays
+        # here so the window keeps owning its private display state. Aliases
+        # preserve the historical attribute names (tests, export hint).
+        panel = StrainVizPanel3D()
+        self._deformed_cb = panel.deformed_cb
+        self._cmap_combo = panel.cmap_combo
+        self._auto_range_cb = panel.auto_range_cb
+        self._vmin_spin = panel.vmin_spin
+        self._vmax_spin = panel.vmax_spin
+        self._opacity_slider = panel.opacity_slider
 
-        self._deformed_cb = QCheckBox(self.tr("Show on deformed frame"))
-        self._deformed_cb.setChecked(True)
         self._deformed_cb.toggled.connect(lambda _c: self._render())
-        form.addRow(self._deformed_cb)
-
-        self._cmap_combo = QComboBox()
-        self._cmap_combo.addItems(_COLORMAPS)
         self._cmap_combo.currentTextChanged.connect(lambda _t: self._render())
-        form.addRow(self.tr("Colormap"), self._cmap_combo)
-
-        self._auto_range_cb = QCheckBox(self.tr("Auto range"))
-        self._auto_range_cb.setChecked(True)
         self._auto_range_cb.toggled.connect(self._on_auto_range)
-        form.addRow(self._auto_range_cb)
-
-        self._vmin_spin = QDoubleSpinBox()
-        self._vmax_spin = QDoubleSpinBox()
-        for spin in (self._vmin_spin, self._vmax_spin):
-            spin.setDecimals(6)
-            spin.setRange(-1e9, 1e9)
-            spin.setSingleStep(1e-3)
-            spin.setEnabled(False)
-            spin.valueChanged.connect(lambda _v: self._render())
-        minmax = QHBoxLayout()
-        minmax.setSpacing(4)
-        minmax.setContentsMargins(0, 0, 0, 0)
-        minmax.addWidget(QLabel(self.tr("Min")))
-        minmax.addWidget(self._vmin_spin, 1)
-        minmax.addWidget(QLabel(self.tr("Max")))
-        minmax.addWidget(self._vmax_spin, 1)
-        minmax_host = QWidget()
-        minmax_host.setLayout(minmax)
-        form.addRow(minmax_host)
-
-        self._opacity_slider = QSlider(Qt.Orientation.Horizontal)
-        self._opacity_slider.setRange(0, 100)
-        self._opacity_slider.setValue(85)
+        self._vmin_spin.valueChanged.connect(lambda _v: self._render())
+        self._vmax_spin.valueChanged.connect(lambda _v: self._render())
         self._opacity_slider.valueChanged.connect(lambda _v: self._render())
-        form.addRow(self.tr("Opacity"), self._opacity_slider)
-        return host
+        return panel
 
     # ------------------------------------------------------------------
     # Signal lifecycle (2D Bug-B idiom: reconnect on show, disconnect on close)
@@ -416,6 +354,23 @@ class StrainWindow3D(QMainWindow):
         if obj is self._canvas.viewport() and event.type() == QEvent.Type.Resize:
             self._colorbar.setGeometry(0, 0, obj.width(), obj.height())
         return super().eventFilter(obj, event)
+
+    def keyPressEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        """←/→ = prev/next strain frame, Space = play/pause (G2.5).
+
+        Reached only when the focused child did not consume the key, so spin
+        boxes keep their arrow keys and the pick canvas keeps Space pan mode.
+        """
+        key = event.key()
+        if key in (Qt.Key.Key_Left, Qt.Key.Key_Right):
+            self._nav.step(-1 if key == Qt.Key.Key_Left else 1)
+            event.accept()
+            return
+        if key == Qt.Key.Key_Space and not event.isAutoRepeat():
+            self._nav.toggle_playback()
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     # ------------------------------------------------------------------
     # Public accessors (tests + integration)
@@ -510,6 +465,7 @@ class StrainWindow3D(QMainWindow):
     def _on_params_dirty(self) -> None:
         self._stale_lbl.setText(self.tr("⚠ Params changed -- click Compute Strain"))
         self._compute_btn.setEnabled(self._param_panel.compute_allowed())
+        self._refresh_action_tooltips()
 
     # ------------------------------------------------------------------
     # Export
@@ -649,11 +605,39 @@ class StrainWindow3D(QMainWindow):
         self._field_selector.set_fields_available(has_strain)
         self._export_btn.setEnabled(has_strain)
         self._compute_btn.setEnabled(result is not None and self._param_panel.compute_allowed())
+        self._refresh_action_tooltips()
         if self._recon_id is None and result is not None:
             self._recon_id = id(result.reconstruction)
         n = self._frame_count()
         self._frame = max(0, min(self._frame, max(0, n - 1)))
         self._nav.set_state(n, self._frame)
+
+    def _refresh_action_tooltips(self) -> None:
+        """G2.1 stateful tooltips: disabled Compute / Export explain themselves."""
+        result = self.controller.state.result
+        if result is None:
+            self._compute_btn.setToolTip(
+                self.tr("Run a 3D analysis first — strain needs displacement results.")
+            )
+        elif not self._param_panel.compute_allowed():
+            self._compute_btn.setToolTip(
+                self.tr("Pick the 3 specimen-frame points first (Origin, +X, +Y).")
+            )
+        else:
+            self._compute_btn.setToolTip(
+                self.tr(
+                    "Compute Green-Lagrange surface strain from the displacement "
+                    "field with the parameters above."
+                )
+            )
+        if result is not None and result.strain is not None:
+            self._export_btn.setToolTip(
+                self.tr("Export displacement and strain results to NPZ / MAT / CSV")
+            )
+        else:
+            self._export_btn.setToolTip(
+                self.tr("Compute strain first — there is nothing to export yet.")
+            )
 
     def _frame_count(self) -> int:
         result = self.controller.state.result
@@ -730,14 +714,11 @@ class StrainWindow3D(QMainWindow):
             roi_mask = np.asarray(drawn) > 0
 
         # Auto range from VISIBLE nodes of THIS frame only (2D visible_values
-        # contract): the colorbar must match what the dense render shows.
+        # contract), clipped to the 2–98 percentile (G2.3, 2D parity): the
+        # colorbar must match what the dense render shows, and outlier nodes
+        # must not stretch the colormap.
         if self._auto_range_cb.isChecked():
-            vis = visible_values(vals, ref_pts, roi_mask)
-            finite = vis[np.isfinite(vis)]
-            if finite.size:
-                vmin, vmax = float(finite.min()), float(finite.max())
-            else:
-                vmin, vmax = 0.0, 1.0
+            vmin, vmax = auto_range(visible_values(vals, ref_pts, roi_mask))
         else:
             vmin, vmax = float(self._vmin_spin.value()), float(self._vmax_spin.value())
         self._last_rendered = (vmin, vmax)

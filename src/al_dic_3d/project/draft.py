@@ -59,6 +59,61 @@ class ProjectDraft:
     output_dir: Path | None = None
     output_prefix: str = "run"
 
+    # Fields whose values change the pipeline RESULT (G2.7 staleness check).
+    # Output naming (output_dir/prefix), the legacy compute_strain flag and the
+    # strain-window default (strain_size, post-processing only) are excluded.
+    _RESULT_FIELDS = (
+        "calibration_file",
+        "calibration_format",
+        "left",
+        "right",
+        "left_masks",
+        "right_masks",
+        "roi",
+        "strategy",
+        "reference_mode",
+        "winsize",
+        "winstepsize",
+        "winsize_min",
+        "stereo_search",
+        "disparity_offset",
+        "init_guess",
+        "seed_point",
+        "quality_gate",
+        "use_global_step",
+        "admm_max_iter",
+        "fft_search",
+        "refine_inner",
+        "refine_outer",
+        "refinement_level",
+    )
+
+    def result_signature(self) -> str:
+        """Stable hash of every field that affects the pipeline result (G2.7).
+
+        The GUI hashes the draft at run start; when the signature diverges
+        while results are on screen, the sidebar shows the 'parameters changed
+        — re-run' hint. Mask ARRAYS are hashed by content (a drawn/erased
+        pixel is a result-changing edit even when the bbox stays put).
+        """
+        import hashlib
+
+        import numpy as np
+
+        h = hashlib.sha256()
+        for name in self._RESULT_FIELDS:
+            h.update(f"{name}={getattr(self, name)!r};".encode())
+        for name in ("roi_mask_array", "refinement_mask_array"):
+            arr = getattr(self, name)
+            h.update(name.encode())
+            if arr is None:
+                h.update(b"None")
+            else:
+                a = np.ascontiguousarray(np.asarray(arr) > 0)
+                h.update(str(a.shape).encode())
+                h.update(a.tobytes())
+        return h.hexdigest()
+
     def issues(self) -> list[str]:
         """English descriptions of what is missing/invalid (empty == ready)."""
         problems: list[str] = []

@@ -27,11 +27,14 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QPushButton,
     QSpinBox,
     QWidget,
 )
+
+from al_dic_3d.gui.widgets.info_icon import InfoIcon
 
 # Default from RunConfig: strain_size = 5 (docs/strain3d_math.md §1).
 _DEFAULT_STRAIN_SIZE = 5
@@ -134,12 +137,30 @@ class StrainParamPanel3D(QWidget):
             self._coord_combo.setItemData(i, tip, Qt.ItemDataRole.ToolTipRole)
         self._coord_combo.setCurrentIndex(0)  # DEFAULT: fitted tangent plane
         self._coord_combo.setToolTip(tips[0])
-        layout.addRow(self.tr("Coordinate system"), self._coord_combo)
+        # G2.1: ⓘ on the densest row — the icon's tip explains ALL THREE
+        # options at once (the combo tooltip only describes the current one).
+        combined_tip = "\n\n".join(
+            f"{self._coord_combo.itemText(i)}: {tips[i]}" for i in range(len(tips))
+        )
+        coord_label = QWidget()
+        coord_row = QHBoxLayout(coord_label)
+        coord_row.setContentsMargins(0, 0, 0, 0)
+        coord_row.setSpacing(2)
+        coord_row.addWidget(QLabel(self.tr("Coordinate system")))
+        coord_row.addWidget(InfoIcon(combined_tip))
+        layout.addRow(coord_label, self._coord_combo)
 
         # --- 3-point specimen-frame picker (only for "specific") ---
         self._pick_btn = QPushButton(self.tr("Pick 3 points…"))
         self._pick_btn.setFixedHeight(26)
         self._pick_btn.setEnabled(False)
+        self._pick_btn.setToolTip(
+            self.tr(
+                "Click three points on the reference image: the Origin, a point "
+                "along +X, then a point on the +Y side. Each click snaps to the "
+                "nearest valid mesh node. Enabled only for Custom (3 points)."
+            )
+        )
         self._pick_btn.clicked.connect(self.pick_requested.emit)
         layout.addRow("", self._pick_btn)
 

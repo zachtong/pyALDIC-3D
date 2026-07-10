@@ -56,6 +56,7 @@ justification.
 | `al_dic.gui.widgets.collapsible_section.CollapsibleSection` | reused 2D collapsible sections in the left sidebar and the strain window's right column | internal (GUI widget; import via full path) |
 | `al_dic.gui.icons` | shared icon set (`icon_maximize`, `icon_zoom_in/out`, `icon_chevron_*`, `icon_play/pause`, `icon_download`, `icon_stop`) across toolbars/navigators incl. the strain window | internal (GUI icons; import via full path) |
 | `al_dic.gui.window_chrome.enable_dark_title_bar` | dark OS title bar on `MainWindow3D` and `StrainWindow3D` (one visual frame with the 2D app) | internal (GUI chrome; import via full path) |
+| `al_dic.gui.widgets.double_spin.LocaleSafeDoubleSpinBox` | locale-safe Min/Max color-range spin boxes (right sidebar + strain window, G2.2) — dot-decimal input on comma-decimal OS locales | internal (GUI widget; import via full path) |
 
 <!--
 Row template (copy when adding a dependency):

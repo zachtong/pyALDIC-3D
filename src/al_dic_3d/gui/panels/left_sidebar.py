@@ -11,18 +11,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import numpy as np
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.collapsible_section import CollapsibleSection
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QFileDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QScrollArea,
     QSizePolicy,
     QSpinBox,
@@ -32,9 +29,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.calibration import IMPORTERS, load_calibration
 from al_dic_3d.gui.state import GuiSignals
+from al_dic_3d.gui.widgets.calibration_section import CalibrationSection3D
 from al_dic_3d.gui.widgets.camera_drop_zone import CameraDropZone
+from al_dic_3d.gui.widgets.info_icon import InfoIcon
 from al_dic_3d.gui.widgets.init_guess_section import InitGuessSection3D
 from al_dic_3d.gui.widgets.roi_toolbar import ROIToolbar
 
@@ -127,6 +125,13 @@ class LeftSidebar3D(QWidget):
         layout.addWidget(drop_row)
 
         self._natural_sort = QCheckBox(self.tr("Natural Sort (1, 2, …, 10)"))
+        self._natural_sort.setToolTip(
+            self.tr(
+                "Sort file names numerically (img2 before img10). Default on; "
+                "turn off for strict alphabetical order. Applies to the next "
+                "folder load."
+            )
+        )
         self._natural_sort.setChecked(True)
         self._natural_sort.setStyleSheet(
             f"QCheckBox {{ color: {COLORS.TEXT_SECONDARY}; font-size: 11px; margin: 2px 12px; }}"
@@ -230,108 +235,19 @@ class LeftSidebar3D(QWidget):
     # ---- CALIBRATION ---------------------------------------------------------
 
     def _build_calibration(self) -> QWidget:
-        host = QWidget()
-        layout = QVBoxLayout(host)
-        layout.setContentsMargins(12, 4, 12, 8)
-        layout.setSpacing(6)
-
-        # Three entry modes (D12): built-in calibrator (primary), file import
-        # (alternative), manual parameters (fallback). All converge on an
-        # opencv_yaml file previewed by the same QC funnel below.
-        self._calibrate_btn = QPushButton(self.tr("Calibrate from images…"))
-        self._calibrate_btn.setProperty("class", "btn-primary")
-        self._calibrate_btn.clicked.connect(self._on_calibrate_dialog)
-        layout.addWidget(self._calibrate_btn)
-
-        row = QHBoxLayout()
-        row.setSpacing(4)
-        lbl = QLabel(self.tr("Format"))
-        lbl.setFixedWidth(88)
-        lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
-        row.addWidget(lbl)
-        self._calib_format = QComboBox()
-        self._calib_format.addItems(sorted(IMPORTERS))
-        self._calib_format.setCurrentText("opencv_yaml")
-        self._calib_format.currentTextChanged.connect(self._on_calib_format)
-        row.addWidget(self._calib_format, stretch=1)
-        layout.addLayout(row)
-
-        self._calib_btn = QPushButton(self.tr("Import calibration…"))
-        self._calib_btn.clicked.connect(self._on_calib_browse)
-        layout.addWidget(self._calib_btn)
-
-        self._manual_btn = QPushButton(self.tr("Manual parameters…"))
-        self._manual_btn.clicked.connect(self._on_manual_dialog)
-        layout.addWidget(self._manual_btn)
-
-        self._calib_status = QLabel(self.tr("No calibration loaded"))
-        self._calib_status.setWordWrap(True)
-        self._calib_status.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
-        layout.addWidget(self._calib_status)
-        return host
-
-    def _on_calibrate_dialog(self) -> None:
-        from al_dic_3d.gui.dialogs.calibration_dialog import CalibrationDialog
-
-        dlg = CalibrationDialog(self)
-        if dlg.exec() and dlg.saved_path:
-            self._adopt_calibration_file(dlg.saved_path)
-
-    def _on_manual_dialog(self) -> None:
-        from al_dic_3d.gui.dialogs.manual_params_dialog import ManualParamsDialog
-
-        dlg = ManualParamsDialog(self)
-        if dlg.exec() and dlg.saved_path:
-            self._adopt_calibration_file(dlg.saved_path)
-
-    def _adopt_calibration_file(self, path) -> None:
-        """Route a freshly written opencv_yaml through the shared QC funnel."""
-        draft = self.controller.state.draft
-        draft.calibration_file = Path(path)
-        draft.calibration_format = "opencv_yaml"
-        self._calib_format.setCurrentText("opencv_yaml")
-        self.controller.state.mark_dirty()
-        self._preview_calibration()
-        self.signals.calibration_changed.emit()
-
-    def _on_calib_format(self, fmt: str) -> None:
-        self.controller.state.draft.calibration_format = fmt
-        self.controller.state.mark_dirty()
-        self.signals.calibration_changed.emit()
-
-    def _on_calib_browse(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(
-            self,
-            self.tr("Choose calibration file"),
-            "",
-            self.tr("Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)"),
-        )
-        if not path:
-            return
-        self.controller.state.draft.calibration_file = Path(path)
-        self.controller.state.mark_dirty()
-        self._preview_calibration()
-        self.signals.calibration_changed.emit()
+        # Extracted widget (file-size discipline); NOT `_calib_section`, which
+        # is the CollapsibleSection wrapper. Aliases keep the historical
+        # attribute names the tests and refresh_all rely on.
+        self._calib_widget = CalibrationSection3D(self.controller, self.signals)
+        self._calibrate_btn = self._calib_widget.calibrate_btn
+        self._calib_format = self._calib_widget.format_combo
+        self._calib_btn = self._calib_widget.import_btn
+        self._manual_btn = self._calib_widget.manual_btn
+        self._calib_status = self._calib_widget.status_label
+        return self._calib_widget
 
     def _preview_calibration(self) -> None:
-        draft = self.controller.state.draft
-        try:
-            rig = load_calibration(draft.calibration_file, draft.calibration_format)
-        except Exception as exc:  # noqa: BLE001 - calibration errors must die HERE
-            self._calib_status.setText(self.tr("Error: {0}").format(exc))
-            self._calib_status.setStyleSheet(f"color: {COLORS.DANGER}; font-size: 11px;")
-            self.signals.log.emit(str(exc), "error")
-            return
-        left = rig.cameras["L"]
-        _, t = rig.pose("R")
-        baseline = float(np.linalg.norm(t))
-        self._calib_status.setText(
-            self.tr("{0}\nfx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm").format(
-                Path(str(draft.calibration_file)).name, left.fx, left.fy, baseline
-            )
-        )
-        self._calib_status.setStyleSheet(f"color: {COLORS.SUCCESS}; font-size: 11px;")
-        self.signals.log.emit(f"calibration loaded: baseline {baseline:.1f} mm", "success")
+        self._calib_widget.preview()
 
     # ---- WORKFLOW TYPE ---------------------------------------------------------
 
@@ -344,6 +260,16 @@ class LeftSidebar3D(QWidget):
         self._mode_combo = QComboBox()
         self._mode_combo.addItem(self.tr("Accumulative"), "accumulative")
         self._mode_combo.addItem(self.tr("Incremental"), "incremental")
+        # Tooltip text ported verbatim from the 2D workflow_type_panel (G2.1).
+        self._mode_combo.setToolTip(
+            self.tr(
+                "Incremental: each frame is compared to the previous reference "
+                "frame.\nSuitable for large accumulated deformation, required "
+                "for large rotations.\n\n"
+                "Accumulative: every frame is compared to frame 1.\n"
+                "Accurate for small, monotonic deformation only."
+            )
+        )
         layout.addLayout(self._combo_row(self.tr("Tracking Mode"), self._mode_combo))
 
         # "AL-DIC" is a brand-specific acronym kept literal across locales;
@@ -351,22 +277,32 @@ class LeftSidebar3D(QWidget):
         self._solver_combo = QComboBox()
         self._solver_combo.addItem("AL-DIC", "aldic")
         self._solver_combo.addItem(self.tr("Local DIC"), "local")
-        self._solver_combo.setToolTip(
-            self.tr(
-                "Local DIC: Independent subset matching (IC-GN). Fast,\n"
-                "preserves sharp local features. Best for small\n"
-                "deformations or high-quality images.\n\n"
-                "AL-DIC: Augmented Lagrangian with global FEM\n"
-                "regularization. Enforces displacement compatibility\n"
-                "between subsets. Best for large deformations, noisy\n"
-                "images, or when strain accuracy matters."
-            )
+        solver_tip = self.tr(
+            "Local DIC: Independent subset matching (IC-GN). Fast,\n"
+            "preserves sharp local features. Best for small\n"
+            "deformations or high-quality images.\n\n"
+            "AL-DIC: Augmented Lagrangian with global FEM\n"
+            "regularization. Enforces displacement compatibility\n"
+            "between subsets. Best for large deformations, noisy\n"
+            "images, or when strain accuracy matters."
         )
-        layout.addLayout(self._combo_row(self.tr("Solver"), self._solver_combo))
+        self._solver_combo.setToolTip(solver_tip)
+        layout.addLayout(
+            self._combo_row(self.tr("Solver"), self._solver_combo, info=InfoIcon(solver_tip))
+        )
 
         # NOTE: surface strain is post-processing now (Batch C) — computed on
         # demand in the Strain window, never during the pipeline run.
         self._quality_cb = QCheckBox(self.tr("Quality gates (ZNSSD / outliers)"))
+        self._quality_cb.setToolTip(
+            self.tr(
+                "Post-run filters: demote points whose ZNSSD correlation,\n"
+                "reprojection error or 3D-outlier distance fails the gate to\n"
+                "NaN. Default off (keep every tracked point); enable for noisy\n"
+                "data when a few bad points pollute the fields. The log\n"
+                "reports how many points each gate removed."
+            )
+        )
         layout.addWidget(self._quality_cb)
 
         self._mode_combo.currentIndexChanged.connect(self._apply_workflow)
@@ -374,7 +310,7 @@ class LeftSidebar3D(QWidget):
         self._quality_cb.toggled.connect(self._apply_workflow)
         return host
 
-    def _combo_row(self, text: str, combo: QComboBox) -> QHBoxLayout:
+    def _combo_row(self, text: str, combo: QComboBox, info: InfoIcon | None = None) -> QHBoxLayout:
         row = QHBoxLayout()
         row.setSpacing(4)
         lbl = QLabel(text)
@@ -382,6 +318,8 @@ class LeftSidebar3D(QWidget):
         lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
         row.addWidget(lbl)
         row.addWidget(combo, stretch=1)
+        if info is not None:
+            row.addWidget(info)
         return row
 
     def _apply_workflow(self, *_a) -> None:
@@ -461,14 +399,27 @@ class LeftSidebar3D(QWidget):
         self._subset_spin.setRange(5, 201)
         self._subset_spin.setSingleStep(2)
         self._subset_spin.setValue(33)  # draft default winsize=32 -> display 33
-        self._subset_spin.setToolTip(self.tr("IC-GN subset window size in pixels (odd number)"))
+        self._subset_spin.setToolTip(
+            self.tr(
+                "IC-GN subset window size in pixels (odd number). Default 33.\n"
+                "Larger = more robust on sparse speckle, smoother fields;\n"
+                "smaller = finer spatial detail but noisier. The subset must\n"
+                "span several speckles."
+            )
+        )
         layout.addLayout(self._param_row(self.tr("Subset Size"), self._subset_spin))
 
         # Subset Step: powers of two only (combo, 2D idiom).
         self._step_combo = QComboBox()
         self._step_combo.addItems([str(v) for v in _STEP_OPTIONS])
         self._step_combo.setCurrentText("16")
-        self._step_combo.setToolTip(self.tr("Node spacing in pixels (must be power of 2)"))
+        self._step_combo.setToolTip(
+            self.tr(
+                "Node spacing in pixels (power of 2). Default 16. Smaller =\n"
+                "denser measurement grid and longer runs; larger = faster but\n"
+                "coarser fields. Typically ¼–½ of the Subset Size."
+            )
+        )
         layout.addLayout(self._param_row(self.tr("Subset Step"), self._step_combo))
 
         self._search_spin = QSpinBox()
@@ -479,12 +430,18 @@ class LeftSidebar3D(QWidget):
 
         # Temporal FFT seeding half-width: must cover the largest per-frame
         # motion (auto-expand only fires on boundary-clipped peaks, not on the
-        # in-bounds noise peaks a decorrelated jump produces).
+        # in-bounds noise peaks a decorrelated jump produces). The ⓘ mirrors
+        # the (dynamic) tooltip for discoverability (G2.1).
         self._temporal_spin = QSpinBox()
         self._temporal_spin.setRange(8, 400)
         self._temporal_spin.setValue(20)
         self._temporal_spin.setSuffix(" px")
-        layout.addLayout(self._param_row(self.tr("Temporal Search"), self._temporal_spin))
+        self._temporal_info = InfoIcon("")
+        layout.addLayout(
+            self._param_row(
+                self.tr("Temporal Search"), self._temporal_spin, info=self._temporal_info
+            )
+        )
         self._update_search_tooltips()
 
         # ---- quadtree mesh refinement (2D-app levers; default = uniform grid) ----
@@ -496,13 +453,35 @@ class LeftSidebar3D(QWidget):
         layout.addWidget(refine_lbl)
 
         self._refine_inner_cb = QCheckBox(self.tr("Refine at mask boundaries (holes)"))
+        self._refine_inner_cb.setToolTip(
+            self.tr(
+                "Quadtree-subdivide mesh elements crossing interior mask\n"
+                "holes so the mesh hugs the hole edges. Default off (uniform\n"
+                "grid); enable when the ROI mask has cut-outs whose rims you\n"
+                "care about."
+            )
+        )
         layout.addWidget(self._refine_inner_cb)
         self._refine_outer_cb = QCheckBox(self.tr("Refine at ROI edges"))
+        self._refine_outer_cb.setToolTip(
+            self.tr(
+                "Quadtree-subdivide mesh elements along the outer ROI\n"
+                "boundary. Default off; enable for curved / irregular ROI\n"
+                "outlines where the uniform grid staircases."
+            )
+        )
         layout.addWidget(self._refine_outer_cb)
 
         self._refine_level_spin = QSpinBox()
         self._refine_level_spin.setRange(1, 3)
         self._refine_level_spin.setValue(1)
+        self._refine_level_spin.setToolTip(
+            self.tr(
+                "How aggressively refined elements shrink: the minimum element\n"
+                "is step / 2^level. Default 1 (light); 3 is heavy — finer\n"
+                "boundary detail but many more nodes and a slower run."
+            )
+        )
         layout.addLayout(self._param_row(self.tr("Refinement Level"), self._refine_level_spin))
 
         # The refinement BRUSH moved into the ROI toolbar's "+ Refine" menu
@@ -529,6 +508,17 @@ class LeftSidebar3D(QWidget):
         self._strategy_combo.addItem(self.tr("Track Both"), "track_both")
         self._strategy_combo.addItem(self.tr("Stereo Each Frame"), "stereo_each_frame")
         self._strategy_combo.addItem(self.tr("Reference Direct"), "ref_direct")
+        self._strategy_combo.setToolTip(
+            self.tr(
+                "How stereo correspondences are propagated through time.\n"
+                "Track Both (default): match stereo once at frame 1, then\n"
+                "track each camera temporally — fastest, one stereo solve.\n"
+                "Stereo Each Frame: re-match stereo at every frame — robust\n"
+                "when temporal tracking drifts, slower.\n"
+                "Reference Direct: match every frame directly to frame 1 in\n"
+                "both cameras — no drift accumulation, small motions only."
+            )
+        )
         layout.addLayout(self._combo_row(self.tr("Strategy"), self._strategy_combo))
 
         # AL-DIC global refinement cycles (ADMM under the hood; acronym hidden).
@@ -549,7 +539,7 @@ class LeftSidebar3D(QWidget):
         self._admm_spin.valueChanged.connect(self._apply_params)
         return host
 
-    def _param_row(self, text: str, widget: QWidget) -> QHBoxLayout:
+    def _param_row(self, text: str, widget: QWidget, info: InfoIcon | None = None) -> QHBoxLayout:
         row = QHBoxLayout()
         row.setSpacing(4)
         lbl = QLabel(text)
@@ -557,6 +547,8 @@ class LeftSidebar3D(QWidget):
         lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
         row.addWidget(lbl)
         row.addWidget(widget, stretch=1)
+        if info is not None:
+            row.addWidget(info)
         return row
 
     def _on_subset_display_changed(self, display_value: int) -> None:
@@ -641,6 +633,7 @@ class LeftSidebar3D(QWidget):
             ).format(temporal_cap)
         self._search_spin.setToolTip(stereo_tip)
         self._temporal_spin.setToolTip(temporal_tip)
+        self._temporal_info.set_tip(temporal_tip)  # keep the ⓘ in sync (G2.1)
 
     # ---- IMAGES --------------------------------------------------------------------
 
@@ -660,6 +653,13 @@ class LeftSidebar3D(QWidget):
 
     def refresh_images(self) -> None:
         draft = self.controller.state.draft
+        # G2.9: the drop zones mirror the draft — folder name + frame count
+        # with an accent border once loaded; back to the caption when empty.
+        for zone, files in ((self._left_drop, draft.left), (self._right_drop, draft.right)):
+            if files:
+                zone.set_loaded(str(Path(files[0]).parent), len(files))
+            else:
+                zone.reset()
         self._pair_list.clear()
         n = max(len(draft.left), len(draft.right))
         from PySide6.QtGui import QBrush, QColor

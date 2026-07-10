@@ -179,11 +179,12 @@ def test_run_and_overlay_render(qapp, scene):
     # the node-dot layer and its "Show Points" toggle were removed (F1.4):
     # the dense field is the only result rendering on the canvas
     assert not hasattr(win._canvas_area, "_show_points_cb")
-    # colorbar range matches the visible values of the rendered frame (auto)
+    # colorbar range = 2–98 percentile of the visible values (G2.3, 2D parity)
     disp_u = result.reconstruction.displacement[1][:, 0]
     finite = disp_u[np.isfinite(disp_u)]
-    assert win.signals.color_min == pytest.approx(float(finite.min()))
-    assert win.signals.color_max == pytest.approx(float(finite.max()))
+    lo, hi = np.nanpercentile(finite, [2.0, 98.0])
+    assert win.signals.color_min == pytest.approx(float(lo))
+    assert win.signals.color_max == pytest.approx(float(hi))
 
     # the main field selector offers ONLY clean displacement fields now
     assert set(win._right._field_selector._buttons) == {"U", "V", "W", "mag"}

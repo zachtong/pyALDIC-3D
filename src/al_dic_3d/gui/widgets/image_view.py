@@ -10,8 +10,9 @@ Interaction is a tool-mode state machine ported from the 2D canvas:
 drawing tool (add = accent preview, cut = red preview) that rasterizes through
 the attached :class:`ROIController` on commit and auto-resets to select;
 ``set_brush_tool(mode, radius)`` arms the freehand refinement brush (paint /
-erase). Zoom: Fit / 100% / +/- and mouse wheel (anchor under mouse); pan with
-the middle mouse button. Qt view layer; no user-facing strings.
+erase). Zoom: Fit / 100% / +/- and mouse wheel (anchor under mouse), clamped to
+[5 %, 4000 %]; pan with the right or middle mouse button, or hold Space for a
+hand-drag pan mode (G2.4). Qt view layer; no user-facing strings.
 
 ``ImageView`` is kept as a thin alias for backward compatibility.
 """
@@ -47,6 +48,11 @@ _ROI_OVERLAY_RGBA = (59, 130, 246, 80)  # blue semi-transparent mask fill
 _BRUSH_OVERLAY_RGBA = (20, 220, 200, 110)  # cyan semi-transparent brush fill
 
 _SHAPE_TOOLS = ("rect", "polygon", "circle", "circle3")
+
+# Zoom clamp (G2.4): 5 % .. 4000 % — wheel/buttons can never zoom into a
+# useless single-pixel blowup or an invisible speck.
+ZOOM_MIN = 0.05
+ZOOM_MAX = 40.0
 
 
 def _circumcircle(
@@ -163,7 +169,9 @@ class ImageCanvas3D(QGraphicsView):
         self._seed_marker = None  # QGraphicsItemGroup at the placed seed point
 
         self._panning = False
+        self._pan_button: Qt.MouseButton | None = None  # which button drives the pan
         self._pan_anchor = QPointF()
+        self._space_pan = False  # Space held: left-drag pans (hand cursor)
         self._zoom_level = 1.0
         self._fitted = True  # auto-refit on resize until the user zooms
         self._loaded_path: str | None = None
@@ -363,6 +371,11 @@ class ImageCanvas3D(QGraphicsView):
 
     # --- zoom / pan ------------------------------------------------------------
 
+    @property
+    def zoom_level(self) -> float:
+        """Current zoom factor (1.0 = 100 %); drives the toolbar readout (G2.4)."""
+        return self._zoom_level
+
     def fit_to_view(self) -> None:
         if not self.has_image:
             return
@@ -384,7 +397,12 @@ class ImageCanvas3D(QGraphicsView):
         self._apply_zoom(0.8)
 
     def _apply_zoom(self, factor: float) -> None:
-        self._zoom_level *= factor
+        # G2.4 clamp: adjust the factor so the resulting level stays in range.
+        target = max(ZOOM_MIN, min(ZOOM_MAX, self._zoom_level * factor))
+        factor = target / self._zoom_level
+        if abs(factor - 1.0) < 1e-9:
+            return
+        self._zoom_level = target
         self.scale(factor, factor)
         self._fitted = False
         self.view_changed.emit()
@@ -398,11 +416,33 @@ class ImageCanvas3D(QGraphicsView):
 
     # --- events ----------------------------------------------------------------
 
+    def _begin_pan(self, button: Qt.MouseButton, pos: QPointF) -> None:
+        self._panning = True
+        self._pan_button = button
+        self._pan_anchor = pos
+        self.setCursor(Qt.CursorShape.ClosedHandCursor)
+
+    def _end_pan(self) -> None:
+        self._panning = False
+        self._pan_button = None
+        self._restore_cursor()
+
+    def _restore_cursor(self) -> None:
+        """Cursor for the current mode: hand (Space pan) / cross (tools) / arrow."""
+        if self._space_pan:
+            self.setCursor(Qt.CursorShape.OpenHandCursor)
+        elif self._tool in _SHAPE_TOOLS or self._tool in ("brush", "seed"):
+            self.setCursor(Qt.CursorShape.CrossCursor)
+        else:
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+
     def mousePressEvent(self, event) -> None:  # noqa: N802 (Qt override)
-        if event.button() == Qt.MouseButton.MiddleButton:
-            self._panning = True
-            self._pan_anchor = event.position()
-            self.setCursor(Qt.CursorShape.ClosedHandCursor)
+        # Pan starts on middle OR right drag (G2.4), or left drag in Space mode.
+        if event.button() in (Qt.MouseButton.MiddleButton, Qt.MouseButton.RightButton):
+            self._begin_pan(event.button(), event.position())
+            return
+        if event.button() == Qt.MouseButton.LeftButton and self._space_pan:
+            self._begin_pan(Qt.MouseButton.LeftButton, event.position())
             return
         if event.button() == Qt.MouseButton.LeftButton and self._tool in _SHAPE_TOOLS:
             self._handle_draw_press(self.mapToScene(event.position().toPoint()))
@@ -440,10 +480,8 @@ class ImageCanvas3D(QGraphicsView):
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event) -> None:  # noqa: N802 (Qt override)
-        if self._panning and event.button() == Qt.MouseButton.MiddleButton:
-            self._panning = False
-            crosshair = self._tool in _SHAPE_TOOLS or self._tool == "brush"
-            self.setCursor(Qt.CursorShape.CrossCursor if crosshair else Qt.CursorShape.ArrowCursor)
+        if self._panning and event.button() == self._pan_button:
+            self._end_pan()
             return
         if (
             event.button() == Qt.MouseButton.LeftButton
@@ -477,7 +515,32 @@ class ImageCanvas3D(QGraphicsView):
             self.set_seed_tool(False)
             self.drawing_finished.emit()
             return
+        # G2.4: holding Space switches to hand-drag pan mode (open-hand cursor;
+        # left-drag pans while held). Consumed here so the main window's Space
+        # play/pause never fires while the canvas has focus.
+        if event.key() == Qt.Key.Key_Space:
+            if not event.isAutoRepeat() and not self._space_pan:
+                self._space_pan = True
+                if not self._panning:
+                    self.setCursor(Qt.CursorShape.OpenHandCursor)
+            return
         super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        if event.key() == Qt.Key.Key_Space and not event.isAutoRepeat():
+            self._space_pan = False
+            if not self._panning:
+                self._restore_cursor()
+            return
+        super().keyReleaseEvent(event)
+
+    def focusOutEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        # A missed Space release (focus stolen mid-hold) must not stick pan mode.
+        if self._space_pan:
+            self._space_pan = False
+            if not self._panning:
+                self._restore_cursor()
+        super().focusOutEvent(event)
 
     def leaveEvent(self, event) -> None:  # noqa: N802 (Qt override)
         self.hover_left.emit()
