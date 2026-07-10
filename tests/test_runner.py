@@ -226,8 +226,19 @@ def test_run_pipeline_computes_and_writes_strain(tmp_path):
 
     paths = write_results(result, replace(cfg, compute_strain=True))
     npz = np.load(paths["npz"])
-    assert "strain_exx" in npz
-    assert npz["strain_von_mises"].shape == (3, result.correspondence.n_pts)
+    # Archive schema 2 (P3.3): ONE canonical key set — the strain stacks live
+    # under their bare GUI-selection ids; the strain_<name> aliases are gone
+    # while dwdx/dwdy (no GUI id) keep their canonical bare names too.
+    assert "exx" in npz and "dwdx" in npz and "dwdy" in npz
+    assert "strain_exx" not in npz and "strain_von_mises" not in npz
+    assert npz["von_mises"].shape == (3, result.correspondence.n_pts)
+    np.testing.assert_array_equal(npz["exx"], result.strain.exx)
+    # Legacy tool keys survive the schema bump.
+    assert "points3D" in npz and "displacement3D" in npz
+    import json
+
+    params = json.loads(next(cfg.output_dir.glob("run_parameters_*.json")).read_text("utf-8"))
+    assert params["archive_schema"] == 2
 
 
 def test_reference_mesh_quadtree_refinement():

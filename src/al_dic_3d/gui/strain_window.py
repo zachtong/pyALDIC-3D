@@ -28,7 +28,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-from al_dic.gui.icons import icon_download, icon_maximize, icon_zoom_in, icon_zoom_out
+from al_dic.gui.icons import icon_download
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.collapsible_section import CollapsibleSection
 from al_dic.gui.widgets.colorbar_overlay import ColorbarOverlay
@@ -58,7 +58,7 @@ from al_dic_3d.gui.widgets.strain_field_selector import (
 )
 from al_dic_3d.gui.widgets.strain_navigator import StrainNavigator3D
 from al_dic_3d.gui.widgets.strain_param_panel import StrainParamPanel3D
-from al_dic_3d.gui.widgets.strain_support import PickCanvas, StrainWorker
+from al_dic_3d.gui.widgets.strain_support import PickCanvas, StrainWorker, ZoomBar
 from al_dic_3d.gui.widgets.strain_viz_panel import StrainVizPanel3D
 
 if TYPE_CHECKING:
@@ -130,53 +130,14 @@ class StrainWindow3D(QMainWindow):
         left = QVBoxLayout()
         left.setSpacing(0)
 
-        zoom_bar = QWidget()
-        zoom_bar.setFixedHeight(36)
-        zoom_bar.setStyleSheet(
-            f"background: {COLORS.BG_PANEL}; border-bottom: 1px solid {COLORS.BORDER};"
-        )
-        zl = QHBoxLayout(zoom_bar)
-        zl.setContentsMargins(8, 2, 8, 2)
-        zl.setSpacing(4)
-        btn_fit = QPushButton(self.tr("Fit"))
-        btn_fit.setToolTip(self.tr("Fit image to viewport"))
-        btn_fit.setFixedWidth(60)
-        btn_fit.setIcon(icon_maximize())
-        # G2.4: live zoom readout — the label follows the zoom percent.
-        self._zoom_btn = QPushButton("100%")
-        self._zoom_btn.setToolTip(
-            self.tr(
-                "Current zoom — click to reset to 100% (1:1 pixels).\n"
-                "Wheel: zoom · Right/middle drag: pan · Space: pan mode"
-            )
-        )
-        self._zoom_btn.setFixedWidth(60)
-        btn_in = QPushButton()
-        btn_in.setToolTip(self.tr("Zoom in"))
-        btn_in.setFixedWidth(28)
-        btn_in.setIcon(icon_zoom_in())
-        btn_out = QPushButton()
-        btn_out.setToolTip(self.tr("Zoom out"))
-        btn_out.setFixedWidth(28)
-        btn_out.setIcon(icon_zoom_out())
-        for b in (btn_fit, self._zoom_btn, btn_in, btn_out):
-            zl.addWidget(b)
-        zl.addStretch()
-        left.addWidget(zoom_bar)
-
         self._canvas = _PickCanvas()
+        zoom_bar = ZoomBar(self._canvas)  # extracted toolbar (P3.5 file-size)
+        self._zoom_btn = zoom_bar.zoom_btn  # historical alias
+        left.addWidget(zoom_bar)
         left.addWidget(self._canvas, stretch=1)
         self._colorbar = ColorbarOverlay(self._canvas.viewport())
         self._canvas.viewport().installEventFilter(self)
         self._canvas.point_picked.connect(self._on_point_picked)
-
-        btn_fit.clicked.connect(self._canvas.fit_to_view)
-        self._zoom_btn.clicked.connect(self._canvas.zoom_to_100)
-        btn_in.clicked.connect(self._canvas.zoom_in)
-        btn_out.clicked.connect(self._canvas.zoom_out)
-        self._canvas.view_changed.connect(
-            lambda: self._zoom_btn.setText(f"{self._canvas.zoom_level * 100:.0f}%")
-        )
 
         self._nav = StrainNavigator3D()
         self._nav.frame_changed.connect(self._on_frame_nav)
@@ -216,7 +177,7 @@ class StrainWindow3D(QMainWindow):
         right.addWidget(self._export_btn)
 
         self._progress = QProgressBar()
-        self._progress.setRange(0, 0)  # busy: the compute API has no per-frame hook
+        self._progress.setRange(0, 100)  # P3.5: real per-frame progress
         self._progress.setTextVisible(False)
         self._progress.setFixedHeight(8)
         self._progress.setVisible(False)
@@ -226,6 +187,14 @@ class StrainWindow3D(QMainWindow):
         self._progress_lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px;")
         self._progress_lbl.setVisible(False)
         right.addWidget(self._progress_lbl)
+
+        # P3.5: cooperative cancel — visible only while a compute runs.
+        self._cancel_btn = QPushButton(self.tr("Cancel"))
+        self._cancel_btn.setFixedHeight(26)
+        self._cancel_btn.setToolTip(self.tr("Stop the strain computation at the next frame."))
+        self._cancel_btn.setVisible(False)
+        self._cancel_btn.clicked.connect(self._on_cancel_clicked)
+        right.addWidget(self._cancel_btn)
 
         self._stale_lbl = QLabel("")
         self._stale_lbl.setStyleSheet("color: #fbbf24; font-size: 11px; font-style: italic;")
@@ -310,11 +279,14 @@ class StrainWindow3D(QMainWindow):
         # G1.2: a live compute QThread must be joined before the window goes
         # (Qt otherwise destroys a running thread). The cascade path (main
         # window closing) calls join_worker() BEFORE close(), so this prompt
-        # only ever appears for a user-initiated close.
+        # only ever appears for a user-initiated close. P3.5: with the
+        # cooperative cancel hook the prompt now offers to CANCEL the compute;
+        # confirming stops it at the next frame and joins the (short) tail.
         if self._worker is not None and self._worker.isRunning():
             if not self._confirm_close_during_compute():
                 event.ignore()
                 return
+            self._worker.request_stop()
             self.join_worker()
         # G3.12: a non-modal export dialog may hold live workers — close it
         # through its own running-export guard first.
@@ -331,11 +303,16 @@ class StrainWindow3D(QMainWindow):
         super().closeEvent(event)
 
     def join_worker(self, timeout_ms: int = 10_000) -> None:
-        """Join a running strain worker under a busy cursor (close/cascade, G1.2)."""
+        """Join a running strain worker under a busy cursor (close/cascade, G1.2).
+
+        P3.5: the compute is cancelled first so the join is bounded by one
+        frame's work, not the whole remaining sequence.
+        """
         if self._worker is None or not self._worker.isRunning():
             return
         from PySide6.QtWidgets import QApplication
 
+        self._worker.request_stop()
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             self._worker.wait(timeout_ms)
@@ -345,15 +322,15 @@ class StrainWindow3D(QMainWindow):
     def _confirm_close_during_compute(self) -> bool:
         """Yes/No prompt when the user closes while a compute runs (G1.2).
 
-        The strain worker has no cooperative cancel hook, so the honest offer
-        is to WAIT for it (bounded by :meth:`join_worker`), not to cancel it.
+        P3.5: the worker now has a cooperative cancel hook, so the honest
+        offer is to CANCEL the compute (it stops at the next frame) and close.
         """
         from PySide6.QtWidgets import QMessageBox
 
         box = QMessageBox(self)
         box.setIcon(QMessageBox.Icon.Warning)
         box.setWindowTitle(self.tr("Computation Running"))
-        box.setText(self.tr("A strain computation is running — wait for it and close?"))
+        box.setText(self.tr("A strain computation is running — cancel it and close?"))
         box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         box.setDefaultButton(QMessageBox.StandardButton.No)
         # Qt's own qtbase button catalogs are not shipped — set the texts
@@ -439,14 +416,36 @@ class StrainWindow3D(QMainWindow):
         if self._worker is not None and self._worker.isRunning():
             return
         self._compute_btn.setEnabled(False)
+        self._progress.setValue(0)
         self._progress.setVisible(True)
         self._progress_lbl.setText(self.tr("Computing strain…"))
         self._progress_lbl.setVisible(True)
+        self._cancel_btn.setEnabled(True)
+        self._cancel_btn.setVisible(True)
 
         self._worker = _StrainWorker(self._strain_ctrl, self._param_panel.get_override())
+        self._worker.progress.connect(self._on_worker_progress)
         self._worker.finished_ok.connect(self._on_worker_finished)
         self._worker.failed.connect(self._on_worker_failed)
+        self._worker.cancelled.connect(self._on_worker_cancelled)
         self._worker.start()
+
+    def _on_cancel_clicked(self) -> None:
+        """P3.5: trip the worker's cooperative stop; it aborts at the next frame."""
+        if self._worker is None or not self._worker.isRunning():
+            return
+        self._cancel_btn.setEnabled(False)
+        self._progress_lbl.setText(self.tr("Cancelling…"))
+        self._worker.request_stop()
+
+    def _on_worker_progress(self, frac: float, _msg: str) -> None:
+        self._progress.setValue(int(round(frac * 100)))
+        self._progress_lbl.setText(self.tr("Computing strain… {0}%").format(int(frac * 100)))
+
+    def _hide_compute_feedback(self) -> None:
+        self._progress.setVisible(False)
+        self._progress_lbl.setVisible(False)
+        self._cancel_btn.setVisible(False)
 
     def _on_worker_finished(self, strain: StrainResult3D) -> None:
         # Writeback on the main thread (frozen replace + one notification).
@@ -454,6 +453,7 @@ class StrainWindow3D(QMainWindow):
         self._viz_ctrl.clear_all()
         self.signals.results_changed.emit()
         self._progress_lbl.setText(self.tr("Complete"))
+        self._cancel_btn.setVisible(False)
         self._compute_btn.setEnabled(True)
         self._after_compute_success()
         QTimer.singleShot(
@@ -462,10 +462,14 @@ class StrainWindow3D(QMainWindow):
         )
 
     def _on_worker_failed(self, message: str) -> None:
-        self._progress.setVisible(False)
-        self._progress_lbl.setVisible(False)
+        self._hide_compute_feedback()
         self._compute_btn.setEnabled(True)
         self._log(self.tr("Strain compute failed: {0}").format(message), "error")
+
+    def _on_worker_cancelled(self) -> None:
+        self._hide_compute_feedback()
+        self._compute_btn.setEnabled(True)
+        self._log(self.tr("Strain computation cancelled."), "info")
 
     def _after_compute_success(self) -> None:
         self._param_panel.mark_clean()

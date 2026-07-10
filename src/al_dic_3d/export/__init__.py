@@ -44,6 +44,7 @@ from al_dic_3d.export.tables import (
     export_mat,
     export_npz,
     field_frame,
+    field_stack,
     selected_arrays,
 )
 from al_dic_3d.export.utils import ensure_dir, frame_tag, make_prefix, make_timestamp
@@ -76,6 +77,7 @@ __all__ = [
     "export_vtu_series",
     "field_color_range",
     "field_frame",
+    "field_stack",
     "frame_tag",
     "make_prefix",
     "make_timestamp",

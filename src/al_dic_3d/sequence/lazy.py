@@ -17,6 +17,7 @@ was built from.
 
 from __future__ import annotations
 
+import threading
 from collections import OrderedDict
 from collections.abc import Sequence
 from pathlib import Path
@@ -44,12 +45,20 @@ def load_gray(path: str | Path) -> NDArray[np.float64]:
 
 
 class _LruDecoder:
-    """Shared decode-on-demand core: path list + bounded LRU of float64 arrays."""
+    """Shared decode-on-demand core: path list + bounded LRU of float64 arrays.
+
+    Thread-safe (P3.6): the LRU map is mutated under a lock — the parallel
+    track-both path runs the two camera tracks on worker threads while the
+    GUI thread may scrub frames from the same provider. Decoding happens
+    outside the lock (a rare concurrent double-decode is idempotent); callers
+    treat returned arrays as read-only, so sharing cache hits stays safe.
+    """
 
     def __init__(self, paths: Sequence[str | Path], capacity: int = _LRU_CAPACITY) -> None:
         self._paths = [Path(p) for p in paths]
         self._capacity = max(1, int(capacity))
         self._cache: OrderedDict[int, NDArray[np.float64]] = OrderedDict()
+        self._lock = threading.Lock()
 
     @property
     def paths(self) -> list[Path]:
@@ -59,14 +68,16 @@ class _LruDecoder:
         return len(self._paths)
 
     def _get(self, idx: int) -> NDArray[np.float64]:
-        cached = self._cache.get(idx)
-        if cached is not None:
-            self._cache.move_to_end(idx)
-            return cached
+        with self._lock:
+            cached = self._cache.get(idx)
+            if cached is not None:
+                self._cache.move_to_end(idx)
+                return cached
         frame = load_gray(self._paths[idx])
-        self._cache[idx] = frame
-        if len(self._cache) > self._capacity:
-            self._cache.popitem(last=False)
+        with self._lock:
+            self._cache[idx] = frame
+            while len(self._cache) > self._capacity:
+                self._cache.popitem(last=False)
         return frame
 
 

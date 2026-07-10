@@ -42,7 +42,7 @@ justification.
 | `al_dic.core.data_structures.FrameProvider` | STRUCTURAL protocol (`__len__`/`shape`/`clamped_roi`/`get_normalized`) that `matching.temporal._EngineFrames` implements for `run_aldic`'s `images` argument (duck-typed at `core/pipeline.py:621` — nothing imported; a 2D protocol change still breaks us) | public (protocol; not imported) |
 | `al_dic.solver.local_icgn.local_icgn_precompute` | build the IC-GN reference context at scattered points (`match_points`) | public (import via full path; not in `solver.__all__`) |
 | `al_dic.solver.local_icgn.local_icgn_solve_subset` | run 6-DOF local IC-GN at scattered points, returns `(U, F, conv_iter)` | public (import via full path; not in `solver.__all__`) |
-| `al_dic.core.pipeline.run_aldic` | drive per-camera accumulative IC-GN tracking in `matching.temporal.temporal_track` (external mesh, `compute_strain=False`) | public |
+| `al_dic.core.pipeline.run_aldic` | drive per-camera accumulative IC-GN tracking in `matching.temporal.temporal_track` (external mesh, `compute_strain=False`; `progress_fn` forwarded for the P3.6 parallel-track progress, `stop_fn` for cooperative cancel) | public |
 | `al_dic.core.data_structures.DICMesh` | reference mesh type built by / passed to `temporal_track` and `build_grid_mesh` (runtime import) | public |
 | `al_dic.core.data_structures.split_uv` | split interleaved `FrameResult.U_accum` into `(u, v)` node arrays | public (module-level; not in `al_dic.__all__`, import via `al_dic.core.data_structures`) |
 | `al_dic.core.data_structures.PipelineResult` | `run_aldic` return; `temporal_track` reads `.dic_mesh` + `.result_disp` (attribute access, not imported) | public |

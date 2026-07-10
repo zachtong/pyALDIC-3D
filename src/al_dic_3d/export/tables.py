@@ -32,6 +32,23 @@ def field_frame(result: RunResult, field: str, k: int) -> np.ndarray | None:
     return None
 
 
+def field_stack(result: RunResult, field: str) -> np.ndarray | None:
+    """All frames of a selectable field id as ``(n_frames, n_pts)``, or ``None``.
+
+    P3.3: built from whole-array views/reductions instead of a per-frame Python
+    copy loop — displacement components are slices of ``rec.displacement`` and
+    strain stacks already live as full arrays on ``result.strain``.
+    """
+    rec = result.reconstruction
+    if field in ("U", "V", "W"):
+        return rec.displacement[:, :, ("U", "V", "W").index(field)]
+    if field == "mag":
+        return np.linalg.norm(rec.displacement, axis=2)
+    if field in STRAIN_IDS and result.strain is not None:
+        return getattr(result.strain, field)
+    return None
+
+
 def selected_arrays(result: RunResult, fields: list[str]) -> dict[str, np.ndarray]:
     """Core arrays + the selected per-frame fields, ready for npz/mat."""
     rec = result.reconstruction
@@ -42,33 +59,46 @@ def selected_arrays(result: RunResult, fields: list[str]) -> dict[str, np.ndarra
         "reproj_error": rec.reproj_error,
         "source": rec.source,
     }
-    n_frames, n_pts = rec.n_frames, rec.n_pts
     for field in fields:
-        stack = np.full((n_frames, n_pts), np.nan)
-        ok = False
-        for k in range(n_frames):
-            vals = field_frame(result, field, k)
-            if vals is not None:
-                stack[k] = vals
-                ok = True
-        if ok:
+        stack = field_stack(result, field)
+        if stack is not None:
             arrays[field] = stack
     return arrays
 
 
-def export_npz(result: RunResult, fields: list[str], out_dir: Path, prefix: str) -> Path:
+def export_npz(
+    result: RunResult,
+    fields: list[str],
+    out_dir: Path,
+    prefix: str,
+    *,
+    arrays: dict[str, np.ndarray] | None = None,
+) -> Path:
+    """Write ``{prefix}.npz``; ``arrays`` reuses a prebuilt payload (P3.3)."""
+    if arrays is None:
+        arrays = selected_arrays(result, fields)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{prefix}.npz"
-    np.savez_compressed(path, **selected_arrays(result, fields))
+    np.savez_compressed(path, **arrays)
     return path
 
 
-def export_mat(result: RunResult, fields: list[str], out_dir: Path, prefix: str) -> Path:
+def export_mat(
+    result: RunResult,
+    fields: list[str],
+    out_dir: Path,
+    prefix: str,
+    *,
+    arrays: dict[str, np.ndarray] | None = None,
+) -> Path:
+    """Write ``{prefix}.mat``; ``arrays`` reuses a prebuilt payload (P3.3)."""
     import scipy.io
 
+    if arrays is None:
+        arrays = selected_arrays(result, fields)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{prefix}.mat"
-    scipy.io.savemat(str(path), selected_arrays(result, fields), do_compression=True)
+    scipy.io.savemat(str(path), arrays, do_compression=True)
     return path
 
 

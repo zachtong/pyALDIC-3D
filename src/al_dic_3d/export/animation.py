@@ -225,11 +225,17 @@ def export_animation(
                     writer = w
                 writer.append(img)
 
+                # P3.1: drop this frame's Tier-1 grids + support masks NOW
+                # (mirrors export/render.py's per-frame clear). Each (frame,
+                # field) is rendered exactly once per animation, so the entries
+                # provide zero reuse — leaving the clear outside the frame loop
+                # let ~2 GB of dense grids accumulate over a 200-frame encode.
+                # The reference-frame Delaunay interpolators survive the clear.
+                renderer.clear_frame_caches()
                 done += 1
                 if progress_cb is not None:
                     progress_cb(done, total, label)
 
-            renderer.clear_frame_caches()
             if writer is not None:
                 writer.close()
                 paths.append(writer.out)

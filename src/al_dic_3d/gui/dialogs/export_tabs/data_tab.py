@@ -180,10 +180,15 @@ def _run_data_export(
     )
 
     written: list[str] = [export_params(out, prefix, ts, result, extra).name]
-    if want["npz"]:
-        written.append(export_npz(result, fields, out, f"{prefix}_{ts}").name)
-    if want["mat"]:
-        written.append(export_mat(result, fields, out, f"{prefix}_{ts}").name)
+    if want["npz"] or want["mat"]:
+        # P3.3: build the field payload ONCE and hand it to both writers.
+        from al_dic_3d.export import selected_arrays
+
+        arrays = selected_arrays(result, fields)
+        if want["npz"]:
+            written.append(export_npz(result, fields, out, f"{prefix}_{ts}", arrays=arrays).name)
+        if want["mat"]:
+            written.append(export_mat(result, fields, out, f"{prefix}_{ts}", arrays=arrays).name)
     if want["csv"]:
         frames = export_csv_frames(result, fields, out, f"{prefix}_{ts}")
         written.append(f"{len(frames)} CSV")

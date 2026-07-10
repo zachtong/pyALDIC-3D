@@ -19,8 +19,9 @@ from __future__ import annotations
 import sys
 
 # Engine per-run transient, bytes per megapixel (stress-audit fit, see module
-# docstring). Covers gradients + subset cubes + FFT scratch for ONE track; the
-# two per-camera tracks run sequentially so the transient does not double.
+# docstring). Covers gradients + subset cubes + FFT scratch for ONE track; by
+# default the two per-camera tracks run sequentially so the transient does not
+# double — parallel camera tracking (P3.6) doubles it via ``parallel=True``.
 ENGINE_TRANSIENT_BYTES_PER_MPX = 150 * 1024**2
 
 # Frames resident under the lazy providers: per camera a raw decode LRU (4) +
@@ -85,6 +86,7 @@ def estimate_peak_bytes(
     *,
     lazy: bool = True,
     n_pts: int = 0,
+    parallel: bool = False,
 ) -> int:
     """Projected peak process memory (bytes) for one pipeline run.
 
@@ -93,9 +95,13 @@ def estimate_peak_bytes(
     eager path — raw stacks for every camera plus the engine's normalized copy
     and a worst-case per-frame mask stack — and is kept for sizing comparisons.
     ``n_pts`` (mesh nodes) sizes the per-(frame, point) result arrays.
+    ``parallel`` (P3.6) doubles the engine transient: with concurrent camera
+    tracking both engine working sets are live at once.
     """
     bytes_per_frame = int(img_h) * int(img_w) * 8
     transient = int(ENGINE_TRANSIENT_BYTES_PER_MPX * (img_h * img_w / 1e6))
+    if parallel:
+        transient *= 2
     if lazy:
         resident = LAZY_RESIDENT_FRAMES * bytes_per_frame
     else:
@@ -112,6 +118,7 @@ def check_run_memory(
     *,
     lazy: bool = True,
     n_pts: int = 0,
+    parallel: bool = False,
     fraction: float = DEFAULT_RAM_FRACTION,
 ) -> None:
     """Raise ``ValueError`` when the projected peak exceeds available RAM.
@@ -123,7 +130,9 @@ def check_run_memory(
     available = available_ram_bytes()
     if available is None:
         return
-    projected = estimate_peak_bytes(n_frames, img_h, img_w, n_cameras, lazy=lazy, n_pts=n_pts)
+    projected = estimate_peak_bytes(
+        n_frames, img_h, img_w, n_cameras, lazy=lazy, n_pts=n_pts, parallel=parallel
+    )
     budget = fraction * available
     if projected <= budget:
         return

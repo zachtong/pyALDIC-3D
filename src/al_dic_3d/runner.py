@@ -85,6 +85,10 @@ class RunConfig:
     init_guess: str = "fft"
     seed_point: tuple[float, float] | None = None  # (x, y) on LEFT frame 1
     temporal_gate_znssd: float = 1.0  # honesty gate on cumulative tracks; <=0 off
+    # P3.6 opt-in: track both cameras concurrently (track_both strategy).
+    # ~2x faster on the numba/numpy-heavy engine, doubles peak memory.
+    # TOML: [matching].parallel_cameras. Results are identical either way.
+    parallel_cameras: bool = False
     refine_inner: bool = False
     refine_outer: bool = False
     refinement_level: int = 1
@@ -197,6 +201,7 @@ def load_config(path: str | Path) -> RunConfig:
         init_guess=init_guess,
         seed_point=seed_point,
         temporal_gate_znssd=float(match.get("temporal_gate_znssd", 1.0)),
+        parallel_cameras=bool(match.get("parallel_cameras", False)),
         refine_inner=bool(match.get("refine_inner", False)),
         refine_outer=bool(match.get("refine_outer", False)),
         refinement_level=int(match.get("refinement_level", 1)),
@@ -436,7 +441,15 @@ def run_pipeline(
         xmin, xmax, ymin, ymax = cfg.roi
         step = max(1, cfg.winstepsize)
         n_pts_est = max(1, (max(0, xmax - xmin) // step + 1) * (max(0, ymax - ymin) // step + 1))
-        memcheck.check_run_memory(n_frames, img_h, img_w, n_cameras=2, lazy=True, n_pts=n_pts_est)
+        memcheck.check_run_memory(
+            n_frames,
+            img_h,
+            img_w,
+            n_cameras=2,
+            lazy=True,
+            n_pts=n_pts_est,
+            parallel=cfg.parallel_cameras,  # P3.6: both engine transients live
+        )
 
     masks: dict = {}
     if left_masks is not None:
@@ -461,17 +474,25 @@ def run_pipeline(
     mesh_L = _build_reference_mesh(cfg, img_h, img_w, masks.get(cfg.cam_left))
 
     strategy_cls = get_strategy(cfg.strategy)
+    kwargs = dict(
+        winsize=cfg.winsize,
+        winstepsize=cfg.winstepsize,
+        winsize_min=cfg.winsize_min,
+        stereo_search=cfg.stereo_search,
+        use_global_step=cfg.use_global_step,
+        admm_max_iter=cfg.admm_max_iter,
+        fft_search=cfg.fft_search,
+        temporal_gate_znssd=cfg.temporal_gate_znssd,
+        parallel_cameras=cfg.parallel_cameras,
+    )
     try:
-        strategy = strategy_cls(
-            winsize=cfg.winsize,
-            winstepsize=cfg.winstepsize,
-            winsize_min=cfg.winsize_min,
-            stereo_search=cfg.stereo_search,
-            use_global_step=cfg.use_global_step,
-            admm_max_iter=cfg.admm_max_iter,
-            fft_search=cfg.fft_search,
-            temporal_gate_znssd=cfg.temporal_gate_znssd,
-        )
+        # Forward only the kwargs this strategy's constructor accepts (P3.6:
+        # parallel_cameras exists on track_both only — an unfiltered TypeError
+        # fallback would silently drop ALL matching-scale parameters).
+        import inspect
+
+        accepted = inspect.signature(strategy_cls.__init__).parameters
+        strategy = strategy_cls(**{k: v for k, v in kwargs.items() if k in accepted})
     except TypeError:
         strategy = strategy_cls()  # strategy without tunable matching scale
 
@@ -524,6 +545,8 @@ def run_pipeline(
             strain_size=cfg.strain_size,
             winstepsize=cfg.winstepsize,
             smooth_sigma=cfg.strain_smooth_sigma,
+            progress_cb=progress,  # P3.5: per-frame ticks + cooperative cancel
+            stop_event=stop,
         )
 
     # F3.1: the post-run failure accounting — per-stage rows from the strategy
@@ -562,6 +585,13 @@ def run_pipeline(
 
 RESULT_FORMATS = ("npz", "mat", "csv", "ply", "vtu")
 
+# Archive layout version recorded in the parameters JSON. Schema 2 (P3.3)
+# dropped the doubled ``strain_<name>`` aliases: strain stacks live ONLY under
+# their canonical GUI-selection ids (``exx`` ... ``von_mises`` plus ``dwdx`` /
+# ``dwdy``). The legacy ``points3D`` / ``displacement3D`` keys stay (tools
+# rely on them).
+ARCHIVE_SCHEMA = 2
+
 
 def _arrays(result: RunResult) -> dict:
     """The unified archive: GUI selection schema + correspondence extras.
@@ -569,10 +599,11 @@ def _arrays(result: RunResult) -> dict:
     Built on :func:`al_dic_3d.export.tables.selected_arrays` with ALL field ids
     (strategy / ref_coords / points3D / reproj_error / source + one
     ``(n_frames, n_pts)`` stack per field: U, V, W, mag, exx, ...), merged with
-    the correspondence extras ``xL`` / ``xR`` / ``quality``. The LEGACY keys
-    (``displacement3D``, ``strain_<name>`` incl. dwdx/dwdy, ``n_frames``,
-    ``n_pts``) are still written so parity tools keep reading — the archive is
-    a SUPERSET of both the old CLI layout and the GUI export schema.
+    the correspondence extras ``xL`` / ``xR`` / ``quality`` and the LEGACY keys
+    ``displacement3D`` / ``n_frames`` / ``n_pts`` that parity tools read.
+    Schema 2 (see :data:`ARCHIVE_SCHEMA`): ONE canonical key per strain field —
+    ``dwdx`` / ``dwdy`` (not in the GUI picker) are added under their bare
+    names and the old ``strain_<name>`` duplicates are gone.
     """
     from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS, selected_arrays
 
@@ -590,7 +621,7 @@ def _arrays(result: RunResult) -> dict:
     )
     if result.strain is not None:
         for name in STRAIN_FIELDS:
-            arrays[f"strain_{name}"] = getattr(result.strain, name)
+            arrays.setdefault(name, getattr(result.strain, name))
     return arrays
 
 
@@ -626,8 +657,10 @@ def write_results(
     prefix = cfg.output_prefix
     ts = make_timestamp()
     fields = list(DISPLACEMENT_IDS) + (list(STRAIN_IDS) if result.strain is not None else [])
+    # archive_schema documents the npz/mat key layout (P3.3 alias removal).
+    extra = {**asdict(cfg), "archive_schema": ARCHIVE_SCHEMA}
     paths: dict[str, Path] = {
-        "params": export_params(cfg.output_dir, prefix, ts, result, extra=asdict(cfg))
+        "params": export_params(cfg.output_dir, prefix, ts, result, extra=extra)
     }
 
     if "npz" in formats or "mat" in formats:

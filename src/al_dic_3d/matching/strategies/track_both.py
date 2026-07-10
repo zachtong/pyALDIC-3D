@@ -18,6 +18,7 @@ frames. The 3D layer downstream reads only the resulting ``CorrespondenceSet``.
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
@@ -41,6 +42,7 @@ from al_dic_3d.matching.strategies._common import (
 )
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import (
+    ZERO_FILL_ERROR,
     build_grid_mesh,
     resample_to_points,
     temporal_track,
@@ -51,6 +53,11 @@ if TYPE_CHECKING:
 
     from al_dic_3d.calibration import StereoRig
     from al_dic_3d.sequence import StereoSequence
+
+# Fraction of the overall progress covered by the two temporal tracks when
+# they run in parallel (P3.6); the assembly loop maps into the remainder so
+# the reported fraction stays monotonic.
+_TRACK_PROGRESS_SHARE = 0.9
 
 
 @register_strategy
@@ -70,6 +77,7 @@ class TrackBothStrategy:
         admm_max_iter: int = 3,
         fft_search: int = 20,
         temporal_gate_znssd: float = 1.0,
+        parallel_cameras: bool = False,
     ) -> None:
         # Matching scale (mesh_R density + subset/template size). Powers-of-two
         # where the 2D validator requires it (winstepsize, winsize_min). Overridable
@@ -83,6 +91,10 @@ class TrackBothStrategy:
         self.admm_max_iter = admm_max_iter
         self.fft_search = fft_search
         self.temporal_gate_znssd = temporal_gate_znssd
+        # P3.6 opt-in: run the two independent temporal tracks concurrently
+        # (~2x faster on numba/numpy-heavy engines that release the GIL, at
+        # the cost of BOTH camera stacks' working sets being live at once).
+        self.parallel_cameras = parallel_cameras
 
     def compute(
         self,
@@ -141,24 +153,11 @@ class TrackBothStrategy:
                 f"check the seed point / disparity prior and stereo overlap."
             )
 
-        # (2a) left temporal track — corr points ARE the mesh_L nodes (no resample).
+        # (2) per-camera temporal tracks. The right camera runs on an
+        # INDEPENDENT dense grid over right_pts; its setup (para/mesh/u0) is
+        # hoisted BEFORE tracking so both tracks can launch together (P3.6).
         u0_L = temporal_u0(init_mode, left[0], left[1], cfg.seed_point, n_pts)
-        tf_L = temporal_track(
-            left,
-            mesh_L,
-            para_L,
-            masks=mask_stream(seq, "L"),
-            u0=u0_L,
-            stop=stop,
-            gate_znssd=self.temporal_gate_znssd,
-        )
-        if not np.allclose(tf_L.ref_coords, coords_L, atol=1e-6):
-            raise RuntimeError(
-                "left temporal mesh drifted from mesh_L (node re-trim); xL alignment "
-                "cannot be guaranteed — masked temporal tracking is deferred to Phase 2."
-            )
 
-        # (2b) right temporal track on an INDEPENDENT dense grid over right_pts.
         valid_rp = np.isfinite(right_pts).all(axis=1)
         roi_R = bbox_roi(right_pts[valid_rp], img_h, img_w, margin=self.winsize)
         mask_R1 = seq.mask("R", 0)
@@ -186,15 +185,41 @@ class TrackBothStrategy:
             )
         n_r_nodes = int(np.asarray(mesh_R.coordinates_fem).shape[0])
         u0_R = temporal_u0(init_mode, right[0], right[1], seed_R, n_r_nodes)
-        tf_R = temporal_track(
-            right,
-            mesh_R,
-            para_R,
-            masks=mask_stream(seq, "R"),
-            u0=u0_R,
-            stop=stop,
-            gate_znssd=self.temporal_gate_znssd,
-        )
+
+        def _check_left_alignment(tf) -> None:
+            if not np.allclose(tf.ref_coords, coords_L, atol=1e-6):
+                raise RuntimeError(
+                    "left temporal mesh drifted from mesh_L (node re-trim); xL alignment "
+                    "cannot be guaranteed — masked temporal tracking is deferred to Phase 2."
+                )
+
+        track_kwargs = {
+            "L": dict(masks=mask_stream(seq, "L"), u0=u0_L),
+            "R": dict(masks=mask_stream(seq, "R"), u0=u0_R),
+        }
+        if self.parallel_cameras:
+            tf_L, tf_R = self._track_parallel(
+                left, right, mesh_L, mesh_R, para_L, para_R, track_kwargs, progress, stop
+            )
+            _check_left_alignment(tf_L)
+        else:
+            tf_L = temporal_track(
+                left,
+                mesh_L,
+                para_L,
+                stop=stop,
+                gate_znssd=self.temporal_gate_znssd,
+                **track_kwargs["L"],
+            )
+            _check_left_alignment(tf_L)
+            tf_R = temporal_track(
+                right,
+                mesh_R,
+                para_R,
+                stop=stop,
+                gate_znssd=self.temporal_gate_znssd,
+                **track_kwargs["R"],
+            )
 
         # (3) assemble the CorrespondenceSet frame by frame.
         xL = np.full((n_frames, n_pts, 2), np.nan, dtype=np.float64)
@@ -228,7 +253,12 @@ class TrackBothStrategy:
             source[k][good] = TRACKED
 
             if progress is not None:
-                progress((k + 1) / n_frames, f"track_both frame {k + 1}/{n_frames}")
+                frac = (k + 1) / n_frames
+                if self.parallel_cameras:
+                    # The tracks already reported [0, _TRACK_PROGRESS_SHARE];
+                    # the assembly covers the remainder (monotonic overall).
+                    frac = _TRACK_PROGRESS_SHARE + (1.0 - _TRACK_PROGRESS_SHARE) * frac
+                progress(frac, f"track_both frame {k + 1}/{n_frames}")
 
         # F3.1: per-stage failure accounting rides along with the result.
         diagnostics = (
@@ -244,3 +274,100 @@ class TrackBothStrategy:
             source=source,
             diagnostics=diagnostics,
         )
+
+    def _track_parallel(
+        self,
+        left,
+        right,
+        mesh_L,
+        mesh_R,
+        para_L,
+        para_R,
+        track_kwargs: dict,
+        progress: Callable[[float, str], None] | None,
+        stop: Callable[[], bool] | None,
+    ):
+        """Run the two independent temporal tracks concurrently (P3.6, opt-in).
+
+        The engine is numba/numpy-heavy (the GIL is mostly released), so two
+        threads overlap well. Per-camera progress (each 0..1) is serialized
+        under a lock and combined as equal halves of the tracks' overall share.
+        A failure/cancel in either camera trips a shared abort so the sibling
+        exits at its next cooperative checkpoint instead of running to
+        completion. The honesty gate and diagnostics stay per-camera — each
+        ``temporal_track`` call returns its own :class:`TemporalField`.
+
+        ``warnings.catch_warnings`` is process-global (NOT thread-safe), so the
+        per-call capture inside ``temporal_track`` is disabled here and ONE
+        thread-safe recorder wraps both tracks instead — the engine's silent
+        zero-fill warning still becomes a hard error, never lost to a race.
+        """
+        import warnings
+        from concurrent.futures import ThreadPoolExecutor
+
+        abort = threading.Event()
+
+        def stop_fn() -> bool:
+            return abort.is_set() or bool(stop is not None and stop())
+
+        lock = threading.Lock()
+        fractions = {"L": 0.0, "R": 0.0}
+
+        def cam_progress(cam: str) -> Callable[[float, str], None] | None:
+            if progress is None:
+                return None
+
+            def cb(frac: float, msg: str) -> None:
+                with lock:  # serialize the two threads' reports
+                    fractions[cam] = min(1.0, max(0.0, float(frac)))
+                    overall = 0.5 * (fractions["L"] + fractions["R"]) * _TRACK_PROGRESS_SHARE
+                    progress(overall, f"{cam}: {msg}")
+
+            return cb
+
+        def run(cam: str, frames, mesh, para):
+            return temporal_track(
+                frames,
+                mesh,
+                para,
+                stop=stop_fn,
+                gate_znssd=self.temporal_gate_znssd,
+                progress=cam_progress(cam),
+                capture_warnings=False,  # ONE recorder below (thread safety)
+                **track_kwargs[cam],
+            )
+
+        records: list[tuple] = []
+        rec_lock = threading.Lock()
+
+        def _record(message, category, filename, lineno, file=None, line=None):  # noqa: ARG001
+            with rec_lock:
+                records.append((message, category, filename, lineno))
+
+        with warnings.catch_warnings():  # entered by THIS thread only
+            warnings.simplefilter("always")
+            warnings.showwarning = _record
+            with ThreadPoolExecutor(max_workers=2, thread_name_prefix="track_both") as pool:
+                futures = {
+                    "L": pool.submit(run, "L", left, mesh_L, para_L),
+                    "R": pool.submit(run, "R", right, mesh_R, para_R),
+                }
+                results: dict = {}
+                first_error: BaseException | None = None
+                for cam in ("L", "R"):
+                    try:
+                        results[cam] = futures[cam].result()
+                    except BaseException as exc:  # noqa: BLE001 - re-raised below
+                        abort.set()  # the sibling aborts at its next checkpoint
+                        if first_error is None:
+                            first_error = exc
+                if first_error is not None:
+                    raise first_error
+        # Enforce temporal_track's zero-fill guard from the shared recorder
+        # (either camera trips it); re-emit everything else on the restored
+        # warning state so engine notices (e.g. FFT auto-scaling) stay visible.
+        for message, category, filename, lineno in records:
+            if "All nodes are NaN" in str(message):
+                raise RuntimeError(ZERO_FILL_ERROR)
+            warnings.warn_explicit(message, category, filename, lineno)
+        return results["L"], results["R"]

@@ -569,8 +569,19 @@ class LeftSidebar3D(QWidget):
         admm_hint.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
         layout.addWidget(admm_hint)
 
+        # P3.6: opt-in concurrent L/R temporal tracking (track_both strategy).
+        self._parallel_cb = QCheckBox(self.tr("Parallel camera tracking"))
+        self._parallel_cb.setToolTip(
+            self.tr(
+                "Track both cameras concurrently — modest speedup (the solver "
+                "already uses all cores), doubles peak memory"
+            )
+        )
+        layout.addWidget(self._parallel_cb)
+
         self._strategy_combo.currentIndexChanged.connect(self._apply_workflow)
         self._admm_spin.valueChanged.connect(self._apply_params)
+        self._parallel_cb.toggled.connect(self._apply_params)
         return host
 
     def _param_row(self, text: str, widget: QWidget, info: InfoIcon | None = None) -> QHBoxLayout:
@@ -604,6 +615,7 @@ class LeftSidebar3D(QWidget):
         draft.stereo_search = int(self._search_spin.value())
         draft.fft_search = int(self._temporal_spin.value())
         draft.admm_max_iter = int(self._admm_spin.value())
+        draft.parallel_cameras = self._parallel_cb.isChecked()
         draft.refine_inner = self._refine_inner_cb.isChecked()
         draft.refine_outer = self._refine_outer_cb.isChecked()
         draft.refinement_level = int(self._refine_level_spin.value())
@@ -752,6 +764,7 @@ class LeftSidebar3D(QWidget):
             self._search_spin,
             self._temporal_spin,
             self._admm_spin,
+            self._parallel_cb,
             self._refine_inner_cb,
             self._refine_outer_cb,
             self._refine_level_spin,
@@ -775,6 +788,7 @@ class LeftSidebar3D(QWidget):
         self._temporal_spin.setValue(draft.fft_search)
         self._admm_spin.setValue(draft.admm_max_iter)
         self._admm_spin.setEnabled(draft.use_global_step)
+        self._parallel_cb.setChecked(getattr(draft, "parallel_cameras", False))
         self._refine_inner_cb.setChecked(draft.refine_inner)
         self._refine_outer_cb.setChecked(draft.refine_outer)
         self._refine_level_spin.setValue(draft.refinement_level)

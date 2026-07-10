@@ -58,15 +58,23 @@ class StrainController3D:
     # Compute + writeback
     # ------------------------------------------------------------------
 
-    def compute(self, override: dict[str, object]) -> StrainResult3D:
+    def compute(
+        self,
+        override: dict[str, object],
+        progress_cb=None,
+        stop_event=None,
+    ) -> StrainResult3D:
         """Compute surface strain for every frame of the current result.
 
         Args:
             override: strain-only knobs; keys must be in
                 :data:`ALLOWED_OVERRIDES` (``ValueError`` otherwise).
+            progress_cb: optional ``(fraction, message)`` per-frame callback (P3.5).
+            stop_event: optional ``threading.Event`` (or ``() -> bool``) —
+                cancelling raises ``RuntimeError("cancelled")``.
 
         Raises:
-            RuntimeError: when no run result is available.
+            RuntimeError: when no run result is available, or on cancel.
         """
         result = self._require_result()
         self._validate_override(override)
@@ -78,6 +86,8 @@ class StrainController3D:
             smooth_sigma=float(override.get("smooth_sigma", 0.0)),
             coordinate=str(override.get("coordinate", "local")),
             specimen_R=override.get("specimen_R"),  # type: ignore[arg-type]
+            progress_cb=progress_cb,
+            stop_event=stop_event,
         )
 
     def apply(self, strain: StrainResult3D) -> RunResult:

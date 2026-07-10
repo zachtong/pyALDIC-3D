@@ -4186,6 +4186,74 @@ for _loc, _entries in _BATCH_G3.items():
     TRANSLATIONS[_loc].update(_entries)
 
 
+# ---------------------------------------------------------------------------
+# Perf Batch P3: strain-window per-frame progress + cooperative cancel (P3.5)
+# and the opt-in parallel camera tracking checkbox (P3.6).
+# ---------------------------------------------------------------------------
+
+_BATCH_P3: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Computing strain… {0}%": "正在计算应变… {0}%",
+        "Strain computation cancelled.": "应变计算已取消。",
+        "A strain computation is running — cancel it and close?": "应变计算正在运行——是否取消并关闭？",
+        "Stop the strain computation at the next frame.": "在下一帧处停止应变计算。",
+        "Parallel camera tracking": "并行相机追踪",
+        "Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory": "并行追踪两台相机——提速有限（求解器本已用满全部核心），峰值内存翻倍",
+    },
+    "zh_TW": {
+        "Computing strain… {0}%": "正在計算應變… {0}%",
+        "Strain computation cancelled.": "應變計算已取消。",
+        "A strain computation is running — cancel it and close?": "應變計算正在執行——是否取消並關閉？",
+        "Stop the strain computation at the next frame.": "在下一幀處停止應變計算。",
+        "Parallel camera tracking": "並行相機追蹤",
+        "Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory": "並行追蹤兩台相機——提速有限（求解器本已用滿全部核心），峰值記憶體加倍",
+    },
+    "ja": {
+        "Computing strain… {0}%": "ひずみを計算中… {0}%",
+        "Strain computation cancelled.": "ひずみ計算をキャンセルしました。",
+        "A strain computation is running — cancel it and close?": "ひずみ計算が実行中です — キャンセルして閉じますか？",
+        "Stop the strain computation at the next frame.": "次のフレームでひずみ計算を停止します。",
+        "Parallel camera tracking": "カメラの並列追跡",
+        "Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory": "両カメラを同時に追跡 — 高速化は限定的（ソルバーは既に全コアを使用）、ピークメモリは 2 倍",
+    },
+    "ko": {
+        "Computing strain… {0}%": "변형률 계산 중… {0}%",
+        "Strain computation cancelled.": "변형률 계산이 취소되었습니다.",
+        "A strain computation is running — cancel it and close?": "변형률 계산이 실행 중입니다 — 취소하고 닫을까요?",
+        "Stop the strain computation at the next frame.": "다음 프레임에서 변형률 계산을 중지합니다.",
+        "Parallel camera tracking": "병렬 카메라 추적",
+        "Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory": "양쪽 카메라를 동시에 추적 — 속도 향상은 제한적(솔버가 이미 모든 코어 사용), 최대 메모리 2배",
+    },
+    "de": {
+        "Computing strain… {0}%": "Dehnung wird berechnet… {0}%",
+        "Strain computation cancelled.": "Dehnungsberechnung abgebrochen.",
+        "A strain computation is running — cancel it and close?": "Eine Dehnungsberechnung läuft — abbrechen und schließen?",
+        "Stop the strain computation at the next frame.": "Die Dehnungsberechnung beim nächsten Frame anhalten.",
+        "Parallel camera tracking": "Paralleles Kamera-Tracking",
+        "Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory": "Beide Kameras gleichzeitig verfolgen — begrenzter Gewinn (der Löser nutzt bereits alle Kerne), doppelter Spitzenspeicher",
+    },
+    "fr": {
+        "Computing strain… {0}%": "Calcul de la déformation… {0}%",
+        "Strain computation cancelled.": "Calcul de la déformation annulé.",
+        "A strain computation is running — cancel it and close?": "Un calcul de déformation est en cours — l'annuler et fermer ?",
+        "Stop the strain computation at the next frame.": "Arrêter le calcul de la déformation à l'image suivante.",
+        "Parallel camera tracking": "Suivi des caméras en parallèle",
+        "Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory": "Suivre les deux caméras en parallèle — gain limité (le solveur utilise déjà tous les cœurs), mémoire de pointe doublée",
+    },
+    "es": {
+        "Computing strain… {0}%": "Calculando deformación… {0}%",
+        "Strain computation cancelled.": "Cálculo de deformación cancelado.",
+        "A strain computation is running — cancel it and close?": "Hay un cálculo de deformación en ejecución — ¿cancelarlo y cerrar?",
+        "Stop the strain computation at the next frame.": "Detener el cálculo de deformación en el siguiente fotograma.",
+        "Parallel camera tracking": "Seguimiento de cámaras en paralelo",
+        "Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory": "Seguir ambas cámaras en paralelo — mejora limitada (el solucionador ya usa todos los núcleos), memoria pico duplicada",
+    },
+}
+
+for _loc, _entries in _BATCH_P3.items():
+    TRANSLATIONS[_loc].update(_entries)
+
+
 def main() -> int:
     ok = True
     for locale in TRANSLATIONS:

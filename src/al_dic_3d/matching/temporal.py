@@ -28,6 +28,15 @@ from numpy.typing import NDArray
 # runs) or any lazy view exposing ``__len__``/``__getitem__`` (perf batch P1.2).
 FrameSeq = Sequence[NDArray[np.float64]]
 
+# Hard error raised when the engine silently zero-filled an all-NaN field —
+# shared with the parallel track-both path, which enforces the same guard from
+# its own thread-safe warning recorder (P3.6).
+ZERO_FILL_ERROR = (
+    "2D engine solved NO nodes (all-NaN field silently zero-filled): "
+    "the temporal track failed outright — check masks/ROI/texture "
+    "instead of trusting a frozen zero-displacement camera."
+)
+
 
 class _EngineFrames:
     """Engine-protocol ``FrameProvider`` over raw frames, normalizing on demand.
@@ -119,10 +128,21 @@ def temporal_track(
     u0: NDArray[np.float64] | None = None,
     stop: Callable[[], bool] | None = None,
     gate_znssd: float = 1.0,
+    progress: Callable[[float, str], None] | None = None,
+    capture_warnings: bool = True,
 ) -> TemporalField:
     """Track one camera's frames from a fixed reference mesh (accumulative).
 
     Args:
+        progress: optional ``(fraction, message)`` callback forwarded to the
+            engine's ``progress_fn`` (P3.6) — the parallel track-both path
+            scales and serializes the two cameras' reports through it.
+        capture_warnings: promote the engine's silent zero-fill warning to a
+            hard error here (default). ``warnings.catch_warnings`` mutates
+            process-global state and is NOT thread-safe, so the parallel
+            track-both path (P3.6) passes ``False`` and installs ONE
+            thread-safe recorder around both tracks instead — the guard is
+            then enforced by the caller, never skipped.
         frames: ``[f0, f1, ...]`` raw ``(H, W)`` float64 images — a list, or any
             lazy indexed view (``__len__``/``__getitem__``) so long sequences
             never need the whole stack resident; ``f0`` is the reference and
@@ -178,6 +198,7 @@ def temporal_track(
         masks = [np.ascontiguousarray(m, dtype=np.float64) for m in masks]
     mask0 = np.ascontiguousarray(masks[0], dtype=np.float64)  # engine mutates para
 
+    import contextlib
     import warnings
 
     try:
@@ -185,8 +206,14 @@ def temporal_track(
         # ("All nodes are NaN, cannot interpolate. Returning zeros.") — silent
         # zeros would flow downstream as a perfectly "valid" frozen camera (the
         # S3 real-data failure). Promote that warning to a hard error below.
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
+        # ``capture_warnings=False`` (parallel tracks, P3.6): the caller holds
+        # ONE thread-safe recorder instead — catch_warnings is process-global.
+        capture = (
+            warnings.catch_warnings(record=True) if capture_warnings else contextlib.nullcontext([])
+        )
+        with capture as caught:
+            if capture_warnings:
+                warnings.simplefilter("always")
             result = run_aldic(
                 para,
                 # Normalize-on-demand provider (P1.2): the engine otherwise
@@ -194,6 +221,7 @@ def temporal_track(
                 # stack (ListFrameProvider). Byte-identical, streaming instead.
                 _EngineFrames(frames, para.gridxy_roi_range),
                 masks,
+                progress_fn=progress,
                 stop_fn=stop,
                 compute_strain=False,
                 mesh=mesh,
@@ -207,11 +235,7 @@ def temporal_track(
         raise
     for w in caught:
         if "All nodes are NaN" in str(w.message):
-            raise RuntimeError(
-                "2D engine solved NO nodes (all-NaN field silently zero-filled): "
-                "the temporal track failed outright — check masks/ROI/texture "
-                "instead of trusting a frozen zero-displacement camera."
-            )
+            raise RuntimeError(ZERO_FILL_ERROR)
         warnings.warn_explicit(w.message, w.category, w.filename, w.lineno)
     if stop is not None and stop():
         raise RuntimeError("cancelled")
@@ -304,12 +328,89 @@ def _gate_by_znssd(
     return n_gated
 
 
+class _ResampleGeometryCache:
+    """Bounded, thread-safe cache of resampling geometry (P3.4).
+
+    :func:`resample_to_points` is called once per frame from the strategy
+    assembly loops, but the FINITE source-node set (and therefore the Delaunay
+    triangulation and the nearest-fill KD-tree) rarely changes between frames.
+    Entries are keyed by the exact source-point bytes — the coordinates fully
+    determine both structures — so a hit is always geometrically identical to
+    a rebuild. ``LinearNDInterpolator(tri, values)`` then reuses the cached
+    triangulation with the per-frame values.
+
+    ``delaunay_builds`` / ``kdtree_builds`` count actual constructions
+    (observability + tests). The lock only guards the map; a rare concurrent
+    double-build is idempotent.
+    """
+
+    def __init__(self, capacity: int = 4) -> None:
+        import threading
+
+        self._capacity = max(1, int(capacity))
+        self._lock = threading.Lock()
+        self._entries: OrderedDict[bytes, list] = OrderedDict()  # key -> [tri, tree]
+        self.delaunay_builds = 0
+        self.kdtree_builds = 0
+
+    def _slot(self, key: bytes, idx: int):
+        with self._lock:
+            entry = self._entries.get(key)
+            if entry is not None:
+                self._entries.move_to_end(key)
+                return entry[idx]
+        return None
+
+    def _store(self, key: bytes, idx: int, obj) -> None:
+        with self._lock:
+            entry = self._entries.setdefault(key, [None, None])
+            entry[idx] = obj
+            self._entries.move_to_end(key)
+            while len(self._entries) > self._capacity:
+                self._entries.popitem(last=False)
+
+    def triangulation(self, src: NDArray[np.float64]):
+        """Delaunay of ``src`` — cached by the exact point bytes."""
+        key = src.tobytes()
+        tri = self._slot(key, 0)
+        if tri is None:
+            from scipy.spatial import Delaunay
+
+            tri = Delaunay(src)
+            self.delaunay_builds += 1
+            self._store(key, 0, tri)
+        return tri
+
+    def kdtree(self, src: NDArray[np.float64]):
+        """cKDTree of ``src`` — cached by the exact point bytes (nearest fill)."""
+        key = src.tobytes()
+        tree = self._slot(key, 1)
+        if tree is None:
+            from scipy.spatial import cKDTree
+
+            tree = cKDTree(src)
+            self.kdtree_builds += 1
+            self._store(key, 1, tree)
+        return tree
+
+    def clear(self) -> None:
+        with self._lock:
+            self._entries.clear()
+            self.delaunay_builds = 0
+            self.kdtree_builds = 0
+
+
+#: Module-level cache shared by every strategy's per-frame resampling calls.
+_RESAMPLE_CACHE = _ResampleGeometryCache()
+
+
 def resample_to_points(
     ref_coords: NDArray[np.float64],
     values: NDArray[np.float64],
     query: NDArray[np.float64],
     *,
     fill_nearest: bool = True,
+    reuse_geometry: bool = True,
 ) -> NDArray[np.float64]:
     """Interpolate a scattered vector field onto arbitrary query points (NaN-aware).
 
@@ -323,6 +424,11 @@ def resample_to_points(
         ref_coords: ``(n, 2)`` field node coordinates ``[x, y]``.
         values: ``(n, 2)`` field values ``[u, v]`` (rows may be ``NaN``).
         query: ``(m, 2)`` points to sample at.
+        fill_nearest: back-fill finite out-of-hull queries from the nearest node.
+        reuse_geometry: serve the Delaunay/KD-tree from the module cache when
+            the finite source-point set repeats across frames (P3.4). The cache
+            key is the exact source bytes, so results are identical either way;
+            disable only to benchmark or to avoid retaining the geometry.
 
     Returns:
         ``(m, 2)`` interpolated values; ``NaN`` rows where no estimate exists.
@@ -338,9 +444,14 @@ def resample_to_points(
     if finite.sum() < 3:
         return out  # Delaunay needs >=3 non-collinear points
 
-    src = ref[finite]
+    src = np.ascontiguousarray(ref[finite])
     dst = val[finite]
-    lin = LinearNDInterpolator(src, dst)
+    if reuse_geometry:
+        # LinearNDInterpolator(points, ...) builds Delaunay(points) internally;
+        # passing the cached triangulation is the documented equivalent path.
+        lin = LinearNDInterpolator(_RESAMPLE_CACHE.triangulation(src), dst)
+    else:
+        lin = LinearNDInterpolator(src, dst)
     out[:] = lin(q)
 
     if fill_nearest:
@@ -349,6 +460,12 @@ def resample_to_points(
         # feed it to the KD-tree (scipy raises on non-finite query points).
         missing = (~np.isfinite(out).all(axis=1)) & np.isfinite(q).all(axis=1)
         if missing.any():
-            nearest = NearestNDInterpolator(src, dst)
-            out[missing] = nearest(q[missing])
+            if reuse_geometry:
+                # NearestNDInterpolator == cKDTree.query + row gather; reuse
+                # the cached tree instead of rebuilding it per frame.
+                _, nearest_idx = _RESAMPLE_CACHE.kdtree(src).query(q[missing])
+                out[missing] = dst[nearest_idx]
+            else:
+                nearest = NearestNDInterpolator(src, dst)
+                out[missing] = nearest(q[missing])
     return out

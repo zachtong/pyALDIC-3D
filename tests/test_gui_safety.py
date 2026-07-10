@@ -77,6 +77,10 @@ class _SlowStubWorker(QThread):
 class _ShortWorker(QThread):
     """Finishes on its own after ~50 ms (cascade join path)."""
 
+    def request_stop(self) -> None:
+        """No-op: part of the strain-worker contract (join_worker cancels
+        cooperatively first, P3.5); this stub just finishes on its own."""
+
     def run(self) -> None:  # QThread entry point (worker thread)
         time.sleep(0.05)
 

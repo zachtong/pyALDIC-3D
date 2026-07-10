@@ -79,9 +79,9 @@ def _make_plotter(window_size: tuple[int, int], background: str):
     return pl
 
 
-def _add_surface(pl, surf, field_label: str, cmap: str, vmin: float, vmax: float) -> None:
+def _add_surface(pl, surf, field_label: str, cmap: str, vmin: float, vmax: float):
     fg = "black"
-    pl.add_mesh(
+    return pl.add_mesh(
         surf,
         scalars=field_label,
         cmap=cmap,
@@ -129,11 +129,10 @@ def render_view3d_frame(
         pl.close()
 
 
-def _stable_field_range(result: RunResult, field_id: str) -> tuple[float, float]:
-    """Color range over ALL frames (GUI 3D-view contract: playback stable)."""
+def _range_of(frames: list[NDArray | None]) -> tuple[float, float]:
+    """Color range over the given per-frame value arrays (None entries skipped)."""
     lo, hi = np.inf, -np.inf
-    for k in range(int(result.reconstruction.n_frames)):
-        vals = field_frame(result, field_id, k)
+    for vals in frames:
         if vals is None or not np.isfinite(vals).any():
             continue
         lo = min(lo, float(np.nanmin(vals)))
@@ -141,6 +140,12 @@ def _stable_field_range(result: RunResult, field_id: str) -> tuple[float, float]
     if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
         return 0.0, 1.0
     return lo, hi
+
+
+def _stable_field_range(result: RunResult, field_id: str) -> tuple[float, float]:
+    """Color range over ALL frames (GUI 3D-view contract: playback stable)."""
+    n_frames = int(result.reconstruction.n_frames)
+    return _range_of([field_frame(result, field_id, k) for k in range(n_frames)])
 
 
 def export_view3d_frames(
@@ -182,6 +187,15 @@ def export_view3d_frames(
 
     Returns:
         Written paths (frame PNGs + the animation file), partial on cancel.
+
+    Performance (P3.2): ONE offscreen plotter serves the whole sequence — a
+    fresh plotter per frame costs 100-300 ms of GL-context churn each. When a
+    frame's surface topology matches the previous one (same points/faces —
+    the common case; the NaN pattern rarely changes), the live mesh's points
+    and scalars are updated in place like the interactive ``View3D`` (P2.4)
+    and the turntable path; otherwise the scene is rebuilt on the same
+    plotter. The per-frame field values are computed ONCE and shared between
+    the color-range pass and the render loop.
     """
     import cv2
 
@@ -194,56 +208,79 @@ def export_view3d_frames(
     frame_indices = list(range(frame_start, frame_end + 1, frame_step))
     total = len(frame_indices)
 
+    # Hoisted per-frame values (P3.2): field_frame recomputes derived fields
+    # (e.g. |D| = norm) on every call — compute each frame's values once and
+    # share them between the stable-range pass and the render loop.
+    values: dict[int, NDArray | None] = (
+        {k: field_frame(result, field_id, k) for k in range(n_frames)}
+        if auto_range
+        else {k: field_frame(result, field_id, k) for k in frame_indices}
+    )
     if auto_range:
-        vmin, vmax = _stable_field_range(result, field_id)
+        vmin, vmax = _range_of([values[k] for k in range(n_frames)])
     label = colorbar_label(field_id)
     view_dir = ensure_dir(dest_dir / f"{prefix}_view3d_{timestamp}")
     frames_dir = ensure_dir(view_dir / field_id) if write_frames else None
 
     rec = result.reconstruction
+    pl = None
+    live_surf = None  # PolyData attached to the live actor (in-place updates)
     writer: StreamingAnimWriter | None = None
     paths: list[Path] = []
     done = 0
-    for k in frame_indices:
-        if stop_event is not None and stop_event.is_set():
-            break
-        vals = field_frame(result, field_id, k)
-        if vals is None:
-            continue
-        img = render_view3d_frame(
-            rec.points[k],
-            vals,
-            field_label=label,
-            cmap=cmap,
-            vmin=vmin,
-            vmax=vmax,
-            ref_coords=result.ref_coords,
-            window_size=window_size,
-            camera=camera,
-        )
-        if img is None:
-            continue
-        if frames_dir is not None:
-            out = frames_dir / f"{frame_tag(k, n_frames)}.png"
-            cv2.imwrite(str(out), img)
-            paths.append(out)
-        if animation_format is not None:
-            if writer is None:
-                w = StreamingAnimWriter(
-                    animation_format.lower(), view_dir, field_id, out_fps, img.shape[:2]
-                )
-                if not w.ok:
-                    w.close()
-                    break
-                writer = w
-            writer.append(img)
-        done += 1
-        if progress_cb is not None:
-            progress_cb(done, total, frame_tag(k, n_frames))
-
-    if writer is not None:
-        writer.close()
-        paths.append(writer.out)
+    try:
+        for k in frame_indices:
+            if stop_event is not None and stop_event.is_set():
+                break
+            vals = values[k]
+            if vals is None:
+                continue
+            surf = build_surface(rec.points[k], vals, label, result.ref_coords)
+            if surf is None:
+                continue
+            if pl is None:
+                pl = _make_plotter(window_size, background="white")
+            if (
+                live_surf is not None
+                and live_surf.n_points == surf.n_points
+                and live_surf.n_cells == surf.n_cells
+                and np.array_equal(live_surf.faces, surf.faces)
+            ):
+                # Same topology: mutate the live mesh (camera/clim persist).
+                live_surf.points[:] = surf.points
+                live_surf[label][:] = surf[label]
+            else:
+                pl.clear()
+                _add_surface(pl, surf, label, cmap, vmin, vmax)
+                live_surf = surf
+                if camera is not None:
+                    pl.camera_position = camera
+                else:
+                    pl.view_isometric()
+            img = _screenshot_bgr(pl)
+            if frames_dir is not None:
+                out = frames_dir / f"{frame_tag(k, n_frames)}.png"
+                cv2.imwrite(str(out), img)
+                paths.append(out)
+            if animation_format is not None:
+                if writer is None:
+                    w = StreamingAnimWriter(
+                        animation_format.lower(), view_dir, field_id, out_fps, img.shape[:2]
+                    )
+                    if not w.ok:
+                        w.close()
+                        break
+                    writer = w
+                writer.append(img)
+            done += 1
+            if progress_cb is not None:
+                progress_cb(done, total, frame_tag(k, n_frames))
+    finally:
+        if pl is not None:
+            pl.close()
+        if writer is not None:
+            writer.close()
+            paths.append(writer.out)
     return paths
 
 
