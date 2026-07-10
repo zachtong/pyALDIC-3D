@@ -1,3 +1,41 @@
+# UX + PERF AUDIT PLAN (2026-07-09, PM review + stress tests; PENDING USER APPROVAL)
+# === UX track ===
+# G1 safety/correctness (~half day): unsaved-changes guard (dirty bit EXISTS but never read);
+#   close-during-run destroys live QThread -> prompt+stop+wait; ROI wrong-view trap -> auto-jump
+#   to L/frame-1 like seed does; setMinimumSize 1420x800 breaks 1366x768 laptops -> ~1100x700 +
+#   clamp to screen; pair-list frame jump uses len(left) only; export Open Folder can throw;
+#   global sys.excepthook -> GUI console (2D port)
+# G2 high-frequency UX (~1 day): tooltip full pass 49 -> ~170 widgets (2D teaching-quality bar +
+#   stateful disabled-tooltips + InfoIcon port); manual Min/Max color range (2D ColorRange port,
+#   the DIC-staple fixed-colorbar) + percentile [2,98] auto-range (regression vs 2D); trackpad pan
+#   (space/right-drag) + zoom % readout + zoom clamp; keyboard shortcuts EXCEEDING 2D (F5 run,
+#   arrows frames, Space play, Ctrl+0 fit, Esc); cancel feedback (indeterminate bar + 'finishing
+#   current frame'); stale-params amber hint after run; Ctrl+S saves to project_path + windowTitle
+#   [*] modified star; drop zones show loaded folder+count; ETA ELAPSED/REMAINING port
+# G3 polish (~1 day): context menus (pair list remove/reveal, canvas fit/copy/clear, log);
+#   window geometry + splitter persistence + recent-files menu (EXCEEDS 2D); canvas empty-state
+#   quickstart hint; 3D next-step hint widget (ROIHint analog: which of calib/images/ROI/run is
+#   next); log severity filter + save button (EXCEEDS 2D); strain auto-open only first run;
+#   calibration dialog (click-to-enlarge preview, dedupe adds, natural sort, threshold live);
+#   i18n readiness strings; Help/About (version/DOI); view_state save/restore; language
+#   QActionGroup
+# === PERF track (stress-tested: 12MP 2-frame = 6.5GB peak (16x transient); 200f x 5MP projected
+#     ~32GB = OOM on 16-32GB machines; scrub = 100-300ms/frame GUI freeze) ===
+# P1 OOM prevention (~1 day): share ONE ones-mask (one-liner, -8GB/cam @200f); lazy
+#   NormalizingLazyProvider passed to run_aldic (engine docstring supports providers; kills eager
+#   float64 x2 copies, -24GB @200f) VERIFY provider protocol carefully; _znssd chunked over points
+#   (1.4GB -> ~0.15GB transient per frame, winsize-64 5.6GB -> bounded); RAM pre-check fail-fast
+#   in run_pipeline (70% available rule, actionable sizing message)
+# P2 GUI responsiveness (~1 day): LRU caps on viz caches (interp/support/pixmap ~24-48 entries;
+#   was unbounded, 15+GB theoretical); background frame-decode prefetcher (fix 100-300ms scrub);
+#   mesh preview build -> worker; 3D view: update actor points/scalars + KEEP camera (stop
+#   reset_camera per frame); session save/load: stream into zip (no BytesIO double-buffer,
+#   ZIP_STORED for npz member) + QThread + progress + 'save without results' option
+# P3 throughput (~half day + strain vectorization separate): animation clear_frame_caches inside
+#   frame loop (one-liner); render3d single-plotter sequence; npz/mat superset: stack views not
+#   copies + drop strain double-write + build once for npz+mat; resample_to_points Delaunay reuse;
+#   strain3d vectorized neighbor fits + progress/cancel hook; optional parallel L/R tracks (~2x)
+
 # ROUND-2 USER AMENDMENTS (2026-07-08, all approved, "do everything, time no object"):
 # [1] Starting Points = DEFAULT init strategy; ONE click on LEFT camera suffices.
 #     Explain 'disparity prior' to user: auto template-match of the seed/anchors

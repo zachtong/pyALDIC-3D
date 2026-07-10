@@ -37,6 +37,9 @@ justification.
 | `al_dic.core.data_structures.DICPara` | parameter container consumed by the IC-GN primitive | public |
 | `al_dic.core.data_structures.GridxyROIRange` | ROI (pixel bounds) for the `DICPara` / mesh build | public |
 | `al_dic.io.image_ops.compute_image_gradient` | reference-image gradients (7-pt central diff) for IC-GN | public |
+| `al_dic.io.image_ops.normalize_one` | byte-identical per-frame ROI normalization in `matching.temporal._EngineFrames` (streaming provider handed to `run_aldic`, replaces the engine's eager full-stack `ListFrameProvider` copy — perf P1.2) | public (module-level; import via full path) |
+| `al_dic.io.image_ops.compute_clamped_roi` | clamp the normalization ROI exactly as the engine's `ListFrameProvider` does (`_EngineFrames.clamped_roi`, read back by `run_aldic` at `core/pipeline.py:635`) | public (module-level; import via full path) |
+| `al_dic.core.data_structures.FrameProvider` | STRUCTURAL protocol (`__len__`/`shape`/`clamped_roi`/`get_normalized`) that `matching.temporal._EngineFrames` implements for `run_aldic`'s `images` argument (duck-typed at `core/pipeline.py:621` — nothing imported; a 2D protocol change still breaks us) | public (protocol; not imported) |
 | `al_dic.solver.local_icgn.local_icgn_precompute` | build the IC-GN reference context at scattered points (`match_points`) | public (import via full path; not in `solver.__all__`) |
 | `al_dic.solver.local_icgn.local_icgn_solve_subset` | run 6-DOF local IC-GN at scattered points, returns `(U, F, conv_iter)` | public (import via full path; not in `solver.__all__`) |
 | `al_dic.core.pipeline.run_aldic` | drive per-camera accumulative IC-GN tracking in `matching.temporal.temporal_track` (external mesh, `compute_strain=False`) | public |

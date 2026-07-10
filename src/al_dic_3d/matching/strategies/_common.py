@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -13,6 +14,34 @@ from al_dic_3d.matching.seed import match_seed_patch, resolve_init_guess, unifor
 if TYPE_CHECKING:
     from al_dic_3d.matching.contracts import CorrespondenceConfig
     from al_dic_3d.sequence import StereoSequence
+
+
+class FrameView(Sequence):
+    """Indexed float64 raw-frame view over one camera's provider (P1.2).
+
+    Replaces the strategies' eager ``[seq.frame(cam, k) for k ...]`` lists —
+    which materialize the WHOLE camera stream and defeat a lazy provider —
+    with per-index access: ``view[k]`` fetches frame ``k`` from the provider
+    (LRU-cached when lazy, the existing array when eager). ``np.asarray`` on an
+    already-float64 array is a no-copy pass-through, so the eager path stays
+    byte-identical.
+    """
+
+    def __init__(self, seq: StereoSequence, cam: str) -> None:
+        self._provider = seq.providers[cam]
+
+    def __len__(self) -> int:
+        return len(self._provider)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return [self[i] for i in range(*idx.indices(len(self)))]
+        return np.asarray(self._provider.get_normalized(idx), dtype=np.float64)
+
+
+def frame_view(seq: StereoSequence, cam: str) -> FrameView:
+    """The lazy indexed raw-frame sequence for ``cam`` (see :class:`FrameView`)."""
+    return FrameView(seq, cam)
 
 
 def resolve_init(
@@ -57,18 +86,26 @@ def temporal_u0(
     return None
 
 
-def mask_stream(seq: StereoSequence, cam: str) -> list[NDArray[np.float64]] | None:
-    """Per-frame masks for ``cam`` as float64 arrays, or None when absent.
+def mask_stream(seq: StereoSequence, cam: str) -> Sequence[NDArray[np.float64]] | None:
+    """Per-frame masks for ``cam`` as an indexed float64 sequence, or None.
 
     Strategies MUST forward these into :func:`temporal_track`: tracking a
     background-heavy bounding-box mesh without masks lets textureless nodes
     poison the FFT seed search (escalating search zones break even the good
     nodes) — the failure mode found on the Stereo DIC Challenge S3 dataset,
     where the 2D engine then silently zero-filled an all-NaN field.
+
+    Eager list/tuple streams are coerced element-wise (no-copy for float64, so
+    the runner's shared constant roi_mask stays ONE array); any other sequence
+    (e.g. :class:`al_dic_3d.sequence.LazyMaskList`) already serves float64 and
+    passes through unmaterialized (P1.2).
     """
-    if seq.masks.get(cam) is None:
+    stream = seq.masks.get(cam)
+    if stream is None:
         return None
-    return [np.asarray(seq.mask(cam, k), dtype=np.float64) for k in range(seq.n_frames)]
+    if isinstance(stream, (list, tuple)):
+        return [np.asarray(m, dtype=np.float64) for m in stream]
+    return stream
 
 
 def bbox_roi(

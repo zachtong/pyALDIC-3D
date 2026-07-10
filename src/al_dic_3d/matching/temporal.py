@@ -12,15 +12,68 @@ Every ``al_dic`` symbol imported here is recorded in ``docs/DEPENDS_ON_2D.md``.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections import OrderedDict
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 import numpy as np
 from al_dic.core.data_structures import DICMesh, DICPara, split_uv
 from al_dic.core.pipeline import run_aldic
+from al_dic.io.image_ops import compute_clamped_roi, normalize_one
 from al_dic.mesh.mesh_setup import mesh_setup
 from al_dic.solver.seed_prop_pipeline import build_grid_for_roi
 from numpy.typing import NDArray
+
+# Raw frames indexed like a list: a real ``list`` of arrays (tests, GUI small
+# runs) or any lazy view exposing ``__len__``/``__getitem__`` (perf batch P1.2).
+FrameSeq = Sequence[NDArray[np.float64]]
+
+
+class _EngineFrames:
+    """Engine-protocol ``FrameProvider`` over raw frames, normalizing on demand.
+
+    Implements the 2D engine's structural provider interface
+    (``__len__`` / ``shape`` / ``clamped_roi`` / ``get_normalized``,
+    al_dic ``core/data_structures.py:26``) so ``run_aldic`` never materializes
+    a second, fully-normalized copy of the stack (``ListFrameProvider`` would).
+    Normalization is byte-identical to the engine's eager list path: the same
+    ``compute_clamped_roi`` + ``normalize_one`` on the same float64-coerced
+    frames, just computed per request behind a small LRU. The engine ``.copy()``s
+    every frame it fetches (``core/pipeline.py:816,831``), so serving cached
+    arrays is safe.
+    """
+
+    _CAPACITY = 4  # ref + current frame + slack for incremental (k-1, k) pairs
+
+    def __init__(self, frames: FrameSeq, roi) -> None:
+        self._frames = frames
+        first = frames[0]
+        self._shape: tuple[int, int] = tuple(first.shape)
+        self._clamped_roi = compute_clamped_roi(self._shape, roi)
+        self._cache: OrderedDict[int, NDArray[np.float64]] = OrderedDict()
+
+    def __len__(self) -> int:
+        return len(self._frames)
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self._shape
+
+    @property
+    def clamped_roi(self):
+        return self._clamped_roi
+
+    def get_normalized(self, idx: int) -> NDArray[np.float64]:
+        cached = self._cache.get(idx)
+        if cached is not None:
+            self._cache.move_to_end(idx)
+            return cached
+        raw = np.ascontiguousarray(self._frames[idx], dtype=np.float64)
+        normed = normalize_one(raw, self._clamped_roi)
+        self._cache[idx] = normed
+        if len(self._cache) > self._CAPACITY:
+            self._cache.popitem(last=False)
+        return normed
 
 
 @dataclass(frozen=True)
@@ -59,10 +112,10 @@ def build_grid_mesh(
 
 
 def temporal_track(
-    frames: list[NDArray[np.float64]],
+    frames: FrameSeq,
     mesh: DICMesh,
     para: DICPara,
-    masks: list[NDArray[np.float64]] | None = None,
+    masks: Sequence[NDArray[np.float64]] | None = None,
     u0: NDArray[np.float64] | None = None,
     stop: Callable[[], bool] | None = None,
     gate_znssd: float = 1.0,
@@ -70,14 +123,22 @@ def temporal_track(
     """Track one camera's frames from a fixed reference mesh (accumulative).
 
     Args:
-        frames: ``[f0, f1, ...]`` raw ``(H, W)`` float64 images; ``f0`` is the
-            reference and must correspond to ``mesh``'s coordinate frame.
+        frames: ``[f0, f1, ...]`` raw ``(H, W)`` float64 images — a list, or any
+            lazy indexed view (``__len__``/``__getitem__``) so long sequences
+            never need the whole stack resident; ``f0`` is the reference and
+            must correspond to ``mesh``'s coordinate frame. The engine consumes
+            them through a normalize-on-demand provider either way, so list and
+            lazy inputs are byte-identical.
         mesh: the external reference mesh (its ``coordinates_fem`` are the tracked
             material points). Not rebuilt per frame.
         para: local-only accumulative ``DICPara``.
-        masks: optional per-frame masks (same length as ``frames``). Default
-            all-ones — which keeps the external mesh byte-identical so the
-            returned ``ref_coords`` equal ``mesh.coordinates_fem`` exactly.
+        masks: optional per-frame masks (same length as ``frames``): a list of
+            arrays, or a lazy indexed sequence serving contiguous float64 (e.g.
+            :class:`al_dic_3d.sequence.LazyMaskList`), which is passed through
+            unmaterialized. Default all-ones (ONE shared array — the engine
+            ``.astype``-copies what it indexes, al_dic ``core/pipeline.py:815,824``)
+            — which keeps the external mesh byte-identical so the returned
+            ``ref_coords`` equal ``mesh.coordinates_fem`` exactly.
         u0: optional frame-0->frame-1 seed of length ``2*n_nodes``. ``None`` lets
             ``run_aldic`` compute an FFT integer guess (robust to larger motion).
         gate_znssd: honesty gate — per frame, each node's CUMULATIVE track is
@@ -98,13 +159,23 @@ def temporal_track(
         solve (``run_aldic`` None-filters failures, breaking positional
         alignment — a partial run is surfaced rather than silently misaligned).
     """
-    if len(frames) < 2:
-        raise ValueError(f"need >=2 frames, got {len(frames)}")
+    n_frames = len(frames)
+    if n_frames < 2:
+        raise ValueError(f"need >=2 frames, got {n_frames}")
     h, w = frames[0].shape
     if masks is None:
-        masks = [np.ones((h, w), dtype=np.float64) for _ in frames]
-    if len(masks) != len(frames):
-        raise ValueError(f"masks ({len(masks)}) must match frames ({len(frames)})")
+        # ONE shared all-ones array (P1.1): the engine .astype-copies whatever
+        # it indexes, so per-frame duplicates would only burn n_frames x H x W
+        # float64 for identical content.
+        ones = np.ones((h, w), dtype=np.float64)
+        masks = [ones] * n_frames
+    if len(masks) != n_frames:
+        raise ValueError(f"masks ({len(masks)}) must match frames ({n_frames})")
+    if isinstance(masks, (list, tuple)):
+        # Coerce eager mask lists once (no-copy for contiguous float64 — the
+        # shared-ones and shared-roi_mask paths keep sharing one array). Lazy
+        # mask sequences already serve contiguous float64 and pass through.
+        masks = [np.ascontiguousarray(m, dtype=np.float64) for m in masks]
     mask0 = np.ascontiguousarray(masks[0], dtype=np.float64)  # engine mutates para
 
     import warnings
@@ -118,8 +189,11 @@ def temporal_track(
             warnings.simplefilter("always")
             result = run_aldic(
                 para,
-                [np.ascontiguousarray(f, dtype=np.float64) for f in frames],
-                [np.ascontiguousarray(m, dtype=np.float64) for m in masks],
+                # Normalize-on-demand provider (P1.2): the engine otherwise
+                # eagerly materializes a full normalized float64 copy of the
+                # stack (ListFrameProvider). Byte-identical, streaming instead.
+                _EngineFrames(frames, para.gridxy_roi_range),
+                masks,
                 stop_fn=stop,
                 compute_strain=False,
                 mesh=mesh,
@@ -144,7 +218,6 @@ def temporal_track(
 
     ref_coords = np.asarray(result.dic_mesh.coordinates_fem, dtype=np.float64)
     n = ref_coords.shape[0]
-    n_frames = len(frames)
     if len(result.result_disp) != n_frames - 1:
         raise RuntimeError(
             f"run_aldic returned {len(result.result_disp)} deformed frames for "
@@ -184,7 +257,7 @@ def temporal_track(
 
 
 def _gate_by_znssd(
-    frames: list[NDArray[np.float64]],
+    frames: FrameSeq,
     mask0: NDArray[np.float64],
     ref_coords: NDArray[np.float64],
     u_accum: NDArray[np.float64],

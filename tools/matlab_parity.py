@@ -70,7 +70,7 @@ file = "{q(S3 / "calibration_DICe.xml")}"
 format = "dice"
 
 [sequence]
-left = "{q(LEFT_IMGS / "Images_Stereo_Sample3_images")}/*_0.tif"
+left = "{q(LEFT_IMGS / "Images_Stereo_Sample3_images" / "L")}/*_0.tif"
 right = "{q(S3 / "Images_Stereo_Sample3_images" / "Right")}/*_1.tif"
 left_mask = "{q(S3 / "Images_Stereo_Sample3_maskfiles" / "Left")}/*_0.tif"
 right_mask = "{q(S3 / "Images_Stereo_Sample3_maskfiles" / "Right")}/*_1.tif"
@@ -269,7 +269,7 @@ def _p2_template_gate(result) -> bool:
     import cv2
     from scipy.spatial import cKDTree
 
-    lefts = sorted((LEFT_IMGS / "Images_Stereo_Sample3_images").glob("*_0.tif"))
+    lefts = sorted((LEFT_IMGS / "Images_Stereo_Sample3_images" / "L").glob("*_0.tif"))
     L0 = cv2.imread(str(lefts[0]), 0).astype(np.float32)
     L2 = cv2.imread(str(lefts[2]), 0).astype(np.float32)
     h, w = L0.shape

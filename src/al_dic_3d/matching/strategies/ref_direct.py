@@ -35,6 +35,7 @@ from al_dic_3d.matching.primitives import make_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
+    frame_view,
     mask_stream,
     resolve_init,
     temporal_u0,
@@ -87,8 +88,9 @@ class RefDirectStrategy:
     ) -> CorrespondenceSet:
         seq.validate()
         n_frames = seq.n_frames
-        left = [np.asarray(seq.frame("L", k), dtype=np.float64) for k in range(n_frames)]
-        right = [np.asarray(seq.frame("R", k), dtype=np.float64) for k in range(n_frames)]
+        # Indexed raw-frame views (P1.2): never materialize the camera streams.
+        left = frame_view(seq, "L")
+        right = frame_view(seq, "R")
         img_h, img_w = seq.providers["L"].shape
 
         coords_L = np.asarray(mesh_L.coordinates_fem, dtype=np.float64)

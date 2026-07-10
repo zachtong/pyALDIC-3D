@@ -23,6 +23,7 @@ import numpy as np
 import tomllib
 from numpy.typing import NDArray
 
+from al_dic_3d import memcheck
 from al_dic_3d.calibration import load_calibration
 from al_dic_3d.matching import CorrespondenceConfig, apply_znssd_gate, get_strategy
 from al_dic_3d.matching.primitives import make_dicpara
@@ -33,7 +34,7 @@ from al_dic_3d.reconstruct import (
     reconstruct_correspondence,
     remove_3d_outliers,
 )
-from al_dic_3d.sequence import ArrayFrameProvider, StereoSequence
+from al_dic_3d.sequence import LazyFrameProvider, LazyMaskList, StereoSequence, load_gray
 from al_dic_3d.strain3d import STRAIN_FIELDS, compute_surface_strain
 
 if TYPE_CHECKING:
@@ -96,6 +97,9 @@ class RunConfig:
     compute_strain: bool = False
     strain_size: int = 5
     strain_smooth_sigma: float = 0.0
+    # Skip the fail-fast RAM pre-check (P1.4). TOML: [advanced].ignore_memory_check
+    # (also accepted under [matching] for one-table configs).
+    ignore_memory_check: bool = False
     output_prefix: str = "run"
     cam_left: str = "L"
     cam_right: str = "R"
@@ -169,6 +173,7 @@ def load_config(path: str | Path) -> RunConfig:
     out = table.get("output", {})
     qual = table.get("quality", {})
     strain = table.get("strain", {})
+    advanced = table.get("advanced", {})
 
     return RunConfig(
         calibration_file=_resolve(str(_require(table, "calibration", "file"))),
@@ -206,6 +211,9 @@ def load_config(path: str | Path) -> RunConfig:
         compute_strain=bool(strain.get("enabled", False)),
         strain_size=int(strain.get("strain_size", 5)),
         strain_smooth_sigma=float(strain.get("smooth_sigma", 0.0)),
+        ignore_memory_check=bool(
+            advanced.get("ignore_memory_check", match.get("ignore_memory_check", False))
+        ),
         output_prefix=str(out.get("prefix", "run")),
         cam_left=str(seq.get("cam_left", "L")),
         cam_right=str(seq.get("cam_right", "R")),
@@ -240,26 +248,30 @@ def _resolve_paths(spec: str | Sequence[str], base: Path) -> list[Path]:
     return paths
 
 
-def _load_gray(path: Path) -> NDArray[np.float64]:
-    import cv2
-
-    # IMREAD_UNCHANGED preserves the native bit depth (scientific DIC images are
-    # often 16-bit or float); collapse any colour input to a single channel.
-    img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
-    if img is None:
-        raise ValueError(f"cannot read image: {path}")
-    if img.ndim == 3:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.shape[2] == 3 else img[..., 0]
-    return img.astype(np.float64)
+# Grayscale decode lives in sequence/lazy.py (shared with the lazy providers);
+# kept under the old private name for the runner's single-image loads.
+_load_gray = load_gray
 
 
-def _load_stream(
+def _open_stream(
     spec: str | Sequence[str] | None, base: Path
-) -> tuple[list[NDArray[np.float64]] | None, list[str] | None]:
+) -> tuple[LazyFrameProvider | None, list[str] | None]:
+    """Resolve an image spec into a LAZY frame provider + file names (P1.2).
+
+    Nothing is decoded here: frames stream from disk on demand behind a small
+    LRU, so peak memory no longer scales with sequence length.
+    """
     if spec is None:
         return None, None
     paths = _resolve_paths(spec, base)
-    return [_load_gray(p) for p in paths], [p.name for p in paths]
+    return LazyFrameProvider(paths), [p.name for p in paths]
+
+
+def _open_masks(spec: str | Sequence[str] | None, base: Path) -> LazyMaskList | None:
+    """Resolve a mask spec into a lazily-decoded per-frame mask sequence."""
+    if spec is None:
+        return None
+    return LazyMaskList(_resolve_paths(spec, base))
 
 
 # --- pipeline ----------------------------------------------------------------
@@ -396,21 +408,35 @@ def run_pipeline(
 
     rig = load_calibration(cfg.calibration_file, cfg.calibration_format)
 
-    left_frames, left_names = _load_stream(cfg.left, seq_base)
-    right_frames, right_names = _load_stream(cfg.right, seq_base)
-    left_masks, _ = _load_stream(cfg.left_masks, seq_base)
-    right_masks, _ = _load_stream(cfg.right_masks, seq_base)
+    # LAZY streams (P1.2): only frame 0 is decoded up front (for the image
+    # shape); everything else streams from disk behind bounded LRUs.
+    provider_left, left_names = _open_stream(cfg.left, seq_base)
+    provider_right, right_names = _open_stream(cfg.right, seq_base)
+    left_masks = _open_masks(cfg.left_masks, seq_base)
+    right_masks = _open_masks(cfg.right_masks, seq_base)
+    img_h, img_w = provider_left.shape
+    n_frames = len(provider_left)
 
     if cfg.roi_mask is not None:
         # Arbitrary-shape ROI (toolbox-drawn): its bounding box overrides the
         # rectangular roi, and — unless explicit per-frame left masks were
         # given, which take precedence — the mask applies as a constant left
-        # mask on every frame (all geometry keys off the frame-1 reference).
+        # mask on every frame (ONE shared array: all geometry keys off the
+        # frame-1 reference, and every consumer copies before writing).
         path = cfg.roi_mask if cfg.roi_mask.is_absolute() else seq_base / cfg.roi_mask
-        roi_mask = _load_roi_mask(path, left_frames[0].shape)
+        roi_mask = _load_roi_mask(path, (img_h, img_w))
         cfg = replace(cfg, roi=_mask_bbox(roi_mask))
         if left_masks is None:
-            left_masks = [roi_mask.astype(np.float64)] * len(left_frames)
+            left_masks = [roi_mask.astype(np.float64)] * n_frames
+
+    # Fail-fast RAM pre-check (P1.4) BEFORE any stack touches memory: project
+    # the run's peak from the sequence geometry and refuse runs that would
+    # swap/OOM. [advanced].ignore_memory_check = true overrides.
+    if not cfg.ignore_memory_check:
+        xmin, xmax, ymin, ymax = cfg.roi
+        step = max(1, cfg.winstepsize)
+        n_pts_est = max(1, (max(0, xmax - xmin) // step + 1) * (max(0, ymax - ymin) // step + 1))
+        memcheck.check_run_memory(n_frames, img_h, img_w, n_cameras=2, lazy=True, n_pts=n_pts_est)
 
     masks: dict = {}
     if left_masks is not None:
@@ -425,15 +451,13 @@ def run_pipeline(
 
     seq = StereoSequence(
         providers={
-            cfg.cam_left: ArrayFrameProvider(left_frames),
-            cfg.cam_right: ArrayFrameProvider(right_frames),
+            cfg.cam_left: provider_left,
+            cfg.cam_right: provider_right,
         },
         masks=masks,
         names=names,
     )
     seq.validate()
-
-    img_h, img_w = seq.providers[cfg.cam_left].shape
     mesh_L = _build_reference_mesh(cfg, img_h, img_w, masks.get(cfg.cam_left))
 
     strategy_cls = get_strategy(cfg.strategy)

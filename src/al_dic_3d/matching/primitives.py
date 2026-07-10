@@ -131,6 +131,12 @@ def match_points(
     return out_u, znssd, valid
 
 
+# ZNSSD point-chunk size: the vectorized kernel materializes ~8 float64 arrays of
+# shape (chunk, S, S); at 2048 points and winsize 64 that is ~280 MB peak instead
+# of the multi-GB monolithic evaluation at 20k+ points (perf batch P1.3).
+_ZNSSD_CHUNK = 2048
+
+
 def _znssd(
     ref: NDArray[np.float64],
     dfm: NDArray[np.float64],
@@ -140,19 +146,23 @@ def _znssd(
     winsize: int,
     valid: NDArray[np.bool_],
     mask: NDArray[np.float64],
+    chunk: int = _ZNSSD_CHUNK,
 ) -> NDArray[np.float64]:
     """ZNSSD per point at the converged warp (independent of the solver internals).
 
     Replicates the IC-GN objective: extract the reference subset, warp+sample the
     deformed subset with the 6-DOF affine ``(F, U)``, and compare zero-normalized.
     ``znssd = Σ[(f-f̄)/Δf − (g-ḡ)/Δg]²``.
+
+    Evaluated in point chunks of ``chunk`` (each point is independent, so chunking
+    is bit-identical to the monolithic evaluation) to bound the peak size of the
+    ``(m, S, S)`` intermediates.
     """
     h, w = ref.shape
     n = points.shape[0]
     half = winsize // 2
     offs = np.arange(-half, half + 1)
     xx, yy = np.meshgrid(offs.astype(np.float64), offs.astype(np.float64))  # (S, S)
-    s = xx.shape[0]
     z = np.full(n, np.nan, dtype=np.float64)
 
     x0 = np.round(points[:, 0])
@@ -162,6 +172,28 @@ def _znssd(
     if idx.size == 0:
         return z
 
+    chunk = max(1, int(chunk))
+    for start in range(0, idx.size, chunk):
+        sel = idx[start : start + chunk]
+        z[sel] = _znssd_block(ref, dfm, sel, x0, y0, u_2d, f_2d, offs, xx, yy, mask)
+    return z
+
+
+def _znssd_block(
+    ref: NDArray[np.float64],
+    dfm: NDArray[np.float64],
+    idx: NDArray[np.int64],
+    x0: NDArray[np.float64],
+    y0: NDArray[np.float64],
+    u_2d: NDArray[np.float64],
+    f_2d: NDArray[np.float64],
+    offs: NDArray[np.int64],
+    xx: NDArray[np.float64],
+    yy: NDArray[np.float64],
+    mask: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    """The vectorized ZNSSD kernel for one chunk of in-bounds point indices."""
+    s = xx.shape[0]
     rx = x0[idx].astype(np.int64)
     ry = y0[idx].astype(np.int64)
     rows = ry[:, None, None] + offs[None, :, None]
@@ -205,5 +237,4 @@ def _znssd(
     ) / bottomg[:, None, None]
     zi = (res * res * comb).sum((1, 2))
     zi[cnt < 4] = np.nan
-    z[idx] = zi
-    return z
+    return zi
