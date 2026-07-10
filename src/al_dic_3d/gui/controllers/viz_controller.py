@@ -33,6 +33,10 @@ from al_dic_3d.viz3d.fieldmap import (  # noqa: F401 - re-exported compute API
     valid_node_support_mask,
     visible_values,
 )
+from al_dic_3d.viz3d.lru import LRUCache
+
+# Tier-2 cap (P2.1): pixmaps are recolored from the Tier-1 grids on miss.
+PIXMAP_CACHE_SIZE = 48
 
 
 class VizController3D(FieldmapRenderer):
@@ -41,7 +45,7 @@ class VizController3D(FieldmapRenderer):
     def __init__(self) -> None:
         super().__init__()
         # Tier 2: colored pixmaps {(frame, field, cmap, vmin, vmax, has_mask, deformed)}
-        self._pixmap_cache: dict[tuple, QPixmap] = {}
+        self._pixmap_cache: LRUCache[tuple, QPixmap] = LRUCache(PIXMAP_CACHE_SIZE)
 
     def clear_all(self) -> None:
         """Clear every cache tier (results changed)."""

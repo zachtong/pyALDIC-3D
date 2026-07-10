@@ -87,26 +87,25 @@ def load_gray_image(path) -> np.ndarray:
     return img.astype(np.float64)
 
 
-def gray_to_qpixmap(arr: np.ndarray) -> QPixmap:
-    """Min/max-normalize a 2D array to an 8-bit grayscale QPixmap."""
+def gray_to_qimage(arr: np.ndarray) -> QImage:
+    """Min/max-normalize a 2D array to an 8-bit grayscale QImage.
+
+    Thread-safe (QImage, unlike QPixmap, may be built off the GUI thread) —
+    the frame prefetcher decodes through this in its worker (P2.2); the GUI
+    thread then only pays the cheap ``QPixmap.fromImage`` conversion.
+    """
     arr = np.asarray(arr, dtype=np.float64)
     lo, hi = float(np.nanmin(arr)), float(np.nanmax(arr))
     norm = (arr - lo) / (hi - lo) * 255.0 if hi > lo else np.zeros_like(arr)
     buf = np.ascontiguousarray(np.clip(norm, 0, 255).astype(np.uint8))
     h, w = buf.shape
     image = QImage(buf.data, w, h, w, QImage.Format.Format_Grayscale8)
-    return QPixmap.fromImage(image.copy())
+    return image.copy()  # deep copy: the QImage owns its pixels past `buf`
 
 
-def _mask_to_rgba_pixmap(mask: np.ndarray, rgba: tuple[int, int, int, int]) -> QPixmap:
-    """Full-image RGBA8888 pixmap with ``rgba`` where ``mask`` is truthy."""
-    m = np.asarray(mask) > 0
-    h, w = m.shape
-    buf = np.zeros((h, w, 4), dtype=np.uint8)
-    buf[m, :] = rgba
-    buf = np.ascontiguousarray(buf)
-    img = QImage(buf.data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
-    return QPixmap.fromImage(img.copy())  # deep copy: pixmap owns the pixels
+def gray_to_qpixmap(arr: np.ndarray) -> QPixmap:
+    """Min/max-normalize a 2D array to an 8-bit grayscale QPixmap."""
+    return QPixmap.fromImage(gray_to_qimage(arr))
 
 
 class ImageCanvas3D(QGraphicsView):
@@ -150,6 +149,7 @@ class ImageCanvas3D(QGraphicsView):
         self._roi_mask_item = QGraphicsPixmapItem()
         self._roi_mask_item.setZValue(1.8)
         self._scene.addItem(self._roi_mask_item)
+        self._roi_rgba_buf: np.ndarray | None = None  # reused fill buffer (P2.6)
 
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
@@ -190,8 +190,27 @@ class ImageCanvas3D(QGraphicsView):
         self._loaded_path = key
         self.set_image_gray(load_gray_image(path))
 
+    def set_image_pixmap(self, path, pixmap: QPixmap) -> None:
+        """Show a pre-decoded frame (the prefetcher hot path, P2.2).
+
+        Same contract as :meth:`set_image_file` — records the path (no-op when
+        already shown) and updates the scene rect — but skips the 100–300 ms
+        decode+normalize because the worker already produced the pixmap.
+        """
+        key = str(path)
+        if key == self._loaded_path:
+            return
+        self._loaded_path = key
+        self._set_background(pixmap)
+
     def set_image_gray(self, arr: np.ndarray) -> None:
-        pixmap = gray_to_qpixmap(arr)
+        self._set_background(gray_to_qpixmap(arr))
+
+    def background_pixmap(self) -> QPixmap:
+        """The currently shown background frame (fed back to the prefetcher)."""
+        return self._bg_item.pixmap()
+
+    def _set_background(self, pixmap: QPixmap) -> None:
         first = self._bg_item.pixmap().isNull() or self._bg_item.pixmap().size() != pixmap.size()
         self._bg_item.setPixmap(pixmap)
         self._scene.setSceneRect(QRectF(pixmap.rect()))
@@ -251,8 +270,25 @@ class ImageCanvas3D(QGraphicsView):
         if mask is None or not mask.any():
             self._roi_mask_item.setPixmap(QPixmap())
             return
-        self._roi_mask_item.setPixmap(_mask_to_rgba_pixmap(mask, _ROI_OVERLAY_RGBA))
+        self._roi_mask_item.setPixmap(self._mask_overlay_pixmap(mask, _ROI_OVERLAY_RGBA))
         self._roi_mask_item.setPos(0, 0)
+
+    def _mask_overlay_pixmap(self, mask: np.ndarray, rgba: tuple[int, int, int, int]) -> QPixmap:
+        """RGBA fill pixmap through a REUSED buffer (P2.6: no per-call alloc).
+
+        The (H, W, 4) fill buffer is kept between calls (same-shape masks are
+        the common case); the ``QImage.copy()`` is still required so the
+        pixmap owns its pixels independently of the buffer's next reuse.
+        """
+        m = np.asarray(mask) > 0
+        h, w = m.shape
+        if self._roi_rgba_buf is None or self._roi_rgba_buf.shape[:2] != (h, w):
+            self._roi_rgba_buf = np.zeros((h, w, 4), dtype=np.uint8)
+        buf = self._roi_rgba_buf
+        buf[:] = 0
+        buf[m, :] = rgba
+        img = QImage(buf.data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
+        return QPixmap.fromImage(img.copy())  # deep copy: pixmap owns the pixels
 
     # --- seed point (F2) ----------------------------------------------------------
 

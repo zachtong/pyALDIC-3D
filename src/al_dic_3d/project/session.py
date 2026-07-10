@@ -19,6 +19,7 @@ from __future__ import annotations
 import dataclasses
 import io
 import json
+import time
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -211,9 +212,14 @@ def save_session(state: AppState3D, path: str | Path) -> Path:
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(_CONFIG_NAME, json.dumps(session, indent=2))
         if state.result is not None:
-            buf = io.BytesIO()
-            np.savez_compressed(buf, **_result_arrays(state.result))
-            zf.writestr(_RESULTS_NAME, buf.getvalue())
+            # P2.5: stream the results member instead of materializing it in a
+            # BytesIO + getvalue() copy (2x peak memory), and STORE it — the
+            # npz payload is already DEFLATE-compressed per array, so wrapping
+            # it in a second DEFLATE only burned CPU for ~0 size gain.
+            info = zipfile.ZipInfo(_RESULTS_NAME, date_time=time.localtime(time.time())[:6])
+            info.compress_type = zipfile.ZIP_STORED
+            with zf.open(info, "w", force_zip64=True) as member:
+                np.savez_compressed(member, **_result_arrays(state.result))
     return path
 
 

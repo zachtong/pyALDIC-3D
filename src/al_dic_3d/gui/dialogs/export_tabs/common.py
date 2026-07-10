@@ -6,6 +6,10 @@ the 2D ``ExportImagesWorker`` idiom — surfaced through a per-tab
 :class:`ProgressRow` (thin bar + status + Cancel). :class:`ExportTabBase`
 owns one worker per tab so the dialog can stay open, run tabs independently,
 and join everything on close.
+
+The worker itself was generalized into :class:`al_dic_3d.gui.workers.JobWorker`
+(the session save/load flow reuses it, P2.5); ``ExportWorker`` stays the
+importable name here for the existing tab/test import sites.
 """
 
 from __future__ import annotations
@@ -15,7 +19,7 @@ from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 from al_dic.gui.theme import COLORS
-from PySide6.QtCore import QCoreApplication, QThread, Signal
+from PySide6.QtCore import QCoreApplication, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -31,6 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.export import RESOLUTION_PRESETS, FieldImageConfig, VizExportHint
+from al_dic_3d.gui.workers import JobWorker as ExportWorker
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
@@ -54,40 +59,6 @@ FIELD_LABELS = {
 MEDIA_DEFAULT_ENABLED = {"U", "V", "W"}
 
 COLORMAPS = ["turbo", "viridis", "jet", "coolwarm", "plasma", "inferno", "RdBu_r"]
-
-
-class ExportWorker(QThread):
-    """Runs one Qt-free export job off the UI thread; cancellable."""
-
-    progress = Signal(int, int, str)
-    finished_ok = Signal(object)  # the job's return value (list of paths, ...)
-    failed = Signal(str)
-
-    def __init__(
-        self,
-        job: Callable[[Callable[[int, int, str], None], threading.Event], object],
-        parent: QWidget | None = None,
-    ) -> None:
-        super().__init__(parent)
-        self._job = job
-        self._stop_event = threading.Event()
-
-    def request_stop(self) -> None:
-        self._stop_event.set()
-
-    @property
-    def was_cancelled(self) -> bool:
-        return self._stop_event.is_set()
-
-    def run(self) -> None:  # QThread entry point (worker thread)
-        try:
-            out = self._job(self._emit_progress, self._stop_event)
-            self.finished_ok.emit(out)
-        except Exception as exc:  # noqa: BLE001 - report any failure to the UI
-            self.failed.emit(f"{type(exc).__name__}: {exc}")
-
-    def _emit_progress(self, done: int, total: int, label: str = "") -> None:
-        self.progress.emit(int(done), int(total), str(label))
 
 
 class ProgressRow(QWidget):

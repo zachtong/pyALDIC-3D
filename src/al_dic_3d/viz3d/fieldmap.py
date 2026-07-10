@@ -34,7 +34,15 @@ from matplotlib import colormaps
 from numpy.typing import NDArray
 from scipy.spatial import Delaunay
 
+from al_dic_3d.viz3d.lru import LRUCache
 from al_dic_3d.viz3d.surface import MAX_EDGE_FACTOR, median_nn_spacing
+
+# Cache caps (P2.1): scrubbing recomputes on miss, so eviction is safe; the
+# caps bound memory to ~a few dozen dense grids / masks per renderer.
+INTERP_CACHE_SIZE = 32
+WARP_CACHE_SIZE = 32
+SUPPORT_CACHE_SIZE = 32
+REF_INTERP_CACHE_SIZE = 4  # node-sets (L / R / strain window), not frames
 
 
 def apply_colormap(
@@ -159,14 +167,15 @@ class FieldmapRenderer:
     """Dense field rendering with the 2D caching scheme (Qt-free compute)."""
 
     def __init__(self) -> None:
+        # Bounded LRUs (P2.1): all tiers recompute on miss, so eviction is safe.
         # Tier 1: interpolation results {(frame, field, deformed) -> (data, xg, yg, out_step)}
-        self._interp_cache: dict[tuple, tuple] = {}
+        self._interp_cache: LRUCache[tuple, tuple] = LRUCache(INTERP_CACHE_SIZE)
         # Deformed-mode warped outside-masks, keyed like Tier 1.
-        self._warp_cache: dict[tuple, NDArray[np.bool_]] = {}
+        self._warp_cache: LRUCache[tuple, NDArray[np.bool_]] = LRUCache(WARP_CACHE_SIZE)
         # Fallback valid-node support masks {(frame, field) -> bool mask}.
-        self._support_cache: dict[tuple, NDArray[np.bool_]] = {}
+        self._support_cache: LRUCache[tuple, NDArray[np.bool_]] = LRUCache(SUPPORT_CACHE_SIZE)
         # Reference interpolators per node set (L / R / strain window share us).
-        self._ref_interp_cache: dict[bytes, FieldInterpolator] = {}
+        self._ref_interp_cache: LRUCache[bytes, FieldInterpolator] = LRUCache(REF_INTERP_CACHE_SIZE)
 
     def clear_all(self) -> None:
         """Clear every cache tier (results changed)."""
@@ -239,6 +248,7 @@ class FieldmapRenderer:
         """
         interp_key = (frame_idx, field_name, deformed)
 
+        interpolator = None  # set on the compute path; reused by the warp mask
         cached = self._interp_cache.get(interp_key)
         if cached is not None:
             grid_data, xg, yg, out_step = cached
@@ -277,37 +287,26 @@ class FieldmapRenderer:
                 return None, None, None, 1
             self._interp_cache[interp_key] = (grid_data, xg, yg, out_step)
 
-            # Deformed mode: warp the reference support into deformed coords
-            # via the inverse-displacement lookup (2D ref_uv contract) —
-            # internal holes survive instead of being interpolated across.
-            if deformed and ref_uv is not None:
-                eff = self._effective_mask(
-                    frame_idx,
-                    field_name,
-                    values,
-                    img_shape,
-                    roi_mask,
-                    ref_uv,
-                    ref_pts,
-                    nodes,
-                    mesh_step,
-                )
-                if eff is not None:
-                    u_grid = interpolator.interpolate(ref_uv[0][finite], xg, yg)
-                    v_grid = interpolator.interpolate(ref_uv[1][finite], xg, yg)
-                    xr = xg - u_grid
-                    yr = yg - v_grid
-                    nan_warp = np.isnan(xr) | np.isnan(yr)
-                    outside = lookup_outside(
-                        eff, np.nan_to_num(xr, nan=0.0), np.nan_to_num(yr, nan=0.0)
-                    )
-                    self._warp_cache[interp_key] = outside | nan_warp
-
         # --- masking: warped mask (deformed) or direct reference lookup ---
+        # The warp mask lives in its own bounded LRU; when it was evicted while
+        # the interpolation entry survived, it is RECOMPUTED here (never fall
+        # back to the wrong reference-coordinate lookup on a deformed grid).
         mask_to_use = None
-        if deformed and interp_key in self._warp_cache:
-            mask_to_use = self._warp_cache[interp_key]
-        else:
+        if deformed and ref_uv is not None:
+            mask_to_use = self._warp_outside_mask(
+                interp_key,
+                nodes,
+                values,
+                img_shape,
+                roi_mask,
+                ref_uv,
+                ref_pts,
+                mesh_step,
+                xg,
+                yg,
+                interpolator=interpolator,
+            )
+        if mask_to_use is None:
             eff = self._effective_mask(
                 frame_idx,
                 field_name,
@@ -328,6 +327,50 @@ class FieldmapRenderer:
             render_data[mask_to_use] = np.nan
 
         return apply_colormap(render_data, vmin, vmax, cmap), xg, yg, out_step
+
+    def _warp_outside_mask(
+        self,
+        interp_key: tuple,
+        nodes: NDArray[np.float64],
+        values: NDArray[np.float64],
+        img_shape: tuple[int, int],
+        roi_mask: NDArray[np.bool_] | None,
+        ref_uv: tuple[NDArray[np.float64], NDArray[np.float64]],
+        ref_pts: NDArray[np.float64] | None,
+        mesh_step: float | None,
+        xg: NDArray,
+        yg: NDArray,
+        interpolator: FieldInterpolator | None = None,
+    ) -> NDArray[np.bool_] | None:
+        """Deformed-coordinate outside-mask (cached; recomputed after eviction).
+
+        Warps the reference support into deformed coordinates via the inverse-
+        displacement lookup (2D ``ref_uv`` contract) — internal holes survive
+        instead of being interpolated across. ``interpolator`` is the fresh
+        deformed-node interpolator when the caller just built one; on a warp
+        cache miss WITHOUT one (LRU eviction), it is rebuilt from ``nodes``.
+        """
+        cached = self._warp_cache.get(interp_key)
+        if cached is not None:
+            return cached
+        frame_idx, field_name, _deformed = interp_key
+        eff = self._effective_mask(
+            frame_idx, field_name, values, img_shape, roi_mask, ref_uv, ref_pts, nodes, mesh_step
+        )
+        if eff is None:
+            return None
+        finite = np.isfinite(nodes).all(axis=1)
+        if interpolator is None:
+            interpolator = FieldInterpolator(nodes[finite])
+        u_grid = interpolator.interpolate(ref_uv[0][finite], xg, yg)
+        v_grid = interpolator.interpolate(ref_uv[1][finite], xg, yg)
+        xr = xg - u_grid
+        yr = yg - v_grid
+        nan_warp = np.isnan(xr) | np.isnan(yr)
+        outside = lookup_outside(eff, np.nan_to_num(xr, nan=0.0), np.nan_to_num(yr, nan=0.0))
+        result = outside | nan_warp
+        self._warp_cache[interp_key] = result
+        return result
 
     def _effective_mask(
         self,

@@ -25,7 +25,7 @@ import numpy as np
 from al_dic.gui.icons import icon_maximize, icon_zoom_in, icon_zoom_out
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.colorbar_overlay import ColorbarOverlay
-from PySide6.QtCore import QEvent, Qt, QTimer
+from PySide6.QtCore import QEvent, Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -39,12 +39,16 @@ from PySide6.QtWidgets import (
 
 from al_dic_3d.gui.controllers.roi_controller import ROIController
 from al_dic_3d.gui.controllers.viz_controller import VizController3D, auto_range, visible_values
+from al_dic_3d.gui.panels.canvas_tools import CanvasToolsMixin
+from al_dic_3d.gui.panels.mesh_preview import MeshPreviewBuilder, snapshot_preview_params
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
+from al_dic_3d.gui.widgets.frame_prefetcher import FramePrefetcher
 from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
 from al_dic_3d.gui.widgets.mesh_overlay import MeshOverlay
 from al_dic_3d.gui.widgets.view3d import View3D
+from al_dic_3d.viz3d.lru import LRUCache
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
@@ -65,11 +69,15 @@ _FIELD_LABELS = {
 }
 _STRAIN_IDS = ("exx", "eyy", "exy", "e1", "e2", "max_shear", "von_mises")
 
-_MESH_PREVIEW_DEBOUNCE_MS = 300
+_MAG_CACHE_SIZE = 32  # per-frame |D| vectors (P2.6); results-scoped
 
 
-class CanvasArea3D(QWidget):
-    """Toolbar + canvas (+ overlays) + frame navigator."""
+class CanvasArea3D(CanvasToolsMixin, QWidget):
+    """Toolbar + canvas (+ overlays) + frame navigator.
+
+    The seed-point / refinement-brush relays live in :class:`CanvasToolsMixin`
+    (same behavior, split for the 800-line file cap).
+    """
 
     def __init__(
         self,
@@ -186,19 +194,25 @@ class CanvasArea3D(QWidget):
         self._rig_cache = None  # loaded lazily for the 3D frusta
         self._viz_ctrl = VizController3D()  # dense field renderer + caches
 
+        # P2.2: background frame decoder — scrubbing blits ready pixmaps.
+        self._prefetcher = FramePrefetcher(self)
+        # P2.6: per-frame |D| magnitude + drawn-ROI-as-bool caches.
+        self._mag_cache: LRUCache[int, np.ndarray] = LRUCache(_MAG_CACHE_SIZE)
+        self._roi_bool_cache: tuple[np.ndarray, np.ndarray] | None = None
+
         # ROI mask engine (created lazily once an image defines the shape).
         self._roi_ctrl: ROIController | None = None
+        self._synced_roi_src: np.ndarray | None = None  # draft array last pushed
 
         # RIGHT-camera ROI support (F2.3): the left mask warped through the
         # frame-1 correspondence. Cached; dropped on ROI edits / new results.
         self._right_mask_cache: np.ndarray | None = None
         self._right_mask_dirty = True
 
-        # Mesh preview state (debounced rebuild; hover lookup arrays).
-        self._mesh_timer = QTimer(self)
-        self._mesh_timer.setSingleShot(True)
-        self._mesh_timer.setInterval(_MESH_PREVIEW_DEBOUNCE_MS)
-        self._mesh_timer.timeout.connect(self._generate_preview_mesh)
+        # Mesh preview (P2.3): debounced background build; hover lookup arrays.
+        self._mesh_builder = MeshPreviewBuilder(self._mesh_snapshot, self)
+        self._mesh_builder.built.connect(self._apply_preview_mesh)
+        self._mesh_builder.hidden.connect(self._hide_mesh_overlay)
         self._hover_coords: np.ndarray | None = None
         self._hover_valid: np.ndarray | None = None
 
@@ -257,9 +271,11 @@ class CanvasArea3D(QWidget):
         shape = (int(rect.height()), int(rect.width()))
         if self._roi_ctrl is None or self._roi_ctrl.shape != shape:
             self._roi_ctrl = ROIController(shape)
+            self._synced_roi_src = None
             mask = self.controller.state.draft.roi_mask_array
             if mask is not None and np.asarray(mask).shape == shape:
                 self._roi_ctrl.mask = np.asarray(mask) > 0
+                self._synced_roi_src = mask
             self._canvas.set_roi_controller(self._roi_ctrl)
             self._canvas.update_roi_overlay()
 
@@ -282,6 +298,7 @@ class CanvasArea3D(QWidget):
         else:
             draft.roi_mask_array = None
             draft.roi = None
+        self._synced_roi_src = draft.roi_mask_array  # ctrl already holds this mask
         self._canvas.update_roi_overlay()
         self.controller.state.mark_dirty()
         self.signals.roi_changed.emit()
@@ -339,77 +356,31 @@ class CanvasArea3D(QWidget):
             self.render()
 
     def _sync_roi(self) -> None:
-        """Draft -> view: mask overlay and the mesh preview (mask fill IS the ROI display)."""
+        """Draft -> view: mask overlay and the mesh preview (mask fill IS the ROI display).
+
+        Runs on every render (frame scrubs included), so the push into the
+        ROI controller — and the full-image RGBA overlay rebuild it forces —
+        only happens when the draft's mask ARRAY actually changed (P2.6: the
+        old unconditional path rebuilt an (H, W, 4) pixmap per frame change).
+        """
         draft = self.controller.state.draft
         if self._roi_ctrl is not None:
             mask = draft.roi_mask_array
+            changed = False
             if mask is None:
+                self._synced_roi_src = None
                 if self._roi_ctrl.mask.any():
                     self._roi_ctrl.clear()
-            elif np.asarray(mask).shape == self._roi_ctrl.shape and mask is not self._roi_ctrl.mask:
+                    changed = True
+            elif (
+                np.asarray(mask).shape == self._roi_ctrl.shape and mask is not self._synced_roi_src
+            ):
                 self._roi_ctrl.mask = np.asarray(mask) > 0
-            self._canvas.update_roi_overlay()
+                self._synced_roi_src = mask
+                changed = True
+            if changed:
+                self._canvas.update_roi_overlay()
         self._schedule_mesh_preview()
-
-    # ---- seed point (F2) -------------------------------------------------------------
-
-    def start_seed_tool(self) -> None:
-        """Arm the one-shot seed click tool on the canvas (Esc cancels)."""
-        self._canvas.set_seed_tool(True)
-
-    def cancel_seed_tool(self) -> None:
-        self._canvas.set_seed_tool(False)
-
-    def clear_seed(self) -> None:
-        """Drop the Starting Point from the draft and the canvas."""
-        draft = self.controller.state.draft
-        if draft.seed_point is None:
-            return
-        draft.seed_point = None
-        self._canvas.set_seed_marker(None)
-        self.controller.state.mark_dirty()
-        self.signals.log.emit("starting point cleared", "info")
-        self.signals.params_changed.emit()
-
-    def _on_seed_clicked(self, x: float, y: float) -> None:
-        """Persist the placed seed (replaces any previous point)."""
-        draft = self.controller.state.draft
-        draft.seed_point = (float(x), float(y))
-        self.controller.state.mark_dirty()
-        self.signals.log.emit(f"starting point placed at ({x:.1f}, {y:.1f})", "info")
-        self._sync_seed_marker()
-        self.signals.params_changed.emit()
-
-    def _sync_seed_marker(self) -> None:
-        """Marker shows on the LEFT camera's frame 1 only (the seed's home view)."""
-        draft = self.controller.state.draft
-        show = (
-            self._stack.currentIndex() == 0
-            and self.signals.current_camera == "L"
-            and self.signals.current_frame == 0
-            and self._canvas.has_image
-            and draft.seed_point is not None
-        )
-        self._canvas.set_seed_marker(draft.seed_point if show else None)
-
-    # ---- refinement brush ---------------------------------------------------------
-
-    def set_refine_brush(self, mode: str, radius: int) -> None:
-        """Arm the canvas refinement brush ('paint' or 'erase') at ``radius`` px."""
-        self._canvas.set_brush_tool(mode, radius)
-
-    def set_brush_radius(self, radius: int) -> None:
-        self._canvas.set_brush_radius(radius)
-
-    def clear_brush(self) -> None:
-        self._canvas.clear_brush()
-
-    def _on_brush_changed(self) -> None:
-        mask = self._canvas.brush_mask()
-        draft = self.controller.state.draft
-        draft.refinement_mask_array = None if mask is None or not mask.any() else mask
-        self.controller.state.mark_dirty()
-        self.signals.params_changed.emit()
 
     # ---- mesh preview + subset hover ------------------------------------------------
 
@@ -417,7 +388,7 @@ class CanvasArea3D(QWidget):
         self._subset_cb.setEnabled(checked)
         if not checked:
             self._subset_cb.setChecked(False)
-            self._mesh_timer.stop()
+            self._mesh_builder.stop()
             self._mesh_overlay.setVisible(False)
         else:
             self._schedule_mesh_preview()
@@ -437,7 +408,7 @@ class CanvasArea3D(QWidget):
     def _schedule_mesh_preview(self) -> None:
         """Debounced preview rebuild (params/ROI edits arrive in bursts)."""
         if self._grid_cb.isChecked():
-            self._mesh_timer.start()
+            self._mesh_builder.schedule()
 
     def _mesh_preview_applicable(self) -> bool:
         """Preview shows frame-1 LEFT reference geometry only on that view."""
@@ -452,44 +423,28 @@ class CanvasArea3D(QWidget):
             and draft.roi[2] < draft.roi[3]
         )
 
+    def _mesh_snapshot(self) -> dict | None:
+        """GUI-thread param capture for the background build (None = hide)."""
+        if not self._grid_cb.isChecked() or not self._mesh_preview_applicable():
+            return None
+        rect = self._canvas.scene().sceneRect()
+        return snapshot_preview_params(
+            self.controller.state.draft, int(rect.height()), int(rect.width())
+        )
+
     def _generate_preview_mesh(self) -> None:
-        """Build the preview mesh with the REAL pipeline grid code (debounced)."""
+        """Start a background preview build with the current params (P2.3)."""
+        self._mesh_builder.kick_now()
+
+    def wait_mesh_preview(self, timeout_ms: int = 30_000) -> bool:
+        """Join in-flight preview builds and deliver results (tests)."""
+        return self._mesh_builder.wait_idle(timeout_ms)
+
+    def _apply_preview_mesh(self, coords, elements, valid) -> None:
+        """A background build landed — re-check the view state, then show it."""
         if not self._grid_cb.isChecked() or not self._mesh_preview_applicable():
             self._hide_mesh_overlay()
             return
-
-        draft = self.controller.state.draft
-        rect = self._canvas.scene().sceneRect()
-        img_h, img_w = int(rect.height()), int(rect.width())
-        roi_mask = draft.roi_mask_array
-        try:
-            from al_dic_3d.runner import build_reference_mesh
-
-            mask_f = None
-            if roi_mask is not None:
-                mask_f = (np.asarray(roi_mask) > 0).astype(np.float64)
-            brush = draft.refinement_mask_array
-            brush_f = (np.asarray(brush) > 0).astype(np.float64) if brush is not None else None
-            mesh = build_reference_mesh(
-                img_h,
-                img_w,
-                tuple(int(v) for v in draft.roi),
-                winsize=int(draft.winsize),
-                winstepsize=int(draft.winstepsize),
-                winsize_min=int(draft.winsize_min),
-                refine_inner=bool(draft.refine_inner),
-                refine_outer=bool(draft.refine_outer),
-                refinement_level=int(draft.refinement_level),
-                refinement_brush=brush_f,
-                mask=mask_f,
-            )
-            coords = np.asarray(mesh.coordinates_fem, dtype=np.float64)
-            elements = np.asarray(mesh.elements_fem, dtype=np.int64)
-            valid = self._node_valid_mask(coords, roi_mask)
-        except Exception:  # noqa: BLE001 - preview is best-effort, never block the GUI
-            self._hide_mesh_overlay()
-            return
-
         self._hover_coords = coords
         self._hover_valid = valid
         self._mesh_overlay.set_mesh(coords, elements, valid)
@@ -501,18 +456,6 @@ class CanvasArea3D(QWidget):
         self._mesh_overlay.setVisible(False)
         self._hover_coords = None
         self._hover_valid = None
-
-    @staticmethod
-    def _node_valid_mask(coords: np.ndarray, roi_mask) -> np.ndarray:
-        """Per-node boolean: True when the node lies inside the ROI mask."""
-        n = coords.shape[0]
-        if roi_mask is None:
-            return np.ones(n, dtype=bool)
-        m = np.asarray(roi_mask) > 0
-        h, w = m.shape
-        ix = np.clip(np.round(coords[:, 0]).astype(int), 0, w - 1)
-        iy = np.clip(np.round(coords[:, 1]).astype(int), 0, h - 1)
-        return m[iy, ix]
 
     def _sync_mesh_view_transform(self) -> None:
         """Lightweight pan/zoom sync — transform only, no path rebuild."""
@@ -572,6 +515,8 @@ class CanvasArea3D(QWidget):
         self._frame_nav.set_frame_count(n)
         self._config_overlay.refresh()
         self._viz_ctrl.clear_all()  # image size may have changed
+        self._prefetcher.invalidate()  # decoded frames are stale by definition
+        self._mag_cache.clear()
         self.render()
         self._ensure_roi_ctrl()
         self._schedule_mesh_preview()
@@ -586,7 +531,10 @@ class CanvasArea3D(QWidget):
             self.tr("Analysis produced no valid points — nothing to display. See the log.")
         )
         self._viz_ctrl.clear_all()
+        self._mag_cache.clear()
         self._right_mask_dirty = True
+        # P2.4: new results are the ONLY event that re-frames the 3D camera.
+        self._view3d.request_camera_reset()
         self.render()
 
     # ---- rendering ------------------------------------------------------------------
@@ -617,11 +565,24 @@ class CanvasArea3D(QWidget):
         # those of frame k. Without results there is no geometry to switch.
         has_result = self.controller.state.result is not None
         bg = k if self.signals.show_deformed or not has_result else 0
+        path = files[bg]
         try:
-            self._canvas.set_image_file(files[bg])
+            pixmap = self._prefetcher.get(path)
+            if pixmap is not None:
+                self._canvas.set_image_pixmap(path, pixmap)  # hot: blit, no decode
+            else:
+                self._canvas.set_image_file(path)  # cold: sync (correctness first)
+                self._prefetcher.store(path, self._canvas.background_pixmap())
         except Exception:  # noqa: BLE001 - a bad frame must not crash the canvas
             self._canvas.clear_image()
             return
+        # Warm current/next/prev in the background for the next scrub step.
+        neighbors = [path]
+        if bg + 1 < len(files):
+            neighbors.append(files[bg + 1])
+        if bg - 1 >= 0:
+            neighbors.append(files[bg - 1])
+        self._prefetcher.request(neighbors)
 
         self._render_overlay(k)
         self._sync_roi()
@@ -645,10 +606,7 @@ class CanvasArea3D(QWidget):
         # comes from the VISIBLE nodes of THIS frame (2–98 percentile, G2.3)
         # and is written back to the shared signals — 2D and 3D show identical
         # field/colormap/range, and the Min/Max spins seed from live values.
-        roi_mask = None
-        drawn = self.controller.state.draft.roi_mask_array
-        if drawn is not None:
-            roi_mask = np.asarray(drawn) > 0
+        roi_mask = self._drawn_roi_bool()
         if self.signals.color_auto:
             vmin, vmax = auto_range(visible_values(vals, result.ref_coords, roi_mask))
             self.signals.color_min, self.signals.color_max = vmin, vmax
@@ -672,10 +630,33 @@ class CanvasArea3D(QWidget):
         if field in ("U", "V", "W"):
             return rec.displacement[k][:, ("U", "V", "W").index(field)]
         if field == "mag":
-            return np.linalg.norm(rec.displacement[k], axis=1)
+            # P2.6: |D| is derived per frame — cache it (results-scoped LRU)
+            # so scrubbing back and forth never recomputes the norm.
+            mag = self._mag_cache.get(k)
+            if mag is None:
+                mag = np.linalg.norm(rec.displacement[k], axis=1)
+                self._mag_cache[k] = mag
+            return mag
         if field in _STRAIN_IDS and result.strain is not None:
             return getattr(result.strain, field)[k]
         return None
+
+    def _drawn_roi_bool(self) -> np.ndarray | None:
+        """The drawn ROI mask as bool, cached by array identity (P2.6).
+
+        Every ROI edit stores a FRESH array on the draft (``commit_roi_mask``
+        copies), so identity is a valid cache key — the old per-render
+        ``np.asarray(mask) > 0`` allocated a full-image bool each frame change.
+        """
+        drawn = self.controller.state.draft.roi_mask_array
+        if drawn is None:
+            return None
+        cached = self._roi_bool_cache
+        if cached is not None and cached[0] is drawn:
+            return cached[1]
+        mask = np.asarray(drawn) > 0
+        self._roi_bool_cache = (drawn, mask)
+        return mask
 
     def _clear_overlay(self) -> None:
         self._canvas.set_overlay_pixmap(None)
@@ -683,15 +664,14 @@ class CanvasArea3D(QWidget):
 
     def _right_roi_mask(self, result) -> np.ndarray | None:
         """The left ROI mask warped into the RIGHT camera (cached; None -> fallback)."""
-        drawn = self.controller.state.draft.roi_mask_array
-        if drawn is None or result is None:
+        mask = self._drawn_roi_bool()
+        if mask is None or result is None:
             return None
         if not self._right_mask_dirty:
             return self._right_mask_cache
         from al_dic_3d.viz3d.maskwarp import warp_mask_left_to_right
 
         cs = result.correspondence
-        mask = np.asarray(drawn) > 0
         try:
             warped = warp_mask_left_to_right(mask, cs.xL[0], cs.xR[0], mask.shape)
         except Exception as exc:  # noqa: BLE001 - warp is display support, never fatal
@@ -731,11 +711,8 @@ class CanvasArea3D(QWidget):
         # RIGHT camera (F2.3): the left mask warped into right pixel space via
         # the frame-1 correspondence (holes preserved); when unavailable the
         # renderer falls back to the F1.5 valid-node support.
-        roi_mask = None
         if cam == "L":
-            drawn = self.controller.state.draft.roi_mask_array
-            if drawn is not None:
-                roi_mask = np.asarray(drawn) > 0
+            roi_mask = self._drawn_roi_bool()
         else:
             roi_mask = self._right_roi_mask(result)
 

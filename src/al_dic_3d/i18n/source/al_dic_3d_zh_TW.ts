@@ -67,12 +67,12 @@
 <context>
     <name>BackgroundRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="445"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="416"/>
         <source>Original (frame 1 background)</source>
         <translation>原始配置（第 1 影格作背景）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="446"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="417"/>
         <source>Deformed (current frame background)</source>
         <translation>變形配置（當前影格作背景）</translation>
     </message>
@@ -575,22 +575,22 @@ fx {1:.0f}  fy {2:.0f}  |  基線 {3:.1f} mm</translation>
 <context>
     <name>CameraRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="413"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="384"/>
         <source>Camera</source>
         <translation>相機</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="417"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="388"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="418"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="389"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="419"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="390"/>
         <source>Left + Right</source>
         <translation>左 + 右</translation>
     </message>
@@ -598,39 +598,39 @@ fx {1:.0f}  fy {2:.0f}  |  基線 {3:.1f} mm</translation>
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="98"/>
+        <location filename="../../gui/panels/canvas_area.py" line="106"/>
         <source>Fit</source>
         <translation>適配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="101"/>
+        <location filename="../../gui/panels/canvas_area.py" line="109"/>
         <source>Fit the image to the viewport (Ctrl+0)</source>
         <translation>將影像適配到視口 (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="108"/>
+        <location filename="../../gui/panels/canvas_area.py" line="116"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>當前縮放 — 點擊恢復 100%（1:1 像素）。
 滾輪：縮放 · 右鍵/中鍵拖動：平移 · 空白鍵：平移模式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="115"/>
+        <location filename="../../gui/panels/canvas_area.py" line="123"/>
         <source>Zoom in (Ctrl+=)</source>
         <translation>放大 (Ctrl+=)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="127"/>
         <source>Zoom out (Ctrl+-)</source>
         <translation>縮小 (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="132"/>
         <source>Show Grid</source>
         <translation>顯示網格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="127"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -640,7 +640,7 @@ Default on; turn off to declutter the canvas.</source>
 預設開啟；關閉可讓畫布更簡潔。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="140"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -648,7 +648,7 @@ whether the subset spans enough speckle texture.</source>
 需先開啟「顯示網格」。可用來判斷子集是否涵蓋足夠的散斑紋理。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="153"/>
+        <location filename="../../gui/panels/canvas_area.py" line="161"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -660,7 +660,7 @@ to the 2D image view. Requires results.</source>
         <translation>顯示/隱藏計算網格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="137"/>
+        <location filename="../../gui/panels/canvas_area.py" line="145"/>
         <source>Show Subset</source>
         <translation>顯示子集</translation>
     </message>
@@ -669,7 +669,7 @@ to the 2D image view. Requires results.</source>
         <translation>懸停時顯示子集窗口（需要先開啟網格）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="150"/>
+        <location filename="../../gui/panels/canvas_area.py" line="158"/>
         <source>3D View</source>
         <translation>3D 檢視</translation>
     </message>
@@ -682,27 +682,27 @@ to the 2D image view. Requires results.</source>
         <translation>顯示測點</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="322"/>
+        <location filename="../../gui/panels/canvas_area.py" line="339"/>
         <source>Save Mask</source>
         <translation>儲存掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="322"/>
+        <location filename="../../gui/panels/canvas_area.py" line="339"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 影像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="586"/>
+        <location filename="../../gui/panels/canvas_area.py" line="531"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>分析未產生任何有效點——沒有可顯示的內容。請查看日誌。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="634"/>
+        <location filename="../../gui/panels/canvas_area.py" line="595"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="640"/>
+        <location filename="../../gui/panels/canvas_area.py" line="601"/>
         <source>Selected field is not available.</source>
         <translation>所選場變量不可用。</translation>
     </message>
@@ -1043,22 +1043,22 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>ExportTabBase</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="179"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="150"/>
         <source>Cancelling…</source>
         <translation>正在取消…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="188"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="159"/>
         <source>Export cancelled — {0} file(s) kept</source>
         <translation>匯出已取消 — 已保留 {0} 個檔案</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="196"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="167"/>
         <source>Error: {0}</source>
         <translation>錯誤：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="200"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="171"/>
         <source>Wrote {0} file(s)</source>
         <translation>已寫入 {0} 個檔案</translation>
     </message>
@@ -1066,7 +1066,7 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>ExportTabs</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="432"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="403"/>
         <source>Full resolution</source>
         <translation>原始解析度</translation>
     </message>
@@ -1074,22 +1074,22 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>FieldRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="266"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="237"/>
         <source>Auto</source>
         <translation>自動</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="267"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="238"/>
         <source>Auto range</source>
         <translation>自動範圍</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="283"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="254"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="284"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="255"/>
         <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
         <translation>場變數不透明度（0 = 透明，1 = 完全不透明）</translation>
     </message>
@@ -1188,17 +1188,17 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>FrameRangeRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="463"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="434"/>
         <source>All frames</source>
         <translation>所有影格</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="467"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="438"/>
         <source>From frame</source>
         <translation>起始影格</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="477"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="448"/>
         <source>to</source>
         <translation>至</translation>
     </message>
@@ -1870,6 +1870,16 @@ inter-frame motion.</source>
         <translation>另存專案為…</translation>
     </message>
     <message>
+        <location filename="../../gui/main_window.py" line="421"/>
+        <source>Loading project…</source>
+        <translation>正在載入專案…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="463"/>
+        <source>Saving project…</source>
+        <translation>正在儲存專案…</translation>
+    </message>
+    <message>
         <source>Save Project…</source>
         <translation>儲存專案…</translation>
     </message>
@@ -1905,13 +1915,13 @@ inter-frame motion.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="412"/>
-        <location filename="../../gui/main_window.py" line="442"/>
+        <location filename="../../gui/main_window.py" line="447"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 專案 (*.aldic3d)</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="328"/>
-        <location filename="../../gui/main_window.py" line="440"/>
+        <location filename="../../gui/main_window.py" line="445"/>
         <source>Save Project</source>
         <translation>儲存專案</translation>
     </message>
@@ -2159,12 +2169,12 @@ inter-frame motion.</source>
 <context>
     <name>ProgressRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="110"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="81"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="127"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="98"/>
         <source>Exporting…</source>
         <translation>正在匯出…</translation>
     </message>
@@ -3087,17 +3097,17 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="83"/>
+        <location filename="../../gui/widgets/view3d.py" line="97"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="107"/>
+        <location filename="../../gui/widgets/view3d.py" line="121"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D 檢視不可用：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="136"/>
+        <location filename="../../gui/widgets/view3d.py" line="154"/>
         <source>No valid 3D points in this frame — nothing to display.</source>
         <translation>此幀沒有有效的 3D 點——沒有可顯示的內容。</translation>
     </message>

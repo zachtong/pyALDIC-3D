@@ -142,6 +142,7 @@ def test_mesh_preview_builds_from_draft(qapp, scene):
     area = win._canvas_area
     assert area._grid_cb.isChecked()  # default on
     area._generate_preview_mesh()  # bypass the debounce timer
+    assert area.wait_mesh_preview()  # P2.3: the build runs on a worker now
     overlay = area._mesh_overlay
     assert overlay.isVisible() and overlay._edge_path is not None
     assert area._hover_coords is not None and len(area._hover_coords) > 4

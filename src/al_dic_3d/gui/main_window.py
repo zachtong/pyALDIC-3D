@@ -413,11 +413,16 @@ class MainWindow3D(QMainWindow):
         )
         if not path:
             return
-        try:
-            self.controller.open_project(path)  # loaded state: dirty is False
-        except Exception as exc:  # noqa: BLE001 - surface load errors to the user
-            self.signals.log.emit(f"open failed: {exc}", "error")
+        # P2.5: parse + array reconstruction run on a worker behind a modal
+        # progress dialog; the loaded state is applied HERE on the GUI thread.
+        from al_dic_3d.gui.workers import run_with_progress
+        from al_dic_3d.project.session import load_session
+
+        ok, out = run_with_progress(self, self.tr("Loading project…"), lambda: load_session(path))
+        if not ok:
+            self.signals.log.emit(f"open failed: {out}", "error")
             return
+        self.controller.adopt_state(out)  # loaded state: dirty is False
         self._resync_all()
         self._update_window_title()
         self.signals.log.emit(f"opened {path}", "success")
@@ -446,10 +451,19 @@ class MainWindow3D(QMainWindow):
         return self._write_project(path)
 
     def _write_project(self, path) -> bool:
-        try:
-            self.controller.save_project(path)
-        except Exception as exc:  # noqa: BLE001 - surface save errors to the user
-            self.signals.log.emit(f"save failed: {exc}", "error")
+        """Serialize on a worker behind a modal progress dialog (P2.5).
+
+        ``run_with_progress`` blocks with a local event loop, so this still
+        RETURNS bool synchronously — the G1.1 close guard's contract. The
+        application-modal dialog prevents any state mutation mid-save.
+        """
+        from al_dic_3d.gui.workers import run_with_progress
+
+        ok, out = run_with_progress(
+            self, self.tr("Saving project…"), lambda: self.controller.save_project(path)
+        )
+        if not ok:
+            self.signals.log.emit(f"save failed: {out}", "error")
             return False
         self._update_window_title()  # clean now; star disappears
         self.signals.log.emit(f"saved {path}", "success")

@@ -67,12 +67,12 @@
 <context>
     <name>BackgroundRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="445"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="416"/>
         <source>Original (frame 1 background)</source>
         <translation>Original (Bild 1 als Hintergrund)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="446"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="417"/>
         <source>Deformed (current frame background)</source>
         <translation>Verformt (aktuelles Bild als Hintergrund)</translation>
     </message>
@@ -575,22 +575,22 @@ fx {1:.0f}  fy {2:.0f}  |  Basislinie {3:.1f} mm</translation>
 <context>
     <name>CameraRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="413"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="384"/>
         <source>Camera</source>
         <translation>Kamera</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="417"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="388"/>
         <source>Left</source>
         <translation>Links</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="418"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="389"/>
         <source>Right</source>
         <translation>Rechts</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="419"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="390"/>
         <source>Left + Right</source>
         <translation>Links + Rechts</translation>
     </message>
@@ -598,39 +598,39 @@ fx {1:.0f}  fy {2:.0f}  |  Basislinie {3:.1f} mm</translation>
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="98"/>
+        <location filename="../../gui/panels/canvas_area.py" line="106"/>
         <source>Fit</source>
         <translation>Anpassen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="101"/>
+        <location filename="../../gui/panels/canvas_area.py" line="109"/>
         <source>Fit the image to the viewport (Ctrl+0)</source>
         <translation>Bild an den Ansichtsbereich anpassen (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="108"/>
+        <location filename="../../gui/panels/canvas_area.py" line="116"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>Aktueller Zoom — Klick setzt auf 100 % (1:1 Pixel) zurück.
 Rad: Zoom · Rechts-/Mittelklick-Ziehen: Verschieben · Leertaste: Verschiebemodus</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="115"/>
+        <location filename="../../gui/panels/canvas_area.py" line="123"/>
         <source>Zoom in (Ctrl+=)</source>
         <translation>Vergrößern (Ctrl+=)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="127"/>
         <source>Zoom out (Ctrl+-)</source>
         <translation>Verkleinern (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="124"/>
+        <location filename="../../gui/panels/canvas_area.py" line="132"/>
         <source>Show Grid</source>
         <translation>Gitter anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="127"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -641,7 +641,7 @@ Verfeinerungseinstellungen neu aufgebaut — das angezeigte Netz ist das des Lau
 Standard: an; ausschalten, um die Ansicht zu entlasten.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="140"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -650,7 +650,7 @@ whether the subset spans enough speckle texture.</source>
 ob das Subset genügend Speckle-Textur umfasst.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="153"/>
+        <location filename="../../gui/panels/canvas_area.py" line="161"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -663,7 +663,7 @@ Erfordert Ergebnisse.</translation>
         <translation>Berechnungsnetz ein-/ausblenden</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="137"/>
+        <location filename="../../gui/panels/canvas_area.py" line="145"/>
         <source>Show Subset</source>
         <translation>Subset anzeigen</translation>
     </message>
@@ -672,7 +672,7 @@ Erfordert Ergebnisse.</translation>
         <translation>Subset-Fenster beim Überfahren anzeigen (erfordert Gitter)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="150"/>
+        <location filename="../../gui/panels/canvas_area.py" line="158"/>
         <source>3D View</source>
         <translation>3D-Ansicht</translation>
     </message>
@@ -685,27 +685,27 @@ Erfordert Ergebnisse.</translation>
         <translation>Messpunkte anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="322"/>
+        <location filename="../../gui/panels/canvas_area.py" line="339"/>
         <source>Save Mask</source>
         <translation>Maske speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="322"/>
+        <location filename="../../gui/panels/canvas_area.py" line="339"/>
         <source>PNG image (*.png)</source>
         <translation>PNG-Bild (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="586"/>
+        <location filename="../../gui/panels/canvas_area.py" line="531"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>Die Analyse lieferte keine gültigen Punkte — nichts anzuzeigen. Siehe Protokoll.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="634"/>
+        <location filename="../../gui/panels/canvas_area.py" line="595"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D-Ansicht — führen Sie eine Analyse aus, um die rekonstruierte Oberfläche zu sehen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="640"/>
+        <location filename="../../gui/panels/canvas_area.py" line="601"/>
         <source>Selected field is not available.</source>
         <translation>Das gewählte Feld ist nicht verfügbar.</translation>
     </message>
@@ -1046,22 +1046,22 @@ Erfordert Ergebnisse.</translation>
 <context>
     <name>ExportTabBase</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="179"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="150"/>
         <source>Cancelling…</source>
         <translation>Wird abgebrochen…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="188"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="159"/>
         <source>Export cancelled — {0} file(s) kept</source>
         <translation>Export abgebrochen — {0} Datei(en) behalten</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="196"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="167"/>
         <source>Error: {0}</source>
         <translation>Fehler: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="200"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="171"/>
         <source>Wrote {0} file(s)</source>
         <translation>{0} Datei(en) geschrieben</translation>
     </message>
@@ -1069,7 +1069,7 @@ Erfordert Ergebnisse.</translation>
 <context>
     <name>ExportTabs</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="432"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="403"/>
         <source>Full resolution</source>
         <translation>Volle Auflösung</translation>
     </message>
@@ -1077,22 +1077,22 @@ Erfordert Ergebnisse.</translation>
 <context>
     <name>FieldRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="266"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="237"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="267"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="238"/>
         <source>Auto range</source>
         <translation>Auto-Bereich</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="283"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="254"/>
         <source>Opacity</source>
         <translation>Deckkraft</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="284"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="255"/>
         <source>Field opacity (0 = transparent, 1 = fully opaque)</source>
         <translation>Feld-Deckkraft (0 = transparent, 1 = vollständig deckend)</translation>
     </message>
@@ -1191,17 +1191,17 @@ Erfordert Ergebnisse.</translation>
 <context>
     <name>FrameRangeRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="463"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="434"/>
         <source>All frames</source>
         <translation>Alle Bilder</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="467"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="438"/>
         <source>From frame</source>
         <translation>Von Bild</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="477"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="448"/>
         <source>to</source>
         <translation>bis</translation>
     </message>
@@ -1881,6 +1881,16 @@ Bewegung zwischen Frames wählen.</translation>
         <translation>Projekt speichern unter…</translation>
     </message>
     <message>
+        <location filename="../../gui/main_window.py" line="421"/>
+        <source>Loading project…</source>
+        <translation>Projekt wird geladen…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="463"/>
+        <source>Saving project…</source>
+        <translation>Projekt wird gespeichert…</translation>
+    </message>
+    <message>
         <source>Save Project…</source>
         <translation>Projekt speichern…</translation>
     </message>
@@ -1916,13 +1926,13 @@ Bewegung zwischen Frames wählen.</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="412"/>
-        <location filename="../../gui/main_window.py" line="442"/>
+        <location filename="../../gui/main_window.py" line="447"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D-Projekt (*.aldic3d)</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="328"/>
-        <location filename="../../gui/main_window.py" line="440"/>
+        <location filename="../../gui/main_window.py" line="445"/>
         <source>Save Project</source>
         <translation>Projekt speichern</translation>
     </message>
@@ -2170,12 +2180,12 @@ Bewegung zwischen Frames wählen.</translation>
 <context>
     <name>ProgressRow</name>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="110"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="81"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="127"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="98"/>
         <source>Exporting…</source>
         <translation>Exportiere…</translation>
     </message>
@@ -3098,17 +3108,17 @@ Rad: Zoom · Rechts-/Mittelklick-Ziehen: Verschieben · Leertaste: Verschiebemod
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="83"/>
+        <location filename="../../gui/widgets/view3d.py" line="97"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D-Ansicht — führen Sie eine Analyse aus, um die rekonstruierte Oberfläche zu sehen.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="107"/>
+        <location filename="../../gui/widgets/view3d.py" line="121"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D-Ansicht nicht verfügbar: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="136"/>
+        <location filename="../../gui/widgets/view3d.py" line="154"/>
         <source>No valid 3D points in this frame — nothing to display.</source>
         <translation>Keine gültigen 3D-Punkte in diesem Frame — nichts anzuzeigen.</translation>
     </message>

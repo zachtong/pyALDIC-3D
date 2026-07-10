@@ -56,6 +56,10 @@ class WorkflowController:
     def open_project(self, path: str | Path) -> None:
         self.state = load_session(path)
 
+    def adopt_state(self, state: AppState3D) -> None:
+        """Adopt a session parsed elsewhere (e.g. on a GUI worker thread, P2.5)."""
+        self.state = state
+
     def save_project(self, path: str | Path) -> Path:
         saved = save_session(self.state, path)
         self.state.project_path = saved

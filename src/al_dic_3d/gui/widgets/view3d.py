@@ -71,7 +71,15 @@ def camera_frustum_lines(R: NDArray, T: NDArray, *, size: float = 60.0, aspect: 
 
 
 class View3D(QWidget):
-    """Lazy pyvista viewport with graceful degradation."""
+    """Lazy pyvista viewport with graceful degradation.
+
+    P2.4 incremental updates: ONE surface actor is kept between frames. When
+    the new frame's mesh topology matches (same points/cells/faces) and the
+    field + colormap are unchanged, points and scalars are updated in place
+    (pyvista's animation idiom) instead of clear+add_mesh; otherwise the scene
+    is rebuilt but the user's camera is PRESERVED. ``reset_camera`` runs only
+    on the first render after results change (:meth:`request_camera_reset`).
+    """
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -79,6 +87,12 @@ class View3D(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._plotter = None
         self._failed = False
+        # Incremental-update state (P2.4).
+        self._surf = None  # the live pv.PolyData shown by _actor
+        self._actor = None
+        self._field_label: str | None = None
+        self._cmap: str | None = None
+        self._reset_camera_pending = True
         self._placeholder = QLabel(
             self.tr("3D view — run an analysis to see the reconstructed surface.")
         )
@@ -113,6 +127,10 @@ class View3D(QWidget):
         self._placeholder.setText(text)
         self._placeholder.setVisible(True)
 
+    def request_camera_reset(self) -> None:
+        """Re-frame the camera on the NEXT render (call when results change)."""
+        self._reset_camera_pending = True
+
     def update_view(
         self,
         points_3d: NDArray,
@@ -130,13 +148,55 @@ class View3D(QWidget):
         if not self._ensure_plotter():
             return
         surf = build_surface_mesh(points_3d, values, field_label, ref_coords, roi_mask)
-        self._plotter.clear()
         if surf is None:
             # An empty frame must SAY so (F3.1), never render silent nothing.
+            self._drop_scene()
             self.show_message(self.tr("No valid 3D points in this frame — nothing to display."))
             return
         self._placeholder.setVisible(False)
-        self._plotter.add_mesh(
+        if self._can_update_in_place(surf, field_label, cmap):
+            self._update_in_place(surf, field_label, vmin, vmax)
+        else:
+            self._rebuild_scene(surf, field_label, cmap, vmin, vmax, rig)
+
+    # -- P2.4 render paths -------------------------------------------------------
+
+    def _can_update_in_place(self, surf, field_label: str, cmap: str) -> bool:
+        """Same topology + same field/colormap -> points/scalars-only update.
+
+        Faces are compared exactly (cheap memcmp): equal counts with different
+        connectivity (a shifted NaN pattern) must take the rebuild path. A
+        pending camera reset (new results) also forces the rebuild path so the
+        re-frame actually happens.
+        """
+        old = self._surf
+        return (
+            not self._reset_camera_pending
+            and old is not None
+            and self._actor is not None
+            and self._field_label == field_label
+            and self._cmap == cmap
+            and old.n_points == surf.n_points
+            and old.n_cells == surf.n_cells
+            and np.array_equal(old.faces, surf.faces)
+        )
+
+    def _update_in_place(self, surf, field_label: str, vmin: float, vmax: float) -> None:
+        """Frame scrub fast path: mutate the live actor's mesh, keep the camera."""
+        self._surf.points[:] = surf.points  # pyvista marks the VTK array modified
+        self._surf[field_label][:] = surf[field_label]
+        try:  # clim follows the frame's range; LUT range keeps the bar in sync
+            self._actor.mapper.scalar_range = (float(vmin), float(vmax))
+            self._actor.mapper.lookup_table.scalar_range = (float(vmin), float(vmax))
+        except Exception:  # noqa: BLE001 - colorbar range is decoration-level
+            pass
+        self._plotter.render()
+
+    def _rebuild_scene(self, surf, field_label, cmap, vmin, vmax, rig) -> None:
+        """Full rebuild (topology/field/colormap changed) — camera preserved."""
+        camera = None if self._reset_camera_pending else self._plotter.camera_position
+        self._plotter.clear()
+        self._actor = self._plotter.add_mesh(
             surf,
             scalars=field_label,
             cmap=cmap,
@@ -156,4 +216,19 @@ class View3D(QWidget):
                     self._plotter.add_mesh(frustum, color=COLORS.ACCENT, line_width=2)
             except Exception:  # noqa: BLE001 - frusta are decoration only
                 pass
-        self._plotter.reset_camera()
+        self._surf = surf
+        self._field_label = field_label
+        self._cmap = cmap
+        if camera is None:
+            self._plotter.reset_camera()
+            self._reset_camera_pending = False
+        else:
+            self._plotter.camera_position = camera
+
+    def _drop_scene(self) -> None:
+        self._surf = None
+        self._actor = None
+        self._field_label = None
+        self._cmap = None
+        if self._plotter is not None:
+            self._plotter.clear()
