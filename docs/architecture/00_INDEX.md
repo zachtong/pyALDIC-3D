@@ -64,6 +64,35 @@
 
 ## Changelog
 
+- 2026-07-10 v1.8.0 — **UX 产品审查 + 性能/内存审计双线全落地（G1/G2/G3 + P1/P2/P3 + 崩溃根因修复）**
+  （`efbe4a6`+`c38bbfb`+`6138ccf`+`6683eab`+`88697eb`+`ca5ee23`+`e4e3820`，448 tests，i18n 592×7 100%）。
+  **P1 OOM 防线**（`efbe4a6`）：sequence/lazy.py 惰性帧/掩膜（按需解码 LRU4）+ _EngineFrames 实现引擎
+  FrameProvider 协议（归一化栈不再物化）+ 共享全 1 掩膜 + ZNSSD 2048 点分块（瞬时 1.4GB→143MB）+
+  运行前 RAM 预检（70% 规则，[advanced] ignore_memory_check 可覆盖）；实测 20 帧峰值 RSS 813→418MB
+  （−48.6%）结果逐位一致；200 帧×5Mpx 投影 ~32GB→~2.4GB。
+  **G1 安全防线**（`c38bbfb`）：未保存更改守卫（超越 2D）、运行中关窗协作取消+join、ROI 错视图陷阱
+  自动跳左相机帧 1、最小窗口 1100×700 适配 1366×768 笔记本、全局 excepthook 落 GUI 日志。
+  **G2 高频体验**（`6138ccf`）：tooltip 49→103（含禁用态解释与 InfoIcon 钉住）、手动/自动色标范围
+  （nanpercentile[2,98] 2D 契约）、右键拖动/空格平移+缩放钳制、快捷键族（F5/←→/Space/Ctrl+0/±，超越
+  2D）、取消反馈、参数陈旧琥珀提示、Ctrl+S/另存为+标题脏标记。
+  **P2 GUI 响应**（`6683eab`）：viz3d LRU 全界定（无界 ~15GB→~0.5GB 上界）并修掉 warp-mask 逐出隐患；
+  帧预取线程实测拖动 82ms→0.1ms 热命中（~1250×）；网格预览下线程+代数计数器；3D 视图原位 actor 更新
+  保相机；会话 npz ZIP_STORED 流式写+JobWorker 模态进度。
+  **G3 打磨**（`88697eb`）：右键菜单三处（对列表/画布/日志）、几何+最近项目+末次目录持久化（超越 2D）、
+  空态三步引导+下一步横幅、日志过滤/保存、标定预览点击放大+防抖重预览、view_state 存入 .aldic3d、
+  非模态导出+运行中关闭守卫。
+  **P3 吞吐**（`e4e3820`）：strain3d 批量 SVD 最小范数拟合 ×5.2（max|Δ|<1e-10 逐点等价）+ 邻域缓存按
+  有效模式复用 + 进度/协作取消；导出存档 schema 2（strain_ 重复字段去除、legacy 键保留）；重采样
+  Delaunay 复用；动画导出缓存即清；render3d 单 plotter 复用；并行双相机追踪选项（实测 ~1.1×，numba
+  已满核，默认关、tooltip 如实措辞）；runner 警告捕获线程安全化。
+  **崩溃根因修复**（`ca5ee23`）：全套件偶发 access violation 归因 = PySide6 6.11 循环 GC 在 tp_dealloc
+  里析构无父级 C++ 部件树 → 原生堆损坏 → 任意后续 free 引爆（栈指向无辜的 processEvents）；生产两处
+  ExportDialog 创建点均带 parent+DeleteOnClose 天然免疫，泄漏路径为测试专属；修复 = conftest 每测试
+  原生优先清理（close→QThreadPool.waitForDone→deleteLater→冲刷 DeferredDelete→gc.collect）+
+  wait_for_export 完全 join 加固；最小复现修复前 0/8 干净 → 修复后 10/10，全套件 3 连跑全绿（448
+  passed，全部日志零 access-violation）。
+  **i18n**：剥离 602 条 vanished 陈旧条目（86×7，ConfigOverlay3D/ExportDialog 旧上下文迁移遗留），
+  592×7 100%，伪语言扫描干净。
 - 2026-07-08 v1.7.0 — **GUI 二轮八点评审整改三批全落地（F1/F2/F3）**（`314da73`+`eaa17b9`+`8a48f82`，
   331 tests，i18n 472×7 100%）。**F1**：subset 奇数显示/偶数内部（2D 约定）+ 连带修复 step=2/4 引擎
   崩溃（镜像 2D winsize_min=min(8,step) 钳制）；step 改 2 的幂下拉 [2..128]；搜索上限调查（2D GUI
