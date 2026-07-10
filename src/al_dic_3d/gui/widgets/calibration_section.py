@@ -141,14 +141,17 @@ class CalibrationSection3D(QWidget):
         self.signals.calibration_changed.emit()
 
     def _on_calib_browse(self) -> None:
+        from al_dic_3d.gui import persistence
+
         path, _ = QFileDialog.getOpenFileName(
             self,
             self.tr("Choose calibration file"),
-            "",
+            persistence.last_dir("calibration"),  # G3.2
             self.tr("Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)"),
         )
         if not path:
             return
+        persistence.set_last_dir("calibration", path)
         self.controller.state.draft.calibration_file = Path(path)
         self.controller.state.mark_dirty()
         self.preview()

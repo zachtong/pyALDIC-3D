@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from al_dic_3d.gui import persistence
 from al_dic_3d.gui.controller import WorkflowController
 from al_dic_3d.gui.panels.canvas_area import CanvasArea3D
 from al_dic_3d.gui.panels.left_sidebar import LeftSidebar3D
@@ -55,6 +56,7 @@ class MainWindow3D(QMainWindow):
         self.controller = controller or WorkflowController()
         self.signals = GuiSignals()
         self._strain_window = None  # lazy singleton (Batch C post-processing)
+        self._strain_auto_opened = False  # G3.6: auto-open only once per session
         self._update_window_title()  # G2.8: '<project>[*] — pyALDIC-3D' + dirty star
         # G1.4: 1100x700 minimum fits 1366x768 laptops (sidebars 320+280 still
         # leave the canvas ~500 px); the initial size is clamped to the screen.
@@ -123,6 +125,8 @@ class MainWindow3D(QMainWindow):
 
         self._build_menu()
         self._build_shortcuts()
+        # G3.2: the saved geometry (if any) overrides the screen-clamp default.
+        persistence.restore_window_state(self, "main_window")
         self.signals.log.emit("pyALDIC-3D ready", "info")
 
     # ---- keyboard shortcuts (G2.5) ------------------------------------------------
@@ -174,9 +178,20 @@ class MainWindow3D(QMainWindow):
         self._strain_window.activateWindow()
 
     def _on_run_state_changed(self, new_state: str) -> None:
-        """Auto-open the strain window when a run completes (2D auto-open idiom)."""
-        if new_state == "done" and self.controller.state.has_results:
+        """Auto-open the strain window on the FIRST completed run only (G3.6).
+
+        The 2D auto-open idiom, once per app session: later runs would steal
+        focus mid-iteration, so they just log where to find the window.
+        """
+        if new_state != "done" or not self.controller.state.has_results:
+            return
+        if not self._strain_auto_opened:
+            self._strain_auto_opened = True
             self._open_strain_window()
+        else:
+            self.signals.log.emit(
+                self.tr("Strain window available — open it from the sidebar"), "info"
+            )
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
         # G1.2: never let Qt destroy a live pipeline QThread ("QThread:
@@ -189,6 +204,11 @@ class MainWindow3D(QMainWindow):
                 return
             worker.request_stop()
             self._join_worker(worker)
+        # G3.12: a non-modal export dialog may hold live export workers — close
+        # it through its own guard (prompts if an export is still running).
+        if not self._right.close_export_dialog():
+            event.ignore()
+            return
         # G1.1: unsaved-changes guard (Save / Discard / Cancel).
         if not self._confirm_unsaved():
             event.ignore()
@@ -200,6 +220,7 @@ class MainWindow3D(QMainWindow):
             self._strain_window.join_worker()
             self._strain_window.close()
             self._strain_window = None
+        persistence.save_window_state(self, "main_window")  # G3.2
         super().closeEvent(event)
 
     @staticmethod
@@ -323,6 +344,11 @@ class MainWindow3D(QMainWindow):
         open_action.triggered.connect(self._open_project)
         file_menu.addAction(open_action)
 
+        # G3.2: last-8 recent .aldic3d files, rebuilt (and pruned) on show.
+        self._recent_menu = file_menu.addMenu(self.tr("Recent Projects"))
+        self._recent_menu.aboutToShow.connect(self._populate_recent_menu)
+        self._populate_recent_menu()
+
         # G2.8: Save writes straight to the bound .aldic3d (no dialog); Save As
         # is the explicit re-target with its own shortcut.
         save_action = QAction(self.tr("Save Project"), self)
@@ -356,22 +382,75 @@ class MainWindow3D(QMainWindow):
             "fr": "Français",
             "es": "Español",
         }
-        from PySide6.QtCore import QSettings
+        from PySide6.QtGui import QActionGroup
 
-        current = str(QSettings("pyALDIC", "pyALDIC-3D").value("language", "en"))
+        # G3.11: exclusive QActionGroup — radio look, and the check state moves
+        # to the clicked locale immediately (the restart note still applies).
+        self._language_group = QActionGroup(self)
+        self._language_group.setExclusive(True)
+        current = str(persistence.settings().value("language", "en"))
         for code in LOCALES:
             act = QAction(names.get(code, code), self)
             act.setCheckable(True)
             act.setChecked(code == current)
             act.triggered.connect(lambda _c=False, code=code: self._on_language(code))
+            self._language_group.addAction(act)
             language_menu.addAction(act)
+
+        # G3.9: Help menu — About + the G2 keyboard-shortcut reference.
+        help_menu = self.menuBar().addMenu(self.tr("&Help"))
+        shortcuts_action = QAction(self.tr("Keyboard Shortcuts"), self)
+        shortcuts_action.triggered.connect(self._show_shortcuts)
+        help_menu.addAction(shortcuts_action)
+        about_action = QAction(self.tr("About pyALDIC-3D"), self)
+        about_action.triggered.connect(self._show_about)
+        help_menu.addAction(about_action)
 
     def _on_language(self, code: str) -> None:
         """Persist the language preference; applied on next launch (2D phase-1 strategy)."""
-        from PySide6.QtCore import QSettings
-
-        QSettings("pyALDIC", "pyALDIC-3D").setValue("language", code)
+        persistence.settings().setValue("language", code)
         self.signals.log.emit(f"language preference: {code} (applies on restart)", "info")
+
+    def _show_about(self) -> None:
+        from al_dic_3d.gui.dialogs.about_dialog import AboutDialog
+
+        AboutDialog(self).exec()
+
+    def _show_shortcuts(self) -> None:
+        from al_dic_3d.gui.dialogs.about_dialog import ShortcutsDialog
+
+        ShortcutsDialog(self).exec()
+
+    # ---- recent projects (G3.2) --------------------------------------------------
+
+    def _populate_recent_menu(self) -> None:
+        """Rebuild the Recent Projects submenu (missing files pruned on read)."""
+        self._recent_menu.clear()
+        paths = persistence.recent_projects()
+        for i, path in enumerate(paths):
+            act = QAction(f"&{i + 1}  {path}", self)
+            act.triggered.connect(lambda _c=False, p=path: self._open_recent(p))
+            self._recent_menu.addAction(act)
+        if not paths:
+            empty = QAction(self.tr("No recent projects"), self)
+            empty.setEnabled(False)
+            self._recent_menu.addAction(empty)
+        self._recent_menu.addSeparator()
+        clear = QAction(self.tr("Clear list"), self)
+        clear.setEnabled(bool(paths))
+        clear.triggered.connect(persistence.clear_recent_projects)
+        self._recent_menu.addAction(clear)
+
+    def _open_recent(self, path: str) -> None:
+        from pathlib import Path
+
+        if not Path(path).exists():  # deleted since the menu was built
+            persistence.remove_recent_project(path)
+            self.signals.log.emit(f"recent project is gone: {path}", "warning")
+            return
+        if not self._confirm_unsaved():
+            return
+        self._open_project_path(path)
 
     # ---- project lifecycle -------------------------------------------------------
 
@@ -392,9 +471,30 @@ class MainWindow3D(QMainWindow):
         self.signals.images_changed.emit()
         self.signals.roi_changed.emit()
         self.signals.params_changed.emit()
+        # G3.10: restore the saved display state (field/colormap/range/camera…)
+        # BEFORE results_changed so the first result render uses it.
+        view_state = self.controller.state.view_state
+        if view_state:
+            draft = self.controller.state.draft
+            self._right.apply_view_state(view_state, max(len(draft.left), len(draft.right)))
         if self.controller.state.has_results:
             self.signals.results_changed.emit()
         self._right.refresh_readiness()
+
+    def _capture_view_state(self) -> dict:
+        """Snapshot the GuiSignals display state for persistence (G3.10)."""
+        s = self.signals
+        return {
+            "display_field": s.display_field,
+            "colormap": s.colormap,
+            "color_auto": s.color_auto,
+            "color_min": float(s.color_min),
+            "color_max": float(s.color_max),
+            "overlay_alpha": float(s.overlay_alpha),
+            "show_deformed": s.show_deformed,
+            "camera": s.current_camera,
+            "current_frame": int(s.current_frame),
+        }
 
     def _new_project(self) -> None:
         if not self._confirm_unsaved():  # G1.1: dirty work is never silently dropped
@@ -409,10 +509,17 @@ class MainWindow3D(QMainWindow):
         if not self._confirm_unsaved():  # G1.1: dirty work is never silently dropped
             return
         path, _ = QFileDialog.getOpenFileName(
-            self, self.tr("Open Project"), "", self.tr("pyALDIC-3D project (*.aldic3d)")
+            self,
+            self.tr("Open Project"),
+            persistence.last_dir("project"),  # G3.2
+            self.tr("pyALDIC-3D project (*.aldic3d)"),
         )
         if not path:
             return
+        self._open_project_path(path)
+
+    def _open_project_path(self, path: str) -> None:
+        """Load ``path`` (Open dialog or Recent menu); caller handled G1.1."""
         # P2.5: parse + array reconstruction run on a worker behind a modal
         # progress dialog; the loaded state is applied HERE on the GUI thread.
         from al_dic_3d.gui.workers import run_with_progress
@@ -423,6 +530,8 @@ class MainWindow3D(QMainWindow):
             self.signals.log.emit(f"open failed: {out}", "error")
             return
         self.controller.adopt_state(out)  # loaded state: dirty is False
+        persistence.add_recent_project(path)  # G3.2
+        persistence.set_last_dir("project", path)
         self._resync_all()
         self._update_window_title()
         self.signals.log.emit(f"opened {path}", "success")
@@ -440,10 +549,14 @@ class MainWindow3D(QMainWindow):
 
     def _save_project_as(self) -> bool:
         """Save As (Ctrl+Shift+S): always ask for a target file."""
+        from pathlib import Path
+
+        start_dir = persistence.last_dir("project")  # G3.2
+        suggested = str(Path(start_dir) / "project.aldic3d") if start_dir else "project.aldic3d"
         path, _ = QFileDialog.getSaveFileName(
             self,
             self.tr("Save Project"),
-            "project.aldic3d",
+            suggested,
             self.tr("pyALDIC-3D project (*.aldic3d)"),
         )
         if not path:
@@ -459,12 +572,16 @@ class MainWindow3D(QMainWindow):
         """
         from al_dic_3d.gui.workers import run_with_progress
 
+        # G3.10: the display state rides along in the project file.
+        self.controller.state.view_state = self._capture_view_state()
         ok, out = run_with_progress(
             self, self.tr("Saving project…"), lambda: self.controller.save_project(path)
         )
         if not ok:
             self.signals.log.emit(f"save failed: {out}", "error")
             return False
+        persistence.add_recent_project(path)  # G3.2
+        persistence.set_last_dir("project", path)
         self._update_window_title()  # clean now; star disappears
         self.signals.log.emit(f"saved {path}", "success")
         return True

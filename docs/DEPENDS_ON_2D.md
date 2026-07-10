@@ -49,13 +49,13 @@ justification.
 | `al_dic.core.data_structures.FrameResult` | per-frame element of `result_disp`; `temporal_track` reads `.U_accum` (cumulative) / `.U` (attribute access, not imported) | public |
 | `al_dic.mesh.mesh_setup.mesh_setup` | build the uniform Q8 reference mesh from grid coords in `build_grid_mesh` | public (re-exported in `al_dic.mesh.__init__`) |
 | `al_dic.solver.seed_prop_pipeline.build_grid_for_roi` | FFT-path `(x0, y0)` grid for the reference mesh (matches `run_aldic`'s internal grid) | public (module-level, no underscore) |
-| `al_dic.gui.widgets.console_log.ConsoleLog` | reused 2D console widget (`append_log`) on the GUI Run page | internal (GUI widget; import via full path) |
+| `al_dic.gui.widgets.console_log.ConsoleLog` | base class of `ConsoleLog3D` (right sidebar + strain window log): 3D subclasses it for the context menu / replayable entries (G3.1c/G3.5) — relies on its QTextEdit styling and `append_log` | internal (GUI widget; import via full path) |
 | `al_dic.gui.theme.build_stylesheet` | shared pyALDIC dark-navy QSS applied in `create_app` (visual consistency with 2D) | internal (GUI theme; import via full path) |
 | `al_dic.gui.theme.COLORS` | shared palette tokens used across the 3D GUI panels/widgets (incl. the ported ROI toolbar) | internal (GUI theme; import via full path) |
 | `al_dic.gui.widgets.colorbar_overlay.ColorbarOverlay` | reused 2D colorbar overlay on the main canvas AND the strain window (`update_params`) | internal (GUI widget; import via full path) |
 | `al_dic.gui.widgets.collapsible_section.CollapsibleSection` | reused 2D collapsible sections in the left sidebar and the strain window's right column | internal (GUI widget; import via full path) |
 | `al_dic.gui.icons` | shared icon set (`icon_maximize`, `icon_zoom_in/out`, `icon_chevron_*`, `icon_play/pause`, `icon_download`, `icon_stop`) across toolbars/navigators incl. the strain window | internal (GUI icons; import via full path) |
-| `al_dic.gui.window_chrome.enable_dark_title_bar` | dark OS title bar on `MainWindow3D` and `StrainWindow3D` (one visual frame with the 2D app) | internal (GUI chrome; import via full path) |
+| `al_dic.gui.window_chrome.enable_dark_title_bar` | dark OS title bar on `MainWindow3D`, `StrainWindow3D` and the About / Shortcuts / detection-zoom dialogs (one visual frame with the 2D app) | internal (GUI chrome; import via full path) |
 | `al_dic.gui.widgets.double_spin.LocaleSafeDoubleSpinBox` | locale-safe Min/Max color-range spin boxes (right sidebar + strain window, G2.2) — dot-decimal input on comma-decimal OS locales | internal (GUI widget; import via full path) |
 
 <!--

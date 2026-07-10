@@ -190,6 +190,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         )
         self._empty_notice.setVisible(False)
         self._result_empty = False
+        self._init_empty_hint()  # G3.3: quick-start text until the first image
         self._canvas.viewport().installEventFilter(self)
         self._rig_cache = None  # loaded lazily for the 3D frusta
         self._viz_ctrl = VizController3D()  # dense field renderer + caches
@@ -229,6 +230,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
 
         self._canvas.roi_mask_edited.connect(self.commit_roi_mask)
         self._canvas.seed_clicked.connect(self._on_seed_clicked)
+        self._canvas.context_menu_requested.connect(self._on_canvas_menu)  # G3.1b
         self._canvas.notice.connect(signals.log)
         self._canvas.brush_changed.connect(self._on_brush_changed)
         self._canvas.view_changed.connect(self._sync_mesh_view_transform)
@@ -547,6 +549,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
             self._empty_notice.setGeometry(0, vp.height() // 2 - 40, vp.width(), 80)
         self._empty_notice.setVisible(show_notice)
         if self._stack.currentIndex() == 1:
+            self._update_empty_hint()  # never over the 3D page (G3.3)
             self._render_3d()
             return
 
@@ -558,7 +561,9 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         if not files:
             self._canvas.clear_image()
             self._colorbar.setVisible(False)
+            self._update_empty_hint()  # G3.3: quick-start hint on the blank canvas
             return
+        self._empty_hint.setVisible(False)
         k = min(k, len(files) - 1)
         # Reference-frame plotting (2D idiom): the toggle switches GEOMETRY —
         # background image and node positions — while the field VALUES stay
@@ -772,5 +777,6 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
             self._colorbar.setGeometry(0, 0, obj.width(), obj.height())
             self._mesh_overlay.setGeometry(0, 0, obj.width(), obj.height())
             self._empty_notice.setGeometry(0, obj.height() // 2 - 40, obj.width(), 80)
+            self._update_empty_hint()  # keep the quick-start text centered (G3.3)
             self._config_overlay.reposition()
         return super().eventFilter(obj, event)

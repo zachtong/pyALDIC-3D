@@ -10,13 +10,13 @@ world-frame displacement components or surface-strain invariants.
 from __future__ import annotations
 
 import time
+from collections import deque
 from typing import TYPE_CHECKING
 
 from al_dic.gui.icons import icon_download, icon_play, icon_stop
 from al_dic.gui.theme import COLORS
-from al_dic.gui.widgets.console_log import ConsoleLog
 from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
-from PySide6.QtCore import Qt, QThread, QTimer, Signal
+from PySide6.QtCore import Qt, QTime, QTimer, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -29,7 +29,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from al_dic_3d.gui.issue_text import issues_text
+from al_dic_3d.gui.run_worker import RunWorker
 from al_dic_3d.gui.state import GuiSignals
+from al_dic_3d.gui.widgets.console_log3d import ConsoleLog3D
 from al_dic_3d.gui.widgets.field_selector import FieldSelector3D
 
 if TYPE_CHECKING:
@@ -37,55 +40,15 @@ if TYPE_CHECKING:
 
 _COLORMAPS = ["turbo", "viridis", "jet", "coolwarm", "plasma", "inferno", "RdBu_r"]
 
-
-class RunWorker(QThread):
-    """Runs the pipeline off the UI thread, relaying progress; cancellable."""
-
-    progress = Signal(float, str)
-    log = Signal(str, str)  # (message, level) — engine warnings forwarded live
-    finished_ok = Signal()
-    failed = Signal(str)
-    cancelled = Signal()
-
-    def __init__(self, controller: WorkflowController) -> None:
-        super().__init__()
-        self._controller = controller
-        self._stop_requested = False
-
-    def request_stop(self) -> None:
-        """Ask the pipeline to stop at the next cooperative checkpoint."""
-        self._stop_requested = True
-
-    def run(self) -> None:  # QThread entry point (worker thread)
-        import traceback
-        import warnings
-
-        def _forward(message, category, filename, lineno, file=None, line=None):  # noqa: ARG001
-            # Engine run-time warnings (e.g. "Auto-scaled FFT search region:
-            # 48 -> 26 (image 200x200)" from run_aldic's search clamp) would
-            # otherwise die on stderr; surface them in the GUI console log.
-            self.log.emit(str(message), "warning")
-
-        try:
-            # catch_warnings snapshots + restores the global filter/hook on
-            # exit; only one pipeline run exists at a time, so hijacking
-            # showwarning for the duration of the run is safe.
-            with warnings.catch_warnings():
-                warnings.simplefilter("always")
-                warnings.showwarning = _forward
-                self._controller.run(
-                    progress=lambda f, m: self.progress.emit(f, m),
-                    stop=lambda: self._stop_requested,
-                )
-            self.finished_ok.emit()
-        except Exception as exc:  # noqa: BLE001 - report any failure to the UI
-            if self._stop_requested:
-                self.cancelled.emit()
-            else:
-                # F3.1: the user gets the exception TYPE + message in the log;
-                # the full traceback goes to stderr for bug reports.
-                traceback.print_exc()
-                self.failed.emit(f"{type(exc).__name__}: {exc}")
+# G3.5: retained log entries (level, timestamp, text) behind the severity
+# filter — re-rendering history must keep the original timestamps.
+_LOG_CAPACITY = 2000
+_LOG_FILTERS: dict[str, frozenset[str] | None] = {
+    "all": None,  # no filtering
+    "info": frozenset({"info", "success"}),
+    "warn": frozenset({"warn", "error"}),
+    "error": frozenset({"error"}),
+}
 
 
 class RightSidebar3D(QWidget):
@@ -104,6 +67,8 @@ class RightSidebar3D(QWidget):
         self.signals = signals
         self._worker: RunWorker | None = None
         self._run_started = 0.0
+        self._export_dialog = None  # G3.12: non-modal singleton
+        self._log_entries: deque[tuple[str, str, str]] = deque(maxlen=_LOG_CAPACITY)
         self.setObjectName("rightSidebar")
         self.setFixedWidth(280)
 
@@ -310,6 +275,7 @@ class RightSidebar3D(QWidget):
 
         # ---- LOG ----
         log_header = QHBoxLayout()
+        log_header.setSpacing(4)
         log_lbl = QLabel(self.tr("LOG"))
         log_lbl.setStyleSheet(
             f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px; "
@@ -317,18 +283,41 @@ class RightSidebar3D(QWidget):
         )
         log_header.addWidget(log_lbl)
         log_header.addStretch()
+        # G3.5: severity filter — re-renders history from the retained entries.
+        self._log_filter = QComboBox()
+        self._log_filter.addItem(self.tr("All messages"), "all")
+        self._log_filter.addItem(self.tr("Info"), "info")
+        self._log_filter.addItem(self.tr("Warnings + errors"), "warn")
+        self._log_filter.addItem(self.tr("Errors only"), "error")
+        self._log_filter.setFixedHeight(20)
+        self._log_filter.setStyleSheet(f"font-size: 10px; color: {COLORS.TEXT_MUTED};")
+        self._log_filter.setToolTip(self.tr("Show only log messages of this severity"))
+        self._log_filter.currentIndexChanged.connect(self._rerender_log)
+        log_header.addWidget(self._log_filter)
+        save_btn = QPushButton(self.tr("Save…"))
+        save_btn.setFixedSize(52, 20)
+        save_btn.setStyleSheet(
+            f"font-size: 10px; color: {COLORS.TEXT_MUTED}; border: none; padding: 0px;"
+        )
+        save_btn.setToolTip(self.tr("Save the full log to a text file"))
+        save_btn.clicked.connect(self._on_save_log)
+        log_header.addWidget(save_btn)
         clear_btn = QPushButton(self.tr("Clear"))
-        clear_btn.setFixedSize(56, 20)
-        clear_btn.setStyleSheet(f"font-size: 10px; color: {COLORS.TEXT_MUTED}; border: none;")
+        clear_btn.setFixedSize(52, 20)
+        clear_btn.setStyleSheet(
+            f"font-size: 10px; color: {COLORS.TEXT_MUTED}; border: none; padding: 0px;"
+        )
         clear_btn.setToolTip(self.tr("Clear the log console (messages are not recoverable)"))
-        clear_btn.clicked.connect(lambda: self._console.clear())
+        clear_btn.clicked.connect(self._on_clear_log)
         log_header.addWidget(clear_btn)
         layout.addLayout(log_header)
 
-        self._console = ConsoleLog()
+        self._console = ConsoleLog3D()
         # ConsoleLog caps itself at 200 px; lift the cap so it absorbs the
         # leftover column space (otherwise the layout pads every section apart).
         self._console.setMaximumHeight(16_777_215)
+        self._console.save_requested.connect(self._on_save_log)  # G3.1c menu
+        self._console.clear_requested.connect(self._on_clear_log)
         layout.addWidget(self._console, stretch=1)
 
         # ---- wiring ----
@@ -352,16 +341,63 @@ class RightSidebar3D(QWidget):
         self._timer.timeout.connect(self._update_elapsed)
         self.refresh_readiness()
 
-    # ---- helpers -------------------------------------------------------------
+    # ---- log console (G3.5: retained entries + filter + save) -----------------
 
     def _append_log(self, message: str, level: str = "info") -> None:
         """Console sink — maps the 'warning' alias onto ConsoleLog's 'warn' color.
 
         Half the code base emits level 'warning'; ConsoleLog only colors
         'warn', so those messages silently rendered as info-grey (part of the
-        F3.1 'failures are invisible' complaint).
+        F3.1 'failures are invisible' complaint). Every entry lands in the
+        retained ring buffer; the console shows only what passes the filter.
         """
-        self._console.append_log(message, "warn" if level == "warning" else level)
+        level = "warn" if level == "warning" else level
+        timestamp = QTime.currentTime().toString("HH:mm:ss")
+        self._log_entries.append((level, timestamp, message))
+        if self._log_passes(level):
+            self._console.append_entry(timestamp, message, level)
+
+    def _log_passes(self, level: str) -> bool:
+        allowed = _LOG_FILTERS.get(self._log_filter.currentData() or "all")
+        return allowed is None or level in allowed
+
+    def _rerender_log(self) -> None:
+        """Filter change: replay the retained entries with original timestamps."""
+        self._console.clear()
+        for level, timestamp, message in self._log_entries:
+            if self._log_passes(level):
+                self._console.append_entry(timestamp, message, level)
+
+    def _on_clear_log(self) -> None:
+        """Clear console AND buffer — a filter switch must not resurrect lines."""
+        self._log_entries.clear()
+        self._console.clear()
+
+    def _on_save_log(self) -> None:
+        """Write the FULL retained log (unfiltered) to a text file."""
+        from pathlib import Path
+
+        from PySide6.QtWidgets import QFileDialog
+
+        from al_dic_3d.gui import persistence
+
+        start = persistence.last_dir("log")
+        suggested = str(Path(start) / "pyaldic3d_log.txt") if start else "pyaldic3d_log.txt"
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Save log"), suggested, self.tr("Text files (*.txt)")
+        )
+        if not path:
+            return
+        try:
+            lines = [f"{ts} [{lvl}] {msg}" for lvl, ts, msg in self._log_entries]
+            Path(path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+        except OSError as exc:
+            self._append_log(self.tr("Failed: {0}").format(exc), "error")
+            return
+        persistence.set_last_dir("log", path)
+        self._append_log(f"log saved to {path}", "success")
+
+    # ---- helpers -------------------------------------------------------------
 
     def _section(self, layout: QVBoxLayout, text: str) -> None:
         lbl = QLabel(text)
@@ -372,12 +408,13 @@ class RightSidebar3D(QWidget):
         layout.addWidget(lbl)
 
     def refresh_readiness(self) -> None:
-        issues = self.controller.state.draft.issues()
+        # G3.8: draft.issues() codes are English-by-contract — translate here.
+        issues = issues_text(self.controller.state.draft.issues())
         running = self.signals.run_state == "running"
         self._run_btn.setEnabled(not running)
         # Stateful tooltip (2D idiom): a disabled/blocked Run explains itself.
         if issues and not running:
-            self._run_btn.setToolTip(self.tr("Not ready — {0}").format("; ".join(issues)))
+            self._run_btn.setToolTip(self.tr("Not ready — {0}").format(issues))
         else:
             self._run_btn.setToolTip(
                 self.tr(
@@ -388,7 +425,7 @@ class RightSidebar3D(QWidget):
         if running:
             self._ready_lbl.setText("")
         elif issues:
-            self._ready_lbl.setText(self.tr("Not ready — {0}").format("; ".join(issues)))
+            self._ready_lbl.setText(self.tr("Not ready — {0}").format(issues))
         else:
             self._ready_lbl.setText(self.tr("Ready to run."))
         self._refresh_result_buttons()
@@ -454,7 +491,7 @@ class RightSidebar3D(QWidget):
             return
         issues = self.controller.state.draft.issues()
         if issues:
-            self._append_log(self.tr("Not ready: {0}").format("; ".join(issues)), "warn")
+            self._append_log(self.tr("Not ready: {0}").format(issues_text(issues)), "warn")
             return
         # G2.7: baseline the draft signature; the stale hint clears now and
         # only reappears if the user edits parameters after this run.
@@ -655,11 +692,16 @@ class RightSidebar3D(QWidget):
         self.signals.overlay_alpha = value / 100.0
         self.signals.display_changed.emit()
 
-    # ---- export ----------------------------------------------------------------
+    # ---- export (G3.12: non-modal — scrub frames while exports run) -------------
 
     def _on_export(self) -> None:
         state = self.controller.state
         if state.result is None:
+            return
+        if self._export_dialog is not None:  # reuse the open dialog
+            self._export_dialog.show()
+            self._export_dialog.raise_()
+            self._export_dialog.activateWindow()
             return
         from al_dic_3d.export import VizExportHint
         from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
@@ -680,4 +722,59 @@ class RightSidebar3D(QWidget):
         dialog = ExportDialog(
             state.result, extra_params=extra, parent=self, draft=state.draft, hint=hint
         )
-        dialog.exec()
+        # DeleteOnClose + destroyed-hook keeps the singleton reuse safe: the
+        # reference is dropped the moment Qt tears the dialog down.
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        dialog.destroyed.connect(self._on_export_dialog_gone)
+        self._export_dialog = dialog
+        dialog.show()
+
+    def _on_export_dialog_gone(self, *_a) -> None:
+        self._export_dialog = None
+
+    def close_export_dialog(self) -> bool:
+        """Close the non-modal export dialog if open (main-window close cascade).
+
+        False = the user kept it open (an export was running and they declined).
+        """
+        if self._export_dialog is None:
+            return True
+        return bool(self._export_dialog.close())
+
+    # ---- view-state persistence (G3.10) ------------------------------------------
+
+    def apply_view_state(self, vs: dict, n_frames: int) -> None:
+        """Push a saved ``view_state`` dict into GuiSignals AND this panel's
+        widgets (signals blocked), then emit one display_changed."""
+        s = self.signals
+        s.display_field = str(vs.get("display_field", s.display_field))
+        self._field_selector._sync_checked()
+        cmap = str(vs.get("colormap", s.colormap))
+        if cmap in _COLORMAPS:
+            s.colormap = cmap
+            self._set_blocked(self._cmap_combo, lambda w: w.setCurrentText(cmap))
+        s.color_min = float(vs.get("color_min", s.color_min))
+        s.color_max = float(vs.get("color_max", s.color_max))
+        self._set_blocked(self._vmin_spin, lambda w: w.setValue(s.color_min))
+        self._set_blocked(self._vmax_spin, lambda w: w.setValue(s.color_max))
+        s.color_auto = bool(vs.get("color_auto", s.color_auto))
+        self._set_blocked(self._auto_range_cb, lambda w: w.setChecked(s.color_auto))
+        self._vmin_spin.setEnabled(not s.color_auto)
+        self._vmax_spin.setEnabled(not s.color_auto)
+        s.overlay_alpha = float(vs.get("overlay_alpha", s.overlay_alpha))
+        self._set_blocked(self._opacity_slider, lambda w: w.setValue(int(s.overlay_alpha * 100)))
+        s.show_deformed = bool(vs.get("show_deformed", s.show_deformed))
+        self._set_blocked(self._deformed_cb, lambda w: w.setChecked(s.show_deformed))
+        cam = str(vs.get("camera", s.current_camera))
+        if cam in ("L", "R"):
+            self._pick_camera(cam)  # no-op emit when unchanged; renders otherwise
+        s.set_current_frame(int(vs.get("current_frame", s.current_frame)), max(1, n_frames))
+        s.display_changed.emit()
+
+    @staticmethod
+    def _set_blocked(widget, setter) -> None:
+        widget.blockSignals(True)
+        try:
+            setter(widget)
+        finally:
+            widget.blockSignals(False)

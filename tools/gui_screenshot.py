@@ -44,9 +44,10 @@ def main(outdir: str | None = None) -> int:
     out = Path(outdir) if outdir else REPO / "reports" / "gui_shots"
     app = create_app([])  # noqa: F841 — keep the QApplication alive for the session
 
-    # --- state 1: empty ---
+    # --- state 1: empty (includes the G3.3 quick-start hint on the canvas) ---
     win = MainWindow3D()
     win.show()
+    win._canvas_area.render()  # position the centered empty-state hint
     _grab(win, out / "shot_empty.png")
 
     # --- state 2: loaded project (images + calib + ROI) ---

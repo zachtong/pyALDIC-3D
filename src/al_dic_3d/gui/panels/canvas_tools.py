@@ -1,9 +1,10 @@
-"""Seed-point (F2) + refinement-brush tool relays for the central canvas.
+"""Seed-point (F2) + brush relays, canvas context menu, empty-state hint.
 
 Split out of :class:`al_dic_3d.gui.panels.canvas_area.CanvasArea3D` (which
 mixes this in) purely to keep that file under the 800-line cap — the methods
 are thin state relays between the sidebar tool buttons, the canvas tool state
-machine, and the project draft. They run in the context of ``CanvasArea3D``
+machine, and the project draft, plus the G3.1b right-click menu and the G3.3
+first-launch quick-start hint. They run in the context of ``CanvasArea3D``
 and use its attributes: ``_canvas``, ``_stack``, ``controller``, ``signals``.
 """
 
@@ -12,7 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from PySide6.QtWidgets import QStackedWidget
+    from PySide6.QtWidgets import QLabel, QStackedWidget
 
     from al_dic_3d.gui.controller import WorkflowController
     from al_dic_3d.gui.state import GuiSignals
@@ -25,6 +26,7 @@ class CanvasToolsMixin:
     if TYPE_CHECKING:  # attributes owned by CanvasArea3D.__init__
         _canvas: ImageCanvas3D
         _stack: QStackedWidget
+        _empty_hint: QLabel
         controller: WorkflowController
         signals: GuiSignals
 
@@ -87,3 +89,68 @@ class CanvasToolsMixin:
         draft.refinement_mask_array = None if mask is None or not mask.any() else mask
         self.controller.state.mark_dirty()
         self.signals.params_changed.emit()
+
+    # ---- canvas context menu (G3.1b) ---------------------------------------------
+
+    def _on_canvas_menu(self, global_pos) -> None:
+        """Right-CLICK (no drag, no tool armed) menu on the 2D canvas."""
+        from PySide6.QtWidgets import QMenu
+
+        draft = self.controller.state.draft
+        menu = QMenu(self)
+        fit = menu.addAction(self.tr("Fit"))
+        fit.triggered.connect(self._canvas.fit_to_view)
+        full = menu.addAction(self.tr("Zoom to 100%"))
+        full.triggered.connect(self._canvas.zoom_to_100)
+        menu.addSeparator()
+        copy = menu.addAction(self.tr("Copy image to clipboard"))
+        copy.triggered.connect(self._copy_canvas_to_clipboard)
+        menu.addSeparator()
+        clear_roi = menu.addAction(self.tr("Clear ROI"))
+        clear_roi.setEnabled(draft.roi_mask_array is not None)
+        clear_roi.triggered.connect(self.roi_clear)
+        clear_seed = menu.addAction(self.tr("Clear seed point"))
+        clear_seed.setEnabled(draft.seed_point is not None)
+        clear_seed.triggered.connect(self.clear_seed)
+        menu.exec(global_pos)
+
+    def _copy_canvas_to_clipboard(self) -> None:
+        """WYSIWYG copy: grab the viewport (image + overlays) as shown."""
+        from PySide6.QtGui import QGuiApplication
+
+        QGuiApplication.clipboard().setPixmap(self._canvas.viewport().grab())
+        self.signals.log.emit("canvas image copied to clipboard", "info")
+
+    # ---- empty-state quick-start hint (G3.3) ---------------------------------------
+
+    def _init_empty_hint(self) -> None:
+        """Centered quick-start text shown until the first image loads."""
+        from al_dic.gui.theme import COLORS
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QLabel
+
+        hint = QLabel(self._canvas.viewport())
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        hint.setWordWrap(True)
+        hint.setText(
+            self.tr(
+                "1. Drop the left/right camera folders in the sidebar\n"
+                "2. Calibrate or import calibration\n"
+                "3. Draw the ROI and Run"
+            )
+        )
+        hint.setStyleSheet(
+            f"color: {COLORS.TEXT_MUTED}; background: transparent; "
+            f"font-size: 13px; line-height: 150%;"
+        )
+        hint.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self._empty_hint = hint
+        self._update_empty_hint()
+
+    def _update_empty_hint(self) -> None:
+        """Show only on the 2D page while no image is loaded; keep centered."""
+        show = self._stack.currentIndex() == 0 and not self._canvas.has_image
+        if show:
+            vp = self._canvas.viewport()
+            self._empty_hint.setGeometry(0, vp.height() // 2 - 50, vp.width(), 100)
+        self._empty_hint.setVisible(show)

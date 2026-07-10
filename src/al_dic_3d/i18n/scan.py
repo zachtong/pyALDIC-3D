@@ -44,7 +44,7 @@ _SINK_METHODS = frozenset(
 # app's convention): wrapping them in tr() would invite translators to vary a
 # product acronym or a file-format name. Exact-match only — longer strings
 # mentioning a brand/format are still prose and must be translated.
-_LOCALE_INVARIANT = frozenset({"AL-DIC", "MP4", "GIF", "PNG", "JPEG", "TIFF"})
+_LOCALE_INVARIANT = frozenset({"AL-DIC", "pyALDIC-3D", "MP4", "GIF", "PNG", "JPEG", "TIFF"})
 
 # Widget constructors whose first string argument is user-facing.
 _SINK_CTORS = frozenset(

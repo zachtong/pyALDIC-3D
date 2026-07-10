@@ -28,3 +28,29 @@ def _headless_close_guards(monkeypatch):
     sw = sys.modules.get("al_dic_3d.gui.strain_window")
     if sw is not None:
         monkeypatch.setattr(sw.StrainWindow3D, "_confirm_close_during_compute", lambda self: True)
+    ed = sys.modules.get("al_dic_3d.gui.dialogs.export_dialog")
+    if ed is not None:  # G3.12 running-export close guard
+        monkeypatch.setattr(ed.ExportDialog, "_confirm_close_during_export", lambda self: True)
+    ls = sys.modules.get("al_dic_3d.gui.panels.left_sidebar")
+    if ls is not None:  # G3.1a pair-removal results-invalidation confirm
+        monkeypatch.setattr(
+            ls.LeftSidebar3D, "_confirm_invalidate_results", lambda self, n_pairs: True
+        )
+
+
+@pytest.fixture(autouse=True)
+def _isolated_qsettings(monkeypatch, tmp_path):
+    """Point the G3.2 persistence layer at a per-test INI file.
+
+    Window-geometry saves, recent-project lists and last-used directories must
+    never leak into (or read from) the developer's real registry hive while
+    the suite runs.
+    """
+    try:
+        from PySide6.QtCore import QSettings
+
+        from al_dic_3d.gui import persistence as per
+    except ImportError:  # PySide6-less environment: nothing to isolate
+        return
+    ini = str(tmp_path / "test_settings.ini")
+    monkeypatch.setattr(per, "settings", lambda: QSettings(ini, QSettings.Format.IniFormat))

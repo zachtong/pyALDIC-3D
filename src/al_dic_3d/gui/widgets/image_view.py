@@ -119,6 +119,7 @@ class ImageCanvas3D(QGraphicsView):
     view_changed = Signal()  # zoom / pan / resize (overlays reposition on this)
     scene_hover = Signal(float, float)  # mouse at scene (x, y), no drag tool active
     hover_left = Signal()  # mouse left the canvas
+    context_menu_requested = Signal(object)  # plain right-CLICK (no drag): global QPoint (G3.1b)
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -171,6 +172,7 @@ class ImageCanvas3D(QGraphicsView):
         self._panning = False
         self._pan_button: Qt.MouseButton | None = None  # which button drives the pan
         self._pan_anchor = QPointF()
+        self._pan_travel = 0.0  # accumulated drag distance of the active pan
         self._space_pan = False  # Space held: left-drag pans (hand cursor)
         self._zoom_level = 1.0
         self._fitted = True  # auto-refit on resize until the user zooms
@@ -456,6 +458,7 @@ class ImageCanvas3D(QGraphicsView):
         self._panning = True
         self._pan_button = button
         self._pan_anchor = pos
+        self._pan_travel = 0.0  # G3.1b: distinguishes a right-CLICK from a drag
         self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
     def _end_pan(self) -> None:
@@ -496,6 +499,7 @@ class ImageCanvas3D(QGraphicsView):
     def mouseMoveEvent(self, event) -> None:  # noqa: N802 (Qt override)
         if self._panning:
             delta = event.position() - self._pan_anchor
+            self._pan_travel += abs(delta.x()) + abs(delta.y())
             self._pan_anchor = event.position()
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - int(delta.x()))
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() - int(delta.y()))
@@ -517,7 +521,15 @@ class ImageCanvas3D(QGraphicsView):
 
     def mouseReleaseEvent(self, event) -> None:  # noqa: N802 (Qt override)
         if self._panning and event.button() == self._pan_button:
+            was_click = self._pan_travel <= 4.0  # G3.1b: press+release, no drag
             self._end_pan()
+            if (
+                was_click
+                and event.button() == Qt.MouseButton.RightButton
+                and self._tool == "select"  # no draw/brush/seed tool armed
+                and self.has_image
+            ):
+                self.context_menu_requested.emit(event.globalPosition().toPoint())
             return
         if (
             event.button() == Qt.MouseButton.LeftButton

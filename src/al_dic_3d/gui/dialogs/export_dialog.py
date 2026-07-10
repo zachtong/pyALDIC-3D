@@ -158,7 +158,9 @@ class ExportDialog(QDialog):
         buttons.addStretch()
         close_btn = QPushButton(self.tr("Close"))
         close_btn.setFixedHeight(32)
-        close_btn.clicked.connect(self.accept)
+        # G3.12: route through close() (NOT accept/done) so closeEvent always
+        # runs — it owns the running-export guard and the worker shutdown.
+        close_btn.clicked.connect(self.close)
         buttons.addWidget(close_btn)
         layout.addLayout(buttons)
 
@@ -267,10 +269,34 @@ class ExportDialog(QDialog):
         QCoreApplication.processEvents()
         return True
 
+    def reject(self) -> None:  # noqa: D102 - Qt override (Esc key)
+        # Esc would otherwise call done() directly, skipping closeEvent's
+        # running-export guard and worker shutdown (G3.12).
+        self.close()
+
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        # G3.12 close guard (G1 idiom): never silently kill a running export.
+        if any(tab.is_busy() for tab in self._all_tabs()):
+            if not self._confirm_close_during_export():
+                event.ignore()
+                return
         for tab in self._all_tabs():
             tab.shutdown()
         super().closeEvent(event)
+
+    def _confirm_close_during_export(self) -> bool:
+        """Yes/No prompt when closing while an export runs (stubbed in tests)."""
+        from PySide6.QtWidgets import QMessageBox
+
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(self.tr("Export Running"))
+        box.setText(self.tr("An export is still running — cancel it and close?"))
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.No)
+        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
+        box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
+        return box.exec() == QMessageBox.StandardButton.Yes
 
     # ---- helpers ---------------------------------------------------------------
 

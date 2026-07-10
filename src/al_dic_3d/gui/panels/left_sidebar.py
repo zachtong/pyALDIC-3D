@@ -23,7 +23,6 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSizePolicy,
     QSpinBox,
-    QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
@@ -34,7 +33,10 @@ from al_dic_3d.gui.widgets.calibration_section import CalibrationSection3D
 from al_dic_3d.gui.widgets.camera_drop_zone import CameraDropZone
 from al_dic_3d.gui.widgets.info_icon import InfoIcon
 from al_dic_3d.gui.widgets.init_guess_section import InitGuessSection3D
+from al_dic_3d.gui.widgets.next_step_hint import NextStepHint
+from al_dic_3d.gui.widgets.pair_list import PairListWidget
 from al_dic_3d.gui.widgets.roi_toolbar import ROIToolbar
+from al_dic_3d.gui.widgets.section_header import SectionHeader
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
@@ -58,38 +60,6 @@ def _list_images(folder: str, natural: bool) -> list[str]:
     return [str(p) for p in sorted(paths, key=key)]
 
 
-class _SectionHeader(QWidget):
-    """Uppercase 11px bold letter-spaced title + optional count badge."""
-
-    def __init__(self, title: str, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 8, 12, 4)
-        layout.setSpacing(6)
-        label = QLabel(title)
-        label.setStyleSheet(
-            f"color: {COLORS.TEXT_SECONDARY}; font-size: 11px; "
-            f"font-weight: bold; letter-spacing: 1px;"
-        )
-        layout.addWidget(label)
-        self._badge = QLabel("")
-        self._badge.setStyleSheet(
-            f"color: {COLORS.TEXT_MUTED}; font-size: 10px; "
-            f"background: {COLORS.BG_INPUT}; border-radius: 7px; padding: 1px 6px;"
-        )
-        self._badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._badge.hide()
-        layout.addWidget(self._badge)
-        layout.addStretch()
-
-    def set_badge(self, text: str) -> None:
-        if text:
-            self._badge.setText(text)
-            self._badge.show()
-        else:
-            self._badge.hide()
-
-
 class LeftSidebar3D(QWidget):
     """Fixed-width sidebar: IMAGES (L/R) + CALIBRATION + WORKFLOW + ROI + PARAMETERS + ADVANCED."""
 
@@ -110,8 +80,14 @@ class LeftSidebar3D(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
+        # ---- NEXT STEP (G3.4) -------------------------------------------------
+        # Accent callout naming the next missing prerequisite; recomputed on
+        # every draft-affecting signal and hidden once the draft is ready.
+        self._next_hint = NextStepHint()
+        layout.addWidget(self._next_hint)
+
         # ---- IMAGES ----------------------------------------------------------
-        self._images_header = _SectionHeader(self.tr("IMAGES"))
+        self._images_header = SectionHeader(self.tr("IMAGES"))
         layout.addWidget(self._images_header)
 
         drop_row = QWidget()
@@ -138,34 +114,11 @@ class LeftSidebar3D(QWidget):
         )
         layout.addWidget(self._natural_sort)
 
-        self._pair_list = QTreeWidget()
-        self._pair_list.setHeaderLabels(["#", self.tr("Left"), self.tr("Right")])
-        self._pair_list.setRootIsDecorated(False)
-        self._pair_list.setColumnWidth(0, 30)
-        self._pair_list.setColumnWidth(1, 128)
-        self._pair_list.setMinimumHeight(80)
-        self._pair_list.setMaximumHeight(200)
-        self._pair_list.setStyleSheet(
-            f"""
-            QTreeWidget {{
-                background: {COLORS.BG_SIDEBAR};
-                border: none;
-                font-size: 11px;
-            }}
-            QTreeWidget::item {{ height: 22px; }}
-            QTreeWidget::item:selected {{ background: {COLORS.BG_HOVER}; }}
-            QHeaderView::section {{
-                background: {COLORS.BG_PANEL};
-                color: {COLORS.TEXT_MUTED};
-                border: none;
-                border-bottom: 1px solid {COLORS.BORDER};
-                padding: 3px 6px;
-                font-size: 10px;
-                font-weight: bold;
-            }}
-            """
-        )
+        # Pair list with right-click remove/reveal context menu (G3.1a).
+        self._pair_list = PairListWidget()
         self._pair_list.currentItemChanged.connect(self._on_row_selected)
+        self._pair_list.remove_rows_requested.connect(self._remove_pairs)
+        self._pair_list.reveal_row_requested.connect(self._reveal_pair)
         layout.addWidget(self._pair_list)
 
         self._pairing_status = QLabel(self.tr("No images loaded"))
@@ -231,6 +184,87 @@ class LeftSidebar3D(QWidget):
         self.signals.images_changed.connect(self.refresh_images)
         self.signals.images_changed.connect(self._update_search_tooltips)
         self.signals.roi_changed.connect(self._sync_roi_label)
+        # G3.4: the hint tracks every draft-affecting change.
+        for sig in (
+            self.signals.images_changed,
+            self.signals.calibration_changed,
+            self.signals.roi_changed,
+            self.signals.params_changed,
+        ):
+            sig.connect(self._refresh_next_hint)
+        self._refresh_next_hint()
+
+    def _refresh_next_hint(self) -> None:
+        self._next_hint.refresh(self.controller.state.draft)
+
+    # ---- pair-list context actions (G3.1a) --------------------------------------
+
+    def _remove_pairs(self, rows: list[int]) -> None:
+        """Remove the selected pairs from BOTH streams; invalidate results.
+
+        Ported 2D idiom (image_list Q6): a frame-count/index mutation makes any
+        computed result meaningless, so results are dropped — after an explicit
+        confirm when they exist.
+        """
+        draft = self.controller.state.draft
+        rows = sorted({r for r in rows if 0 <= r < max(len(draft.left), len(draft.right))})
+        if not rows:
+            return
+        had_results = self.controller.state.has_results
+        if had_results and not self._confirm_invalidate_results(len(rows)):
+            return
+        for r in reversed(rows):  # high indices first to preserve ordering
+            if r < len(draft.left):
+                del draft.left[r]
+            if r < len(draft.right):
+                del draft.right[r]
+        if had_results:
+            self.controller.state.result = None
+            self.signals.set_run_state("idle")
+        self.controller.state.mark_dirty()
+        n = max(len(draft.left), len(draft.right))
+        self.signals.set_current_frame(min(self.signals.current_frame, n - 1), max(1, n))
+        self.signals.log.emit(f"removed {len(rows)} image pair(s)", "info")
+        self.signals.images_changed.emit()
+        if had_results:
+            self.signals.results_changed.emit()
+
+    def _confirm_invalidate_results(self, n_pairs: int) -> bool:
+        """Yes/No prompt: removing pairs drops the computed results (2D idiom)."""
+        from PySide6.QtWidgets import QMessageBox
+
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(self.tr("Remove Image Pairs"))
+        box.setText(
+            self.tr(
+                "Removing {0} pair(s) changes the sequence — the current "
+                "results will be discarded. Continue?"
+            ).format(n_pairs)
+        )
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.No)
+        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
+        box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
+        return box.exec() == QMessageBox.StandardButton.Yes
+
+    def _reveal_pair(self, row: int) -> None:
+        """Open the row's image folder in the system file explorer."""
+        import os
+
+        draft = self.controller.state.draft
+        path = None
+        if 0 <= row < len(draft.left):
+            path = draft.left[row]
+        elif 0 <= row < len(draft.right):
+            path = draft.right[row]
+        if path is None:
+            return
+        folder = Path(path).parent
+        if not folder.is_dir():
+            self.signals.log.emit(f"folder does not exist: {folder}", "warning")
+            return
+        os.startfile(str(folder))  # noqa: S606 - open the user's own folder
 
     # ---- CALIBRATION ---------------------------------------------------------
 

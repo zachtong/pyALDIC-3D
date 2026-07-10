@@ -108,8 +108,13 @@ class CameraDropZone(QWidget):
     # ---- input events -----------------------------------------------------------
 
     def mousePressEvent(self, _event) -> None:  # noqa: N802 (Qt override)
-        folder = QFileDialog.getExistingDirectory(self, self.tr("Select image folder"), "")
+        from al_dic_3d.gui import persistence
+
+        folder = QFileDialog.getExistingDirectory(
+            self, self.tr("Select image folder"), persistence.last_dir("images")
+        )
         if folder:
+            persistence.set_last_dir("images", folder)  # G3.2
             self.folder_selected.emit(folder)
 
     def dragEnterEvent(self, event) -> None:  # noqa: N802 (Qt override)

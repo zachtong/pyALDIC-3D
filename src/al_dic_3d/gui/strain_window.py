@@ -100,6 +100,7 @@ class StrainWindow3D(QMainWindow):
         self.signals = signals
         self._strain_ctrl = StrainController3D(controller)
         self._worker: _StrainWorker | None = None
+        self._export_dialog = None  # G3.12: non-modal singleton
 
         # PRIVATE display state — never mirrored to GuiSignals.
         self._frame = 0
@@ -116,6 +117,9 @@ class StrainWindow3D(QMainWindow):
         screen = self.screen() or QGuiApplication.primaryScreen()
         avail = screen.availableGeometry()
         self.resize(*initial_window_size(avail.width(), avail.height()))
+        from al_dic_3d.gui import persistence
+
+        persistence.restore_window_state(self, "strain_window")  # G3.2
 
         central = QWidget(self)
         root = QHBoxLayout(central)
@@ -312,10 +316,18 @@ class StrainWindow3D(QMainWindow):
                 event.ignore()
                 return
             self.join_worker()
+        # G3.12: a non-modal export dialog may hold live workers — close it
+        # through its own running-export guard first.
+        if self._export_dialog is not None and not self._export_dialog.close():
+            event.ignore()
+            return
         if getattr(self, "_signals_connected", False):
             self.signals.results_changed.disconnect(self._on_results_changed)
             self._signals_connected = False
         self._cancel_pick()
+        from al_dic_3d.gui import persistence
+
+        persistence.save_window_state(self, "strain_window")  # G3.2
         super().closeEvent(event)
 
     def join_worker(self, timeout_ms: int = 10_000) -> None:
@@ -475,6 +487,11 @@ class StrainWindow3D(QMainWindow):
         result = self.controller.state.result
         if result is None:
             return
+        if self._export_dialog is not None:  # G3.12: reuse the open dialog
+            self._export_dialog.show()
+            self._export_dialog.raise_()
+            self._export_dialog.activateWindow()
+            return
         from al_dic_3d.export import VizExportHint
         from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
 
@@ -491,13 +508,18 @@ class StrainWindow3D(QMainWindow):
             current_frame=self._frame,
         )
         extra = draft_export_params(self.controller.state.draft)
-        ExportDialog(
+        dialog = ExportDialog(
             result,
             extra_params=extra,
             parent=self,
             draft=self.controller.state.draft,
             hint=hint,
-        ).exec()
+        )
+        # G3.12: non-modal — keep scrubbing frames while exports run.
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
+        dialog.destroyed.connect(lambda *_a: setattr(self, "_export_dialog", None))
+        self._export_dialog = dialog
+        dialog.show()
 
     # ------------------------------------------------------------------
     # 3-point specimen pick flow
