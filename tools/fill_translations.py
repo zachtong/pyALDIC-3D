@@ -3144,6 +3144,109 @@ for _loc, _entries in _BATCH_F2.items():
 for _loc, _entries in _BATCH_F3.items():
     TRANSLATIONS[_loc].update(_entries)
 
+# ---------------------------------------------------------------------------
+# UX Batch G1 (safety & correctness): unsaved-changes guard, close-during-run
+# prompts, ROI wrong-view auto-switch, export Open Folder guard. "Save" and
+# "Cancel" already exist above (2D-catalog terminology).
+# ---------------------------------------------------------------------------
+
+_BATCH_G1: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Analysis Running": "分析正在运行",
+        "An analysis is running — cancel it and quit?": "有分析正在运行——取消并退出？",
+        "Yes": "是",
+        "No": "否",
+        "Unsaved Changes": "未保存的更改",
+        "The project has unsaved changes. Save them before continuing?": "项目有未保存的更改。是否在继续前保存？",
+        "Discard": "放弃",
+        "Computation Running": "计算正在运行",
+        "A strain computation is running — wait for it and close?": "应变计算正在运行——是否等待其完成后再关闭？",
+        "Switched to left camera, frame 1 for ROI editing": "已切换到左相机第 1 帧以编辑 ROI",
+        "Folder does not exist: {0}": "文件夹不存在：{0}",
+    },
+    "zh_TW": {
+        "Analysis Running": "分析執行中",
+        "An analysis is running — cancel it and quit?": "有分析正在執行——取消並結束？",
+        "Yes": "是",
+        "No": "否",
+        "Unsaved Changes": "未儲存的變更",
+        "The project has unsaved changes. Save them before continuing?": "專案有未儲存的變更。是否在繼續前儲存？",
+        "Discard": "捨棄",
+        "Computation Running": "計算執行中",
+        "A strain computation is running — wait for it and close?": "應變計算正在執行——是否等待其完成後再關閉？",
+        "Switched to left camera, frame 1 for ROI editing": "已切換到左相機第 1 幀以編輯 ROI",
+        "Folder does not exist: {0}": "資料夾不存在：{0}",
+    },
+    "ja": {
+        "Analysis Running": "解析を実行中",
+        "An analysis is running — cancel it and quit?": "解析が実行中です — キャンセルして終了しますか？",
+        "Yes": "はい",
+        "No": "いいえ",
+        "Unsaved Changes": "未保存の変更",
+        "The project has unsaved changes. Save them before continuing?": "プロジェクトに未保存の変更があります。続行する前に保存しますか？",
+        "Discard": "破棄",
+        "Computation Running": "計算を実行中",
+        "A strain computation is running — wait for it and close?": "ひずみ計算が実行中です — 完了を待ってから閉じますか？",
+        "Switched to left camera, frame 1 for ROI editing": "ROI 編集のため左カメラのフレーム 1 に切り替えました",
+        "Folder does not exist: {0}": "フォルダーが存在しません：{0}",
+    },
+    "ko": {
+        "Analysis Running": "분석 실행 중",
+        "An analysis is running — cancel it and quit?": "분석이 실행 중입니다 — 취소하고 종료할까요?",
+        "Yes": "예",
+        "No": "아니요",
+        "Unsaved Changes": "저장되지 않은 변경 사항",
+        "The project has unsaved changes. Save them before continuing?": "프로젝트에 저장되지 않은 변경 사항이 있습니다. 계속하기 전에 저장할까요?",
+        "Discard": "저장 안 함",
+        "Computation Running": "계산 실행 중",
+        "A strain computation is running — wait for it and close?": "변형률 계산이 실행 중입니다 — 완료를 기다린 후 닫을까요?",
+        "Switched to left camera, frame 1 for ROI editing": "ROI 편집을 위해 왼쪽 카메라 프레임 1로 전환했습니다",
+        "Folder does not exist: {0}": "폴더가 존재하지 않습니다: {0}",
+    },
+    "de": {
+        "Analysis Running": "Analyse läuft",
+        "An analysis is running — cancel it and quit?": "Eine Analyse läuft — abbrechen und beenden?",
+        "Yes": "Ja",
+        "No": "Nein",
+        "Unsaved Changes": "Ungespeicherte Änderungen",
+        "The project has unsaved changes. Save them before continuing?": "Das Projekt hat ungespeicherte Änderungen. Vor dem Fortfahren speichern?",
+        "Discard": "Verwerfen",
+        "Computation Running": "Berechnung läuft",
+        "A strain computation is running — wait for it and close?": "Eine Dehnungsberechnung läuft — auf den Abschluss warten und schließen?",
+        "Switched to left camera, frame 1 for ROI editing": "Zur ROI-Bearbeitung auf linke Kamera, Frame 1 gewechselt",
+        "Folder does not exist: {0}": "Ordner existiert nicht: {0}",
+    },
+    "fr": {
+        "Analysis Running": "Analyse en cours",
+        "An analysis is running — cancel it and quit?": "Une analyse est en cours — l'annuler et quitter ?",
+        "Yes": "Oui",
+        "No": "Non",
+        "Unsaved Changes": "Modifications non enregistrées",
+        "The project has unsaved changes. Save them before continuing?": "Le projet comporte des modifications non enregistrées. Les enregistrer avant de continuer ?",
+        "Discard": "Abandonner",
+        "Computation Running": "Calcul en cours",
+        "A strain computation is running — wait for it and close?": "Un calcul de déformation est en cours — attendre la fin et fermer ?",
+        "Switched to left camera, frame 1 for ROI editing": "Passage à la caméra gauche, image 1, pour l'édition de la ROI",
+        "Folder does not exist: {0}": "Le dossier n'existe pas : {0}",
+    },
+    "es": {
+        "Analysis Running": "Análisis en ejecución",
+        "An analysis is running — cancel it and quit?": "Hay un análisis en ejecución — ¿cancelarlo y salir?",
+        "Yes": "Sí",
+        "No": "No",
+        "Unsaved Changes": "Cambios sin guardar",
+        "The project has unsaved changes. Save them before continuing?": "El proyecto tiene cambios sin guardar. ¿Guardarlos antes de continuar?",
+        "Discard": "Descartar",
+        "Computation Running": "Cálculo en ejecución",
+        "A strain computation is running — wait for it and close?": "Hay un cálculo de deformación en ejecución — ¿esperar a que termine y cerrar?",
+        "Switched to left camera, frame 1 for ROI editing": "Se cambió a la cámara izquierda, fotograma 1, para editar la ROI",
+        "Folder does not exist: {0}": "La carpeta no existe: {0}",
+    },
+}
+
+for _loc, _entries in _BATCH_G1.items():
+    TRANSLATIONS[_loc].update(_entries)
+
 
 def main() -> int:
     ok = True

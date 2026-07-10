@@ -267,7 +267,15 @@ class ExportDialog(QDialog):
 
     def _on_open_folder(self) -> None:
         folder = self._folder_edit.text().strip()
-        if folder:
-            import os
+        if not folder:
+            return
+        if not Path(folder).is_dir():
+            # G1.6: os.startfile raises on a nonexistent path — report on the
+            # current tab's status row instead of crashing the dialog.
+            tab = self._tabs.currentWidget()
+            progress = getattr(tab, "_progress", None) or self._data_tab._progress
+            progress.finish(self.tr("Folder does not exist: {0}").format(folder), ok=False)
+            return
+        import os
 
-            os.startfile(folder)  # noqa: S606 - open the user's own folder
+        os.startfile(folder)  # noqa: S606 - open the user's own folder

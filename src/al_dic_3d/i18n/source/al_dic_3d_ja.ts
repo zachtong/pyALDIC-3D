@@ -776,6 +776,11 @@
         <translation>3D ビュー</translation>
     </message>
     <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="277"/>
+        <source>Folder does not exist: {0}</source>
+        <translation>フォルダーが存在しません：{0}</translation>
+    </message>
+    <message>
         <source>Format</source>
         <translation>形式</translation>
     </message>
@@ -1468,58 +1473,108 @@ inter-frame motion.</source>
 <context>
     <name>MainWindow3D</name>
     <message>
-        <location filename="../../gui/main_window.py" line="33"/>
+        <location filename="../../gui/main_window.py" line="58"/>
         <source>pyALDIC-3D</source>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="147"/>
+        <location filename="../../gui/main_window.py" line="175"/>
+        <source>Analysis Running</source>
+        <translation>解析を実行中</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="176"/>
+        <source>An analysis is running — cancel it and quit?</source>
+        <translation>解析が実行中です — キャンセルして終了しますか？</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="181"/>
+        <source>Yes</source>
+        <translation>はい</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="182"/>
+        <source>No</source>
+        <translation>いいえ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="200"/>
+        <source>Unsaved Changes</source>
+        <translation>未保存の変更</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="201"/>
+        <source>The project has unsaved changes. Save them before continuing?</source>
+        <translation>プロジェクトに未保存の変更があります。続行する前に保存しますか？</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="208"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="209"/>
+        <source>Discard</source>
+        <translation>破棄</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="210"/>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="231"/>
+        <source>Switched to left camera, frame 1 for ROI editing</source>
+        <translation>ROI 編集のため左カメラのフレーム 1 に切り替えました</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="269"/>
         <source>&amp;File</source>
         <translation>ファイル(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="149"/>
+        <location filename="../../gui/main_window.py" line="271"/>
         <source>New Project</source>
         <translation>新規プロジェクト</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="154"/>
+        <location filename="../../gui/main_window.py" line="276"/>
         <source>Open Project…</source>
         <translation>プロジェクトを開く…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="159"/>
+        <location filename="../../gui/main_window.py" line="281"/>
         <source>Save Project…</source>
         <translation>プロジェクトを保存…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="165"/>
+        <location filename="../../gui/main_window.py" line="287"/>
         <source>Quit</source>
         <translation>終了</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="171"/>
+        <location filename="../../gui/main_window.py" line="293"/>
         <source>&amp;Settings</source>
         <translation>設定(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="172"/>
+        <location filename="../../gui/main_window.py" line="294"/>
         <source>Language</source>
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="222"/>
+        <location filename="../../gui/main_window.py" line="348"/>
         <source>Open Project</source>
         <translation>プロジェクトを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="222"/>
-        <location filename="../../gui/main_window.py" line="239"/>
+        <location filename="../../gui/main_window.py" line="348"/>
+        <location filename="../../gui/main_window.py" line="366"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D プロジェクト (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="237"/>
+        <location filename="../../gui/main_window.py" line="364"/>
         <source>Save Project</source>
         <translation>プロジェクトを保存</translation>
     </message>
@@ -2010,82 +2065,82 @@ inter-frame motion.</source>
         <translation>実行できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="332"/>
         <source>Not ready: {0}</source>
         <translation>未準備：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="334"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="340"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 解析を開始しています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="349"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="355"/>
         <source>Cancelling…</source>
         <translation>キャンセルしています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="377"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="383"/>
         <source>Analysis complete</source>
         <translation>解析が完了しました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="385"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="391"/>
         <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
         <translation>第 1 フレームのステレオマッチング: {0}/{1} 点が一致 ({2}%)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="393"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="399"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>カメラ {0}: 有効性ゲートが {1} 個のノードフレームを除外 (第 1 フレームとの相関検証に失敗)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="400"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="406"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>フレーム {0}: 有効な点は {1}% のみ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="407"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="413"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>品質ゲート (ZNSSD) が {0} 個の位置を除外</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="408"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="414"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>再投影ゲートが {0} 個の位置を除外</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="409"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="415"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>3D 外れ値フィルタが {0} 個の位置を除外</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="417"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="423"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>どのフレームにも有効な点がありません — 実行結果は空です。ROI・マスク・シード設定を確認してください (詳細は上記)。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="425"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="431"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>解析完了 — {0} フレーム、有効率の中央値 {1}%、{2} フレームが {3}% 未満 (上記参照)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="440"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="446"/>
         <source>Failed: {0}</source>
         <translation>失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="449"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="455"/>
         <source>Run cancelled</source>
         <translation>実行をキャンセルしました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="456"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
         <source>ELAPSED  {0}</source>
         <translation>経過  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="468"/>
         <source>REMAINING  {0}</source>
         <translation>残り  {0}</translation>
     </message>
@@ -2332,68 +2387,88 @@ inter-frame motion.</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="414"/>
-        <location filename="../../gui/strain_window.py" line="460"/>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="405"/>
+        <source>Computation Running</source>
+        <translation>計算を実行中</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="406"/>
+        <source>A strain computation is running — wait for it and close?</source>
+        <translation>ひずみ計算が実行中です — 完了を待ってから閉じますか？</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="411"/>
+        <source>Yes</source>
+        <translation>はい</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="412"/>
+        <source>No</source>
+        <translation>いいえ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="455"/>
+        <location filename="../../gui/strain_window.py" line="501"/>
+        <location filename="../../gui/strain_window.py" line="588"/>
         <source>Strain compute failed: {0}</source>
         <translation>ひずみ計算に失敗しました：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="511"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="552"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>先に 3D 解析を実行してください — 後処理する結果がありません。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="429"/>
-        <location filename="../../gui/strain_window.py" line="522"/>
-        <location filename="../../gui/strain_window.py" line="549"/>
+        <location filename="../../gui/strain_window.py" line="470"/>
+        <location filename="../../gui/strain_window.py" line="563"/>
+        <location filename="../../gui/strain_window.py" line="590"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>画像上で原点、+X、+Y の順にクリックしてください</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="435"/>
+        <location filename="../../gui/strain_window.py" line="476"/>
         <source>Computing strain…</source>
         <translation>ひずみを計算中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="448"/>
+        <location filename="../../gui/strain_window.py" line="489"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="465"/>
+        <location filename="../../gui/strain_window.py" line="506"/>
         <source>Strain computation complete.</source>
         <translation>ひずみ計算が完了しました。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="470"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ パラメータが変更されました — 「ひずみを計算」をクリックしてください</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="540"/>
-        <location filename="../../gui/strain_window.py" line="557"/>
+        <location filename="../../gui/strain_window.py" line="581"/>
+        <location filename="../../gui/strain_window.py" line="598"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 点を選択済み</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="559"/>
+        <location filename="../../gui/strain_window.py" line="600"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>

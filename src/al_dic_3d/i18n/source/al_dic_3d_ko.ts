@@ -776,6 +776,11 @@
         <translation>3D 보기</translation>
     </message>
     <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="277"/>
+        <source>Folder does not exist: {0}</source>
+        <translation>폴더가 존재하지 않습니다: {0}</translation>
+    </message>
+    <message>
         <source>Format</source>
         <translation>형식</translation>
     </message>
@@ -1469,58 +1474,108 @@ inter-frame motion.</source>
 <context>
     <name>MainWindow3D</name>
     <message>
-        <location filename="../../gui/main_window.py" line="33"/>
+        <location filename="../../gui/main_window.py" line="58"/>
         <source>pyALDIC-3D</source>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="147"/>
+        <location filename="../../gui/main_window.py" line="175"/>
+        <source>Analysis Running</source>
+        <translation>분석 실행 중</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="176"/>
+        <source>An analysis is running — cancel it and quit?</source>
+        <translation>분석이 실행 중입니다 — 취소하고 종료할까요?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="181"/>
+        <source>Yes</source>
+        <translation>예</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="182"/>
+        <source>No</source>
+        <translation>아니요</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="200"/>
+        <source>Unsaved Changes</source>
+        <translation>저장되지 않은 변경 사항</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="201"/>
+        <source>The project has unsaved changes. Save them before continuing?</source>
+        <translation>프로젝트에 저장되지 않은 변경 사항이 있습니다. 계속하기 전에 저장할까요?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="208"/>
+        <source>Save</source>
+        <translation>저장</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="209"/>
+        <source>Discard</source>
+        <translation>저장 안 함</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="210"/>
+        <source>Cancel</source>
+        <translation>취소</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="231"/>
+        <source>Switched to left camera, frame 1 for ROI editing</source>
+        <translation>ROI 편집을 위해 왼쪽 카메라 프레임 1로 전환했습니다</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="269"/>
         <source>&amp;File</source>
         <translation>파일(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="149"/>
+        <location filename="../../gui/main_window.py" line="271"/>
         <source>New Project</source>
         <translation>새 프로젝트</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="154"/>
+        <location filename="../../gui/main_window.py" line="276"/>
         <source>Open Project…</source>
         <translation>프로젝트 열기…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="159"/>
+        <location filename="../../gui/main_window.py" line="281"/>
         <source>Save Project…</source>
         <translation>프로젝트 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="165"/>
+        <location filename="../../gui/main_window.py" line="287"/>
         <source>Quit</source>
         <translation>종료</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="171"/>
+        <location filename="../../gui/main_window.py" line="293"/>
         <source>&amp;Settings</source>
         <translation>설정(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="172"/>
+        <location filename="../../gui/main_window.py" line="294"/>
         <source>Language</source>
         <translation>언어</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="222"/>
+        <location filename="../../gui/main_window.py" line="348"/>
         <source>Open Project</source>
         <translation>프로젝트 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="222"/>
-        <location filename="../../gui/main_window.py" line="239"/>
+        <location filename="../../gui/main_window.py" line="348"/>
+        <location filename="../../gui/main_window.py" line="366"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 프로젝트 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="237"/>
+        <location filename="../../gui/main_window.py" line="364"/>
         <source>Save Project</source>
         <translation>프로젝트 저장</translation>
     </message>
@@ -2011,82 +2066,82 @@ inter-frame motion.</source>
         <translation>실행할 준비가 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="332"/>
         <source>Not ready: {0}</source>
         <translation>준비되지 않음: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="334"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="340"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 분석을 시작하는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="349"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="355"/>
         <source>Cancelling…</source>
         <translation>취소하는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="377"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="383"/>
         <source>Analysis complete</source>
         <translation>분석 완료</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="385"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="391"/>
         <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
         <translation>1번 프레임 스테레오 매칭: {0}/{1}개 점 매칭됨 ({2}%)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="393"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="399"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>카메라 {0}: 유효성 게이트가 노드 프레임 {1}개를 제거함 (1번 프레임과의 상관 검증 실패)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="400"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="406"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>프레임 {0}: 점의 {1}%만 유효</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="407"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="413"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>품질 게이트(ZNSSD)가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="408"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="414"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>재투영 게이트가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="409"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="415"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>3D 이상치 필터가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="417"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="423"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>어느 프레임에도 유효한 점이 없습니다 — 실행 결과가 비어 있습니다. ROI, 마스크, 시드 설정을 확인하십시오(자세한 내용은 위 참조).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="425"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="431"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>분석 완료 — 프레임 {0}개, 유효율 중앙값 {1}%, {2}개 프레임이 {3}% 미만 (위 참조)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="440"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="446"/>
         <source>Failed: {0}</source>
         <translation>실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="449"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="455"/>
         <source>Run cancelled</source>
         <translation>실행이 취소되었습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="456"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
         <source>ELAPSED  {0}</source>
         <translation>경과  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="468"/>
         <source>REMAINING  {0}</source>
         <translation>남음  {0}</translation>
     </message>
@@ -2333,68 +2388,88 @@ inter-frame motion.</source>
         <translation>불투명도</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="414"/>
-        <location filename="../../gui/strain_window.py" line="460"/>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="405"/>
+        <source>Computation Running</source>
+        <translation>계산 실행 중</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="406"/>
+        <source>A strain computation is running — wait for it and close?</source>
+        <translation>변형률 계산이 실행 중입니다 — 완료를 기다린 후 닫을까요?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="411"/>
+        <source>Yes</source>
+        <translation>예</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="412"/>
+        <source>No</source>
+        <translation>아니요</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="455"/>
+        <location filename="../../gui/strain_window.py" line="501"/>
+        <location filename="../../gui/strain_window.py" line="588"/>
         <source>Strain compute failed: {0}</source>
         <translation>변형률 계산 실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="511"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="552"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>먼저 3D 분석을 실행하세요 — 후처리할 결과가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="429"/>
-        <location filename="../../gui/strain_window.py" line="522"/>
-        <location filename="../../gui/strain_window.py" line="549"/>
+        <location filename="../../gui/strain_window.py" line="470"/>
+        <location filename="../../gui/strain_window.py" line="563"/>
+        <location filename="../../gui/strain_window.py" line="590"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>이미지에서 원점, +X, +Y 순서로 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="435"/>
+        <location filename="../../gui/strain_window.py" line="476"/>
         <source>Computing strain…</source>
         <translation>변형률 계산 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="448"/>
+        <location filename="../../gui/strain_window.py" line="489"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="465"/>
+        <location filename="../../gui/strain_window.py" line="506"/>
         <source>Strain computation complete.</source>
         <translation>변형률 계산 완료.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="470"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="540"/>
-        <location filename="../../gui/strain_window.py" line="557"/>
+        <location filename="../../gui/strain_window.py" line="581"/>
+        <location filename="../../gui/strain_window.py" line="598"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 점 선택됨</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="559"/>
+        <location filename="../../gui/strain_window.py" line="600"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>

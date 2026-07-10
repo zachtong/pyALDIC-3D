@@ -365,11 +365,52 @@ class StrainWindow3D(QMainWindow):
         self._render()
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        # G1.2: a live compute QThread must be joined before the window goes
+        # (Qt otherwise destroys a running thread). The cascade path (main
+        # window closing) calls join_worker() BEFORE close(), so this prompt
+        # only ever appears for a user-initiated close.
+        if self._worker is not None and self._worker.isRunning():
+            if not self._confirm_close_during_compute():
+                event.ignore()
+                return
+            self.join_worker()
         if getattr(self, "_signals_connected", False):
             self.signals.results_changed.disconnect(self._on_results_changed)
             self._signals_connected = False
         self._cancel_pick()
         super().closeEvent(event)
+
+    def join_worker(self, timeout_ms: int = 10_000) -> None:
+        """Join a running strain worker under a busy cursor (close/cascade, G1.2)."""
+        if self._worker is None or not self._worker.isRunning():
+            return
+        from PySide6.QtWidgets import QApplication
+
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            self._worker.wait(timeout_ms)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    def _confirm_close_during_compute(self) -> bool:
+        """Yes/No prompt when the user closes while a compute runs (G1.2).
+
+        The strain worker has no cooperative cancel hook, so the honest offer
+        is to WAIT for it (bounded by :meth:`join_worker`), not to cancel it.
+        """
+        from PySide6.QtWidgets import QMessageBox
+
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(self.tr("Computation Running"))
+        box.setText(self.tr("A strain computation is running — wait for it and close?"))
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.No)
+        # Qt's own qtbase button catalogs are not shipped — set the texts
+        # explicitly so the 8-locale contract covers the buttons too.
+        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
+        box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
+        return box.exec() == QMessageBox.StandardButton.Yes
 
     def eventFilter(self, obj, event) -> bool:  # noqa: N802 (Qt override)
         if obj is self._canvas.viewport() and event.type() == QEvent.Type.Resize:

@@ -318,6 +318,12 @@ class RightSidebar3D(QWidget):
 
     # ---- run lifecycle ---------------------------------------------------------
 
+    def active_worker(self) -> RunWorker | None:
+        """The live pipeline worker, or None (the main window's close guard, G1.2)."""
+        if self._worker is not None and self._worker.isRunning():
+            return self._worker
+        return None
+
     def _on_run(self) -> None:
         if self._worker is not None and self._worker.isRunning():
             return

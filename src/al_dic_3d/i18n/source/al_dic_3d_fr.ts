@@ -776,6 +776,11 @@
         <translation>Vue 3D</translation>
     </message>
     <message>
+        <location filename="../../gui/dialogs/export_dialog.py" line="277"/>
+        <source>Folder does not exist: {0}</source>
+        <translation>Le dossier n'existe pas : {0}</translation>
+    </message>
+    <message>
         <source>Format</source>
         <translation>Format</translation>
     </message>
@@ -1472,58 +1477,108 @@ lancement (max(10, min(H, W) / 4 - taille d'imagette)).</translation>
 <context>
     <name>MainWindow3D</name>
     <message>
-        <location filename="../../gui/main_window.py" line="33"/>
+        <location filename="../../gui/main_window.py" line="58"/>
         <source>pyALDIC-3D</source>
         <translation>pyALDIC-3D</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="147"/>
+        <location filename="../../gui/main_window.py" line="175"/>
+        <source>Analysis Running</source>
+        <translation>Analyse en cours</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="176"/>
+        <source>An analysis is running — cancel it and quit?</source>
+        <translation>Une analyse est en cours — l'annuler et quitter ?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="181"/>
+        <source>Yes</source>
+        <translation>Oui</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="182"/>
+        <source>No</source>
+        <translation>Non</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="200"/>
+        <source>Unsaved Changes</source>
+        <translation>Modifications non enregistrées</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="201"/>
+        <source>The project has unsaved changes. Save them before continuing?</source>
+        <translation>Le projet comporte des modifications non enregistrées. Les enregistrer avant de continuer ?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="208"/>
+        <source>Save</source>
+        <translation>Enregistrer</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="209"/>
+        <source>Discard</source>
+        <translation>Abandonner</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="210"/>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="231"/>
+        <source>Switched to left camera, frame 1 for ROI editing</source>
+        <translation>Passage à la caméra gauche, image 1, pour l'édition de la ROI</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="269"/>
         <source>&amp;File</source>
         <translation>&amp;Fichier</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="149"/>
+        <location filename="../../gui/main_window.py" line="271"/>
         <source>New Project</source>
         <translation>Nouveau projet</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="154"/>
+        <location filename="../../gui/main_window.py" line="276"/>
         <source>Open Project…</source>
         <translation>Ouvrir le projet…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="159"/>
+        <location filename="../../gui/main_window.py" line="281"/>
         <source>Save Project…</source>
         <translation>Enregistrer le projet…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="165"/>
+        <location filename="../../gui/main_window.py" line="287"/>
         <source>Quit</source>
         <translation>Quitter</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="171"/>
+        <location filename="../../gui/main_window.py" line="293"/>
         <source>&amp;Settings</source>
         <translation>&amp;Paramètres</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="172"/>
+        <location filename="../../gui/main_window.py" line="294"/>
         <source>Language</source>
         <translation>Langue</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="222"/>
+        <location filename="../../gui/main_window.py" line="348"/>
         <source>Open Project</source>
         <translation>Ouvrir le projet</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="222"/>
-        <location filename="../../gui/main_window.py" line="239"/>
+        <location filename="../../gui/main_window.py" line="348"/>
+        <location filename="../../gui/main_window.py" line="366"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>Projet pyALDIC-3D (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="237"/>
+        <location filename="../../gui/main_window.py" line="364"/>
         <source>Save Project</source>
         <translation>Enregistrer le projet</translation>
     </message>
@@ -2014,82 +2069,82 @@ lancement (max(10, min(H, W) / 4 - taille d'imagette)).</translation>
         <translation>Prêt à lancer.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="326"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="332"/>
         <source>Not ready: {0}</source>
         <translation>Non prêt : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="334"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="340"/>
         <source>Starting 3D analysis…</source>
         <translation>Démarrage de l'analyse 3D…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="349"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="355"/>
         <source>Cancelling…</source>
         <translation>Annulation…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="377"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="383"/>
         <source>Analysis complete</source>
         <translation>Analyse terminée</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="385"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="391"/>
         <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
         <translation>Appariement stéréo image 1 : {0}/{1} points appariés ({2} %)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="393"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="399"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>Caméra {0} : le contrôle de validité a supprimé {1} nœuds-images (corrélation avec l'image 1 échouée)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="400"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="406"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>Image {0} : seulement {1} % de points valides</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="407"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="413"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>Le contrôle qualité (ZNSSD) a supprimé {0} positions</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="408"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="414"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>Le contrôle de reprojection a supprimé {0} positions</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="409"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="415"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>Le filtre de points aberrants 3D a supprimé {0} positions</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="417"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="423"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Aucun point valide dans AUCUNE image — l'exécution a produit un résultat vide. Vérifiez la ROI, les masques et le point de départ (détails ci-dessus).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="425"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="431"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse terminée — {0} images, validité médiane {1} %, {2} image(s) sous {3} % (voir ci-dessus)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="440"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="446"/>
         <source>Failed: {0}</source>
         <translation>Échec : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="449"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="455"/>
         <source>Run cancelled</source>
         <translation>Exécution annulée</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="456"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
         <source>ELAPSED  {0}</source>
         <translation>ÉCOULÉ  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="462"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="468"/>
         <source>REMAINING  {0}</source>
         <translation>RESTANT  {0}</translation>
     </message>
@@ -2336,68 +2391,88 @@ lancement (max(10, min(H, W) / 4 - taille d'imagette)).</translation>
         <translation>Opacité</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="414"/>
-        <location filename="../../gui/strain_window.py" line="460"/>
-        <location filename="../../gui/strain_window.py" line="547"/>
+        <location filename="../../gui/strain_window.py" line="405"/>
+        <source>Computation Running</source>
+        <translation>Calcul en cours</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="406"/>
+        <source>A strain computation is running — wait for it and close?</source>
+        <translation>Un calcul de déformation est en cours — attendre la fin et fermer ?</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="411"/>
+        <source>Yes</source>
+        <translation>Oui</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="412"/>
+        <source>No</source>
+        <translation>Non</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_window.py" line="455"/>
+        <location filename="../../gui/strain_window.py" line="501"/>
+        <location filename="../../gui/strain_window.py" line="588"/>
         <source>Strain compute failed: {0}</source>
         <translation>Échec du calcul de déformation : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="426"/>
-        <location filename="../../gui/strain_window.py" line="511"/>
+        <location filename="../../gui/strain_window.py" line="467"/>
+        <location filename="../../gui/strain_window.py" line="552"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>Exécutez d'abord l'analyse 3D — aucun résultat à post-traiter.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="429"/>
-        <location filename="../../gui/strain_window.py" line="522"/>
-        <location filename="../../gui/strain_window.py" line="549"/>
+        <location filename="../../gui/strain_window.py" line="470"/>
+        <location filename="../../gui/strain_window.py" line="563"/>
+        <location filename="../../gui/strain_window.py" line="590"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>Cliquez sur l'origine, puis +X, puis +Y sur l'image</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="435"/>
+        <location filename="../../gui/strain_window.py" line="476"/>
         <source>Computing strain…</source>
         <translation>Calcul de la déformation…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="448"/>
+        <location filename="../../gui/strain_window.py" line="489"/>
         <source>Complete</source>
         <translation>Terminé</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="465"/>
+        <location filename="../../gui/strain_window.py" line="506"/>
         <source>Strain computation complete.</source>
         <translation>Calcul de déformation terminé.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="470"/>
+        <location filename="../../gui/strain_window.py" line="511"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ Paramètres modifiés — cliquez sur « Calculer la déformation »</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="540"/>
-        <location filename="../../gui/strain_window.py" line="557"/>
+        <location filename="../../gui/strain_window.py" line="581"/>
+        <location filename="../../gui/strain_window.py" line="598"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 points choisis</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="559"/>
+        <location filename="../../gui/strain_window.py" line="600"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>

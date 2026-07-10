@@ -85,3 +85,23 @@ def test_export_dialog_offscreen(result, tmp_path):
     assert len(list(vtu_dir.glob("*.vtu"))) == n_frames
     assert len(list(vtu_dir.glob("*.pvd"))) == 1
     assert "Wrote" in dialog._status.text()
+
+
+def test_open_folder_guard_rejects_missing_path(result, tmp_path, monkeypatch):
+    # G1.6: 'Open Folder' on a typed nonexistent path must report, not crash
+    # (os.startfile raises FileNotFoundError); an existing folder still opens.
+    pytest.importorskip("PySide6")
+    from al_dic_3d.gui.app import create_app
+    from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
+
+    create_app([])
+    dialog = ExportDialog(result, extra_params={})
+    dialog._folder_edit.setText(str(tmp_path / "definitely" / "missing"))
+    dialog._on_open_folder()  # must not raise
+    assert "Folder does not exist" in dialog._status.text()
+
+    opened: list[str] = []
+    monkeypatch.setattr("os.startfile", lambda p: opened.append(str(p)), raising=False)
+    dialog._folder_edit.setText(str(tmp_path))
+    dialog._on_open_folder()
+    assert opened == [str(tmp_path)]

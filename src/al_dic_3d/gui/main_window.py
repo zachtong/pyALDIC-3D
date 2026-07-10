@@ -10,14 +10,39 @@ transfer with zero learning cost, over the 3D backend (``WorkflowController`` /
 from __future__ import annotations
 
 from al_dic.gui.window_chrome import enable_dark_title_bar
-from PySide6.QtGui import QAction, QKeySequence
-from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QMainWindow, QWidget
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QGuiApplication, QKeySequence
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QHBoxLayout,
+    QMainWindow,
+    QMessageBox,
+    QWidget,
+)
 
 from al_dic_3d.gui.controller import WorkflowController
 from al_dic_3d.gui.panels.canvas_area import CanvasArea3D
 from al_dic_3d.gui.panels.left_sidebar import LeftSidebar3D
 from al_dic_3d.gui.panels.right_sidebar import RightSidebar3D
 from al_dic_3d.gui.state import GuiSignals
+
+# G1.2: bound on joining a cancelled pipeline worker at window close.
+_WORKER_JOIN_TIMEOUT_MS = 10_000
+
+
+def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
+    """Clamp the preferred 1420x860 default to the usable screen area (G1.4).
+
+    Same pattern as the strain window's clamp: a 1366x768 laptop must get a
+    window that fits fully on screen (the old fixed 1420x800 minimum could
+    not), while large displays still open at the comfortable three-column
+    size. The margins keep the whole frame, title bar included, on screen.
+    """
+    return (
+        max(1100, min(1420, avail_width - 40)),
+        max(700, min(860, avail_height - 80)),
+    )
 
 
 class MainWindow3D(QMainWindow):
@@ -31,7 +56,13 @@ class MainWindow3D(QMainWindow):
         self.signals = GuiSignals()
         self._strain_window = None  # lazy singleton (Batch C post-processing)
         self.setWindowTitle(self.tr("pyALDIC-3D"))
-        self.setMinimumSize(1420, 800)
+        # G1.4: 1100x700 minimum fits 1366x768 laptops (sidebars 320+280 still
+        # leave the canvas ~500 px); the initial size is clamped to the screen.
+        self.setMinimumSize(1100, 700)
+        screen = self.screen() or QGuiApplication.primaryScreen()
+        if screen is not None:
+            avail = screen.availableGeometry()
+            self.resize(*initial_window_size(avail.width(), avail.height()))
         enable_dark_title_bar(self)
 
         central = QWidget()
@@ -103,12 +134,101 @@ class MainWindow3D(QMainWindow):
             self._open_strain_window()
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
+        # G1.2: never let Qt destroy a live pipeline QThread ("QThread:
+        # Destroyed while thread is still running") — ask first, then cancel
+        # and join under a busy cursor before the window may go.
+        worker = self._right.active_worker()
+        if worker is not None:
+            if not self._confirm_cancel_run():
+                event.ignore()
+                return
+            worker.request_stop()
+            self._join_worker(worker)
+        # G1.1: unsaved-changes guard (Save / Discard / Cancel).
+        if not self._confirm_unsaved():
+            event.ignore()
+            return
         # Cascade close: the strain window is a parentless top-level we own, so
-        # it must close with the main window to keep lifecycle parity.
+        # it must close with the main window to keep lifecycle parity. Join its
+        # compute worker first so its own closeEvent never re-prompts (G1.2).
         if self._strain_window is not None:
+            self._strain_window.join_worker()
             self._strain_window.close()
             self._strain_window = None
         super().closeEvent(event)
+
+    @staticmethod
+    def _join_worker(worker) -> None:
+        """Wait (bounded) for a stopping worker under a busy cursor (G1.2)."""
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            worker.wait(_WORKER_JOIN_TIMEOUT_MS)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    # ---- close / discard guards (G1.1 / G1.2) ----------------------------------
+
+    def _confirm_cancel_run(self) -> bool:
+        """Yes/No prompt before killing a running analysis on close (G1.2)."""
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(self.tr("Analysis Running"))
+        box.setText(self.tr("An analysis is running — cancel it and quit?"))
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.No)
+        # Qt's own qtbase button catalogs are not shipped — set the texts
+        # explicitly so the 8-locale contract covers the buttons too.
+        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
+        box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
+        return box.exec() == QMessageBox.StandardButton.Yes
+
+    def _confirm_unsaved(self) -> bool:
+        """True = proceed (clean, saved, or discarded); False = abort (G1.1)."""
+        state = self.controller.state
+        worth_saving = bool(state.draft.left or state.draft.right or state.has_results)
+        if not (state.dirty and worth_saving):
+            return True
+        choice = self._prompt_unsaved()
+        if choice == "save":
+            return self._save_project()
+        return choice == "discard"
+
+    def _prompt_unsaved(self) -> str:
+        """Modal Save / Discard / Cancel prompt (split out so tests can stub it)."""
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(self.tr("Unsaved Changes"))
+        box.setText(self.tr("The project has unsaved changes. Save them before continuing?"))
+        box.setStandardButtons(
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel
+        )
+        box.setDefaultButton(QMessageBox.StandardButton.Save)
+        box.button(QMessageBox.StandardButton.Save).setText(self.tr("Save"))
+        box.button(QMessageBox.StandardButton.Discard).setText(self.tr("Discard"))
+        box.button(QMessageBox.StandardButton.Cancel).setText(self.tr("Cancel"))
+        ret = box.exec()
+        if ret == QMessageBox.StandardButton.Save:
+            return "save"
+        return "discard" if ret == QMessageBox.StandardButton.Discard else "cancel"
+
+    # ---- ROI tools -------------------------------------------------------------
+
+    def _ensure_roi_reference_view(self) -> None:
+        """G1.3: ROI edits land on the LEFT frame-1 mask — jump the view there.
+
+        Same idiom as seed placement: arming a shape tool or the refine brush
+        while viewing the RIGHT camera or a later frame would silently stamp
+        the drawn region onto the wrong image (the mask always belongs to the
+        left camera, frame 1).
+        """
+        if self.signals.current_camera == "L" and self.signals.current_frame == 0:
+            return
+        draft = self.controller.state.draft
+        self.signals.set_camera("L")
+        self.signals.set_current_frame(0, max(len(draft.left), 1))
+        self.signals.log.emit(self.tr("Switched to left camera, frame 1 for ROI editing"), "info")
 
     def _on_roi_draw_requested(self, shape: str, mode: str) -> None:
         if not self._canvas_area.canvas.has_image:
@@ -117,6 +237,7 @@ class MainWindow3D(QMainWindow):
             )
             self._left.roi_toolbar.deactivate()
             return
+        self._ensure_roi_reference_view()
         self._canvas_area.start_shape_tool(shape, mode)
 
     def _on_place_seed_toggled(self, active: bool) -> None:
@@ -139,6 +260,7 @@ class MainWindow3D(QMainWindow):
             self.signals.log.emit("load images first before using the brush", "warning")
             self._left.roi_toolbar.deactivate()
             return
+        self._ensure_roi_reference_view()
         self._canvas_area.set_refine_brush(mode, radius)
 
     # ---- menu ----------------------------------------------------------------
@@ -212,26 +334,31 @@ class MainWindow3D(QMainWindow):
         self._right.refresh_readiness()
 
     def _new_project(self) -> None:
-        self.controller.new_project()
+        if not self._confirm_unsaved():  # G1.1: dirty work is never silently dropped
+            return
+        self.controller.new_project()  # fresh AppState3D: dirty is False again
         self.signals.set_run_state("idle")
         self._resync_all()
         self.signals.log.emit("new project", "info")
 
     def _open_project(self) -> None:
+        if not self._confirm_unsaved():  # G1.1: dirty work is never silently dropped
+            return
         path, _ = QFileDialog.getOpenFileName(
             self, self.tr("Open Project"), "", self.tr("pyALDIC-3D project (*.aldic3d)")
         )
         if not path:
             return
         try:
-            self.controller.open_project(path)
+            self.controller.open_project(path)  # loaded state: dirty is False
         except Exception as exc:  # noqa: BLE001 - surface load errors to the user
             self.signals.log.emit(f"open failed: {exc}", "error")
             return
         self._resync_all()
         self.signals.log.emit(f"opened {path}", "success")
 
-    def _save_project(self) -> None:
+    def _save_project(self) -> bool:
+        """Save via the file dialog; False = cancelled or failed (G1.1 guard)."""
         path, _ = QFileDialog.getSaveFileName(
             self,
             self.tr("Save Project"),
@@ -239,6 +366,11 @@ class MainWindow3D(QMainWindow):
             self.tr("pyALDIC-3D project (*.aldic3d)"),
         )
         if not path:
-            return
-        self.controller.save_project(path)
+            return False
+        try:
+            self.controller.save_project(path)
+        except Exception as exc:  # noqa: BLE001 - surface save errors to the user
+            self.signals.log.emit(f"save failed: {exc}", "error")
+            return False
         self.signals.log.emit(f"saved {path}", "success")
+        return True

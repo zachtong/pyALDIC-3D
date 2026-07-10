@@ -698,7 +698,11 @@ class LeftSidebar3D(QWidget):
     def _on_row_selected(self, current, _previous) -> None:
         if current is not None:
             idx = self._pair_list.indexOfTopLevelItem(current)
-            n = max(len(self.controller.state.draft.left), 1)
+            # G1.5: clamp against the LONGER list (the expression the table is
+            # built from) — during an L/R count mismatch the right camera may
+            # have more rows than the left, and those must stay reachable.
+            draft = self.controller.state.draft
+            n = max(len(draft.left), len(draft.right), 1)
             self.signals.set_current_frame(idx, n)
 
     def refresh_all(self) -> None:
