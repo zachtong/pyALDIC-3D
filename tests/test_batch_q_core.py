@@ -223,9 +223,17 @@ def test_compute_surface_strain_trims_around_hole():
     assert int(trimmed.n_trimmed[0]) > 0
     # Frame 1 adds the hole band on top of the outer ring.
     assert int(trimmed.n_trimmed[1]) > int(trimmed.n_trimmed[0])
-    # Trimming only ADDS NaN; every newly-NaN node was among the trimmed set.
-    newly_nan = np.isfinite(plain.exx[1]) & ~np.isfinite(trimmed.exx[1])
-    assert 0 < int(newly_nan.sum()) <= int(trimmed.n_trimmed[1])
+    # Batch C A5-2: strain VALUES stay DENSE — trimming only flags strain_valid,
+    # it never NaNs a value the fit produced. strain_valid == ~trim, so its
+    # False count is exactly n_trimmed.
+    assert trimmed.strain_valid is not None
+    assert int((~trimmed.strain_valid[1]).sum()) == int(trimmed.n_trimmed[1])
+    fitted = np.isfinite(trimmed.exx[1])
+    newly_trimmed = fitted & ~trimmed.strain_valid[1]
+    assert int(newly_trimmed.sum()) > 0
+    # The dense values equal the plain (untrimmed) run wherever both fits succeeded.
+    both = fitted & np.isfinite(plain.exx[1])
+    assert np.allclose(plain.exx[1][both], trimmed.exx[1][both])
     # ... and the displacement input is untouched by construction (frozen rec).
     assert np.isfinite(rec.displacement[1][~hole]).all()
 

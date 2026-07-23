@@ -80,6 +80,14 @@ class StrainController3D:
         """
         result = self._require_result()
         self._validate_override(override)
+        # Batch C items 2/3: when the run was crack-aware, thread the drawn ROI
+        # mask (0-band = crack) into the gradient fit + edge trim so the strain
+        # gauge honours the crack. Off otherwise -> byte-identical.
+        roi_mask = None
+        if bool(result.meta.get("crack_aware", False)):
+            drawn = self._workflow.state.draft.roi_mask_array
+            if drawn is not None:
+                roi_mask = (np.asarray(drawn) > 0).astype(np.float64)
         return compute_surface_strain(
             result.reconstruction,
             result.ref_coords,
@@ -90,6 +98,7 @@ class StrainController3D:
             specimen_R=override.get("specimen_R"),  # type: ignore[arg-type]
             strain_type=str(override.get("strain_type", "green_lagrange")),  # Q3
             edge_trim_alpha=float(override.get("edge_trim_alpha", 0.0)),  # Q4
+            roi_mask=roi_mask,
             progress_cb=progress_cb,
             stop_event=stop_event,
         )

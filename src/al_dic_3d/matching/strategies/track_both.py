@@ -23,6 +23,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
+from numpy.typing import NDArray
 
 from al_dic_3d.matching.contracts import (
     INVALID,
@@ -61,6 +62,47 @@ if TYPE_CHECKING:
 # they run in parallel (P3.6); the assembly loop maps into the remainder so
 # the reported fraction stays monotonic.
 _TRACK_PROGRESS_SHARE = 0.9
+
+
+def _derive_right_barrier(
+    mask_left: NDArray[np.float64],
+    coords_left: NDArray[np.float64],
+    right_pts: NDArray[np.float64],
+    mesh_right: DICMesh,
+    out_shape: tuple[int, int],
+) -> NDArray[np.float64] | None:
+    """Warp the LEFT crack barrier into the RIGHT camera (Batch C, C2), or None.
+
+    In the common configuration the user draws the ROI (with its thin crack
+    barrier) on the LEFT camera only, so the right camera would bridge/smooth
+    the crack. The frame-1 stereo correspondence ``coords_left -> right_pts``
+    warps the left mask into right pixel space (reusing
+    :func:`al_dic_3d.viz3d.maskwarp.warp_mask_left_to_right`, the same machinery
+    the renderer uses). The result is returned ONLY when it actually cuts the
+    fresh right grid — i.e. a thin barrier really is present — so a crack-free /
+    plain-ROI run derives nothing and the right track stays byte-identical.
+    """
+    import warnings
+
+    from al_dic_3d.matching.crack_mesh import mask_cuts_mesh
+    from al_dic_3d.viz3d.maskwarp import warp_mask_left_to_right
+
+    try:
+        warped = warp_mask_left_to_right(
+            np.asarray(mask_left, dtype=np.float64) > 0.5, coords_left, right_pts, out_shape
+        )
+    except Exception as exc:  # noqa: BLE001 - warp failure must not kill the run
+        warnings.warn(
+            f"could not warp the left crack barrier into the right camera "
+            f"({type(exc).__name__}: {exc}); the right track is not crack-aware.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return None
+    if warped is None:
+        return None
+    barrier = warped.astype(np.float64)
+    return barrier if mask_cuts_mesh(mesh_right, barrier) else None
 
 
 @register_strategy
@@ -197,6 +239,7 @@ class TrackBothStrategy:
         valid_rp = np.isfinite(right_pts).all(axis=1)
         roi_R = bbox_roi(right_pts[valid_rp], img_h, img_w, margin=self.winsize)
         mask_R1 = seq.mask("R", 0)
+        right_masks = mask_stream(seq, "R")
         para_R = make_dicpara(
             img_size=(img_h, img_w),
             roi=roi_R,
@@ -212,6 +255,22 @@ class TrackBothStrategy:
             frame_schedule=cfg.schedule_R,
         )
         mesh_R = build_grid_mesh(para_R, img_h, img_w)
+        # Batch C item 1 + C2: cut the right camera's external mesh at any thin
+        # crack barrier. When only the LEFT mask carries the barrier (the common
+        # config the runner auto-derives) the right reference mask is None here;
+        # warp the left barrier into the right camera through the frame-1
+        # correspondence so the RIGHT mesh is cut AND the right per-frame masks
+        # feed the engine's crack-aware cumulative composition. Gated on the
+        # warped mask actually cutting the fresh right grid, so crack-free /
+        # plain-ROI runs leave mesh_R and the right mask stream byte-identical.
+        from al_dic_3d.matching.crack_mesh import cut_mesh_at_barriers
+
+        if mask_R1 is None and mask_L1 is not None:
+            warped_R = _derive_right_barrier(mask_L1, coords_L, right_pts, mesh_R, (img_h, img_w))
+            if warped_R is not None:
+                mask_R1 = warped_R
+                right_masks = [warped_R] * n_frames
+        mesh_R = cut_mesh_at_barriers(mesh_R, mask_R1)
         # The right camera's seeds are the placed left seeds mapped into the
         # right frame (per-seed L->R NCC); the single-seed prior (seed + offset)
         # remains the fallback for the uniform path. Without a usable offset the
@@ -246,7 +305,7 @@ class TrackBothStrategy:
 
         track_kwargs = {
             "L": dict(masks=mask_stream(seq, "L"), u0=u0_L),
-            "R": dict(masks=mask_stream(seq, "R"), u0=u0_R),
+            "R": dict(masks=right_masks, u0=u0_R),
         }
         if self.parallel_cameras:
             tf_L, tf_R = self._track_parallel(

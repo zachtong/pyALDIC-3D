@@ -5059,6 +5059,39 @@ for _loc, _entries in _BATCH_S.items():
     TRANSLATIONS[_loc].update(_entries)
 
 
+# ---------------------------------------------------------------------------
+# Batch C — crack-aware stereo DIC: the read-only crack-aware state indicator
+# on the strain window (shown only when the ROI mask carries a thin barrier).
+# ---------------------------------------------------------------------------
+
+_BATCH_C_CRACK: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Crack-aware: ROI barrier honored (mesh, strain, render)": "裂纹感知：已遵循 ROI 屏障（网格、应变、渲染）",
+    },
+    "zh_TW": {
+        "Crack-aware: ROI barrier honored (mesh, strain, render)": "裂紋感知：已遵循 ROI 屏障（網格、應變、算繪）",
+    },
+    "ja": {
+        "Crack-aware: ROI barrier honored (mesh, strain, render)": "亀裂対応：ROI バリアを尊重（メッシュ・ひずみ・描画）",
+    },
+    "ko": {
+        "Crack-aware: ROI barrier honored (mesh, strain, render)": "균열 인식: ROI 배리어 반영(메시·변형률·렌더링)",
+    },
+    "de": {
+        "Crack-aware: ROI barrier honored (mesh, strain, render)": "Rissbewusst: ROI-Barriere berücksichtigt (Netz, Dehnung, Rendering)",
+    },
+    "fr": {
+        "Crack-aware: ROI barrier honored (mesh, strain, render)": "Sensible aux fissures : barrière ROI respectée (maillage, déformation, rendu)",
+    },
+    "es": {
+        "Crack-aware: ROI barrier honored (mesh, strain, render)": "Consciente de fisuras: barrera ROI respetada (malla, deformación, renderizado)",
+    },
+}
+
+for _loc, _entries in _BATCH_C_CRACK.items():
+    TRANSLATIONS[_loc].update(_entries)
+
+
 def main() -> int:
     ok = True
     for locale in TRANSLATIONS:

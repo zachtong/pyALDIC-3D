@@ -388,6 +388,13 @@ class PreviewTab(QWidget):
             idx = min(frame_k, len(files) - 1) if show_deformed else 0
             bg = cv2.imread(str(files[idx]), cv2.IMREAD_GRAYSCALE)
 
+        # Item 4 WYSIWYG: the preview blanks crack-bridging cells exactly like the
+        # image export it previews (drawn L ROI doubles as the barrier when crack-aware).
+        barrier = (
+            np.asarray(dialog.roi_mask, dtype=np.float64)
+            if (cam == "L" and dialog.roi_mask is not None and result.meta.get("crack_aware"))
+            else None
+        )
         rendered = render_frame(
             result,
             cam,
@@ -399,6 +406,7 @@ class PreviewTab(QWidget):
             roi_mask=dialog.roi_mask if cam == "L" else None,
             show_deformed=show_deformed,
             output_max_dim=_PREVIEW_MAX_DIM,
+            barrier_mask=barrier,
         )
         if rendered is None:
             self._preview_label.setText(self.tr("No data for this field/frame."))

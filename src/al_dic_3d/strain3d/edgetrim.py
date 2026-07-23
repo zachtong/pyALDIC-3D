@@ -34,6 +34,7 @@ def edge_trim_mask(
     vsg_radius: float,
     alpha: float,
     cache: dict | None = None,
+    barrier_mask: NDArray[np.float64] | None = None,
 ) -> NDArray[np.bool_]:
     """Boolean per-node mask — ``True`` = trim this node's strain to NaN.
 
@@ -48,6 +49,11 @@ def edge_trim_mask(
         cache: optional dict reused across frames of one run (keyed by the
             validity-pattern bytes + alpha) so the KD-tree query runs once per
             distinct pattern.
+        barrier_mask: optional ``(H, W)`` crack ROI mask (``< 0.5`` = barrier).
+            When given, the crack barrier is folded in as a boundary (2D
+            ``edge_valid_mask`` parity via ``node_boundary_distance``), so the two
+            crack faces are trimmed within ``alpha * vsg_radius``. ``None``
+            (default) is byte-identical to the pre-Batch-C behaviour.
 
     Returns:
         ``(n,)`` bool; always ``False`` at already-invalid nodes (their strain
@@ -61,7 +67,11 @@ def edge_trim_mask(
     if alpha <= 0.0 or not finite.any():
         return trim  # trimming disabled, or nothing valid to trim
 
-    key = (finite.tobytes(), round(float(alpha), 9)) if cache is not None else None
+    key = (
+        (finite.tobytes(), round(float(alpha), 9), barrier_mask is not None)
+        if cache is not None
+        else None
+    )
     if cache is not None and key in cache:
         return cache[key]
 
@@ -90,6 +100,16 @@ def edge_trim_mask(
     if boundary.any():
         d_bnd, _ = cKDTree(ref_2d[boundary]).query(valid_pts)
         dist = np.minimum(dist, d_bnd)
+
+    # (3) Distance to a thin crack barrier in the pixel ROI mask (Batch C item 3):
+    # fold the crack faces in as a boundary, matching the 2D edge_valid_mask which
+    # uses node_boundary_distance for exactly this. No-op when barrier_mask is None
+    # (the runner/GUI only pass it once a crack is detected in the mesh).
+    if barrier_mask is not None:
+        from al_dic_3d.strain3d.crack import node_boundary_distance
+
+        d_bar = node_boundary_distance(valid_pts, np.ascontiguousarray(barrier_mask, np.float64))
+        dist = np.minimum(dist, d_bar)
 
     trim[finite_idx] = dist < radius
 

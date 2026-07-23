@@ -31,6 +31,7 @@ def build_surface_mesh(
     name: str,
     ref_coords: NDArray | None = None,
     roi_mask: NDArray | None = None,
+    barrier_mask: NDArray | None = None,
 ):
     """Surface (``pv.PolyData``) from finite 3D points + scalars.
 
@@ -38,8 +39,10 @@ def build_surface_mesh(
     (kept for the existing import sites/tests): quad mesh over ``ref_coords``
     with ``roi_mask`` holes preserved, edge-capped Delaunay fallback, point
     cloud as last resort; ``None`` when fewer than 3 usable points exist.
+    ``barrier_mask`` (Batch C item 4) drops cells whose edges bridge a thin
+    crack; ``None`` (crack-free default) keeps the surface byte-identical.
     """
-    return build_surface_polydata(points_3d, values, name, ref_coords, roi_mask)
+    return build_surface_polydata(points_3d, values, name, ref_coords, roi_mask, barrier_mask)
 
 
 def camera_frustum_lines(R: NDArray, T: NDArray, *, size: float = 60.0, aspect: float = 0.75):
@@ -143,11 +146,18 @@ class View3D(QWidget):
         rig=None,
         ref_coords: NDArray | None = None,
         roi_mask: NDArray | None = None,
+        barrier_mask: NDArray | None = None,
     ) -> None:
-        """Re-render the surface for one frame (called on frame/field changes)."""
+        """Re-render the surface for one frame (called on frame/field changes).
+
+        ``barrier_mask`` (Batch C item 4) drops cells bridging a thin crack;
+        ``None`` (crack-free default) leaves the surface unchanged.
+        """
         if not self._ensure_plotter():
             return
-        surf = build_surface_mesh(points_3d, values, field_label, ref_coords, roi_mask)
+        surf = build_surface_mesh(
+            points_3d, values, field_label, ref_coords, roi_mask, barrier_mask
+        )
         if surf is None:
             # An empty frame must SAY so (F3.1), never render silent nothing.
             self._drop_scene()

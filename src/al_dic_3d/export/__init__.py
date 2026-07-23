@@ -40,6 +40,7 @@ from al_dic_3d.export.render3d import (
 from al_dic_3d.export.tables import (
     DISPLACEMENT_IDS,
     STRAIN_IDS,
+    display_field_frame,
     export_csv_frames,
     export_mat,
     export_npz,
@@ -63,6 +64,7 @@ __all__ = [
     "animation_fps",
     "attach_colorbar",
     "colorbar_label",
+    "display_field_frame",
     "encode_params_for",
     "ensure_dir",
     "export_animation",

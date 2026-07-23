@@ -170,6 +170,15 @@ def export_animation(
     renderer = FieldmapRenderer()
     paths: list[Path] = []
     cancelled = False
+    # Item 4 WYSIWYG: when the run was crack-aware, the drawn L ROI mask doubles
+    # as the crack barrier for the dense render's cell blanking — mirror the
+    # still-image path (export/render.py) so video frames match the PNG export
+    # and the strain canvas. None (crack-free) leaves frames byte-identical.
+    barrier = (
+        np.asarray(roi_mask, dtype=np.float64)
+        if (roi_mask is not None and bool(result.meta.get("crack_aware", False)))
+        else None
+    )
 
     for cam in cameras:
         if cancelled:
@@ -205,6 +214,7 @@ def export_animation(
                     show_deformed=show_deformed,
                     output_max_dim=output_max_dim,
                     renderer=renderer,
+                    barrier_mask=barrier if cam == "L" else None,
                 )
                 if rendered is None:
                     continue

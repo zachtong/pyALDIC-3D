@@ -513,6 +513,21 @@ def run_pipeline(
     seq.validate()
     mesh_L = _build_reference_mesh(cfg, img_h, img_w, masks.get(cfg.cam_left))
 
+    # Batch C item 1/5: cut the external frame-1 mesh at any thin crack barrier
+    # (mark_bridging) so FEM/global-step elements do not bridge the crack.
+    # crack_aware gates crack-aware strain + rendering; crack-free = byte-identical.
+    from al_dic_3d.matching.crack_mesh import cut_mesh_at_barriers, mask_cuts_mesh
+
+    left_seq = masks.get(cfg.cam_left)
+    left_mask0 = (
+        np.ascontiguousarray(np.asarray(left_seq[0], dtype=np.float64))
+        if left_seq is not None
+        else None
+    )
+    crack_aware = mask_cuts_mesh(mesh_L, left_mask0)
+    if crack_aware:
+        mesh_L = cut_mesh_at_barriers(mesh_L, left_mask0)
+
     strategy_cls = get_strategy(cfg.strategy)
     kwargs = dict(
         winsize=cfg.winsize,
@@ -613,6 +628,10 @@ def run_pipeline(
                 strain_size=cfg.strain_size,
                 winstepsize=cfg.winstepsize,
                 smooth_sigma=cfg.strain_smooth_sigma,
+                # Batch C items 2/3: crack-aware neighbour exclusion + crack-trim,
+                # only once a thin barrier was detected (else byte-identical).
+                roi_mask=left_mask0 if crack_aware else None,
+                edge_trim_alpha=0.7 if crack_aware else 0.0,
                 progress_cb=progress,  # P3.5: per-frame ticks + cooperative cancel
                 stop_event=stop,
             )
@@ -641,6 +660,9 @@ def run_pipeline(
         "n_tracked_positions": tracked,
         "quality_gate": cfg.quality_gate,
         "compute_strain": cfg.compute_strain,
+        # Batch C: ROI carried a thin crack barrier -> mesh cut + crack-aware
+        # strain/rendering (item 5 GUI indicator reads this).
+        "crack_aware": bool(crack_aware),
         "image_size": (img_h, img_w),
         "base_dir": str(seq_base),
         "diagnostics": [dict(r) for r in cs.diagnostics],
@@ -671,9 +693,10 @@ RESULT_FORMATS = ("npz", "mat", "csv", "ply", "vtu")
 # Archive layout version recorded in the parameters JSON. Schema 2 (P3.3)
 # dropped the doubled ``strain_<name>`` aliases: strain stacks live ONLY under
 # their canonical GUI-selection ids (``exx`` ... ``von_mises`` plus ``dwdx`` /
-# ``dwdy``). The legacy ``points3D`` / ``displacement3D`` keys stay (tools
-# rely on them).
-ARCHIVE_SCHEMA = 2
+# ``dwdy``). Schema 3 (Batch C item 3) adds an OPTIONAL ``strain_valid``
+# ``(n_frames, n_pts)`` bool stack (edge-trim UNION crack-trim) alongside the
+# now-DENSE strain values; readers that ignore unknown keys are unaffected.
+ARCHIVE_SCHEMA = 3
 
 
 def _arrays(result: RunResult) -> dict:
@@ -705,6 +728,10 @@ def _arrays(result: RunResult) -> dict:
     if result.strain is not None:
         for name in STRAIN_FIELDS:
             arrays.setdefault(name, getattr(result.strain, name))
+        # Schema 3: DENSE strain values + an optional validity stack (edge-trim
+        # UNION crack-trim). Absent when trimming/crack-awareness was off.
+        if getattr(result.strain, "strain_valid", None) is not None:
+            arrays.setdefault("strain_valid", np.asarray(result.strain.strain_valid))
     return arrays
 
 
@@ -740,6 +767,9 @@ def write_results(
     prefix = cfg.output_prefix
     ts = make_timestamp()
     fields = list(DISPLACEMENT_IDS) + (list(STRAIN_IDS) if result.strain is not None else [])
+    # Schema 3: csv/vtu/ply also carry the DENSE strain's validity column when present.
+    if result.strain is not None and getattr(result.strain, "strain_valid", None) is not None:
+        fields.append("strain_valid")
     # archive_schema documents the npz/mat key layout (P3.3 alias removal).
     extra = {**asdict(cfg), "archive_schema": ARCHIVE_SCHEMA}
     paths: dict[str, Path] = {

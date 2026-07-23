@@ -220,6 +220,7 @@ class FieldmapRenderer:
         deformed: bool = False,
         ref_uv: tuple[NDArray[np.float64], NDArray[np.float64]] | None = None,
         ref_pts: NDArray[np.float64] | None = None,
+        barrier_mask: NDArray[np.float64] | None = None,
     ) -> tuple[NDArray[np.uint8] | None, NDArray | None, NDArray | None, int]:
         """Render a field to a dense RGBA array (Tier-1 cached compute).
 
@@ -241,6 +242,11 @@ class FieldmapRenderer:
             ref_pts: (n, 2) frame-1 positions of ALL nodes, used to build the
                 fallback support (invalid frame-k nodes keep finite reference
                 positions here, so their holes are located correctly).
+            barrier_mask: (H, W) crack ROI mask (< 0.5 = barrier) in the RENDER
+                coordinate space (nodes'). Grid cells inside a Delaunay triangle
+                whose edge crosses the barrier are BLANKED (Batch C item 4), so
+                the overlay respects the crack the mesh was cut at. None (default)
+                leaves the render bit-exact (no triangle-crossing scan).
 
         Returns:
             (rgba, x_grid, y_grid, output_step); rgba is None when the node
@@ -251,7 +257,7 @@ class FieldmapRenderer:
         interpolator = None  # set on the compute path; reused by the warp mask
         cached = self._interp_cache.get(interp_key)
         if cached is not None:
-            grid_data, xg, yg, out_step = cached
+            grid_data, xg, yg, out_step, crack_grid = cached
         else:
             finite = np.isfinite(nodes).all(axis=1)
             pts = nodes[finite]
@@ -285,7 +291,18 @@ class FieldmapRenderer:
                 # Nodes lie entirely outside img_shape (e.g. no background
                 # image yet) — nothing to draw; do not cache the empty grid.
                 return None, None, None, 1
-            self._interp_cache[interp_key] = (grid_data, xg, yg, out_step)
+            # Crack-aware blanking (Batch C item 4): reuse the 2D value-reduced
+            # cross-crack cell mask over the SAME Delaunay scatter_to_grid used.
+            # None (bit-exact) when no barrier or no triangle crosses it.
+            crack_grid = None
+            if barrier_mask is not None and xg is not None and interpolator is not None:
+                try:
+                    crack_grid = interpolator.cross_crack_grid(
+                        vals, xg, yg, np.ascontiguousarray(barrier_mask, dtype=np.float64)
+                    )
+                except Exception:  # noqa: BLE001 - a crack-scan bug must not kill the render
+                    crack_grid = None
+            self._interp_cache[interp_key] = (grid_data, xg, yg, out_step, crack_grid)
 
         # --- masking: warped mask (deformed) or direct reference lookup ---
         # The warp mask lives in its own bounded LRU; when it was evicted while
@@ -321,10 +338,15 @@ class FieldmapRenderer:
             if eff is not None and xg is not None:
                 mask_to_use = lookup_outside(eff, xg, yg)
 
+        # Combine the ROI/outside knockout with the crack-cell blank (item 4).
+        blank = mask_to_use
+        if crack_grid is not None:
+            blank = crack_grid if blank is None else (np.asarray(blank) | crack_grid)
+
         render_data = grid_data
-        if mask_to_use is not None and np.any(mask_to_use):
+        if blank is not None and np.any(blank):
             render_data = grid_data.copy()
-            render_data[mask_to_use] = np.nan
+            render_data[blank] = np.nan
 
         return apply_colormap(render_data, vmin, vmax, cmap), xg, yg, out_step
 

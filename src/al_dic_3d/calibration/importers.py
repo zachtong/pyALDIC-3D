@@ -206,9 +206,7 @@ def from_matchid_caldat(path: str | Path) -> StereoRig:
     t = _matchid_table(path)
     for cam in ("Cam0_", "Cam1_"):
         if t.get(f"{cam}Fx", 0.0) <= 0.0:
-            raise ValueError(
-                f"MatchID caldat missing {cam}Fx — unrecognized key layout in {path}"
-            )
+            raise ValueError(f"MatchID caldat missing {cam}Fx — unrecognized key layout in {path}")
     left = _matchid_camera(t, "Cam0_")
     right = _matchid_camera(t, "Cam1_")
     R = _euler_zyx_deg(t.get("Theta", 0.0), t.get("Phi", 0.0), t.get("Psi", 0.0))

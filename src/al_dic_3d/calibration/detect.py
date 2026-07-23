@@ -554,9 +554,7 @@ def _coded_attempt(
         # means the fiducial triangle was misassigned (e.g. a false donut from
         # a speck): the sheared lattice still snags some dots by accident, and
         # such a view would poison the mono solve with a huge silent bias.
-        return _fail(
-            f"lattice match fraction too low ({len(node_ids)}/{len(dots)} dots)", method
-        )
+        return _fail(f"lattice match fraction too low ({len(node_ids)}/{len(dots)} dots)", method)
 
     cols_f = all_nodes[node_ids, 0]
     rows_f = all_nodes[node_ids, 1]

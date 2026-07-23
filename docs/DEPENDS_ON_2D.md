@@ -79,6 +79,9 @@ Row template (copy when adding a dependency):
 | `al_dic.mesh.refinement.RefinementContext` | context for the refinement criteria (mesh + frame-1 mask) |
 | `al_dic.utils.interpolation.FieldInterpolator` | cached Delaunay scattered-field interpolator for the dense overlay renderer (`viz3d.fieldmap`, shared by the GUI canvas and the image exporter) | public (module-level; import via full path) |
 | `al_dic.utils.interpolation.scatter_to_grid` | scattered node values -> regular pixel grid (smart output-step sizing) for the dense field overlay (`viz3d.fieldmap`) | public (module-level; import via full path) |
+| `al_dic.utils.interpolation.FieldInterpolator.cross_crack_grid` | Batch C item 4: crack-aware dense-render cell blank (value-reduced cross-crack cell mask over the SAME Delaunay `scatter_to_grid` uses) in `viz3d.fieldmap.render_field_rgba`; `None` (bit-exact) when no triangle crosses | public (method of the already-imported FieldInterpolator) |
+| `al_dic.utils.crack_barrier.segment_crosses_barrier` | Batch C item 4: per-cell crack-crossing edge test for the 3D surface (`viz3d.surface.filter_cells_cross_barrier`) — blank quads/tris bridging a crack | public (module-level, no underscore; import via full path) |
+| `al_dic.mesh.mark_bridging.mark_bridging` | Batch C item 1: cut the EXTERNAL frame-1 mesh at thin crack barriers (`matching.crack_mesh`), so FEM/global-step elements never bridge a crack — the same test the engine applies to its internal mesh | public (module-level, no underscore; NOT re-exported from `al_dic.mesh.__init__`, import via full path) |
 
 ## Known engine caveats (read-only observations; re-audited 2026-07-22 for 0.7.0)
 

@@ -80,6 +80,7 @@ class VizController3D(FieldmapRenderer):
         deformed: bool = False,
         ref_uv: tuple[NDArray[np.float64], NDArray[np.float64]] | None = None,
         ref_pts: NDArray[np.float64] | None = None,
+        barrier_mask: NDArray[np.float64] | None = None,
     ) -> tuple[QPixmap | None, NDArray | None, NDArray | None, int]:
         """Render a field to a QPixmap overlay (Tier-2 cached).
 
@@ -97,11 +98,13 @@ class VizController3D(FieldmapRenderer):
             round(vmax, 6),
             roi_mask is not None,
             deformed,
+            barrier_mask is not None,
         )
 
         cached_interp = self._interp_cache.get(interp_key)
         if pixmap_key in self._pixmap_cache and cached_interp is not None:
-            _, xg, yg, out_step = cached_interp
+            # render_field_rgba caches (grid_data, xg, yg, out_step, crack_grid).
+            _, xg, yg, out_step = cached_interp[:4]
             return self._pixmap_cache[pixmap_key], xg, yg, out_step
 
         rgba, xg, yg, out_step = self.render_field_rgba(
@@ -118,6 +121,7 @@ class VizController3D(FieldmapRenderer):
             deformed=deformed,
             ref_uv=ref_uv,
             ref_pts=ref_pts,
+            barrier_mask=barrier_mask,
         )
         if rgba is None:
             return None, None, None, 1

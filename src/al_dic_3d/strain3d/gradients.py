@@ -186,6 +186,71 @@ def _neighbor_table(
     return out
 
 
+def _barrier_filtered_table(
+    idx_map: NDArray[np.int64],
+    nbr: NDArray[np.int64],
+    counts: NDArray[np.int64],
+    ref_2d: NDArray[np.float64],
+    finite: NDArray[np.bool_],
+    vsg_radius: float,
+    barrier_mask: NDArray[np.float64],
+    cache: dict | None,
+) -> tuple[NDArray[np.int64], NDArray[np.int64], NDArray[np.int64]]:
+    """Drop VSG neighbours whose line of sight crosses a crack barrier.
+
+    Ports the 2D crack line-of-sight rule (``comp_def_grad`` + ``platefit_kernel.
+    _seg_hits_mask``), widened for the 3D metric: the VSG neighbour set is a
+    Chebyshev SQUARE window (``query_ball_point`` with ``p=inf``), so a diagonal
+    corner neighbour reaches Euclidean distance up to ``vsg_radius*sqrt(2)`` and a
+    segment to it can cross a barrier whose nearest pixel is that far away. The
+    near-barrier gate therefore uses ``node_boundary_distance <
+    vsg_radius*sqrt(2)`` (the 2D disk gate's ``< vsg_radius`` would silently miss
+    such corner neighbours). For gated nodes, a neighbour is dropped when the OPEN
+    segment between the two reference-2D pixels crosses a ``mask < 0.5`` band, so
+    the two crack faces never mix in one plane fit. Rows
+    are compacted (``-1`` padding, updated ``counts``) so both fit engines honour
+    the filter unchanged. Nodes far from the barrier — and every node when no
+    segment crosses — are returned byte-identical.
+
+    Cached alongside the base table under a barrier-tagged key (``ref_2d`` /
+    ``vsg_radius`` / ``barrier_mask`` are fixed for one run, so the finite pattern
+    determines the result).
+    """
+    from al_dic_3d.strain3d.crack import node_boundary_distance, segment_hits_barrier
+
+    key = (finite.tobytes() + b"|barrier") if cache is not None else None
+    if cache is not None and key in cache:
+        return cache[key]
+
+    pts = np.asarray(ref_2d, dtype=np.float64)[finite]
+    mask_f = np.ascontiguousarray(barrier_mask, dtype=np.float64)
+    # Square-window (Chebyshev) neighbours reach Euclidean vsg_radius*sqrt(2) in
+    # the diagonal corners, so the near-barrier gate must span that full reach —
+    # a `< vsg_radius` gate silently skips corner neighbours that cross the crack.
+    near = node_boundary_distance(pts, mask_f) < vsg_radius * np.sqrt(2.0)
+    new_nbr = nbr.copy()
+    new_counts = counts.copy()
+    for row in np.flatnonzero(near):
+        cnt = int(counts[row])
+        x0, y0 = float(pts[row, 0]), float(pts[row, 1])
+        keep = [
+            j
+            for jj in range(cnt)
+            for j in (int(nbr[row, jj]),)
+            if not segment_hits_barrier(x0, y0, float(pts[j, 0]), float(pts[j, 1]), mask_f)
+        ]
+        new_nbr[row, :] = -1
+        new_nbr[row, : len(keep)] = keep
+        new_counts[row] = len(keep)
+
+    out = (idx_map, new_nbr, new_counts)
+    if cache is not None:
+        cache[key] = out
+        while len(cache) > _NEIGHBOR_CACHE_CAPACITY:
+            cache.pop(next(iter(cache)))
+    return out
+
+
 def _batched_lstsq(
     a: NDArray[np.float64],
     b: NDArray[np.float64],
@@ -310,6 +375,7 @@ def fit_gradients(
     min_neighbors: int = MIN_NEIGHBORS,
     neighbor_cache: dict | None = None,
     engine: str = "auto",
+    barrier_mask: NDArray[np.float64] | None = None,
 ) -> NDArray[np.float64]:
     """Per-node displacement-gradient matrices ``(n, 3, 3)`` = ``d(disp_j)/d(axis_i)``.
 
@@ -327,6 +393,10 @@ def fit_gradients(
         engine: ``"auto"`` (Numba kernel when numba imports, else the batched
             SVD path — the default), ``"numba"`` (require the kernel), or
             ``"batched"`` (force the P3.5 batched-SVD path).
+        barrier_mask: optional ``(H, W)`` crack ROI mask (``< 0.5`` = barrier).
+            When given, VSG neighbours whose ``ref_2d`` segment crosses the
+            barrier are dropped at near-barrier nodes (crack-aware line-of-sight;
+            Batch C item 2). ``None`` (default) leaves fits byte-identical.
 
     Returns:
         ``(n, 3, 3)`` with rows = derivative axis, columns = displacement component;
@@ -350,6 +420,10 @@ def fit_gradients(
         return coef
 
     idx_map, nbr, counts = _neighbor_table(ref_2d, finite, vsg_radius, neighbor_cache)
+    if barrier_mask is not None:
+        idx_map, nbr, counts = _barrier_filtered_table(
+            idx_map, nbr, counts, ref_2d, finite, vsg_radius, barrier_mask, neighbor_cache
+        )
     ok = counts >= min_neighbors
     if not ok.any():
         return coef

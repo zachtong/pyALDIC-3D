@@ -166,13 +166,13 @@ def test_export_view3d_frames_single_plotter_in_place(tmp_path, monkeypatch):
     monkeypatch.setattr(render3d, "_make_plotter", fake_make)
     monkeypatch.setattr(render3d, "_screenshot_bgr", lambda pl: np.zeros((24, 32, 3), np.uint8))
     field_calls: list[int] = []
-    orig_ff = render3d.field_frame
+    orig_ff = render3d.display_field_frame
 
-    def counting_ff(result, field_id, k):
+    def counting_ff(result, field_id, k, **kw):
         field_calls.append(k)
-        return orig_ff(result, field_id, k)
+        return orig_ff(result, field_id, k, **kw)
 
-    monkeypatch.setattr(render3d, "field_frame", counting_ff)
+    monkeypatch.setattr(render3d, "display_field_frame", counting_ff)
 
     result = _grid_result(n_frames=4, with_strain=False)
     # Frame 3 loses a point -> the quad topology changes -> rebuild path.
@@ -219,15 +219,17 @@ def test_field_stack_matches_per_frame_loop():
     assert field_stack(result, "not_a_field") is None
 
 
-def test_runner_arrays_schema2_single_canonical_strain_keys():
+def test_runner_arrays_schema3_single_canonical_strain_keys():
     from al_dic_3d.runner import ARCHIVE_SCHEMA, _arrays
 
-    assert ARCHIVE_SCHEMA == 2
+    assert ARCHIVE_SCHEMA == 3
     result = _grid_result()
     arrays = _arrays(result)
     for name in ("exx", "eyy", "von_mises", "dwdx", "dwdy"):
         np.testing.assert_array_equal(arrays[name], getattr(result.strain, name))
-    assert not any(key.startswith("strain_") for key in arrays)
+    # No legacy strain_<name> aliases (schema 2); the ONLY strain_-prefixed key
+    # allowed is the schema-3 strain_valid validity stack (absent here — no trim).
+    assert not any(key.startswith("strain_") and key != "strain_valid" for key in arrays)
     # Legacy tool keys survive.
     for key in ("points3D", "displacement3D", "xL", "xR", "quality", "n_frames", "n_pts"):
         assert key in arrays

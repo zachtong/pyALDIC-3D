@@ -170,6 +170,16 @@ class StrainParamPanel3D(QWidget):
         self._edge_trim_readout.setVisible(False)
         layout.addRow("", self._edge_trim_readout)
 
+        # Batch C item 5: honest, read-only crack-aware state indicator — shown
+        # only when the run's ROI mask carried a thin crack barrier (mesh cut +
+        # crack-aware strain gauge, edge-trim and rendering are all active).
+        self._crack_indicator = QLabel("")
+        self._crack_indicator.setStyleSheet(
+            f"color: {COLORS.ACCENT}; font-size: 10px; font-weight: bold; padding-left: 4px;"
+        )
+        self._crack_indicator.setVisible(False)
+        layout.addRow("", self._crack_indicator)
+
         # --- Strain field smoothing ---
         self._smooth_combo = QComboBox()
         # Literal tr() calls per preset — pyside6-lupdate only extracts string
@@ -297,6 +307,14 @@ class StrainParamPanel3D(QWidget):
             self.tr("Trimmed: {0} nodes ({1}%)").format(int(n_trimmed), f"{pct:.0f}")
         )
         self._edge_trim_readout.setVisible(True)
+
+    def set_crack_aware(self, active: bool) -> None:
+        """Show/hide the read-only crack-aware indicator (Batch C item 5)."""
+        if active:
+            self._crack_indicator.setText(
+                self.tr("Crack-aware: ROI barrier honored (mesh, strain, render)")
+            )
+        self._crack_indicator.setVisible(bool(active))
 
     def coordinate(self) -> str:
         return _COORD_CODES[self._coord_combo.currentIndex()]

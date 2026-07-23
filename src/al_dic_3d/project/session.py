@@ -180,6 +180,12 @@ def _result_arrays(result) -> dict:
 
         for name in STRAIN_FIELDS:
             arrays[f"{_STRAIN_PREFIX}{name}"] = getattr(result.strain, name)
+        # Batch C item 3: persist the DENSE strain's validity stack (edge-trim
+        # UNION crack-trim) as an OPTIONAL array — absent when trimming was off,
+        # and absent in pre-Batch-C archives (loaded back as None; SCHEMA_VERSION
+        # stays 1, no migration needed).
+        if result.strain.strain_valid is not None:
+            arrays["strain_valid"] = np.asarray(result.strain.strain_valid)
     return arrays
 
 
@@ -202,11 +208,15 @@ def _result_from_arrays(arrays: dict, ref_coords: np.ndarray, strategy: str, met
         source=arrays["rec_source"],
     )
     strain = None
-    strain_keys = [k for k in arrays if k.startswith(_STRAIN_PREFIX)]
-    if strain_keys:
+    if f"{_STRAIN_PREFIX}exx" in arrays:
         from al_dic_3d.strain3d import STRAIN_FIELDS, StrainResult3D
 
-        strain = StrainResult3D(**{n: arrays[f"{_STRAIN_PREFIX}{n}"] for n in STRAIN_FIELDS})
+        # strain_valid is optional (absent in pre-Batch-C archives / no-trim runs).
+        valid = arrays["strain_valid"] if "strain_valid" in arrays else None
+        strain = StrainResult3D(
+            **{n: arrays[f"{_STRAIN_PREFIX}{n}"] for n in STRAIN_FIELDS},
+            strain_valid=valid,
+        )
     return RunResult(
         strategy=strategy,
         ref_coords=ref_coords,

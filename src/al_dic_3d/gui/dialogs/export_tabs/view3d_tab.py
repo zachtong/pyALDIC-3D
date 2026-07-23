@@ -176,6 +176,9 @@ class View3DTab(ExportTabBase):
         frame_start, frame_end = self._range_row.frame_range()
         frame_k = self._dialog.hint.current_frame
         n_orbit = self._orbit_spin.value()
+        # The drawn LEFT ROI mask doubles as the crack barrier on crack-aware runs
+        # (item 4): cells bridging the crack are dropped from the exported surface.
+        roi_mask = self._dialog.roi_mask
 
         def job(progress_cb, stop_event):
             from al_dic_3d.export import export_view3d_frames, export_view3d_turntable
@@ -196,6 +199,7 @@ class View3DTab(ExportTabBase):
                     animation_format=fmt if want_anim else None,
                     fps=fps,
                     frame_step=frame_step,
+                    roi_mask=roi_mask,
                     stop_event=stop_event,
                     progress_cb=progress_cb,
                 )
@@ -212,6 +216,7 @@ class View3DTab(ExportTabBase):
                     cmap=cmap,
                     animation_format=fmt,
                     fps=fps,
+                    roi_mask=roi_mask,
                     stop_event=stop_event,
                     progress_cb=progress_cb,
                 )

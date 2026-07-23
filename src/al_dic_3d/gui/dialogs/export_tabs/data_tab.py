@@ -124,7 +124,19 @@ class DataTab(ExportTabBase):
 
     def selected_fields(self) -> list[str]:
         fields = [f for f, cb in self._disp_checks.items() if cb.isChecked()]
-        fields += [f for f, cb in self._strain_checks.items() if cb.isChecked() and cb.isEnabled()]
+        strain = [f for f, cb in self._strain_checks.items() if cb.isChecked() and cb.isEnabled()]
+        fields += strain
+        # C3: carry the strain validity mask whenever strain is exported and it
+        # exists, matching the headless runner (write_results / _arrays). Without
+        # it a downstream tool averaging the dense strain silently includes the
+        # trimmed one-sided-gauge nodes with no way to filter them.
+        result = self._dialog.result
+        if (
+            strain
+            and result.strain is not None
+            and getattr(result.strain, "strain_valid", None) is not None
+        ):
+            fields.append("strain_valid")
         return fields
 
     @property

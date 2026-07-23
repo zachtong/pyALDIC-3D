@@ -627,6 +627,12 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
             self.signals.color_min, self.signals.color_max = vmin, vmax
         else:
             vmin, vmax = self.signals.color_min, self.signals.color_max
+        # Item 4: on a crack-aware run the drawn ROI mask doubles as the crack
+        # barrier so surface cells bridging the crack are dropped (the barrier
+        # filter keys off reference coords, so it is frame-independent).
+        barrier_mask = None
+        if roi_mask is not None and bool(result.meta.get("crack_aware", False)):
+            barrier_mask = roi_mask.astype(np.float64)
         self._view3d.update_view(
             result.reconstruction.points[k],
             vals,
@@ -637,6 +643,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
             rig=self._load_rig(),
             ref_coords=result.ref_coords,
             roi_mask=roi_mask,
+            barrier_mask=barrier_mask,
         )
 
     def _clear_overlay(self) -> None:
@@ -701,6 +708,19 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         else:
             roi_mask = self._right_roi_mask(result)
 
+        # Item 4 WYSIWYG: on a crack-aware run the drawn LEFT ROI mask doubles as
+        # the crack barrier so the overlay blanks crack-bridging cells exactly
+        # like the image export. Reference view only (the deformed crack is not
+        # warped), LEFT camera (the barrier lives in left reference coords).
+        barrier_mask = None
+        if (
+            cam == "L"
+            and not deformed
+            and roi_mask is not None
+            and bool(result.meta.get("crack_aware", False))
+        ):
+            barrier_mask = roi_mask.astype(np.float64)
+
         # Auto colorbar range from VISIBLE nodes only (2D visible_values
         # contract), clipped to the 2–98 percentile (G2.3, 2D parity):
         # clipped-by-mask nodes and outliers must not stretch the range. The
@@ -737,6 +757,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
                 deformed=deformed,
                 ref_uv=ref_uv,
                 ref_pts=ref_pts,
+                barrier_mask=barrier_mask,
             )
         except Exception as exc:  # noqa: BLE001 - a render bug must not kill the GUI
             self.signals.log.emit(f"overlay render failed: {type(exc).__name__}: {exc}", "error")

@@ -29,7 +29,32 @@ def field_frame(result: RunResult, field: str, k: int) -> np.ndarray | None:
         return np.linalg.norm(rec.displacement[k], axis=1)
     if field in STRAIN_IDS and result.strain is not None:
         return getattr(result.strain, field)[k]
+    if field == "strain_valid" and result.strain is not None:
+        valid = getattr(result.strain, "strain_valid", None)
+        return None if valid is None else valid[k]
     return None
+
+
+def display_field_frame(
+    result: RunResult, field: str, k: int, *, deformed: bool = False
+) -> np.ndarray | None:
+    """One frame of a field with trimmed strain nodes NaN-masked (WYSIWYG helper).
+
+    The strain canvas hides ``~strain_valid`` nodes before both display and
+    auto-range, so every render/export path must too (Batch C, C3): dense strain
+    VALUES stay finite, ``strain_valid`` is the sole trim signal. This centralizes
+    the mask so the canvas, image export, animation, and 3D view agree. The
+    reference view (``deformed=False``) applies frame-0 validity, the deformed
+    view frame-k validity (the 2D rule). Displacement fields and strain-free
+    results pass through :func:`field_frame` unchanged.
+    """
+    vals = field_frame(result, field, k)
+    if vals is None or field not in STRAIN_IDS or result.strain is None:
+        return vals
+    valid = getattr(result.strain, "strain_valid", None)
+    if valid is None:
+        return vals
+    return np.where(valid[k if deformed else 0], vals, np.nan)
 
 
 def field_stack(result: RunResult, field: str) -> np.ndarray | None:
@@ -46,6 +71,8 @@ def field_stack(result: RunResult, field: str) -> np.ndarray | None:
         return np.linalg.norm(rec.displacement, axis=2)
     if field in STRAIN_IDS and result.strain is not None:
         return getattr(result.strain, field)
+    if field == "strain_valid" and result.strain is not None:
+        return getattr(result.strain, "strain_valid", None)
     return None
 
 

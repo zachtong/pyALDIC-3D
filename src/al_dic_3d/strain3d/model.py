@@ -40,10 +40,17 @@ class StrainResult3D:
     dwdx: NDArray[np.float64]  # out-of-plane slope diagnostics
     dwdy: NDArray[np.float64]
     # Q4 edge-trim bookkeeping: per-frame count of VALID nodes whose strain was
-    # trimmed to NaN near invalid/missing nodes (alpha * VSG-radius band).
-    # ``None`` when trimming was disabled (or after a session reload — the
+    # trimmed near invalid/missing nodes or a crack barrier (alpha * VSG-radius
+    # band). ``None`` when trimming was disabled (or after a session reload — the
     # counts are a UI readout, not part of the persisted result arrays).
     n_trimmed: NDArray[np.int64] | None = None
+    # Batch C item 3 (A5-2): per-frame, per-node ``(n_frames, n_pts)`` bool — the
+    # 2D contract. Strain VALUES stay DENSE; ``strain_valid`` carries the edge-trim
+    # UNION crack-trim (``True`` = show, ``False`` = trimmed). Consumers NaN-out
+    # ``~strain_valid`` for display / export, and the reference view can apply
+    # frame-0 validity while the deformed view applies frame-k validity. ``None``
+    # when trimming was disabled (all nodes valid).
+    strain_valid: NDArray[np.bool_] | None = None
 
     def __post_init__(self) -> None:
         shape = self.exx.shape
@@ -53,6 +60,8 @@ class StrainResult3D:
             arr = getattr(self, name)
             if arr.shape != shape:
                 raise ValueError(f"field {name!r} shape {arr.shape} != {shape}")
+        if self.strain_valid is not None and self.strain_valid.shape != shape:
+            raise ValueError(f"strain_valid shape {self.strain_valid.shape} != {shape}")
 
     @property
     def n_frames(self) -> int:

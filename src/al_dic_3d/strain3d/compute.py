@@ -123,6 +123,7 @@ def compute_surface_strain(
     smooth_sigma: float = 0.0,
     strain_type: str = "green_lagrange",
     edge_trim_alpha: float = 0.0,
+    roi_mask: NDArray[np.float64] | None = None,
     progress_cb: ProgressCb | None = None,
     stop_event: threading.Event | Callable[[], bool] | None = None,
 ) -> StrainResult3D:
@@ -141,11 +142,16 @@ def compute_surface_strain(
             (default), ``"infinitesimal"``, or ``"almansi"`` — same gradient
             fit / tangent frame, different reduction (see
             :func:`al_dic_3d.strain3d.gradients.strain_tensor`).
-        edge_trim_alpha: Q4 edge trim — NaN the strain of nodes closer than
-            ``alpha * VSG-radius`` (px, on ``ref_2d``) to any invalid/missing
-            node (one-sided gauge support). ``0`` (default) disables; the GUI
-            panel defaults to the 2D-calibrated 0.7. ``min_neighbors`` stays
-            the hard floor beneath this.
+        edge_trim_alpha: Q4 edge trim — flag (in ``strain_valid``, not NaN) the
+            strain of nodes closer than ``alpha * VSG-radius`` (px, on ``ref_2d``)
+            to any invalid/missing node or a crack barrier (one-sided gauge
+            support). ``0`` (default) disables; the GUI panel defaults to the
+            2D-calibrated 0.7. ``min_neighbors`` stays the hard floor beneath this.
+        roi_mask: optional ``(H, W)`` crack ROI mask (``< 0.5`` = barrier). When
+            given (Batch C), the crack line-of-sight filter runs in the gradient
+            fit AND the crack faces are folded into the edge trim. The caller
+            passes it ONLY once a thin barrier is detected, so a crack-free run
+            stays byte-identical.
         progress_cb: optional ``(fraction, message)`` callback, one tick per frame.
         stop_event: cooperative cancel — a ``threading.Event`` (or any
             ``() -> bool`` callable), checked before every frame; tripping it
@@ -163,10 +169,16 @@ def compute_surface_strain(
     stop_fn = stop_event.is_set if hasattr(stop_event, "is_set") else stop_event
     neighbor_cache: dict = {}  # one VSG table per validity pattern (P3.5)
     kernels.warmup()  # R3: JIT compile/cache-load BEFORE the loop (honest frame ETAs)
+    barrier = None if roi_mask is None else np.ascontiguousarray(roi_mask, dtype=np.float64)
 
     fields = {name: np.full((n_frames, n_pts), np.nan, dtype=np.float64) for name in STRAIN_FIELDS}
     trim_cache: dict = {}  # one trim mask per (validity pattern, alpha)
-    n_trimmed = np.zeros(n_frames, dtype=np.int64) if edge_trim_alpha > 0 else None
+    do_trim = edge_trim_alpha > 0
+    n_trimmed = np.zeros(n_frames, dtype=np.int64) if do_trim else None
+    # A5-2 (Batch C item 3): strain VALUES stay DENSE; a per-frame boolean
+    # strain_valid carries the edge-trim UNION crack-trim so the GUI/exports can
+    # apply frame-0 vs frame-k validity without a destructive bake.
+    strain_valid = np.ones((n_frames, n_pts), dtype=bool) if do_trim else None
     for k in range(n_frames):
         if stop_fn is not None and stop_fn():
             raise RuntimeError("cancelled")
@@ -182,23 +194,24 @@ def compute_surface_strain(
             specimen_R=specimen_R,
             min_neighbors=min_neighbors,
             neighbor_cache=neighbor_cache,
+            barrier_mask=barrier,  # item 2: crack-aware neighbour exclusion
         )
         strain = strain_tensor(coef, strain_type)
         for name in STRAIN_FIELDS:
             fields[name][k] = strain[name]
-        if n_trimmed is not None:
-            # Q4: NaN the strain (never the displacement) inside the
-            # alpha * VSG-radius band around invalid/missing nodes — the
-            # same finite mask fit_gradients used for this frame.
+        if do_trim:
+            # Q4 / item 3: flag (never NaN) the strain inside the
+            # alpha * VSG-radius band around invalid/missing nodes and the crack
+            # barrier — the same finite mask fit_gradients used for this frame.
             finite = (
                 np.isfinite(ref_2d).all(1) & np.isfinite(ref_3d).all(1) & np.isfinite(disp).all(1)
             )
-            trim = edge_trim_mask(ref_2d, finite, vsg_radius, edge_trim_alpha, cache=trim_cache)
-            if trim.any():
-                for name in STRAIN_FIELDS:
-                    fields[name][k, trim] = np.nan
+            trim = edge_trim_mask(
+                ref_2d, finite, vsg_radius, edge_trim_alpha, cache=trim_cache, barrier_mask=barrier
+            )
+            strain_valid[k] = ~trim
             n_trimmed[k] = int(trim.sum())
         if progress_cb is not None:
             progress_cb((k + 1) / n_frames, f"strain frame {k + 1}/{n_frames}")
 
-    return StrainResult3D(**fields, n_trimmed=n_trimmed)
+    return StrainResult3D(**fields, n_trimmed=n_trimmed, strain_valid=strain_valid)

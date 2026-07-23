@@ -195,6 +195,50 @@ def filter_cells_edge_cap(
     return cells[longest <= max_factor * float(step)]
 
 
+def filter_cells_cross_barrier(
+    cells: NDArray[np.int64],
+    ref_coords: NDArray[np.float64],
+    barrier: NDArray[np.float64] | None,
+) -> NDArray[np.int64]:
+    """Drop cells (quad or tri) whose any edge crosses a thin crack barrier.
+
+    The 3D-surface analogue of the dense field's ``cross_crack_cell_mask``: the
+    quad lattice / Delaunay reconnects nodes on opposite crack faces, so a cell
+    with an edge crossing ``barrier < 0.5`` bridges the crack and is removed. An
+    edge counts only when BOTH endpoints are material (``>= 0.5``), matching the
+    2D endpoint gate, so a convex ROI overhang is never flagged. ``None`` (no
+    barrier) is a no-op, keeping crack-free surfaces bit-exact.
+    """
+    cells = np.asarray(cells, dtype=np.int64)
+    if cells.size == 0 or barrier is None:
+        return cells
+    from al_dic.utils.crack_barrier import segment_crosses_barrier  # DEPENDS_ON_2D.md
+
+    b = np.ascontiguousarray(barrier, dtype=np.float64)
+    ref = np.asarray(ref_coords, dtype=np.float64).reshape(-1, 2)
+    h, w = b.shape
+
+    def _inside(x: float, y: float) -> bool:
+        xi = min(max(int(round(x)), 0), w - 1)
+        yi = min(max(int(round(y)), 0), h - 1)
+        return bool(b[yi, xi] >= 0.5)
+
+    k = cells.shape[1]
+    keep = np.ones(len(cells), dtype=bool)
+    for i, cell in enumerate(cells):
+        for e in range(k):
+            xa, ya = ref[cell[e]]
+            xc, yc = ref[cell[(e + 1) % k]]
+            if (
+                _inside(xa, ya)
+                and _inside(xc, yc)
+                and segment_crosses_barrier(float(xa), float(ya), float(xc), float(yc), b)
+            ):
+                keep[i] = False
+                break
+    return cells[keep]
+
+
 def build_tri_connectivity(
     coords: NDArray[np.float64], usable: NDArray[np.bool_] | None = None
 ) -> NDArray[np.int64]:
@@ -225,6 +269,7 @@ def build_surface_polydata(
     name: str,
     ref_coords: NDArray[np.float64] | None = None,
     roi_mask: NDArray[np.bool_] | None = None,
+    barrier_mask: NDArray[np.float64] | None = None,
 ):
     """The shared 3D surface (``pv.PolyData``) — View3D and the exporter use THIS.
 
@@ -258,6 +303,8 @@ def build_surface_polydata(
         cells = build_quad_connectivity(ref)
         if roi_mask is not None:
             cells = filter_cells_by_mask(cells, ref, roi_mask)
+        if barrier_mask is not None:  # item 4: blank cells bridging the crack
+            cells = filter_cells_cross_barrier(cells, ref, barrier_mask)
         if len(cells):
             cells = cells[usable[cells].all(axis=1)]
 
@@ -269,6 +316,8 @@ def build_surface_polydata(
             tris = filter_cells_edge_cap(tris, plane)
             if roi_mask is not None and ref is not None:
                 tris = filter_cells_by_mask(tris, ref, roi_mask)
+            if barrier_mask is not None and ref is not None:
+                tris = filter_cells_cross_barrier(tris, ref, barrier_mask)
             if len(tris):
                 cells = tris
                 break

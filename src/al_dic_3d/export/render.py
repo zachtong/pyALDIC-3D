@@ -35,7 +35,7 @@ from al_dic_3d.export.colorbar import (
     attach_colorbar,
     colorbar_label,
 )
-from al_dic_3d.export.tables import field_frame
+from al_dic_3d.export.tables import display_field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
 from al_dic_3d.viz3d.fieldmap import FieldmapRenderer, auto_range, visible_values
 
@@ -139,6 +139,8 @@ def field_color_range(
     field_id: str,
     frame_k: int,
     roi_mask: NDArray[np.bool_] | None,
+    *,
+    deformed: bool = False,
 ) -> tuple[float, float]:
     """Auto color range from the VISIBLE nodes of one frame (GUI contract).
 
@@ -148,8 +150,11 @@ def field_color_range(
     live canvas shows). This is a deliberate improvement over the 2D app, whose
     PNG export uses plain min/max while its canvas uses the percentile; routing
     all three consumers through the one helper keeps them from drifting again.
+    Uses the display-masked field so trimmed strain nodes never stretch the
+    range (Batch C, C3): the ``deformed`` flag selects frame-k vs frame-0
+    validity to match the render.
     """
-    vals = field_frame(result, field_id, frame_k)
+    vals = display_field_frame(result, field_id, frame_k, deformed=deformed)
     if vals is None:
         return 0.0, 1.0
     cs = result.correspondence
@@ -170,6 +175,7 @@ def render_field_frame(
     show_deformed: bool = True,
     output_max_dim: int = 0,
     renderer: FieldmapRenderer | None = None,
+    barrier_mask: NDArray[np.float64] | None = None,
 ) -> tuple[NDArray[np.uint8], float, float] | None:
     """Render one field frame composited over the camera image -> BGR uint8.
 
@@ -195,7 +201,11 @@ def render_field_frame(
         (for the colorbar) — or None when the field is unavailable or the node
         set is degenerate.
     """
-    vals = field_frame(result, field_id, frame_k)
+    pts, ref_pts, ref_uv, deformed = _frame_geometry(result, camera, frame_k, show_deformed)
+    # WYSIWYG (Batch C, C3): the exported field hides ~strain_valid nodes exactly
+    # like the canvas, using frame-k validity in the deformed view and frame-0 in
+    # the reference view. Displacement fields pass through unchanged.
+    vals = display_field_frame(result, field_id, frame_k, deformed=deformed)
     if vals is None:
         return None
 
@@ -206,10 +216,10 @@ def render_field_frame(
         if img_shape == (0, 0):
             return None
 
-    pts, ref_pts, ref_uv, deformed = _frame_geometry(result, camera, frame_k, show_deformed)
-
     if cfg.auto_range:
-        vmin, vmax = field_color_range(result, camera, field_id, frame_k, roi_mask)
+        vmin, vmax = field_color_range(
+            result, camera, field_id, frame_k, roi_mask, deformed=deformed
+        )
     else:
         vmin, vmax = float(cfg.vmin), float(cfg.vmax)
 
@@ -229,6 +239,9 @@ def render_field_frame(
         deformed=deformed,
         ref_uv=ref_uv,
         ref_pts=ref_pts,
+        # Item 4 WYSIWYG: blank crack-bridging cells (reference-space barrier
+        # only — the deformed crack is not warped, so barrier applies at frame 1).
+        barrier_mask=None if deformed else barrier_mask,
     )
     if rgba is None:
         return None
@@ -361,6 +374,13 @@ def export_image_frames(
             ref_bg[cam] = _load_gray_u8(files[0]) if files else None
 
     renderer = FieldmapRenderer()  # shared: reference Delaunay reused across frames
+    # Item 4 WYSIWYG: when the run was crack-aware, the drawn L ROI mask doubles
+    # as the crack barrier (0-band = crack) for the dense render's cell blanking.
+    barrier = (
+        np.asarray(roi_mask, dtype=np.float64)
+        if (roi_mask is not None and bool(result.meta.get("crack_aware", False)))
+        else None
+    )
     frames = list(range(frame_start, frame_end + 1))
     total = len(frames)
     done = 0
@@ -389,6 +409,7 @@ def export_image_frames(
                     show_deformed=show_deformed,
                     output_max_dim=output_max_dim,
                     renderer=renderer,
+                    barrier_mask=barrier if cam == "L" else None,
                 )
                 if rendered is None:
                     continue

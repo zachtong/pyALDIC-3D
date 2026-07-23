@@ -40,7 +40,7 @@ from numpy.typing import NDArray
 
 from al_dic_3d.export.animation import StreamingAnimWriter, animation_fps
 from al_dic_3d.export.colorbar import colorbar_label
-from al_dic_3d.export.tables import field_frame
+from al_dic_3d.export.tables import display_field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
 from al_dic_3d.viz3d.surface import build_surface_polydata
 
@@ -59,16 +59,34 @@ CameraTuple = tuple[
 
 
 def build_surface(
-    points_3d: NDArray, values: NDArray, name: str, ref_coords: NDArray | None = None
+    points_3d: NDArray,
+    values: NDArray,
+    name: str,
+    ref_coords: NDArray | None = None,
+    barrier_mask: NDArray | None = None,
 ):
     """Surface (``pv.PolyData``) from finite 3D points + scalars (Qt-free).
 
     Same construction as the interactive ``View3D`` — both delegate to the
     shared :func:`al_dic_3d.viz3d.surface.build_surface_polydata` (F3.2), so
-    exported frames carry the exact geometry the canvas shows. Returns ``None``
-    when fewer than 3 finite points exist.
+    exported frames carry the exact geometry the canvas shows. ``barrier_mask``
+    (Batch C item 4) drops cells whose edges bridge a thin crack; ``None`` (the
+    crack-free default) keeps the surface byte-identical. Returns ``None`` when
+    fewer than 3 finite points exist.
     """
-    return build_surface_polydata(points_3d, values, name, ref_coords)
+    return build_surface_polydata(points_3d, values, name, ref_coords, None, barrier_mask)
+
+
+def _surface_barrier(result: RunResult, roi_mask: NDArray | None) -> NDArray | None:
+    """The crack barrier for the 3D surface: the drawn ROI mask on crack-aware runs.
+
+    Mirrors ``export/render.py``: the drawn LEFT ROI mask doubles as the crack
+    barrier (0-band = crack). ``None`` when no mask or the run was not crack-aware,
+    so crack-free surfaces stay byte-identical.
+    """
+    if roi_mask is None or not bool(result.meta.get("crack_aware", False)):
+        return None
+    return np.asarray(roi_mask, dtype=np.float64)
 
 
 def _make_plotter(window_size: tuple[int, int], background: str):
@@ -108,13 +126,15 @@ def render_view3d_frame(
     window_size: tuple[int, int] = (1024, 768),
     camera: CameraTuple | None = None,
     background: str = "white",
+    barrier_mask: NDArray | None = None,
 ) -> NDArray[np.uint8] | None:
     """Render one 3D surface frame offscreen -> BGR uint8 array.
 
     ``camera`` is a pyvista ``(position, focal_point, view_up)`` tuple; the
-    default is the isometric view. Returns None when no surface can be built.
+    default is the isometric view. ``barrier_mask`` (Batch C item 4) drops
+    crack-bridging cells. Returns None when no surface can be built.
     """
-    surf = build_surface(points_3d, values, field_label, ref_coords)
+    surf = build_surface(points_3d, values, field_label, ref_coords, barrier_mask)
     if surf is None:
         return None
     pl = _make_plotter(window_size, background)
@@ -143,9 +163,15 @@ def _range_of(frames: list[NDArray | None]) -> tuple[float, float]:
 
 
 def _stable_field_range(result: RunResult, field_id: str) -> tuple[float, float]:
-    """Color range over ALL frames (GUI 3D-view contract: playback stable)."""
+    """Color range over ALL frames (GUI 3D-view contract: playback stable).
+
+    Uses the display-masked field (frame-k strain validity — the surface always
+    shows the deformed geometry) so trimmed strain nodes never stretch the range.
+    """
     n_frames = int(result.reconstruction.n_frames)
-    return _range_of([field_frame(result, field_id, k) for k in range(n_frames)])
+    return _range_of(
+        [display_field_frame(result, field_id, k, deformed=True) for k in range(n_frames)]
+    )
 
 
 def export_view3d_frames(
@@ -167,6 +193,7 @@ def export_view3d_frames(
     animation_format: str | None = None,
     fps: int = 10,
     frame_step: int = 1,
+    roi_mask: NDArray | None = None,
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
 ) -> list[Path]:
@@ -175,6 +202,8 @@ def export_view3d_frames(
     Args:
         field_id: selectable field id (``U``/``W``/``exx``/...) coloring the
             surface.
+        roi_mask: the drawn LEFT ROI mask; on a crack-aware run it doubles as
+            the crack barrier so cells bridging the crack are dropped (item 4).
         auto_range: color range from ALL frames (stable during playback) when
             True; the explicit ``vmin``/``vmax`` otherwise.
         camera: fixed ``(position, focal_point, view_up)`` for every frame, or
@@ -212,13 +241,14 @@ def export_view3d_frames(
     # (e.g. |D| = norm) on every call — compute each frame's values once and
     # share them between the stable-range pass and the render loop.
     values: dict[int, NDArray | None] = (
-        {k: field_frame(result, field_id, k) for k in range(n_frames)}
+        {k: display_field_frame(result, field_id, k, deformed=True) for k in range(n_frames)}
         if auto_range
-        else {k: field_frame(result, field_id, k) for k in frame_indices}
+        else {k: display_field_frame(result, field_id, k, deformed=True) for k in frame_indices}
     )
     if auto_range:
         vmin, vmax = _range_of([values[k] for k in range(n_frames)])
     label = colorbar_label(field_id)
+    barrier = _surface_barrier(result, roi_mask)
     view_dir = ensure_dir(dest_dir / f"{prefix}_view3d_{timestamp}")
     frames_dir = ensure_dir(view_dir / field_id) if write_frames else None
 
@@ -235,7 +265,7 @@ def export_view3d_frames(
             vals = values[k]
             if vals is None:
                 continue
-            surf = build_surface(rec.points[k], vals, label, result.ref_coords)
+            surf = build_surface(rec.points[k], vals, label, result.ref_coords, barrier)
             if surf is None:
                 continue
             if pl is None:
@@ -300,19 +330,21 @@ def export_view3d_turntable(
     vmax: float = 1.0,
     animation_format: str = "mp4",
     fps: int = 10,
+    roi_mask: NDArray | None = None,
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
 ) -> list[Path]:
     """Orbit the surface of a FIXED frame 360° -> ``{field}_turntable.{ext}``.
 
     One offscreen plotter is built once; the camera azimuth advances by
-    ``360 / n_orbit`` per rendered frame. Returns the animation path (empty
+    ``360 / n_orbit`` per rendered frame. ``roi_mask`` doubles as the crack
+    barrier on a crack-aware run (item 4). Returns the animation path (empty
     on cancel-before-first-frame or when no surface exists).
     """
     n_frames = int(result.reconstruction.n_frames)
     frame_k = max(0, min(int(frame_k), n_frames - 1))
     n_orbit = max(1, int(n_orbit))
-    vals = field_frame(result, field_id, frame_k)
+    vals = display_field_frame(result, field_id, frame_k, deformed=True)
     if vals is None:
         return []
     if auto_range:
@@ -321,7 +353,13 @@ def export_view3d_turntable(
         vmax = float(finite.max()) if finite.size else 1.0
 
     label = colorbar_label(field_id)
-    surf = build_surface(result.reconstruction.points[frame_k], vals, label, result.ref_coords)
+    surf = build_surface(
+        result.reconstruction.points[frame_k],
+        vals,
+        label,
+        result.ref_coords,
+        _surface_barrier(result, roi_mask),
+    )
     if surf is None:
         return []
     view_dir = ensure_dir(dest_dir / f"{prefix}_view3d_{timestamp}")

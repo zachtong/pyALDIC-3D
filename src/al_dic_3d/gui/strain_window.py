@@ -50,8 +50,9 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.controllers.strain_controller import StrainController3D
-from al_dic_3d.gui.controllers.viz_controller import VizController3D, auto_range, visible_values
+from al_dic_3d.gui.controllers.viz_controller import VizController3D
 from al_dic_3d.gui.state import GuiSignals
+from al_dic_3d.gui.strain_render import prepare_strain_render, trim_count
 from al_dic_3d.gui.widgets.strain_field_selector import (
     STRAIN_FIELD_LABELS,
     StrainFieldSelector3D,
@@ -717,46 +718,35 @@ class StrainWindow3D(QMainWindow):
             return
 
         field = self._field_selector.current_field()
-        vals = getattr(strain, field)[k]
-        # A5-2 (partial): the reference view already plots frame-0 GEOMETRY
-        # (pts = cs.xL[0] below), matching the 2D rule. But the frame-k TRIM is
-        # baked destructively into these arrays at compute time
-        # (strain3d/compute.py NaNs the alpha*VSG band from frame k's own
-        # validity), and the untrimmed field is NOT retained, so a later-frame
-        # void carves into the frame-1 mesh here too — unlike 2D, whose
-        # reference view recomputes the trim from the frame-0 ROI. Fully fixing
-        # this needs the compute layer to keep the untrimmed field OR a per-
-        # frame strain_valid mask (compute.py owns that; see the audit note).
-        # Q4: live 'Trimmed: N nodes' readout for the frame on screen.
-        trimmed = None if strain.n_trimmed is None else int(strain.n_trimmed[k])
-        self._param_panel.set_trim_readout(trimmed, int(strain.n_pts))
-        cs = result.correspondence
+        # Q4: live 'Trimmed: N nodes' readout — derived from strain_valid after a
+        # reload where n_trimmed did not persist (C3-3), so it never blanks.
+        self._param_panel.set_trim_readout(trim_count(strain, k), int(strain.n_pts))
+        crack_aware = bool(result.meta.get("crack_aware", False))  # item 5 indicator
+        self._param_panel.set_crack_aware(crack_aware)
         # Geometry follows the deformed toggle; values stay those of frame k.
         deformed = bool(show_deformed) and k > 0
-        pts = cs.xL[k] if deformed else cs.xL[0]
-        ref_pts = cs.xL[0]
-        ref_uv = None
-        if deformed:
-            d = cs.xL[k] - cs.xL[0]  # 2D ref_uv contract: x_k - x_1 per node
-            ref_uv = (d[:, 0], d[:, 1])
 
-        # The strain gauge lives on the LEFT/frame-1 mesh, so the drawn LEFT
-        # reference mask (if any) bounds the field; otherwise the renderer
-        # falls back to the valid-node hull support.
+        # The drawn LEFT reference mask (if any) bounds the field; else the
+        # renderer falls back to the valid-node hull support.
         roi_mask = None
         drawn = self.controller.state.draft.roi_mask_array
         if drawn is not None:
             roi_mask = np.asarray(drawn) > 0
 
-        # Auto range from VISIBLE nodes of THIS frame only (2D visible_values
-        # contract), clipped to the 2–98 percentile (G2.3, 2D parity): the
-        # colorbar must match what the dense render shows, and outlier nodes
-        # must not stretch the colormap.
-        if self._auto_range_cb.isChecked():
-            vmin, vmax = auto_range(visible_values(vals, ref_pts, roi_mask))
-        else:
-            vmin, vmax = float(self._vmin_spin.value()), float(self._vmax_spin.value())
-        self._last_rendered = (vmin, vmax)
+        # Display mask + geometry + range prep (Qt-free helper): shares the WYSIWYG
+        # display mask and the crack-barrier blank with the export paths (C3/C4).
+        rd = prepare_strain_render(
+            result,
+            field,
+            k,
+            deformed=deformed,
+            roi_mask=roi_mask,
+            crack_aware=crack_aware,
+            auto_range_on=self._auto_range_cb.isChecked(),
+            manual_vmin=self._vmin_spin.value(),
+            manual_vmax=self._vmax_spin.value(),
+        )
+        self._last_rendered = (rd.vmin, rd.vmax)
 
         rect = self._canvas.scene().sceneRect()
         w, h = int(rect.width()), int(rect.height())
@@ -768,17 +758,18 @@ class StrainWindow3D(QMainWindow):
             pixmap, xg, yg, out_step = self._viz_ctrl.render_field(
                 k,
                 f"strain_window:{field}",
-                pts,
-                vals,
+                rd.pts,
+                rd.vals,
                 img_shape=(h, w),
                 mesh_step=int(self.controller.state.draft.winstepsize),
                 cmap=self._cmap_combo.currentText(),
-                vmin=vmin,
-                vmax=vmax,
+                vmin=rd.vmin,
+                vmax=rd.vmax,
                 roi_mask=roi_mask,
                 deformed=deformed,
-                ref_uv=ref_uv,
-                ref_pts=ref_pts,
+                ref_uv=rd.ref_uv,
+                ref_pts=rd.ref_pts,
+                barrier_mask=rd.barrier_mask,
             )
         except Exception as exc:  # noqa: BLE001 - a render bug must not kill the window
             self._log(f"render failed: {type(exc).__name__}: {exc}", "error")
@@ -793,7 +784,7 @@ class StrainWindow3D(QMainWindow):
         vp = self._canvas.viewport()
         self._colorbar.setGeometry(0, 0, vp.width(), vp.height())
         self._colorbar.update_params(
-            self._cmap_combo.currentText(), vmin, vmax, STRAIN_FIELD_LABELS.get(field, field)
+            self._cmap_combo.currentText(), rd.vmin, rd.vmax, STRAIN_FIELD_LABELS.get(field, field)
         )
         self._colorbar.setVisible(True)
 

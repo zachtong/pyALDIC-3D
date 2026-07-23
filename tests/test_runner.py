@@ -263,7 +263,7 @@ def test_run_pipeline_computes_and_writes_strain(tmp_path):
     import json
 
     params = json.loads(next(cfg.output_dir.glob("run_parameters_*.json")).read_text("utf-8"))
-    assert params["archive_schema"] == 2
+    assert params["archive_schema"] == 3
 
 
 def test_reference_mesh_quadtree_refinement():
