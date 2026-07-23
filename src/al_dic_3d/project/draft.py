@@ -34,6 +34,11 @@ class ProjectDraft:
     #   and the sidebar readout keep working.
     strategy: str = "track_both"
     reference_mode: str = "accumulative"
+    # Q5 reference-update policy (incremental mode only): "every_frame"
+    # (default) | "every_n" | "custom"; frames are 0-based reference indices.
+    ref_update_mode: str = "every_frame"
+    ref_update_n: int = 2
+    ref_update_frames: list[int] | None = None
     winsize: int = 32
     winstepsize: int = 16
     winsize_min: int = 8
@@ -49,6 +54,7 @@ class ProjectDraft:
     use_global_step: bool = True  # AL-DIC global step (ADMM), audit default
     admm_max_iter: int = 3
     fft_search: int = 20  # temporal FFT integer-search half-width (px)
+    fft_auto_expand: bool = True  # Q8: expand FFT search on boundary-clipped peaks
     # P3.6 opt-in: run the two temporal tracks concurrently (track_both).
     # Deliberately NOT in _RESULT_FIELDS — results are identical either way,
     # so toggling it must not raise the 'parameters changed' staleness hint.
@@ -76,6 +82,9 @@ class ProjectDraft:
         "roi",
         "strategy",
         "reference_mode",
+        "ref_update_mode",
+        "ref_update_n",
+        "ref_update_frames",
         "winsize",
         "winstepsize",
         "winsize_min",
@@ -87,6 +96,7 @@ class ProjectDraft:
         "use_global_step",
         "admm_max_iter",
         "fft_search",
+        "fft_auto_expand",
         "refine_inner",
         "refine_outer",
         "refinement_level",
@@ -180,6 +190,11 @@ class ProjectDraft:
             right_masks=list(self.right_masks) if self.right_masks else None,
             strategy=self.strategy,
             reference_mode=self.reference_mode,
+            ref_update_mode=self.ref_update_mode,
+            ref_update_n=self.ref_update_n,
+            ref_update_frames=(
+                tuple(self.ref_update_frames) if self.ref_update_frames is not None else None
+            ),
             winsize=self.winsize,
             winstepsize=self.winstepsize,
             winsize_min=self.winsize_min,
@@ -191,6 +206,7 @@ class ProjectDraft:
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,
             fft_search=self.fft_search,
+            fft_auto_expand=self.fft_auto_expand,
             parallel_cameras=self.parallel_cameras,
             refine_inner=self.refine_inner,
             refine_outer=self.refine_outer,

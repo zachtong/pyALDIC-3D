@@ -188,7 +188,7 @@ def test_run_and_overlay_render(qapp, scene):
     assert win.signals.color_max == pytest.approx(float(hi))
 
     # the main field selector offers ONLY clean displacement fields now
-    assert set(win._right._field_selector._buttons) == {"U", "V", "W", "mag"}
+    assert set(win._right._field_selector._buttons) == {"U", "V", "W", "mag", "velocity"}
 
     # switching camera swaps the background image (right frame exists)
     win.signals.set_camera("R")

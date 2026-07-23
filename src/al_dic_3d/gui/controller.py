@@ -60,8 +60,9 @@ class WorkflowController:
         """Adopt a session parsed elsewhere (e.g. on a GUI worker thread, P2.5)."""
         self.state = state
 
-    def save_project(self, path: str | Path) -> Path:
-        saved = save_session(self.state, path)
+    def save_project(self, path: str | Path, *, include_results: bool = True) -> Path:
+        """Save the state; ``include_results=False`` writes config-only (Q7)."""
+        saved = save_session(self.state, path, include_results=include_results)
         self.state.project_path = saved
         self.state.dirty = False
         return saved

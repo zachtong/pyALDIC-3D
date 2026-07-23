@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 
 from al_dic.gui.icons import icon_download, icon_play, icon_stop
 from al_dic.gui.theme import COLORS
+from al_dic.gui.widgets.collapsible_section import CollapsibleSection
 from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from PySide6.QtCore import Qt, QTime, QTimer, Signal
 from PySide6.QtWidgets import (
@@ -33,7 +34,8 @@ from al_dic_3d.gui.issue_text import issues_text
 from al_dic_3d.gui.run_worker import RunWorker
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.console_log3d import ConsoleLog3D
-from al_dic_3d.gui.widgets.field_selector import FieldSelector3D
+from al_dic_3d.gui.widgets.field_selector import FieldSelector3D, apply_toggle_style
+from al_dic_3d.gui.widgets.units_section import UnitsSection3D
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
@@ -199,8 +201,6 @@ class RightSidebar3D(QWidget):
         self._cam_left_btn.setChecked(True)
         self._cam_left_btn.clicked.connect(lambda: self._pick_camera("L"))
         self._cam_right_btn.clicked.connect(lambda: self._pick_camera("R"))
-        from al_dic_3d.gui.widgets.field_selector import apply_toggle_style
-
         apply_toggle_style(self._cam_left_btn)
         apply_toggle_style(self._cam_right_btn)
         layout.addLayout(self._camera_row)
@@ -273,6 +273,12 @@ class RightSidebar3D(QWidget):
         self._opacity_slider.valueChanged.connect(self._on_opacity)
         opacity_row.addWidget(self._opacity_slider)
         layout.addLayout(opacity_row)
+
+        # ---- UNITS (Q1: display-layer conversion + frame rate) ----
+        self._units = UnitsSection3D(signals)
+        units_section = CollapsibleSection(self.tr("UNITS"), expanded=False)
+        units_section.add_widget(self._units)
+        layout.addWidget(units_section)
 
         # ---- LOG ----
         log_header = QHBoxLayout()
@@ -459,6 +465,7 @@ class RightSidebar3D(QWidget):
         running = self.signals.run_state == "running"
         self._export_btn.setEnabled(has_results and not running)
         self._strain_window_btn.setEnabled(has_results and not running)
+        self._field_selector.set_velocity_enabled(has_results)  # Q2
         # Stateful tooltips (2D idiom): disabled buttons explain themselves.
         if has_results and not running:
             self._export_btn.setToolTip(
@@ -672,8 +679,6 @@ class RightSidebar3D(QWidget):
     # ---- display -----------------------------------------------------------------
 
     def _pick_camera(self, cam: str) -> None:
-        from al_dic_3d.gui.widgets.field_selector import apply_toggle_style
-
         self._cam_left_btn.setChecked(cam == "L")
         self._cam_right_btn.setChecked(cam == "R")
         apply_toggle_style(self._cam_left_btn)
@@ -765,36 +770,8 @@ class RightSidebar3D(QWidget):
 
     def apply_view_state(self, vs: dict, n_frames: int) -> None:
         """Push a saved ``view_state`` dict into GuiSignals AND this panel's
-        widgets (signals blocked), then emit one display_changed."""
-        s = self.signals
-        s.display_field = str(vs.get("display_field", s.display_field))
-        self._field_selector._sync_checked()
-        cmap = str(vs.get("colormap", s.colormap))
-        if cmap in _COLORMAPS:
-            s.colormap = cmap
-            self._set_blocked(self._cmap_combo, lambda w: w.setCurrentText(cmap))
-        s.color_min = float(vs.get("color_min", s.color_min))
-        s.color_max = float(vs.get("color_max", s.color_max))
-        self._set_blocked(self._vmin_spin, lambda w: w.setValue(s.color_min))
-        self._set_blocked(self._vmax_spin, lambda w: w.setValue(s.color_max))
-        s.color_auto = bool(vs.get("color_auto", s.color_auto))
-        self._set_blocked(self._auto_range_cb, lambda w: w.setChecked(s.color_auto))
-        self._vmin_spin.setEnabled(not s.color_auto)
-        self._vmax_spin.setEnabled(not s.color_auto)
-        s.overlay_alpha = float(vs.get("overlay_alpha", s.overlay_alpha))
-        self._set_blocked(self._opacity_slider, lambda w: w.setValue(int(s.overlay_alpha * 100)))
-        s.show_deformed = bool(vs.get("show_deformed", s.show_deformed))
-        self._set_blocked(self._deformed_cb, lambda w: w.setChecked(s.show_deformed))
-        cam = str(vs.get("camera", s.current_camera))
-        if cam in ("L", "R"):
-            self._pick_camera(cam)  # no-op emit when unchanged; renders otherwise
-        s.set_current_frame(int(vs.get("current_frame", s.current_frame)), max(1, n_frames))
-        s.display_changed.emit()
+        widgets (signals blocked), then emit one display_changed. The
+        string-free sync logic lives in :mod:`al_dic_3d.gui.view_state`."""
+        from al_dic_3d.gui.view_state import apply_to_sidebar
 
-    @staticmethod
-    def _set_blocked(widget, setter) -> None:
-        widget.blockSignals(True)
-        try:
-            setter(widget)
-        finally:
-            widget.blockSignals(False)
+        apply_to_sidebar(self, vs, n_frames)

@@ -76,6 +76,7 @@ class TrackBothStrategy:
         use_global_step: bool = True,
         admm_max_iter: int = 3,
         fft_search: int = 20,
+        fft_auto_expand: bool = True,
         temporal_gate_znssd: float = 1.0,
         parallel_cameras: bool = False,
     ) -> None:
@@ -90,6 +91,7 @@ class TrackBothStrategy:
         self.use_global_step = use_global_step
         self.admm_max_iter = admm_max_iter
         self.fft_search = fft_search
+        self.fft_auto_expand = fft_auto_expand
         self.temporal_gate_znssd = temporal_gate_znssd
         # P3.6 opt-in: run the two independent temporal tracks concurrently
         # (~2x faster on numba/numpy-heavy engines that release the GIL, at
@@ -128,6 +130,8 @@ class TrackBothStrategy:
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,
             fft_search=self.fft_search,
+            fft_auto_expand=self.fft_auto_expand,
+            frame_schedule=cfg.schedule_L,
         )
 
         # Initial-guess resolution (F2): effective mode + seed-derived stereo
@@ -172,6 +176,8 @@ class TrackBothStrategy:
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,
             fft_search=self.fft_search,
+            fft_auto_expand=self.fft_auto_expand,
+            frame_schedule=cfg.schedule_R,
         )
         mesh_R = build_grid_mesh(para_R, img_h, img_w)
         # The right camera's seed is the stereo-matched location of the left

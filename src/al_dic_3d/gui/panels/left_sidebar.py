@@ -29,12 +29,14 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.state import GuiSignals
+from al_dic_3d.gui.widgets.advanced_section import AdvancedSection3D
 from al_dic_3d.gui.widgets.calibration_section import CalibrationSection3D
 from al_dic_3d.gui.widgets.camera_drop_zone import CameraDropZone
 from al_dic_3d.gui.widgets.info_icon import InfoIcon
 from al_dic_3d.gui.widgets.init_guess_section import InitGuessSection3D
 from al_dic_3d.gui.widgets.next_step_hint import NextStepHint
 from al_dic_3d.gui.widgets.pair_list import PairListWidget
+from al_dic_3d.gui.widgets.ref_update_section import RefUpdateSection3D
 from al_dic_3d.gui.widgets.roi_toolbar import ROIToolbar
 from al_dic_3d.gui.widgets.section_header import SectionHeader
 
@@ -306,6 +308,11 @@ class LeftSidebar3D(QWidget):
         )
         layout.addLayout(self._combo_row(self.tr("Tracking Mode"), self._mode_combo))
 
+        # Q5: reference-update policy — incremental mode only (hidden otherwise).
+        self._ref_update = RefUpdateSection3D(self.controller, self.signals)
+        self._ref_update.set_visible_for_mode(self.controller.state.draft.reference_mode)
+        layout.addWidget(self._ref_update)
+
         # "AL-DIC" is a brand-specific acronym kept literal across locales;
         # "Local DIC" is translatable (same convention as the 2D app).
         self._solver_combo = QComboBox()
@@ -363,6 +370,7 @@ class LeftSidebar3D(QWidget):
         draft.use_global_step = self._solver_combo.currentData() == "aldic"
         draft.quality_gate = self._quality_cb.isChecked()
         self._admm_spin.setEnabled(draft.use_global_step)
+        self._ref_update.set_visible_for_mode(draft.reference_mode)  # Q5
         self.controller.state.mark_dirty()
         self.signals.params_changed.emit()
 
@@ -533,56 +541,18 @@ class LeftSidebar3D(QWidget):
     # ---- ADVANCED -------------------------------------------------------------------
 
     def _build_advanced(self) -> QWidget:
-        host = QWidget()
-        layout = QVBoxLayout(host)
-        layout.setContentsMargins(12, 4, 12, 8)
-        layout.setSpacing(6)
-
-        self._strategy_combo = QComboBox()
-        self._strategy_combo.addItem(self.tr("Track Both"), "track_both")
-        self._strategy_combo.addItem(self.tr("Stereo Each Frame"), "stereo_each_frame")
-        self._strategy_combo.addItem(self.tr("Reference Direct"), "ref_direct")
-        self._strategy_combo.setToolTip(
-            self.tr(
-                "How stereo correspondences are propagated through time.\n"
-                "Track Both (default): match stereo once at frame 1, then\n"
-                "track each camera temporally — fastest, one stereo solve.\n"
-                "Stereo Each Frame: re-match stereo at every frame — robust\n"
-                "when temporal tracking drifts, slower.\n"
-                "Reference Direct: match every frame directly to frame 1 in\n"
-                "both cameras — no drift accumulation, small motions only."
-            )
-        )
-        layout.addLayout(self._combo_row(self.tr("Strategy"), self._strategy_combo))
-
-        # AL-DIC global refinement cycles (ADMM under the hood; acronym hidden).
-        self._admm_spin = QSpinBox()
-        self._admm_spin.setRange(1, 10)
-        self._admm_spin.setValue(3)
-        self._admm_spin.setToolTip(
-            self.tr("1 = single global pass (fastest), 3 = default, 5+ = diminishing returns")
-        )
-        layout.addLayout(self._param_row(self.tr("AL-DIC Iterations"), self._admm_spin))
-
-        admm_hint = QLabel(self.tr("Only affects AL-DIC solver. Ignored by Local DIC."))
-        admm_hint.setWordWrap(True)
-        admm_hint.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
-        layout.addWidget(admm_hint)
-
-        # P3.6: opt-in concurrent L/R temporal tracking (track_both strategy).
-        self._parallel_cb = QCheckBox(self.tr("Parallel camera tracking"))
-        self._parallel_cb.setToolTip(
-            self.tr(
-                "Track both cameras concurrently — modest speedup (the solver "
-                "already uses all cores), doubles peak memory"
-            )
-        )
-        layout.addWidget(self._parallel_cb)
-
+        # Extracted widget (file-size discipline, batch Q); aliases keep the
+        # historical attribute names refresh_all / _apply_* rely on.
+        widget = AdvancedSection3D()
+        self._strategy_combo = widget.strategy_combo
+        self._admm_spin = widget.admm_spin
+        self._parallel_cb = widget.parallel_cb
+        self._fft_expand_cb = widget.fft_expand_cb
         self._strategy_combo.currentIndexChanged.connect(self._apply_workflow)
         self._admm_spin.valueChanged.connect(self._apply_params)
         self._parallel_cb.toggled.connect(self._apply_params)
-        return host
+        self._fft_expand_cb.toggled.connect(self._apply_params)
+        return widget
 
     def _param_row(self, text: str, widget: QWidget, info: InfoIcon | None = None) -> QHBoxLayout:
         row = QHBoxLayout()
@@ -614,6 +584,7 @@ class LeftSidebar3D(QWidget):
         draft.winsize_min = min(8, draft.winstepsize)
         draft.stereo_search = int(self._search_spin.value())
         draft.fft_search = int(self._temporal_spin.value())
+        draft.fft_auto_expand = self._fft_expand_cb.isChecked()  # Q8
         draft.admm_max_iter = int(self._admm_spin.value())
         draft.parallel_cameras = self._parallel_cb.isChecked()
         draft.refine_inner = self._refine_inner_cb.isChecked()
@@ -765,6 +736,7 @@ class LeftSidebar3D(QWidget):
             self._temporal_spin,
             self._admm_spin,
             self._parallel_cb,
+            self._fft_expand_cb,
             self._refine_inner_cb,
             self._refine_outer_cb,
             self._refine_level_spin,
@@ -789,6 +761,7 @@ class LeftSidebar3D(QWidget):
         self._admm_spin.setValue(draft.admm_max_iter)
         self._admm_spin.setEnabled(draft.use_global_step)
         self._parallel_cb.setChecked(getattr(draft, "parallel_cameras", False))
+        self._fft_expand_cb.setChecked(getattr(draft, "fft_auto_expand", True))
         self._refine_inner_cb.setChecked(draft.refine_inner)
         self._refine_outer_cb.setChecked(draft.refine_outer)
         self._refine_level_spin.setValue(draft.refinement_level)
@@ -797,6 +770,7 @@ class LeftSidebar3D(QWidget):
             w.blockSignals(False)
         if draft.calibration_file is not None:
             self._preview_calibration()
+        self._ref_update.refresh_from_draft()  # Q5: mode/N/frames + visibility
         self._init_guess_widget.refresh_from_draft()
         self.refresh_images()
         self._update_search_tooltips()

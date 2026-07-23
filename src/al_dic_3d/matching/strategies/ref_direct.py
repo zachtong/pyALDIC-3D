@@ -66,6 +66,7 @@ class RefDirectStrategy:
         use_global_step: bool = True,
         admm_max_iter: int = 3,
         fft_search: int = 20,
+        fft_auto_expand: bool = True,
         temporal_gate_znssd: float = 1.0,
     ) -> None:
         self.winsize = winsize
@@ -75,6 +76,7 @@ class RefDirectStrategy:
         self.use_global_step = use_global_step
         self.admm_max_iter = admm_max_iter
         self.fft_search = fft_search
+        self.fft_auto_expand = fft_auto_expand
         self.temporal_gate_znssd = temporal_gate_znssd
 
     def compute(
@@ -111,6 +113,7 @@ class RefDirectStrategy:
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,
             fft_search=self.fft_search,
+            fft_auto_expand=self.fft_auto_expand,
         )
 
         # Initial-guess resolution (F2): effective mode + seed-derived stereo

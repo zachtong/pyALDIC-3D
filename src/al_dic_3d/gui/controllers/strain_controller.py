@@ -44,6 +44,8 @@ ALLOWED_OVERRIDES: frozenset[str] = frozenset(
         "smooth_sigma",
         "coordinate",
         "specimen_R",
+        "strain_type",  # Q3: GL / infinitesimal / Eulerian-Almansi
+        "edge_trim_alpha",  # Q4: VSG-support edge trim
     }
 )
 
@@ -86,6 +88,8 @@ class StrainController3D:
             smooth_sigma=float(override.get("smooth_sigma", 0.0)),
             coordinate=str(override.get("coordinate", "local")),
             specimen_R=override.get("specimen_R"),  # type: ignore[arg-type]
+            strain_type=str(override.get("strain_type", "green_lagrange")),  # Q3
+            edge_trim_alpha=float(override.get("edge_trim_alpha", 0.0)),  # Q4
             progress_cb=progress_cb,
             stop_event=stop_event,
         )

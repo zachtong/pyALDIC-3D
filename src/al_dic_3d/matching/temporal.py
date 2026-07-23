@@ -120,6 +120,46 @@ class TemporalField:
         return self.n_frames if self.stopped_at_frame is None else int(self.stopped_at_frame)
 
 
+def build_frame_schedule(
+    reference_mode: str,
+    n_frames: int,
+    *,
+    ref_update_mode: str = "every_frame",
+    ref_update_n: int = 2,
+    ref_update_frames: Sequence[int] | None = None,
+):
+    """The explicit engine ``FrameSchedule`` for a reference-update policy (Q5).
+
+    Returns ``None`` when no explicit schedule is needed — accumulative mode,
+    or incremental with the default every-frame update — so ``run_aldic``
+    derives its schedule from ``para.reference_mode`` exactly as before (the 2D
+    GUI's wiring: an explicit schedule is built only for the non-default
+    incremental policies).
+
+    Args:
+        reference_mode: ``"accumulative"`` or ``"incremental"``.
+        n_frames: total frame count (reference frame 0 included).
+        ref_update_mode: ``"every_frame"`` (default) | ``"every_n"`` |
+            ``"custom"``.
+        ref_update_n: reference interval for ``"every_n"`` (>= 1).
+        ref_update_frames: 0-based reference frame indices for ``"custom"``
+            (frame 0 is always a reference; the engine validates the rest).
+    """
+    if reference_mode != "incremental" or ref_update_mode == "every_frame":
+        return None
+    from al_dic.core.data_structures import FrameSchedule  # DEPENDS_ON_2D.md
+
+    if ref_update_mode == "every_n":
+        return FrameSchedule.from_every_n(max(1, int(ref_update_n)), n_frames)
+    if ref_update_mode == "custom":
+        frames = [int(f) for f in (ref_update_frames or [])]
+        return FrameSchedule.from_custom(frames, n_frames)
+    raise ValueError(
+        f"unknown ref_update_mode {ref_update_mode!r}; "
+        f"expected 'every_frame', 'every_n' or 'custom'"
+    )
+
+
 def build_grid_mesh(
     para: DICPara,
     img_h: int,

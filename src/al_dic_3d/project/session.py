@@ -95,6 +95,8 @@ def _config_from_json(d: dict | None) -> RunConfig | None:
         kw["disparity_offset"] = tuple(kw["disparity_offset"])
     if kw.get("seed_point") is not None:
         kw["seed_point"] = tuple(kw["seed_point"])
+    if kw.get("ref_update_frames") is not None:
+        kw["ref_update_frames"] = tuple(int(f) for f in kw["ref_update_frames"])
     return RunConfig(**kw)
 
 
@@ -195,23 +197,37 @@ def _result_from_arrays(arrays: dict, ref_coords: np.ndarray, strategy: str, met
 # --- save / load --------------------------------------------------------------
 
 
-def save_session(state: AppState3D, path: str | Path) -> Path:
-    """Write ``state`` to ``path`` as a ``.aldic3d`` bundle; return the path."""
+def estimated_result_nbytes(result) -> int:
+    """Uncompressed byte size of the arrays a with-results save would write (Q7)."""
+    total = 0
+    for arr in _result_arrays(result).values():
+        total += int(np.asarray(arr).nbytes)
+    return total
+
+
+def save_session(state: AppState3D, path: str | Path, *, include_results: bool = True) -> Path:
+    """Write ``state`` to ``path`` as a ``.aldic3d`` bundle; return the path.
+
+    ``include_results=False`` (Q7) writes a small configuration-only session:
+    the results member is skipped and ``has_results`` is False, so the file
+    loads back with ``result is None`` (shareable, recompute to restore).
+    """
     path = Path(path)
+    save_results = include_results and state.result is not None
     session = {
         "schema_version": SCHEMA_VERSION,
         "config": _config_to_json(state.config) if state.config is not None else None,
         "draft": _draft_to_json(state.draft),
         "view_state": state.view_state,
         "workflow_step": int(state.workflow_step),
-        "strategy": state.result.strategy if state.result is not None else None,
-        "meta": state.result.meta if state.result is not None else {},
-        "has_results": state.result is not None,
+        "strategy": state.result.strategy if save_results else None,
+        "meta": state.result.meta if save_results else {},
+        "has_results": save_results,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(_CONFIG_NAME, json.dumps(session, indent=2))
-        if state.result is not None:
+        if save_results:
             # P2.5: stream the results member instead of materializing it in a
             # BytesIO + getvalue() copy (2x peak memory), and STORE it — the
             # npz payload is already DEFLATE-compressed per array, so wrapping

@@ -34,6 +34,8 @@ justification.
 |---|---|---|
 | `al_dic.DICMesh` | reference-mesh type in `CorrespondenceStrategy.compute` / `matching` (type-only, `TYPE_CHECKING`) | public |
 | `al_dic.FrameSchedule` | acc/inc schedule fields on `CorrespondenceConfig` (type-only, `TYPE_CHECKING`) | public |
+| `al_dic.core.data_structures.FrameSchedule` | RUNTIME import in `matching.temporal.build_frame_schedule` (Q5): `from_every_n` / `from_custom` build the incremental reference-update schedule handed to `DICPara.frame_schedule` (validated by `run_aldic` against `n_frames - 1`) | public |
+| `al_dic.core.data_structures.DICPara.fft_auto_expand_search` / `.frame_schedule` | FIELDS set through `dicpara_default(**overrides)` in `matching.primitives.make_dicpara` (Q8 clipped-peak FFT expansion knob; Q5 explicit schedule) — a 2D rename breaks us | public (fields; no extra import) |
 | `al_dic.core.config.dicpara_default` | build + validate a local-only `DICPara` in `matching.primitives.make_local_dicpara` | public |
 | `al_dic.core.data_structures.DICPara` | parameter container consumed by the IC-GN primitive | public |
 | `al_dic.core.data_structures.GridxyROIRange` | ROI (pixel bounds) for the `DICPara` / mesh build | public |

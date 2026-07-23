@@ -1,4 +1,4 @@
-"""Seed-point (F2) + brush relays, canvas context menu, empty-state hint.
+"""Seed-point (F2) + brush relays, context menu, hints, field-value lookup.
 
 Split out of :class:`al_dic_3d.gui.panels.canvas_area.CanvasArea3D` (which
 mixes this in) purely to keep that file under the 800-line cap — the methods
@@ -11,6 +11,10 @@ and use its attributes: ``_canvas``, ``_stack``, ``controller``, ``signals``.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
+import numpy as np
+
+from al_dic_3d.gui.display_units import STRAIN_LABELS, velocity_magnitude
 
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QLabel, QStackedWidget
@@ -154,3 +158,48 @@ class CanvasToolsMixin:
             vp = self._canvas.viewport()
             self._empty_hint.setGeometry(0, vp.height() // 2 - 50, vp.width(), 100)
         self._empty_hint.setVisible(show)
+
+    # ---- per-frame field values (moved here for the 800-line cap) -------------
+
+    def _field_values(self, result, k: int) -> np.ndarray | None:
+        field = self.signals.display_field
+        rec = result.reconstruction
+        if field in ("U", "V", "W"):
+            return rec.displacement[k][:, ("U", "V", "W").index(field)]
+        if field == "mag":
+            # P2.6: |D| is derived per frame — cache it (results-scoped LRU)
+            # so scrubbing back and forth never recomputes the norm.
+            mag = self._mag_cache.get(k)
+            if mag is None:
+                mag = np.linalg.norm(rec.displacement[k], axis=1)
+                self._mag_cache[k] = mag
+            return mag
+        if field == "velocity":
+            # Q2: |D_k − D_{k−1}| × frame rate; frame 0 has no predecessor
+            # (all-NaN). Cached in mm/frame (P2 pattern), scaled on read.
+            vel = self._vel_cache.get(k)
+            if vel is None:
+                prev = rec.displacement[k - 1] if k > 0 else None
+                vel = velocity_magnitude(rec.displacement[k], prev)
+                self._vel_cache[k] = vel
+            return vel * float(self.signals.frame_rate)
+        if field in STRAIN_LABELS and result.strain is not None:
+            return getattr(result.strain, field)[k]
+        return None
+
+    def _drawn_roi_bool(self) -> np.ndarray | None:
+        """The drawn ROI mask as bool, cached by array identity (P2.6).
+
+        Every ROI edit stores a FRESH array on the draft (``commit_roi_mask``
+        copies), so identity is a valid cache key — the old per-render
+        ``np.asarray(mask) > 0`` allocated a full-image bool each frame change.
+        """
+        drawn = self.controller.state.draft.roi_mask_array
+        if drawn is None:
+            return None
+        cached = self._roi_bool_cache
+        if cached is not None and cached[0] is drawn:
+            return cached[1]
+        mask = np.asarray(drawn) > 0
+        self._roi_bool_cache = (drawn, mask)
+        return mask

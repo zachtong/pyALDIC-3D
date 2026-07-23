@@ -72,10 +72,16 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    subparsers.add_parser(
+    gui_p = subparsers.add_parser(
         "gui",
         help="launch the graphical workflow (requires PySide6)",
         description="Open the pyALDIC-3D desktop application.",
+    )
+    gui_p.add_argument(
+        "session",
+        nargs="?",
+        metavar="SESSION",
+        help="optional .aldic3d project to open at startup",
     )
 
     cal_p = subparsers.add_parser(
@@ -353,10 +359,22 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def normalize_argv(argv: list[str]) -> list[str]:
+    """Rewrite a bare ``SESSION.aldic3d`` first argument to ``gui SESSION`` (Q6).
+
+    The Windows file association launches ``python -m al_dic_3d "<file>"``
+    (the 2D pattern); a session path is not a sub-command, so it is folded
+    into the ``gui`` sub-command here.
+    """
+    if argv and argv[0].lower().endswith(".aldic3d"):
+        return ["gui", *argv]
+    return argv
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point. Returns a process exit code."""
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(normalize_argv(sys.argv[1:] if argv is None else list(argv)))
     command = getattr(args, "command", None)
     if command is None:
         parser.print_help()
@@ -371,6 +389,6 @@ def main(argv: list[str] | None = None) -> int:
         except ImportError as exc:  # PySide6 missing
             print(f"the GUI requires PySide6: {exc}", file=sys.stderr)
             return 2
-        return gui_main([])
+        return gui_main([args.session] if getattr(args, "session", None) else [])
     parser.error(f"unknown command: {command}")
     return 2

@@ -361,6 +361,21 @@ class MainWindow3D(QMainWindow):
         save_as_action.triggered.connect(self._save_project_as)
         file_menu.addAction(save_as_action)
 
+        # Q6: Windows per-user .aldic3d file association (2D port; HKCU only).
+        from al_dic_3d.gui import file_association
+
+        if file_association.is_supported():
+            file_menu.addSeparator()
+            assoc_action = QAction(self.tr("Associate .aldic3d files with pyALDIC-3D…"), self)
+            assoc_action.setToolTip(
+                self.tr(
+                    "Register .aldic3d so double-clicking a project file opens "
+                    "pyALDIC-3D (current user only, no admin rights needed)."
+                )
+            )
+            assoc_action.triggered.connect(self._on_register_association)
+            file_menu.addAction(assoc_action)
+
         file_menu.addSeparator()
         quit_action = QAction(self.tr("Quit"), self)
         quit_action.setShortcut(QKeySequence.StandardKey.Quit)
@@ -405,6 +420,28 @@ class MainWindow3D(QMainWindow):
         about_action = QAction(self.tr("About pyALDIC-3D"), self)
         about_action.triggered.connect(self._show_about)
         help_menu.addAction(about_action)
+
+    def _on_register_association(self) -> None:
+        """Q6: register the per-user .aldic3d association; report the outcome."""
+        from al_dic_3d.gui import file_association
+
+        try:
+            file_association.register_association()
+        except (OSError, RuntimeError) as exc:
+            QMessageBox.warning(
+                self,
+                self.tr("File Association"),
+                self.tr("Could not register the .aldic3d association: {0}").format(exc),
+            )
+            return
+        QMessageBox.information(
+            self,
+            self.tr("File Association"),
+            self.tr(
+                "Done — double-clicking a .aldic3d file now opens it in "
+                "pyALDIC-3D (registered for the current user)."
+            ),
+        )
 
     def _on_language(self, code: str) -> None:
         """Persist the language preference; applied on next launch (2D phase-1 strategy)."""
@@ -494,6 +531,10 @@ class MainWindow3D(QMainWindow):
             "show_deformed": s.show_deformed,
             "camera": s.current_camera,
             "current_frame": int(s.current_frame),
+            "display_unit": s.display_unit,  # Q1
+            "frame_rate": float(s.frame_rate),  # Q1/Q2
+            "mesh_line_color": s.mesh_line_color,  # Q8
+            "mesh_line_width": int(s.mesh_line_width),  # Q8
         }
 
     def _new_project(self) -> None:
@@ -623,6 +664,37 @@ class MainWindow3D(QMainWindow):
             return False
         return self._write_project(path)
 
+    def _prompt_include_results(self, estimate: str) -> str:
+        """Q7 modal Yes/No/Cancel: include the computed results in the save?
+
+        Split out so offscreen tests can stub it (conftest pattern). Returns
+        "yes" | "no" | "cancel".
+        """
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Question)
+        box.setWindowTitle(self.tr("Include Results?"))
+        box.setText(self.tr("Include the analysis results in this project file?"))
+        box.setInformativeText(
+            self.tr(
+                "Including results (about {0} uncompressed) lets you reopen "
+                "the project without recomputing. Choose No to save a small "
+                "configuration-only file for sharing."
+            ).format(estimate)
+        )
+        box.setStandardButtons(
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No
+            | QMessageBox.StandardButton.Cancel
+        )
+        box.setDefaultButton(QMessageBox.StandardButton.Yes)
+        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
+        box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
+        box.button(QMessageBox.StandardButton.Cancel).setText(self.tr("Cancel"))
+        ret = box.exec()
+        if ret == QMessageBox.StandardButton.Yes:
+            return "yes"
+        return "no" if ret == QMessageBox.StandardButton.No else "cancel"
+
     def _write_project(self, path) -> bool:
         """Serialize on a worker behind a modal progress dialog (P2.5).
 
@@ -632,10 +704,28 @@ class MainWindow3D(QMainWindow):
         """
         from al_dic_3d.gui.workers import run_with_progress
 
+        # Q7: with results present, offer Yes (full) / No (config-only) /
+        # Cancel before writing; the estimate is the raw array nbytes.
+        include_results = True
+        state = self.controller.state
+        if state.result is not None:
+            from al_dic_3d.project.session import estimated_result_nbytes
+
+            try:
+                est = f"{estimated_result_nbytes(state.result) / 1e6:.0f} MB"
+            except Exception:  # noqa: BLE001 - the estimate is informational only
+                est = self.tr("unknown size")
+            choice = self._prompt_include_results(est)
+            if choice == "cancel":
+                return False
+            include_results = choice == "yes"
+
         # G3.10: the display state rides along in the project file.
         self.controller.state.view_state = self._capture_view_state()
         ok, out = run_with_progress(
-            self, self.tr("Saving project…"), lambda: self.controller.save_project(path)
+            self,
+            self.tr("Saving project…"),
+            lambda: self.controller.save_project(path, include_results=include_results),
         )
         if not ok:
             self.signals.log.emit(f"save failed: {out}", "error")

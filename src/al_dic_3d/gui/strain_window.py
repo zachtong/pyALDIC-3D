@@ -452,10 +452,7 @@ class StrainWindow3D(QMainWindow):
         self._cancel_btn.setVisible(False)
         self._compute_btn.setEnabled(True)
         self._after_compute_success()
-        QTimer.singleShot(
-            2000,
-            lambda: (self._progress.setVisible(False), self._progress_lbl.setVisible(False)),
-        )
+        QTimer.singleShot(2000, self._hide_compute_feedback)
 
     def _on_worker_failed(self, message: str) -> None:
         self._hide_compute_feedback()
@@ -721,6 +718,9 @@ class StrainWindow3D(QMainWindow):
 
         field = self._field_selector.current_field()
         vals = getattr(strain, field)[k]
+        # Q4: live 'Trimmed: N nodes' readout for the frame on screen.
+        trimmed = None if strain.n_trimmed is None else int(strain.n_trimmed[k])
+        self._param_panel.set_trim_readout(trimmed, int(strain.n_pts))
         cs = result.correspondence
         # Geometry follows the deformed toggle; values stay those of frame k.
         deformed = bool(show_deformed) and k > 0

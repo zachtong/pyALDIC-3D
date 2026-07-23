@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import numpy as np
 from al_dic.gui.theme import COLORS
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QComboBox,
@@ -44,6 +45,12 @@ _SMOOTH_FACTORS = (0.0, 0.5, 1.0, 2.0)
 
 # Coordinate-system codes in combo order (compute_surface_strain values).
 _COORD_CODES = ("local", "camera0", "specific")
+
+# Q3: strain-measure codes in combo order (strain3d.strain_tensor kinds).
+_STRAIN_TYPE_CODES = ("green_lagrange", "infinitesimal", "almansi")
+
+# Q4: 2D-calibrated default edge-trim coefficient (strain_edge_trim_alpha).
+_DEFAULT_EDGE_TRIM_ALPHA = 0.7
 
 
 class StrainParamPanel3D(QWidget):
@@ -106,6 +113,57 @@ class StrainParamPanel3D(QWidget):
         self._win_warning.setStyleSheet("color: #d97706; font-size: 10px; padding-left: 4px;")
         self._win_warning.setVisible(False)
         layout.addRow("", self._win_warning)
+
+        # --- Strain type (Q3) ---
+        self._type_combo = QComboBox()
+        self._type_combo.addItem(self.tr("Green-Lagrange (default)"))
+        self._type_combo.addItem(self.tr("Infinitesimal"))
+        self._type_combo.addItem(self.tr("Eulerian-Almansi"))
+        self._type_combo.setCurrentIndex(0)
+        self._type_combo.setToolTip(
+            self.tr(
+                "Finite-strain measure derived from the SAME displacement-\n"
+                "gradient fit, in the same tangent frame:\n"
+                "Green-Lagrange E = ½(FᵀF − I) — finite strain, reference\n"
+                "configuration (default).\n"
+                "Infinitesimal e = ½(∇u + ∇uᵀ) — small-strain linearization.\n"
+                "Eulerian-Almansi e = ½(I − F⁻ᵀF⁻¹) — finite strain, deformed\n"
+                "configuration."
+            )
+        )
+        layout.addRow(self.tr("Strain type"), self._type_combo)
+
+        # --- Trim low-confidence edges (Q4) ---
+        self._edge_trim_spin = LocaleSafeDoubleSpinBox()
+        self._edge_trim_spin.setRange(0.0, 1.0)
+        self._edge_trim_spin.setSingleStep(0.05)
+        self._edge_trim_spin.setDecimals(2)
+        self._edge_trim_spin.setValue(_DEFAULT_EDGE_TRIM_ALPHA)
+        edge_tip = self.tr(
+            "Hides low-confidence strain near invalid or missing nodes, where\n"
+            "the strain window loses support on one side and the local plane\n"
+            "fit becomes unreliable.\n"
+            "Coefficient × window radius = width of the trimmed band (in px,\n"
+            "on the reference grid).\n"
+            "0.00 = keep every node (no trimming) · 0.70 = recommended ·\n"
+            "1.00 = strictest. Displacement is never affected."
+        )
+        self._edge_trim_spin.setToolTip(edge_tip)
+        edge_label = QWidget()
+        edge_row = QHBoxLayout(edge_label)
+        edge_row.setContentsMargins(0, 0, 0, 0)
+        edge_row.setSpacing(2)
+        edge_row.addWidget(QLabel(self.tr("Trim low-confidence edges")))
+        edge_row.addWidget(InfoIcon(edge_tip))
+        layout.addRow(edge_label, self._edge_trim_spin)
+
+        # Live readout: how many nodes the current trim removed (per frame).
+        self._edge_trim_readout = QLabel("")
+        self._edge_trim_readout.setStyleSheet(
+            f"color: {COLORS.TEXT_SECONDARY}; font-size: 10px; padding-left: 4px;"
+        )
+        self._edge_trim_readout.setVisible(False)
+        layout.addRow("", self._edge_trim_readout)
 
         # --- Strain field smoothing ---
         self._smooth_combo = QComboBox()
@@ -193,6 +251,8 @@ class StrainParamPanel3D(QWidget):
 
         # --- wiring ---
         self._win_spin.valueChanged.connect(self._on_window_changed)
+        self._type_combo.currentIndexChanged.connect(self._mark_dirty)  # Q3 stale hint
+        self._edge_trim_spin.valueChanged.connect(self._mark_dirty)  # Q4 stale hint
         self._smooth_combo.currentIndexChanged.connect(self._mark_dirty)
         self._coord_combo.currentIndexChanged.connect(self._on_coord_changed)
         self._refresh_warning()
@@ -212,7 +272,26 @@ class StrainParamPanel3D(QWidget):
             "smooth_sigma": factor * self._winstepsize,
             "coordinate": coordinate,
             "specimen_R": self._specimen_R if coordinate == "specific" else None,
+            "strain_type": _STRAIN_TYPE_CODES[self._type_combo.currentIndex()],  # Q3
+            "edge_trim_alpha": float(self._edge_trim_spin.value()),  # Q4
         }
+
+    def strain_type(self) -> str:
+        return _STRAIN_TYPE_CODES[self._type_combo.currentIndex()]
+
+    def set_strain_type(self, code: str) -> None:
+        self._type_combo.setCurrentIndex(_STRAIN_TYPE_CODES.index(code))
+
+    def set_trim_readout(self, n_trimmed: int | None, n_total: int) -> None:
+        """Q4 live readout 'Trimmed: N nodes (X%)' — hidden when unavailable."""
+        if n_trimmed is None or n_total <= 0:
+            self._edge_trim_readout.setVisible(False)
+            return
+        pct = 100.0 * n_trimmed / n_total
+        self._edge_trim_readout.setText(
+            self.tr("Trimmed: {0} nodes ({1}%)").format(int(n_trimmed), f"{pct:.0f}")
+        )
+        self._edge_trim_readout.setVisible(True)
 
     def coordinate(self) -> str:
         return _COORD_CODES[self._coord_combo.currentIndex()]

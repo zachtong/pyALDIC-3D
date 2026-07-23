@@ -70,6 +70,13 @@ class RunConfig:
     right_masks: str | list[str] | None = None
     strategy: str = "track_both"
     reference_mode: str = "accumulative"
+    # Q5 reference-update policy (incremental mode only): "every_frame"
+    # (default) | "every_n" | "custom". Maps to the engine FrameSchedule via
+    # al_dic_3d.matching.temporal.build_frame_schedule. ref_update_frames is a
+    # 0-based reference-frame index list for "custom".
+    ref_update_mode: str = "every_frame"
+    ref_update_n: int = 2
+    ref_update_frames: tuple[int, ...] | None = None
     winsize: int = 32
     winstepsize: int = 16
     winsize_min: int = 8
@@ -77,6 +84,9 @@ class RunConfig:
     use_global_step: bool = True
     admm_max_iter: int = 3
     fft_search: int = 20  # temporal FFT integer-search half-width (px)
+    # Q8: auto-enlarge the FFT search region when the integer peak is clipped
+    # at the region boundary (engine fft_auto_expand_search; default on).
+    fft_auto_expand: bool = True
     # Initial guess (F2): "seed" | "fft" | "previous". "seed" template-matches
     # the seed_point patch for the stereo offset + first-pair motion; without a
     # seed_point it falls back to "fft" with a warning (never blocks). Engine
@@ -191,6 +201,13 @@ def load_config(path: str | Path) -> RunConfig:
         right_masks=seq.get("right_mask"),
         strategy=str(match.get("strategy", "track_both")),
         reference_mode=str(match.get("reference_mode", "accumulative")),
+        ref_update_mode=str(match.get("ref_update_mode", "every_frame")),
+        ref_update_n=int(match.get("ref_update_n", 2)),
+        ref_update_frames=(
+            tuple(int(f) for f in match["ref_update_frames"])
+            if match.get("ref_update_frames") is not None
+            else None
+        ),
         winsize=int(match.get("winsize", 32)),
         winstepsize=int(match.get("winstepsize", 16)),
         winsize_min=int(match.get("winsize_min", 8)),
@@ -198,6 +215,7 @@ def load_config(path: str | Path) -> RunConfig:
         use_global_step=bool(match.get("use_global_step", True)),
         admm_max_iter=int(match.get("admm_max_iter", 3)),
         fft_search=int(match.get("fft_search", 20)),
+        fft_auto_expand=bool(match.get("fft_auto_expand", True)),
         init_guess=init_guess,
         seed_point=seed_point,
         temporal_gate_znssd=float(match.get("temporal_gate_znssd", 1.0)),
@@ -486,6 +504,7 @@ def run_pipeline(
         use_global_step=cfg.use_global_step,
         admm_max_iter=cfg.admm_max_iter,
         fft_search=cfg.fft_search,
+        fft_auto_expand=cfg.fft_auto_expand,
         temporal_gate_znssd=cfg.temporal_gate_znssd,
         parallel_cameras=cfg.parallel_cameras,
     )
@@ -500,9 +519,23 @@ def run_pipeline(
     except TypeError:
         strategy = strategy_cls()  # strategy without tunable matching scale
 
+    # Q5: an explicit reference-update schedule (incremental every_n / custom);
+    # None keeps the engine's reference_mode-derived default. Both cameras
+    # track the full sequence, so one schedule serves L and R alike.
+    from al_dic_3d.matching.temporal import build_frame_schedule
+
+    schedule = build_frame_schedule(
+        cfg.reference_mode,
+        n_frames,
+        ref_update_mode=cfg.ref_update_mode,
+        ref_update_n=cfg.ref_update_n,
+        ref_update_frames=cfg.ref_update_frames,
+    )
     corr_cfg = CorrespondenceConfig(
         strategy=cfg.strategy,
         reference_mode=cfg.reference_mode,
+        schedule_L=schedule,
+        schedule_R=schedule,
         disparity_offset=cfg.disparity_offset,
         init_guess=cfg.init_guess,  # type: ignore[arg-type]
         seed_point=cfg.seed_point,

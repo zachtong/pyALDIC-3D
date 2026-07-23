@@ -39,6 +39,11 @@ from PySide6.QtWidgets import (
 
 from al_dic_3d.gui.controllers.roi_controller import ROIController
 from al_dic_3d.gui.controllers.viz_controller import VizController3D, auto_range, visible_values
+from al_dic_3d.gui.display_units import (
+    display_field_key,
+    field_display_factor,
+    field_label,
+)
 from al_dic_3d.gui.panels.canvas_tools import CanvasToolsMixin
 from al_dic_3d.gui.panels.mesh_preview import MeshPreviewBuilder, snapshot_preview_params
 from al_dic_3d.gui.state import GuiSignals
@@ -46,6 +51,7 @@ from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
 from al_dic_3d.gui.widgets.frame_prefetcher import FramePrefetcher
 from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
+from al_dic_3d.gui.widgets.mesh_appearance import MeshAppearanceControls
 from al_dic_3d.gui.widgets.mesh_overlay import MeshOverlay
 from al_dic_3d.gui.widgets.view3d import View3D
 from al_dic_3d.viz3d.lru import LRUCache
@@ -53,23 +59,7 @@ from al_dic_3d.viz3d.lru import LRUCache
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
 
-# Field id -> colorbar label (math notation, not translated prose).
-_FIELD_LABELS = {
-    "U": "U (mm)",
-    "V": "V (mm)",
-    "W": "W (mm)",
-    "mag": "|D| (mm)",
-    "exx": "εxx",
-    "eyy": "εyy",
-    "exy": "εxy",
-    "e1": "ε₁",
-    "e2": "ε₂",
-    "max_shear": "γ max",
-    "von_mises": "von Mises",
-}
-_STRAIN_IDS = ("exx", "eyy", "exy", "e1", "e2", "max_shear", "von_mises")
-
-_MAG_CACHE_SIZE = 32  # per-frame |D| vectors (P2.6); results-scoped
+_MAG_CACHE_SIZE = 32  # per-frame |D| / |ΔD| vectors (P2.6/Q2); results-scoped
 
 
 class CanvasArea3D(CanvasToolsMixin, QWidget):
@@ -166,6 +156,11 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._view3d_cb.setChecked(False)
         self._view3d_cb.toggled.connect(self._on_view_mode)
         tb.addWidget(self._view3d_cb)
+
+        # Q8: mesh-overlay appearance (color swatch + width) beside the grid
+        # toggle it styles; values live on GuiSignals / view_state.
+        self._mesh_appearance = MeshAppearanceControls(signals)
+        tb.addWidget(self._mesh_appearance)
         layout.addWidget(toolbar)
 
         # ---- canvas (2D) / 3D view stack + overlays ----
@@ -199,6 +194,9 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._prefetcher = FramePrefetcher(self)
         # P2.6: per-frame |D| magnitude + drawn-ROI-as-bool caches.
         self._mag_cache: LRUCache[int, np.ndarray] = LRUCache(_MAG_CACHE_SIZE)
+        # Q2: per-frame |D_k − D_{k−1}| in mm/frame — frame-rate applied at
+        # read time, so a frame-rate edit never invalidates this cache.
+        self._vel_cache: LRUCache[int, np.ndarray] = LRUCache(_MAG_CACHE_SIZE)
         self._roi_bool_cache: tuple[np.ndarray, np.ndarray] | None = None
 
         # ROI mask engine (created lazily once an image defines the shape).
@@ -519,6 +517,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._viz_ctrl.clear_all()  # image size may have changed
         self._prefetcher.invalidate()  # decoded frames are stale by definition
         self._mag_cache.clear()
+        self._vel_cache.clear()
         self.render()
         self._ensure_roi_ctrl()
         self._schedule_mesh_preview()
@@ -534,6 +533,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         )
         self._viz_ctrl.clear_all()
         self._mag_cache.clear()
+        self._vel_cache.clear()
         self._right_mask_dirty = True
         # P2.4: new results are the ONLY event that re-frames the 3D camera.
         self._view3d.request_camera_reset()
@@ -543,6 +543,11 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
 
     def render(self) -> None:
         """Redraw the current view (2D frame + overlay, or the 3D surface)."""
+        # Q8: mesh-overlay appearance follows the display state (cheap no-op
+        # when unchanged; render() is already the display_changed sink).
+        self._mesh_overlay.set_appearance(
+            self.signals.mesh_line_color, int(self.signals.mesh_line_width)
+        )
         show_notice = self._result_empty and self._stack.currentIndex() == 0
         if show_notice:
             vp = self._canvas.viewport()
@@ -605,6 +610,10 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         if vals is None:
             self._view3d.show_message(self.tr("Selected field is not available."))
             return
+        # Q1: display-layer unit conversion (mm-native data untouched).
+        factor = field_display_factor(self.signals.display_field, self.signals.display_unit)
+        if factor != 1.0:
+            vals = vals * factor
 
         # F3.2: the drawn LEFT reference ROI mask bounds the surface exactly
         # like the 2D dense view (holes stay open), and the auto color range
@@ -620,7 +629,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._view3d.update_view(
             result.reconstruction.points[k],
             vals,
-            field_label=_FIELD_LABELS.get(self.signals.display_field, self.signals.display_field),
+            field_label=field_label(self.signals.display_field, self.signals.display_unit),
             cmap=self.signals.colormap,
             vmin=vmin,
             vmax=vmax,
@@ -628,40 +637,6 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
             ref_coords=result.ref_coords,
             roi_mask=roi_mask,
         )
-
-    def _field_values(self, result, k: int) -> np.ndarray | None:
-        field = self.signals.display_field
-        rec = result.reconstruction
-        if field in ("U", "V", "W"):
-            return rec.displacement[k][:, ("U", "V", "W").index(field)]
-        if field == "mag":
-            # P2.6: |D| is derived per frame — cache it (results-scoped LRU)
-            # so scrubbing back and forth never recomputes the norm.
-            mag = self._mag_cache.get(k)
-            if mag is None:
-                mag = np.linalg.norm(rec.displacement[k], axis=1)
-                self._mag_cache[k] = mag
-            return mag
-        if field in _STRAIN_IDS and result.strain is not None:
-            return getattr(result.strain, field)[k]
-        return None
-
-    def _drawn_roi_bool(self) -> np.ndarray | None:
-        """The drawn ROI mask as bool, cached by array identity (P2.6).
-
-        Every ROI edit stores a FRESH array on the draft (``commit_roi_mask``
-        copies), so identity is a valid cache key — the old per-render
-        ``np.asarray(mask) > 0`` allocated a full-image bool each frame change.
-        """
-        drawn = self.controller.state.draft.roi_mask_array
-        if drawn is None:
-            return None
-        cached = self._roi_bool_cache
-        if cached is not None and cached[0] is drawn:
-            return cached[1]
-        mask = np.asarray(drawn) > 0
-        self._roi_bool_cache = (drawn, mask)
-        return mask
 
     def _clear_overlay(self) -> None:
         self._canvas.set_overlay_pixmap(None)
@@ -707,6 +682,10 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         if vals is None:
             self._clear_overlay()
             return
+        # Q1: display-layer unit conversion (mm-native data untouched).
+        factor = field_display_factor(self.signals.display_field, self.signals.display_unit)
+        if factor != 1.0:
+            vals = vals * factor
         ref_uv = None
         if deformed:
             d = x_cam[k] - x_cam[0]  # 2D ref_uv contract: x_k - x_1 per node
@@ -737,10 +716,15 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
             self._clear_overlay()
             return
 
+        # Q1/Q2 cache honesty: unit (and frame rate, for velocity) change the
+        # rendered VALUES, so they are part of the interp-cache field key.
+        field_key = display_field_key(
+            self.signals.display_field, self.signals.display_unit, self.signals.frame_rate
+        )
         try:
             pixmap, xg, yg, out_step = self._viz_ctrl.render_field(
                 k,
-                f"{cam}:{self.signals.display_field}",
+                f"{cam}:{field_key}",
                 pts,
                 vals,
                 img_shape=(h, w),
@@ -766,7 +750,10 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._canvas.set_overlay_opacity(self.signals.overlay_alpha)
 
         self._colorbar.update_params(
-            self.signals.colormap, vmin, vmax, _FIELD_LABELS.get(self.signals.display_field, "")
+            self.signals.colormap,
+            vmin,
+            vmax,
+            field_label(self.signals.display_field, self.signals.display_unit),
         )
         self._colorbar.setVisible(True)
 

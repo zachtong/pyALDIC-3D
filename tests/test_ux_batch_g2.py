@@ -298,7 +298,9 @@ def test_stale_label_flips_on_param_change(qapp):
 def test_save_uses_bound_path_without_dialog(qapp, monkeypatch, tmp_path):
     win = MainWindow3D()
     saved = []
-    monkeypatch.setattr(win.controller, "save_project", lambda p: saved.append(Path(p)) or Path(p))
+    monkeypatch.setattr(  # Q7: save_project grew include_results
+        win.controller, "save_project", lambda p, **kw: saved.append(Path(p)) or Path(p)
+    )
     # Any dialog would be a regression: make it explode if called.
     from PySide6.QtWidgets import QFileDialog
 
@@ -337,7 +339,7 @@ def test_window_title_shows_project_and_dirty_star(qapp, monkeypatch, tmp_path):
     win.signals.params_changed.emit()
     assert win.isWindowModified()
 
-    monkeypatch.setattr(win.controller, "save_project", lambda p: Path(p))
+    monkeypatch.setattr(win.controller, "save_project", lambda p, **kw: Path(p))
     win.controller.state.project_path = tmp_path / "demo.aldic3d"
     win.controller.state.dirty = False  # the real save_project clears it
     assert win._save_project() is True

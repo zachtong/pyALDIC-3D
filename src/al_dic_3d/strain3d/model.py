@@ -39,6 +39,11 @@ class StrainResult3D:
     von_mises: NDArray[np.float64]
     dwdx: NDArray[np.float64]  # out-of-plane slope diagnostics
     dwdy: NDArray[np.float64]
+    # Q4 edge-trim bookkeeping: per-frame count of VALID nodes whose strain was
+    # trimmed to NaN near invalid/missing nodes (alpha * VSG-radius band).
+    # ``None`` when trimming was disabled (or after a session reload — the
+    # counts are a UI readout, not part of the persisted result arrays).
+    n_trimmed: NDArray[np.int64] | None = None
 
     def __post_init__(self) -> None:
         shape = self.exx.shape

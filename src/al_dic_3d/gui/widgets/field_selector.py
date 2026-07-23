@@ -29,7 +29,7 @@ def apply_toggle_style(btn: QPushButton) -> None:
         )
 
 
-_DISP_FIELDS = (("U", "U"), ("V", "V"), ("W", "W"), ("mag", "|D|"))
+_DISP_FIELDS = (("U", "U"), ("V", "V"), ("W", "W"), ("mag", "|D|"), ("velocity", "Vel"))
 
 
 class FieldSelector3D(QWidget):
@@ -47,6 +47,7 @@ class FieldSelector3D(QWidget):
         layout.addWidget(self._group_label(self.tr("DISPLACEMENT")))
         layout.addWidget(self._grid(_DISP_FIELDS, columns=2))
 
+        self.set_velocity_enabled(False)  # Q2: needs results (two frames)
         self._sync_checked()
 
     def _group_label(self, text: str) -> QLabel:
@@ -75,6 +76,11 @@ class FieldSelector3D(QWidget):
                 "axis, toward the scene): out-of-plane motion, in mm"
             ),
             "mag": self.tr("|D| — displacement magnitude √(U²+V²+W²), in mm"),
+            "velocity": self.tr(
+                "Velocity — per-node speed |D(k) − D(k−1)| × frame rate, in "
+                "the display unit per second. Depends on the frame rate set "
+                "in the UNITS section; frame 1 has no predecessor (empty)."
+            ),
         }
         for i, (field_id, label) in enumerate(fields):
             btn = QPushButton(label)
@@ -86,6 +92,23 @@ class FieldSelector3D(QWidget):
             grid.addWidget(btn, i // columns, i % columns)
             self._buttons[field_id] = btn
         return host
+
+    def set_velocity_enabled(self, enabled: bool) -> None:
+        """Q2: the Velocity field needs results; disabled it explains itself."""
+        btn = self._buttons.get("velocity")
+        if btn is None:
+            return
+        btn.setEnabled(enabled)
+        if not enabled:
+            btn.setToolTip(self.tr("Run an analysis first — velocity needs results."))
+        else:
+            btn.setToolTip(
+                self.tr(
+                    "Velocity — per-node speed |D(k) − D(k−1)| × frame rate, in "
+                    "the display unit per second. Depends on the frame rate set "
+                    "in the UNITS section; frame 1 has no predecessor (empty)."
+                )
+            )
 
     def _on_pick(self, field_id: str) -> None:
         self._signals.set_display_field(field_id)

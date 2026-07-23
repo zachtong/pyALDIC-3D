@@ -26,6 +26,9 @@ def _headless_close_guards(monkeypatch):
     if mw is not None:
         monkeypatch.setattr(mw.MainWindow3D, "_prompt_unsaved", lambda self: "discard")
         monkeypatch.setattr(mw.MainWindow3D, "_confirm_cancel_run", lambda self: True)
+        # Q7 include-results save prompt: default to "yes" (full save) so
+        # existing save-path tests keep their pre-Q7 behavior.
+        monkeypatch.setattr(mw.MainWindow3D, "_prompt_include_results", lambda self, est: "yes")
         # R1.1 locate-images prompt: default to "cancel" (None) offscreen —
         # relocation tests override this with scripted pickers.
         monkeypatch.setattr(

@@ -14,8 +14,9 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Signal
 
-# Field identifiers (3D-DIC): world-frame displacement components + surface strain.
-DISPLACEMENT_FIELDS = ("U", "V", "W", "mag")
+# Field identifiers (3D-DIC): world-frame displacement components (+ the Q2
+# per-frame velocity magnitude, display-derived) + surface strain.
+DISPLACEMENT_FIELDS = ("U", "V", "W", "mag", "velocity")
 STRAIN_FIELDS_UI = ("exx", "eyy", "exy", "e1", "e2", "max_shear", "von_mises")
 
 
@@ -47,6 +48,13 @@ class GuiSignals(QObject):
         self.color_max: float = 1.0
         self.overlay_alpha: float = 0.85
         self.run_state: str = "idle"
+        # Q1 display units: DISPLAY-layer conversion only — data/exports stay
+        # mm. frame_rate feeds the Q2 velocity field (unit/s).
+        self.display_unit: str = "mm"
+        self.frame_rate: float = 1.0
+        # Q8 mesh-overlay appearance (persisted through view_state).
+        self.mesh_line_color: str = "#ffffff"
+        self.mesh_line_width: int = 1
 
     # -- mutators that keep signal emission consistent -------------------------
 

@@ -71,6 +71,21 @@ def install_excepthook(signals):
     return _hook
 
 
+def session_path_from_argv(argv: list[str] | None) -> str | None:
+    """The first existing ``.aldic3d`` path in ``argv`` (Q6), or None.
+
+    2D port (``al_dic.gui.app._session_path_from_argv``): the CLI's ``gui
+    SESSION`` positional and the Windows double-click association both land
+    here, so the app boots straight into the given project.
+    """
+    from pathlib import Path
+
+    for arg in argv or []:
+        if arg and arg.lower().endswith(".aldic3d") and Path(arg).exists():
+            return arg
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     """Launch the GUI (blocks in the Qt event loop). Returns the exit code."""
     from al_dic_3d.gui.main_window import MainWindow3D
@@ -79,4 +94,11 @@ def main(argv: list[str] | None = None) -> int:
     window = MainWindow3D()  # sizes itself to the available screen (G1.4)
     install_excepthook(window.signals)  # G1.7: crashes are reported, not silent
     window.show()
+    session = session_path_from_argv(argv)
+    if session is not None:
+        # Defer until the event loop runs so the load-progress dialog and
+        # worker behave normally (2D pattern).
+        from PySide6.QtCore import QTimer
+
+        QTimer.singleShot(0, lambda: window._open_project_path(session))
     return int(app.exec())

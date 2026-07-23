@@ -371,18 +371,50 @@ def fit_gradients(
     return coef
 
 
-def green_lagrange_strain(coefficients: NDArray[np.float64]) -> dict[str, NDArray[np.float64]]:
-    """Green-Lagrange strain + invariants from gradient matrices (computeStrain3D.m).
+# Strain measures supported by :func:`strain_tensor` (Q3, 2D apply_strain_type
+# parity): all derived from the SAME displacement-gradient fit, in the SAME
+# tangent frame — only the finite-strain measure changes.
+STRAIN_TYPES = ("green_lagrange", "infinitesimal", "almansi")
+
+
+def strain_tensor(
+    coefficients: NDArray[np.float64], strain_type: str = "green_lagrange"
+) -> dict[str, NDArray[np.float64]]:
+    """Strain + invariants from gradient matrices, for a selectable measure.
 
     ``coefficients`` is ``(n, 3, 3)`` with rows = derivative axis, columns =
-    displacement component. ``F = I + coefficients^T``; ``E = 0.5(F^T F - I)``.
-    Returns the nine :data:`STRAIN_FIELDS` arrays, each ``(n,)`` with ``NaN`` where
-    the gradient is ``NaN`` (void nodes).
+    displacement component, so the displacement-gradient tensor is
+    ``G = coefficients^T`` and ``F = I + G``. Measures (2D
+    ``apply_strain_type.m`` port, evaluated on the full 3x3 tangent-frame
+    tensor):
+
+    * ``green_lagrange`` (default): ``E = 0.5 (F^T F - I)``.
+    * ``infinitesimal``: ``e = 0.5 (G + G^T)``.
+    * ``almansi`` (Eulerian-Almansi): ``e = 0.5 (I - F^{-T} F^{-1})``;
+      nodes with a singular ``F`` come out ``NaN``.
+
+    Returns the nine :data:`STRAIN_FIELDS` arrays, each ``(n,)`` with ``NaN``
+    where the gradient is ``NaN`` (void nodes).
     """
+    if strain_type not in STRAIN_TYPES:
+        raise ValueError(f"unknown strain_type {strain_type!r}; expected one of {STRAIN_TYPES}")
     coef = np.asarray(coefficients, dtype=np.float64).reshape(-1, 3, 3)
     eye = np.eye(3)
-    f = eye[None] + np.transpose(coef, (0, 2, 1))  # F = I + coef^T
-    e = 0.5 * (np.transpose(f, (0, 2, 1)) @ f - eye)
+    grad = np.transpose(coef, (0, 2, 1))  # G[i, j] = d(disp_i)/d(axis_j)
+    if strain_type == "infinitesimal":
+        e = 0.5 * (grad + np.transpose(grad, (0, 2, 1)))
+    elif strain_type == "almansi":
+        f = eye[None] + grad
+        e = np.full_like(f, np.nan)
+        finite = np.isfinite(f).all(axis=(1, 2))
+        ok = finite.copy()
+        ok[finite] &= np.abs(np.linalg.det(f[finite])) > np.finfo(np.float64).tiny
+        if ok.any():
+            f_inv = np.linalg.inv(f[ok])
+            e[ok] = 0.5 * (eye - np.transpose(f_inv, (0, 2, 1)) @ f_inv)
+    else:  # green_lagrange
+        f = eye[None] + grad
+        e = 0.5 * (np.transpose(f, (0, 2, 1)) @ f - eye)
 
     exx = e[:, 0, 0]
     eyy = e[:, 1, 1]
@@ -405,3 +437,8 @@ def green_lagrange_strain(coefficients: NDArray[np.float64]) -> dict[str, NDArra
         "dwdx": dwdx,
         "dwdy": dwdy,
     }
+
+
+def green_lagrange_strain(coefficients: NDArray[np.float64]) -> dict[str, NDArray[np.float64]]:
+    """Green-Lagrange strain + invariants (historical name; see :func:`strain_tensor`)."""
+    return strain_tensor(coefficients, "green_lagrange")
