@@ -64,6 +64,34 @@
 
 ## Changelog
 
+- 2026-07-22 v1.9.0 — **批次 Q：与 pyALDIC-2D 的快速功能对齐（Q1–Q8，8 项）**
+  （`0718f35`，534 tests = 495 基线 + 39 新增，i18n 642×7 100%，P1/P2 parity gate 复跑通过；
+  前置：R1 健壮性包 `5199a88` + R3 Numba 应变核 `58887f8`（6.5–19×）+ R2 引擎升级 al-dic 0.7.*
+  与取消保留部分结果 `a8ba1dd`）。
+  **Q1 显示单位**：右侧栏可折叠 UNITS 区（µm/mm/cm/m + 帧率 fps）；仅显示层换算（colorbar/3D
+  标量条/自动色标范围），数据与导出恒为 mm；随 view_state 持久化。3D 无像素尺寸输入（本就公制）。
+  **Q2 速度场**：FIELD 行新增 Vel 按钮 — |D_k−D_{k−1}|×帧率，帧 0 为 NaN，unit/s 显示；
+  按 P2 模式缓存 mm/frame 幅值（帧率读取时乘上，改帧率零失效）；无结果时禁用并自释。
+  **Q3 应变类型**：strain3d.strain_tensor 同一梯度/同一切平面下 GL（默认）/无穷小/Euler-Almansi；
+  面板下拉 + 陈旧提示失效；解析解测试三型精确。
+  **Q4 边缘裁剪**：strain3d/edgetrim.py — 节点到最近无效节点距离 < α×VSG 半径则应变置 NaN
+  （位移不动，min_neighbors 仍为硬底线）；面板 α spinbox（默认 0.7，2D 校准值）+ 实时
+  “Trimmed: N nodes (X%)” 读数（StrainResult3D.n_trimmed）；带孔平板测试带宽随 α 单调。
+  **Q5 增量参考帧更新**：WORKFLOW 区（仅增量模式可见）Every Frame/Every N/Custom + 校验；
+  draft→RunConfig（[matching] ref_update_*）→ build_frame_schedule → CorrespondenceConfig
+  .schedule_L/R → make_dicpara(frame_schedule) → 引擎 FrameSchedule；acc vs inc(every_n=2)
+  端到端合成一致（中位差 <20µm 门槛内）。
+  **Q6 文件关联 + 会话启动**：`al-dic-3d gui [SESSION]` 定位参数 + `python -m al_dic_3d x.aldic3d`
+  重写为 gui 子命令；gui/file_association.py（HKCU、ProgID pyALDIC3D.Session、pythonw）+
+  File 菜单 “Associate .aldic3d…”。
+  **Q7 保存含结果询问**：Save/Save As 且有结果时 Yes/No/Cancel（估算 nbytes MB）；No 存纯配置
+  会话（has_results=False 可加载）；conftest 默认桩 "yes"。
+  **Q8 小旋钮**：ADVANCED “Auto-expand FFT search on clipped peaks”（DICPara.fft_auto_expand_search，
+  默认开）贯通三策略；画布工具栏网格外观（颜色井 + 1–8px 线宽）随 view_state 持久化。
+  文件纪律：左/右侧栏、canvas 抽出 advanced_section/units_section/ref_update_section/
+  mesh_appearance/view_state/canvas_tools 扩展，全部 ≤800 行；DEPENDS_ON_2D.md 增
+  FrameSchedule 运行时导入 + DICPara 字段行。
+
 - 2026-07-10 v1.8.0 — **UX 产品审查 + 性能/内存审计双线全落地（G1/G2/G3 + P1/P2/P3 + 崩溃根因修复）**
   （`efbe4a6`+`c38bbfb`+`6138ccf`+`6683eab`+`88697eb`+`ca5ee23`+`e4e3820`，448 tests，i18n 592×7 100%）。
   **P1 OOM 防线**（`efbe4a6`）：sequence/lazy.py 惰性帧/掩膜（按需解码 LRU4）+ _EngineFrames 实现引擎
