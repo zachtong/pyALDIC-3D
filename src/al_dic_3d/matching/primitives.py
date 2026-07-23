@@ -21,7 +21,15 @@ from al_dic.core.data_structures import DICPara
 from al_dic.io.image_ops import compute_image_gradient
 from al_dic.solver.local_icgn import local_icgn_precompute, local_icgn_solve_subset
 from numpy.typing import NDArray
-from scipy.ndimage import map_coordinates
+from scipy.ndimage import label, map_coordinates
+
+# Per-subset 4-connectivity structure for the batched connected-component step:
+# the (3, 3, 3) structure connects the 4-neighbourhood WITHIN each (S, S) slice
+# but never across the stack axis, so subsets are labelled independently and the
+# result is invariant to how points are chunked (matches the engine's per-node
+# ``scipy.ndimage.label`` with default 4-connectivity, icgn_batch.py:864).
+_CC_STRUCTURE = np.zeros((3, 3, 3), dtype=bool)
+_CC_STRUCTURE[1] = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=bool)
 
 
 def make_dicpara(
@@ -163,6 +171,17 @@ def _znssd(
     deformed subset with the 6-DOF affine ``(F, U)``, and compare zero-normalized.
     ``znssd = Σ[(f-f̄)/Δf − (g-ḡ)/Δg]²``.
 
+    Boundary handling mirrors the engine's DEFAULT (Numba) backend so this gate
+    metric matches the objective it is scoring (audit A3-1/A3-2/A3-3):
+      * only the CENTER pixel need be in the reference image (partial edge
+        subsets are scored on their in-image support, numba_kernels.py:606-619),
+      * reference samples off the image or outside the mask are excluded, and
+        the mask is restricted to the CENTER-connected component
+        (``_connected_center_mask``, icgn_batch.py:864),
+      * deformed samples that warp off the image are excluded via
+        ``|g| > 1e-10`` (cval=0 out-of-bounds, icgn_batch.py:437),
+      * a subset needs ``>= 4`` combined-valid pixels (the engine floor).
+
     Evaluated in point chunks of ``chunk`` (each point is independent, so chunking
     is bit-identical to the monolithic evaluation) to bound the peak size of the
     ``(m, S, S)`` intermediates.
@@ -176,16 +195,41 @@ def _znssd(
 
     x0 = np.round(points[:, 0])
     y0 = np.round(points[:, 1])
-    in_bounds = valid & (x0 - half >= 0) & (y0 - half >= 0) & (x0 + half < w) & (y0 + half < h)
+    # Engine default rule: the node's CENTER pixel must lie inside the reference
+    # image; partial edge subsets are still tracked (their off-image pixels are
+    # excluded below), not rejected wholesale.
+    in_bounds = valid & (x0 >= 0) & (x0 <= w - 1) & (y0 >= 0) & (y0 <= h - 1)
     idx = np.where(in_bounds)[0]
     if idx.size == 0:
         return z
 
+    # The center-connected-component restriction only changes the result when
+    # the mask actually has interior/edge barriers; skip it (identical result)
+    # on the common unmasked path.
+    mask_has_holes = bool((np.asarray(mask) <= 0.5).any())
+
     chunk = max(1, int(chunk))
     for start in range(0, idx.size, chunk):
         sel = idx[start : start + chunk]
-        z[sel] = _znssd_block(ref, dfm, sel, x0, y0, u_2d, f_2d, offs, xx, yy, mask)
+        z[sel] = _znssd_block(ref, dfm, sel, x0, y0, u_2d, f_2d, offs, xx, yy, mask, mask_has_holes)
     return z
+
+
+def _center_connected_stack(msub: NDArray[np.bool_]) -> NDArray[np.bool_]:
+    """Keep only the CENTER-connected component of each ``(S, S)`` mask.
+
+    Batched analogue of the engine's ``_connected_center_mask`` (scipy label,
+    4-connectivity): each subset in the ``(m, S, S)`` stack is labelled
+    independently (the structure has no cross-slice connectivity), then reduced
+    to the component holding the center pixel. A subset whose center pixel is
+    itself invalid collapses to all-False.
+    """
+    m, sy, sx = msub.shape
+    if m == 0:
+        return msub
+    labeled, _ = label(msub, structure=_CC_STRUCTURE)
+    center = labeled[:, sy // 2, sx // 2]  # (m,)
+    return (labeled == center[:, None, None]) & (center[:, None, None] > 0)
 
 
 def _znssd_block(
@@ -200,15 +244,30 @@ def _znssd_block(
     xx: NDArray[np.float64],
     yy: NDArray[np.float64],
     mask: NDArray[np.float64],
+    mask_has_holes: bool = False,
 ) -> NDArray[np.float64]:
     """The vectorized ZNSSD kernel for one chunk of in-bounds point indices."""
+    h, w = ref.shape
     s = xx.shape[0]
     rx = x0[idx].astype(np.int64)
     ry = y0[idx].astype(np.int64)
-    rows = ry[:, None, None] + offs[None, :, None]
-    cols = rx[:, None, None] + offs[None, None, :]
-    f = ref[rows, cols]  # (m, S, S)
-    msub = mask[rows, cols] > 0.5
+    rows = ry[:, None, None] + offs[None, :, None]  # (m, S, 1)
+    cols = rx[:, None, None] + offs[None, None, :]  # (m, 1, S)
+
+    # A3-3: partial edge subsets have off-image reference pixels. Clip indices
+    # for a safe gather, then exclude those samples so they enter neither the
+    # counts, the means/vars, nor the residual (engine treats OOB pixels as
+    # mask=0, numba_kernels.py:614-619).
+    ref_in = (rows >= 0) & (rows <= h - 1) & (cols >= 0) & (cols <= w - 1)  # (m, S, S)
+    rows_c = np.clip(rows, 0, h - 1)
+    cols_c = np.clip(cols, 0, w - 1)
+    f = ref[rows_c, cols_c]  # (m, S, S)
+    msub = (mask[rows_c, cols_c] > 0.5) & ref_in
+
+    # A3-2: restrict the reference mask to the center-connected component so a
+    # subset straddling a hole/barrier is scored only over the center's island.
+    if mask_has_holes:
+        msub = _center_connected_stack(msub)
 
     f11, f21, f12, f22 = f_2d[idx, 0], f_2d[idx, 1], f_2d[idx, 2], f_2d[idx, 3]
     uu, vv = u_2d[idx, 0], u_2d[idx, 1]
@@ -227,7 +286,10 @@ def _znssd_block(
     g = map_coordinates(dfm, [gv.ravel(), gu.ravel()], order=3, mode="constant", cval=0.0)
     g = g.reshape(idx.size, s, s)
 
-    comb = msub & np.isfinite(g)
+    # A3-1: deformed samples that warp off the image are sampled as cval=0;
+    # exclude them exactly as the engine does (|tempg| > 1e-10, icgn_batch.py:437),
+    # so off-image zeros never pollute meang/varg/residual.
+    comb = msub & (np.abs(g) > 1e-10)
     cnt = comb.sum((1, 2))
     cnt_safe = np.maximum(cnt, 1)
 

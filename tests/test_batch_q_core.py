@@ -160,30 +160,44 @@ def _hole_mask(ref_2d: np.ndarray, center: np.ndarray, radius_px: float) -> np.n
     return np.linalg.norm(ref_2d - center, axis=1) < radius_px
 
 
-def test_edge_trim_mask_disabled_and_no_invalid():
+def test_edge_trim_mask_outer_boundary_and_disable():
+    # A6-1: even with NO invalid nodes, the node-grid outer boundary ring is
+    # trimmed (its one-sided VSG fits are biased, like the 2D outer-ROI edge);
+    # the deep interior is untouched and alpha=0 disables everything.
     ref_2d, *_ = _grid()
     finite = np.ones(ref_2d.shape[0], dtype=bool)
-    assert not edge_trim_mask(ref_2d, finite, 32.0, 0.7).any()  # nothing invalid
-    finite[0] = False
+    trim = edge_trim_mask(ref_2d, finite, 32.0, 0.7)
+    assert trim.any()  # outer ring trimmed even though nothing is invalid
+    center = ref_2d.mean(axis=0)
+    ci = int(np.argmin(np.linalg.norm(ref_2d - center, axis=1)))
+    assert not trim[ci]  # deep interior stays
     assert not edge_trim_mask(ref_2d, finite, 32.0, 0.0).any()  # alpha 0 disables
 
 
 def test_edge_trim_band_scales_with_alpha():
+    from scipy.spatial import cKDTree
+
     ref_2d, *_ = _grid(nx=21)
     center = ref_2d.mean(axis=0)
     hole = _hole_mask(ref_2d, center, 24.0)
     finite = ~hole
     vsg_radius = 32.0
 
+    # Outer boundary of the full node lattice = the grid perimeter (nodes on the
+    # min/max row or column), computed independently of edge_trim_mask.
+    x, y = ref_2d[:, 0], ref_2d[:, 1]
+    perim = (x == x.min()) | (x == x.max()) | (y == y.min()) | (y == y.max())
+    d_hole, _ = cKDTree(ref_2d[hole]).query(ref_2d[finite])
+    d_perim, _ = cKDTree(ref_2d[perim]).query(ref_2d[finite])
+
     counts = []
     for alpha in (0.25, 0.5, 0.75, 1.0):
         trim = edge_trim_mask(ref_2d, finite, vsg_radius, alpha)
         assert not trim[hole].any()  # already-invalid nodes are never "trimmed"
-        # exact semantics: valid node trimmed iff dist to nearest invalid < a*R
-        from scipy.spatial import cKDTree
-
-        dist, _ = cKDTree(ref_2d[hole]).query(ref_2d[finite])
-        assert np.array_equal(trim[finite], dist < alpha * vsg_radius)
+        # New semantics (A6-1): trimmed iff within alpha*R of the hole OR the
+        # outer boundary.
+        expected = np.minimum(d_hole, d_perim) < alpha * vsg_radius
+        assert np.array_equal(trim[finite], expected)
         counts.append(int(trim.sum()))
     assert counts == sorted(counts) and counts[0] < counts[-1]  # band grows
 
@@ -204,12 +218,14 @@ def test_compute_surface_strain_trims_around_hole():
         rec, ref_2d, strain_size=5, winstepsize=16, edge_trim_alpha=0.7
     )
     assert trimmed.n_trimmed is not None
-    assert trimmed.n_trimmed[0] == 0  # reference frame: fully valid, no band
-    n_trim = int(trimmed.n_trimmed[1])
-    assert n_trim > 0
-    # Exactly the band nodes lost their strain relative to the untrimmed run.
+    # A6-1: the outer boundary ring is trimmed on EVERY frame, including the
+    # fully-valid reference frame (pre-fix this was 0).
+    assert int(trimmed.n_trimmed[0]) > 0
+    # Frame 1 adds the hole band on top of the outer ring.
+    assert int(trimmed.n_trimmed[1]) > int(trimmed.n_trimmed[0])
+    # Trimming only ADDS NaN; every newly-NaN node was among the trimmed set.
     newly_nan = np.isfinite(plain.exx[1]) & ~np.isfinite(trimmed.exx[1])
-    assert int(newly_nan.sum()) == n_trim
+    assert 0 < int(newly_nan.sum()) <= int(trimmed.n_trimmed[1])
     # ... and the displacement input is untouched by construction (frozen rec).
     assert np.isfinite(rec.displacement[1][~hole]).all()
 

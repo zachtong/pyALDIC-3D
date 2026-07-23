@@ -202,8 +202,8 @@ def test_strain_type_changes_computed_values(qapp):
     win.trigger_compute()
     gl = win.controller.state.result.strain
     assert gl is not None and gl.n_trimmed is not None  # trim active (alpha 0.7)
-    assert int(gl.n_trimmed[1]) == 0  # fully valid grid: nothing to trim against
-    gl_exx = np.nanmedian(gl.exx[1])
+    assert int(gl.n_trimmed[1]) > 0  # A6-1: the biased outer boundary ring is trimmed
+    gl_exx = np.nanmedian(gl.exx[1])  # nanmedian over the exact interior
 
     win.param_panel().set_strain_type("infinitesimal")
     win.trigger_compute()
