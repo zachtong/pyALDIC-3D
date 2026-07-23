@@ -68,10 +68,6 @@ if TYPE_CHECKING:
 # Pick-marker colors for the 3-point specimen frame: Origin / +X / +Y.
 _PICK_COLORS = (QColor("#3b82f6"), QColor("#ef4444"), QColor("#22c55e"))
 
-# Backward-compatible aliases (extracted to widgets/strain_support.py).
-_PickCanvas = PickCanvas
-_StrainWorker = StrainWorker
-
 
 def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
     """Clamp the preferred 1280x800 default to the usable screen area.
@@ -99,7 +95,7 @@ class StrainWindow3D(QMainWindow):
         self.controller = controller
         self.signals = signals
         self._strain_ctrl = StrainController3D(controller)
-        self._worker: _StrainWorker | None = None
+        self._worker: StrainWorker | None = None
         self._export_dialog = None  # G3.12: non-modal singleton
 
         # PRIVATE display state — never mirrored to GuiSignals.
@@ -130,7 +126,7 @@ class StrainWindow3D(QMainWindow):
         left = QVBoxLayout()
         left.setSpacing(0)
 
-        self._canvas = _PickCanvas()
+        self._canvas = PickCanvas()
         zoom_bar = ZoomBar(self._canvas)  # extracted toolbar (P3.5 file-size)
         self._zoom_btn = zoom_bar.zoom_btn  # historical alias
         left.addWidget(zoom_bar)
@@ -423,7 +419,7 @@ class StrainWindow3D(QMainWindow):
         self._cancel_btn.setEnabled(True)
         self._cancel_btn.setVisible(True)
 
-        self._worker = _StrainWorker(self._strain_ctrl, self._param_panel.get_override())
+        self._worker = StrainWorker(self._strain_ctrl, self._param_panel.get_override())
         self._worker.progress.connect(self._on_worker_progress)
         self._worker.finished_ok.connect(self._on_worker_finished)
         self._worker.failed.connect(self._on_worker_failed)
@@ -629,8 +625,12 @@ class StrainWindow3D(QMainWindow):
         result = self.controller.state.result
         has_strain = result is not None and result.strain is not None
         self._field_selector.set_fields_available(has_strain)
-        self._export_btn.setEnabled(has_strain)
+        # R1.2 (2D 01ed129): Export follows RESULTS, not strain — the shared
+        # dialog exports displacement too (session reload / pre-compute).
+        self._export_btn.setEnabled(result is not None)
         self._compute_btn.setEnabled(result is not None and self._param_panel.compute_allowed())
+        # R1.4: physical node spacing feeds the panel's VSG size readout.
+        self._param_panel.set_node_spacing_mm(self._strain_ctrl.node_spacing_mm())
         self._refresh_action_tooltips()
         if self._recon_id is None and result is not None:
             self._recon_id = id(result.reconstruction)
@@ -656,13 +656,13 @@ class StrainWindow3D(QMainWindow):
                     "field with the parameters above."
                 )
             )
-        if result is not None and result.strain is not None:
+        if result is not None:
             self._export_btn.setToolTip(
                 self.tr("Export displacement and strain results to NPZ / MAT / CSV")
             )
         else:
             self._export_btn.setToolTip(
-                self.tr("Compute strain first — there is nothing to export yet.")
+                self.tr("Run an analysis first — there are no results yet.")
             )
 
     def _frame_count(self) -> int:

@@ -1838,7 +1838,34 @@ inter-frame motion.</source>
         <translation>プロジェクトを読み込み中…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="578"/>
+        <location filename="../../gui/main_window.py" line="573"/>
+        <location filename="../../gui/main_window.py" line="583"/>
+        <source>Locate Images</source>
+        <translation>画像の場所を指定</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="575"/>
+        <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
+        <translation>選択したフォルダーには本プロジェクトのカメラ {0} のフレームが含まれていません。元の画像ファイルがあるフォルダーを選択するか、キャンセルして開く操作を中止してください。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="585"/>
+        <source>The image folder saved with this project was not found:
+{0}
+
+Select the folder that now contains the camera {1} frames (file names must match).</source>
+        <translation>プロジェクトと共に保存された画像フォルダーが見つかりません:
+{0}
+
+カメラ {1} のフレームが現在あるフォルダーを選択してください（ファイル名が一致する必要があります）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="592"/>
+        <source>Locate images for camera {0}</source>
+        <translation>カメラ {0} の画像の場所を指定</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="638"/>
         <source>Saving project…</source>
         <translation>プロジェクトを保存中…</translation>
     </message>
@@ -1874,13 +1901,13 @@ inter-frame motion.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="515"/>
-        <location filename="../../gui/main_window.py" line="560"/>
+        <location filename="../../gui/main_window.py" line="620"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D プロジェクト (*.aldic3d)</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="354"/>
-        <location filename="../../gui/main_window.py" line="558"/>
+        <location filename="../../gui/main_window.py" line="618"/>
         <source>Save Project</source>
         <translation>プロジェクトを保存</translation>
     </message>
@@ -2793,7 +2820,7 @@ inter-frame motion.</source>
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="73"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="74"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -2806,32 +2833,37 @@ inter-frame motion.</source>
 • 少なくとも 3×3 ノードを含む必要があります：≥ 2 × ノード間隔 + 1 px を使用してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
         <source>Strain window</source>
         <translation>VSGウィンドウ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="96"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="94"/>
+        <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
+        <translation>正方形のひずみウィンドウ内で各軸方向に含まれるメッシュ節点数 — 局所平面フィットはウィンドウ内のすべての有効節点を使用します。mm サイズは、参照表面上の隣接節点の 3D 間隔の中央値でピクセルウィンドウを換算したものです。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>Off</source>
         <translation>オフ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="97"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>軽度（σ = 0.5 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="98"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>中程度（σ = 1 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="99"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>強（σ = 2 × step）⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="105"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -2844,57 +2876,67 @@ inter-frame motion.</source>
   強（2 × step）⚠：強力、実際の勾配をぼかす恐れ。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
         <source>Strain field smoothing</source>
         <translation>ひずみ場の平滑化</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="135"/>
         <source>Surface tangent plane</source>
         <translation>表面接平面</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="136"/>
         <source>Left camera frame</source>
         <translation>左カメラ座標系</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="137"/>
         <source>Custom (3 points)</source>
         <translation>カスタム（3点）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="121"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>参照曲面にノードごとに当てはめた接平面：z はカメラ側を向く表面法線、x は左カメラ +X の平面への射影、y = z × x。曲面試験片に最適な既定値です。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="127"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>固定された左カメラ（世界）座標軸でひずみを報告します。像平面に揃った平板試験片に有効です。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="150"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>参照画像上で選択した 3 点から構築する固定の試験片座標系：原点、+X 方向の点、+Y 側の点。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="149"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="168"/>
         <source>Coordinate system</source>
         <translation>座標系</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="173"/>
         <source>Pick 3 points…</source>
         <translation>3点を選択…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="178"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
         <translation>参照画像上で 3 点をクリックします: 原点、+X 方向の点、+Y 側の点。クリックは最も近い有効なメッシュ節点にスナップします。「カスタム（3 点）」でのみ有効です。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="266"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="303"/>
+        <source>Strain window ≈ {0}×{1} nodes</source>
+        <translation>VSGウィンドウ ≈ {0}×{1} 節点</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="307"/>
+        <source>≈ {0} × {1} mm</source>
+        <translation>≈ {0} × {1} mm</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="317"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ ウィンドウ半径（{0} px）&lt; ノード間隔（{1} px）：平面フィットには 3×3 ノードのゲージが必要です。≥ {2} px を使用してください。</translation>
     </message>
@@ -2986,7 +3028,7 @@ inter-frame motion.</source>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="173"/>
-        <location filename="../../gui/strain_window.py" line="661"/>
+        <location filename="../../gui/strain_window.py" line="667"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>変位とひずみ結果を NPZ / MAT / CSV にエクスポート</translation>
     </message>
@@ -3117,24 +3159,24 @@ inter-frame motion.</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="646"/>
+        <location filename="../../gui/strain_window.py" line="652"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>まず 3D 解析を実行してください — ひずみには変位結果が必要です。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="650"/>
+        <location filename="../../gui/strain_window.py" line="656"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>まず試料座標系の 3 点（原点、+X、+Y）を選んでください。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="655"/>
+        <location filename="../../gui/strain_window.py" line="661"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>上のパラメーターで変位場から Green-Lagrange 表面ひずみを計算します。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="665"/>
-        <source>Compute strain first — there is nothing to export yet.</source>
-        <translation>まずひずみを計算してください — まだエクスポートするものがありません。</translation>
+        <location filename="../../gui/strain_window.py" line="671"/>
+        <source>Run an analysis first — there are no results yet.</source>
+        <translation>まず解析を実行してください — まだ結果がありません。</translation>
     </message>
 </context>
 <context>
@@ -3257,12 +3299,6 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <source>Zoom out</source>
         <translation>縮小</translation>
     </message>
-</context>
-<context>
-    <name>_CameraDropZone</name>
-</context>
-<context>
-    <name>_PairBars</name>
 </context>
 <context>
     <name>dialog</name>

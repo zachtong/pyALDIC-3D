@@ -3318,7 +3318,6 @@ _BATCH_G2: dict[str, dict[str, str]] = {
         "Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.": "场叠加图与 3D 曲面使用的颜色映射。默认 turbo（感知有序、高对比）；对以零为中心的有符号场可选 RdBu_r 或 coolwarm。",
         "Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.": "应变叠加图使用的颜色映射。默认 turbo；对以零为中心的有符号应变可选 RdBu_r 或 coolwarm。",
         "Compute Green-Lagrange surface strain from the displacement field with the parameters above.": "使用上方参数由位移场计算 Green-Lagrange 表面应变。",
-        "Compute strain first — there is nothing to export yet.": "请先计算应变 — 目前尚无可导出的内容。",
         "File format of the calibration to import. Default opencv_yaml\n(written by the built-in calibrator). Pick the format matching\nyour source: dice (DICe XML), matchid (MatchID .caldat),\nopencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv\n(MATLAB stereoParams .mat).": "要导入的标定文件格式。默认 opencv_yaml（内置标定器写出的格式）。\n请按来源选择：dice（DICe XML）、matchid（MatchID .caldat）、\nopencorr（OpenCorr CSV）、mmc（MultiDIC/MMC .mat）、\nmatlabcv（MATLAB stereoParams .mat）。",
         "How aggressively refined elements shrink: the minimum element\nis step / 2^level. Default 1 (light); 3 is heavy — finer\nboundary detail but many more nodes and a slower run.": "控制加密单元缩小的程度：最小单元为 step / 2^level。\n默认 1（轻度）；3 为重度 — 边界细节更精细，但节点大幅增加、运行更慢。",
         "How stereo correspondences are propagated through time.\nTrack Both (default): match stereo once at frame 1, then\ntrack each camera temporally — fastest, one stereo solve.\nStereo Each Frame: re-match stereo at every frame — robust\nwhen temporal tracking drifts, slower.\nReference Direct: match every frame directly to frame 1 in\nboth cameras — no drift accumulation, small motions only.": "立体对应关系随时间传播的方式。\n双相机追踪（默认）：仅在第 1 帧做一次立体匹配，之后在每台相机内做时序追踪 — 最快，只需一次立体求解。\n逐帧立体匹配：每帧重新做立体匹配 — 时序追踪漂移时更稳健，但更慢。\n参考帧直接匹配：两台相机的每一帧都直接与第 1 帧匹配 — 不累积漂移，仅适用于小运动。",
@@ -3390,7 +3389,6 @@ _BATCH_G2: dict[str, dict[str, str]] = {
         "Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.": "場疊加圖與 3D 曲面使用的顏色映射。預設 turbo（感知有序、高對比）；對以零為中心的有符號場可選 RdBu_r 或 coolwarm。",
         "Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.": "應變疊加圖使用的顏色映射。預設 turbo；對以零為中心的有符號應變可選 RdBu_r 或 coolwarm。",
         "Compute Green-Lagrange surface strain from the displacement field with the parameters above.": "使用上方參數由位移場計算 Green-Lagrange 表面應變。",
-        "Compute strain first — there is nothing to export yet.": "請先計算應變 — 目前尚無可匯出的內容。",
         "File format of the calibration to import. Default opencv_yaml\n(written by the built-in calibrator). Pick the format matching\nyour source: dice (DICe XML), matchid (MatchID .caldat),\nopencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv\n(MATLAB stereoParams .mat).": "要匯入的標定檔案格式。預設 opencv_yaml（內建標定器寫出的格式）。\n請按來源選擇：dice（DICe XML）、matchid（MatchID .caldat）、\nopencorr（OpenCorr CSV）、mmc（MultiDIC/MMC .mat）、\nmatlabcv（MATLAB stereoParams .mat）。",
         "How aggressively refined elements shrink: the minimum element\nis step / 2^level. Default 1 (light); 3 is heavy — finer\nboundary detail but many more nodes and a slower run.": "控制加密單元縮小的程度：最小單元為 step / 2^level。\n預設 1（輕度）；3 為重度 — 邊界細節更精細，但節點大幅增加、執行更慢。",
         "How stereo correspondences are propagated through time.\nTrack Both (default): match stereo once at frame 1, then\ntrack each camera temporally — fastest, one stereo solve.\nStereo Each Frame: re-match stereo at every frame — robust\nwhen temporal tracking drifts, slower.\nReference Direct: match every frame directly to frame 1 in\nboth cameras — no drift accumulation, small motions only.": "立體對應關係隨時間傳播的方式。\n雙相機追蹤（預設）：僅在第 1 幀做一次立體匹配，之後在每台相機內做時序追蹤 — 最快，只需一次立體求解。\n逐幀立體匹配：每幀重新做立體匹配 — 時序追蹤漂移時更穩健，但更慢。\n參考幀直接匹配：兩台相機的每一幀都直接與第 1 幀匹配 — 不累積漂移，僅適用於小運動。",
@@ -3462,7 +3460,6 @@ _BATCH_G2: dict[str, dict[str, str]] = {
         "Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.": "フィールドオーバーレイと 3D 表面のカラーマップ。既定は turbo（知覚的に順序付き、高コントラスト）。ゼロ中心の符号付きフィールドには RdBu_r か coolwarm を選んでください。",
         "Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.": "ひずみオーバーレイのカラーマップ。既定は turbo。ゼロ中心の符号付きひずみには RdBu_r か coolwarm を選んでください。",
         "Compute Green-Lagrange surface strain from the displacement field with the parameters above.": "上のパラメーターで変位場から Green-Lagrange 表面ひずみを計算します。",
-        "Compute strain first — there is nothing to export yet.": "まずひずみを計算してください — まだエクスポートするものがありません。",
         "File format of the calibration to import. Default opencv_yaml\n(written by the built-in calibrator). Pick the format matching\nyour source: dice (DICe XML), matchid (MatchID .caldat),\nopencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv\n(MATLAB stereoParams .mat).": "インポートするキャリブレーションのファイル形式。既定は opencv_yaml（内蔵キャリブレーターの出力形式）。\nソースに合わせて選択してください: dice（DICe XML）、matchid（MatchID .caldat）、\nopencorr（OpenCorr CSV）、mmc（MultiDIC/MMC .mat）、matlabcv（MATLAB stereoParams .mat）。",
         "How aggressively refined elements shrink: the minimum element\nis step / 2^level. Default 1 (light); 3 is heavy — finer\nboundary detail but many more nodes and a slower run.": "細分化された要素をどこまで小さくするか: 最小要素は step / 2^level。\n既定は 1（軽度）。3 は重度で、境界の細部は精細になりますが節点が大幅に増え実行が遅くなります。",
         "How stereo correspondences are propagated through time.\nTrack Both (default): match stereo once at frame 1, then\ntrack each camera temporally — fastest, one stereo solve.\nStereo Each Frame: re-match stereo at every frame — robust\nwhen temporal tracking drifts, slower.\nReference Direct: match every frame directly to frame 1 in\nboth cameras — no drift accumulation, small motions only.": "ステレオ対応を時間方向へどう伝播させるか。\n両カメラ追跡（既定）: フレーム 1 で一度だけステレオマッチングし、以後は各カメラで時系列追跡 — 最速、ステレオ求解は 1 回。\n毎フレームステレオマッチング: 毎フレームでステレオを再マッチング — 時系列追跡がドリフトする場合に頑健、ただし低速。\n参照フレーム直接マッチング: 両カメラとも各フレームをフレーム 1 と直接マッチング — ドリフトは蓄積しないが小さな運動のみ。",
@@ -3534,7 +3531,6 @@ _BATCH_G2: dict[str, dict[str, str]] = {
         "Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.": "필드 오버레이와 3D 표면에 사용하는 컬러맵. 기본값 turbo(지각적 순서, 고대비). 0을 중심으로 한 부호 있는 필드에는 RdBu_r 또는 coolwarm을 선택하세요.",
         "Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.": "변형률 오버레이의 컬러맵. 기본값 turbo. 0 중심의 부호 있는 변형률에는 RdBu_r 또는 coolwarm을 선택하세요.",
         "Compute Green-Lagrange surface strain from the displacement field with the parameters above.": "위의 매개변수로 변위장에서 Green-Lagrange 표면 변형률을 계산합니다.",
-        "Compute strain first — there is nothing to export yet.": "먼저 변형률을 계산하세요 — 아직 내보낼 것이 없습니다.",
         "File format of the calibration to import. Default opencv_yaml\n(written by the built-in calibrator). Pick the format matching\nyour source: dice (DICe XML), matchid (MatchID .caldat),\nopencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv\n(MATLAB stereoParams .mat).": "가져올 보정 파일 형식. 기본값 opencv_yaml(내장 보정기가 쓰는 형식).\n소스에 맞게 선택하세요: dice(DICe XML), matchid(MatchID .caldat),\nopencorr(OpenCorr CSV), mmc(MultiDIC/MMC .mat), matlabcv(MATLAB stereoParams .mat).",
         "How aggressively refined elements shrink: the minimum element\nis step / 2^level. Default 1 (light); 3 is heavy — finer\nboundary detail but many more nodes and a slower run.": "세분화 요소가 줄어드는 정도: 최소 요소는 step / 2^level입니다.\n기본 1(가벼움); 3은 강함 — 경계 세부가 더 정밀해지지만 노드가 크게 늘고 실행이 느려집니다.",
         "How stereo correspondences are propagated through time.\nTrack Both (default): match stereo once at frame 1, then\ntrack each camera temporally — fastest, one stereo solve.\nStereo Each Frame: re-match stereo at every frame — robust\nwhen temporal tracking drifts, slower.\nReference Direct: match every frame directly to frame 1 in\nboth cameras — no drift accumulation, small motions only.": "스테레오 대응을 시간에 따라 전파하는 방식.\n양쪽 카메라 추적(기본): 프레임 1에서 한 번만 스테레오 매칭 후 각 카메라에서 시간 추적 — 가장 빠르고 스테레오 풀이는 한 번.\n프레임별 스테레오 매칭: 매 프레임 스테레오를 다시 매칭 — 시간 추적이 드리프트할 때 강건하지만 느림.\n기준 프레임 직접 매칭: 두 카메라 모두 매 프레임을 프레임 1과 직접 매칭 — 드리프트가 쌓이지 않으며 작은 운동에만 적합.",
@@ -3606,7 +3602,6 @@ _BATCH_G2: dict[str, dict[str, str]] = {
         "Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.": "Farbskala für die Feld-Überlagerung und die 3D-Oberfläche. Standard: turbo (wahrnehmungsgeordnet, kontraststark); für vorzeichenbehaftete Felder um Null RdBu_r oder coolwarm wählen.",
         "Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.": "Farbskala für die Dehnungsüberlagerung. Standard: turbo; für vorzeichenbehaftete Dehnung um Null RdBu_r oder coolwarm wählen.",
         "Compute Green-Lagrange surface strain from the displacement field with the parameters above.": "Green-Lagrange-Oberflächendehnung aus dem Verschiebungsfeld mit den obigen Parametern berechnen.",
-        "Compute strain first — there is nothing to export yet.": "Zuerst die Dehnung berechnen — es gibt noch nichts zu exportieren.",
         "File format of the calibration to import. Default opencv_yaml\n(written by the built-in calibrator). Pick the format matching\nyour source: dice (DICe XML), matchid (MatchID .caldat),\nopencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv\n(MATLAB stereoParams .mat).": "Dateiformat der zu importierenden Kalibrierung. Standard: opencv_yaml\n(vom eingebauten Kalibrator geschrieben). Wählen Sie das Format Ihrer Quelle:\ndice (DICe XML), matchid (MatchID .caldat), opencorr (OpenCorr CSV),\nmmc (MultiDIC/MMC .mat), matlabcv (MATLAB stereoParams .mat).",
         "How aggressively refined elements shrink: the minimum element\nis step / 2^level. Default 1 (light); 3 is heavy — finer\nboundary detail but many more nodes and a slower run.": "Wie stark verfeinerte Elemente schrumpfen: Das kleinste Element ist step / 2^Level.\nStandard 1 (leicht); 3 ist stark — feinere Randdetails, aber deutlich mehr Knoten und ein langsamerer Lauf.",
         "How stereo correspondences are propagated through time.\nTrack Both (default): match stereo once at frame 1, then\ntrack each camera temporally — fastest, one stereo solve.\nStereo Each Frame: re-match stereo at every frame — robust\nwhen temporal tracking drifts, slower.\nReference Direct: match every frame directly to frame 1 in\nboth cameras — no drift accumulation, small motions only.": "Wie Stereokorrespondenzen über die Zeit fortgeführt werden.\nBeide Kameras verfolgen (Standard): Stereo nur bei Frame 1 abgleichen, danach jede Kamera zeitlich verfolgen — am schnellsten, ein Stereoabgleich.\nStereo je Frame: Stereo in jedem Frame neu abgleichen — robust, wenn die zeitliche Verfolgung driftet, langsamer.\nReferenz direkt: jeden Frame in beiden Kameras direkt mit Frame 1 abgleichen — keine Driftakkumulation, nur kleine Bewegungen.",
@@ -3678,7 +3673,6 @@ _BATCH_G2: dict[str, dict[str, str]] = {
         "Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.": "Palette de couleurs pour la superposition de champ et la surface 3D. Par défaut turbo (perceptuellement ordonnée, contrastée) ; choisissez RdBu_r ou coolwarm pour les champs signés centrés sur zéro.",
         "Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.": "Palette de couleurs pour la superposition de déformation. Par défaut turbo ; choisissez RdBu_r ou coolwarm pour une déformation signée centrée sur zéro.",
         "Compute Green-Lagrange surface strain from the displacement field with the parameters above.": "Calculer la déformation surfacique de Green-Lagrange à partir du champ de déplacement avec les paramètres ci-dessus.",
-        "Compute strain first — there is nothing to export yet.": "Calculez d'abord la déformation — il n'y a encore rien à exporter.",
         "File format of the calibration to import. Default opencv_yaml\n(written by the built-in calibrator). Pick the format matching\nyour source: dice (DICe XML), matchid (MatchID .caldat),\nopencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv\n(MATLAB stereoParams .mat).": "Format du fichier d'étalonnage à importer. Par défaut opencv_yaml\n(écrit par l'étalonneur intégré). Choisissez le format correspondant à votre source :\ndice (DICe XML), matchid (MatchID .caldat), opencorr (OpenCorr CSV),\nmmc (MultiDIC/MMC .mat), matlabcv (MATLAB stereoParams .mat).",
         "How aggressively refined elements shrink: the minimum element\nis step / 2^level. Default 1 (light); 3 is heavy — finer\nboundary detail but many more nodes and a slower run.": "Intensité du raffinement des éléments : l'élément minimal vaut pas / 2^niveau.\nPar défaut 1 (léger) ; 3 est fort — détails de bord plus fins mais beaucoup plus de nœuds et une exécution plus lente.",
         "How stereo correspondences are propagated through time.\nTrack Both (default): match stereo once at frame 1, then\ntrack each camera temporally — fastest, one stereo solve.\nStereo Each Frame: re-match stereo at every frame — robust\nwhen temporal tracking drifts, slower.\nReference Direct: match every frame directly to frame 1 in\nboth cameras — no drift accumulation, small motions only.": "Comment les correspondances stéréo se propagent dans le temps.\nSuivre les deux caméras (défaut) : appariement stéréo une seule fois à l'image 1, puis suivi temporel dans chaque caméra — le plus rapide, une seule résolution stéréo.\nStéréo à chaque image : ré-appariement stéréo à chaque image — robuste quand le suivi temporel dérive, plus lent.\nRéférence directe : chaque image appariée directement à l'image 1 dans les deux caméras — pas d'accumulation de dérive, petits mouvements uniquement.",
@@ -3750,7 +3744,6 @@ _BATCH_G2: dict[str, dict[str, str]] = {
         "Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.": "Mapa de color para la superposición de campo y la superficie 3D. Por defecto turbo (perceptualmente ordenado, alto contraste); elija RdBu_r o coolwarm para campos con signo centrados en cero.",
         "Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.": "Mapa de color para la superposición de deformación. Por defecto turbo; elija RdBu_r o coolwarm para deformaciones con signo centradas en cero.",
         "Compute Green-Lagrange surface strain from the displacement field with the parameters above.": "Calcular la deformación superficial de Green-Lagrange a partir del campo de desplazamiento con los parámetros anteriores.",
-        "Compute strain first — there is nothing to export yet.": "Calcule primero la deformación — todavía no hay nada que exportar.",
         "File format of the calibration to import. Default opencv_yaml\n(written by the built-in calibrator). Pick the format matching\nyour source: dice (DICe XML), matchid (MatchID .caldat),\nopencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv\n(MATLAB stereoParams .mat).": "Formato del archivo de calibración a importar. Por defecto opencv_yaml\n(escrito por el calibrador integrado). Elija el formato de su fuente:\ndice (DICe XML), matchid (MatchID .caldat), opencorr (OpenCorr CSV),\nmmc (MultiDIC/MMC .mat), matlabcv (MATLAB stereoParams .mat).",
         "How aggressively refined elements shrink: the minimum element\nis step / 2^level. Default 1 (light); 3 is heavy — finer\nboundary detail but many more nodes and a slower run.": "Cuánto se reducen los elementos refinados: el elemento mínimo es paso / 2^nivel.\nPor defecto 1 (ligero); 3 es intenso — más detalle en el borde pero muchos más nodos y una ejecución más lenta.",
         "How stereo correspondences are propagated through time.\nTrack Both (default): match stereo once at frame 1, then\ntrack each camera temporally — fastest, one stereo solve.\nStereo Each Frame: re-match stereo at every frame — robust\nwhen temporal tracking drifts, slower.\nReference Direct: match every frame directly to frame 1 in\nboth cameras — no drift accumulation, small motions only.": "Cómo se propagan las correspondencias estéreo en el tiempo.\nSeguir ambas cámaras (por defecto): emparejar estéreo una sola vez en el fotograma 1 y luego seguir cada cámara temporalmente — lo más rápido, una sola resolución estéreo.\nEstéreo en cada fotograma: re-emparejar estéreo en cada fotograma — robusto cuando el seguimiento temporal deriva, más lento.\nReferencia directa: emparejar cada fotograma directamente con el fotograma 1 en ambas cámaras — sin acumulación de deriva, solo movimientos pequeños.",
@@ -4251,6 +4244,81 @@ _BATCH_P3: dict[str, dict[str, str]] = {
 }
 
 for _loc, _entries in _BATCH_P3.items():
+    TRANSLATIONS[_loc].update(_entries)
+
+# ---------------------------------------------------------------------------
+# Robustness batch R1: session image relocation prompts (R1.1) and the strain
+# window's VSG N×N node / mm readout (R1.4). "≈ {0} × {1} mm" is
+# locale-invariant by design (pure math notation).
+# ---------------------------------------------------------------------------
+
+_BATCH_R1: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Locate Images": "定位图像",
+        "The selected folder does not contain this project's camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.": "所选文件夹中不包含本项目相机 {0} 的图像帧。请选择存放原始图像文件的文件夹，或取消以中止打开。",
+        "The image folder saved with this project was not found:\n{0}\n\nSelect the folder that now contains the camera {1} frames (file names must match).": "随项目保存的图像文件夹未找到：\n{0}\n\n请选择当前存放相机 {1} 图像帧的文件夹（文件名必须一致）。",
+        "Locate images for camera {0}": "定位相机 {0} 的图像",
+        "Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.": "方形应变窗内每个坐标轴方向覆盖的网格节点数——局部平面拟合会使用窗内的所有有效节点。毫米尺寸通过参考表面上相邻节点三维间距的中位数将像素窗口换算为物理尺寸。",
+        "Strain window ≈ {0}×{1} nodes": "应变窗 ≈ {0}×{1} 个节点",
+        "≈ {0} × {1} mm": "≈ {0} × {1} mm",
+    },
+    "zh_TW": {
+        "Locate Images": "定位影像",
+        "The selected folder does not contain this project's camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.": "所選資料夾中不包含本專案相機 {0} 的影像幀。請選擇存放原始影像檔案的資料夾，或取消以中止開啟。",
+        "The image folder saved with this project was not found:\n{0}\n\nSelect the folder that now contains the camera {1} frames (file names must match).": "隨專案儲存的影像資料夾未找到：\n{0}\n\n請選擇目前存放相機 {1} 影像幀的資料夾（檔案名稱必須一致）。",
+        "Locate images for camera {0}": "定位相機 {0} 的影像",
+        "Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.": "方形應變窗內每個座標軸方向涵蓋的網格節點數——局部平面擬合會使用窗內的所有有效節點。毫米尺寸透過參考表面上相鄰節點三維間距的中位數將像素視窗換算為實體尺寸。",
+        "Strain window ≈ {0}×{1} nodes": "應變窗 ≈ {0}×{1} 個節點",
+        "≈ {0} × {1} mm": "≈ {0} × {1} mm",
+    },
+    "ja": {
+        "Locate Images": "画像の場所を指定",
+        "The selected folder does not contain this project's camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.": "選択したフォルダーには本プロジェクトのカメラ {0} のフレームが含まれていません。元の画像ファイルがあるフォルダーを選択するか、キャンセルして開く操作を中止してください。",
+        "The image folder saved with this project was not found:\n{0}\n\nSelect the folder that now contains the camera {1} frames (file names must match).": "プロジェクトと共に保存された画像フォルダーが見つかりません:\n{0}\n\nカメラ {1} のフレームが現在あるフォルダーを選択してください（ファイル名が一致する必要があります）。",
+        "Locate images for camera {0}": "カメラ {0} の画像の場所を指定",
+        "Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.": "正方形のひずみウィンドウ内で各軸方向に含まれるメッシュ節点数 — 局所平面フィットはウィンドウ内のすべての有効節点を使用します。mm サイズは、参照表面上の隣接節点の 3D 間隔の中央値でピクセルウィンドウを換算したものです。",
+        "Strain window ≈ {0}×{1} nodes": "VSGウィンドウ ≈ {0}×{1} 節点",
+        "≈ {0} × {1} mm": "≈ {0} × {1} mm",
+    },
+    "ko": {
+        "Locate Images": "이미지 위치 지정",
+        "The selected folder does not contain this project's camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.": "선택한 폴더에 이 프로젝트의 카메라 {0} 프레임이 없습니다. 원본 이미지 파일이 있는 폴더를 선택하거나, 취소하여 열기를 중단하세요.",
+        "The image folder saved with this project was not found:\n{0}\n\nSelect the folder that now contains the camera {1} frames (file names must match).": "프로젝트와 함께 저장된 이미지 폴더를 찾을 수 없습니다:\n{0}\n\n현재 카메라 {1} 프레임이 있는 폴더를 선택하세요(파일 이름이 일치해야 합니다).",
+        "Locate images for camera {0}": "카메라 {0} 이미지 위치 지정",
+        "Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.": "정사각형 변형률 윈도우 안에서 각 축 방향으로 포함되는 메시 노드 수 — 국소 평면 피팅은 윈도우 안의 모든 유효 노드를 사용합니다. mm 크기는 기준 표면에서 인접 노드 간 3D 간격의 중앙값으로 픽셀 윈도우를 환산한 것입니다.",
+        "Strain window ≈ {0}×{1} nodes": "VSG 윈도우 ≈ {0}×{1} 노드",
+        "≈ {0} × {1} mm": "≈ {0} × {1} mm",
+    },
+    "de": {
+        "Locate Images": "Bilder lokalisieren",
+        "The selected folder does not contain this project's camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.": "Der gewählte Ordner enthält nicht die Frames von Kamera {0} dieses Projekts. Wählen Sie den Ordner mit den ursprünglichen Bilddateien, oder brechen Sie ab, um den Ladevorgang zu beenden.",
+        "The image folder saved with this project was not found:\n{0}\n\nSelect the folder that now contains the camera {1} frames (file names must match).": "Der mit diesem Projekt gespeicherte Bildordner wurde nicht gefunden:\n{0}\n\nWählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen müssen übereinstimmen).",
+        "Locate images for camera {0}": "Bilder für Kamera {0} lokalisieren",
+        "Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.": "Anzahl der Netzknoten pro Achse innerhalb des quadratischen VSG-Fensters — die lokale Ebenenanpassung verwendet jeden gültigen Knoten darin. Die mm-Größe rechnet das Pixelfenster über den Median des 3D-Abstands benachbarter Knoten auf der Referenzoberfläche um.",
+        "Strain window ≈ {0}×{1} nodes": "VSG-Fenster ≈ {0}×{1} Knoten",
+        "≈ {0} × {1} mm": "≈ {0} × {1} mm",
+    },
+    "fr": {
+        "Locate Images": "Localiser les images",
+        "The selected folder does not contain this project's camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.": "Le dossier sélectionné ne contient pas les images de la caméra {0} de ce projet. Choisissez le dossier contenant les fichiers d'images d'origine, ou annulez pour interrompre l'ouverture.",
+        "The image folder saved with this project was not found:\n{0}\n\nSelect the folder that now contains the camera {1} frames (file names must match).": "Le dossier d'images enregistré avec ce projet est introuvable :\n{0}\n\nSélectionnez le dossier qui contient désormais les images de la caméra {1} (les noms de fichiers doivent correspondre).",
+        "Locate images for camera {0}": "Localiser les images de la caméra {0}",
+        "Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.": "Nombre de nœuds du maillage par axe dans la fenêtre de déformation carrée — l'ajustement de plan local utilise tous les nœuds valides qu'elle contient. La taille en mm convertit la fenêtre en pixels via la médiane de l'espacement 3D des nœuds adjacents sur la surface de référence.",
+        "Strain window ≈ {0}×{1} nodes": "Fenêtre VSG ≈ {0}×{1} nœuds",
+        "≈ {0} × {1} mm": "≈ {0} × {1} mm",
+    },
+    "es": {
+        "Locate Images": "Localizar imágenes",
+        "The selected folder does not contain this project's camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.": "La carpeta seleccionada no contiene los fotogramas de la cámara {0} de este proyecto. Elija la carpeta con los archivos de imagen originales, o cancele para abortar la apertura.",
+        "The image folder saved with this project was not found:\n{0}\n\nSelect the folder that now contains the camera {1} frames (file names must match).": "No se encontró la carpeta de imágenes guardada con este proyecto:\n{0}\n\nSeleccione la carpeta que ahora contiene los fotogramas de la cámara {1} (los nombres de archivo deben coincidir).",
+        "Locate images for camera {0}": "Localizar imágenes de la cámara {0}",
+        "Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.": "Número de nodos de la malla por eje dentro de la ventana de deformación cuadrada — el ajuste de plano local usa todos los nodos válidos que contiene. El tamaño en mm convierte la ventana de píxeles mediante la mediana del espaciado 3D de los nodos adyacentes en la superficie de referencia.",
+        "Strain window ≈ {0}×{1} nodes": "Ventana VSG ≈ {0}×{1} nodos",
+        "≈ {0} × {1} mm": "≈ {0} × {1} mm",
+    },
+}
+
+for _loc, _entries in _BATCH_R1.items():
     TRANSLATIONS[_loc].update(_entries)
 
 

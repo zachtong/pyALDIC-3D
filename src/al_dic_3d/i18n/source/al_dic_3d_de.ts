@@ -1848,7 +1848,34 @@ Bewegung zwischen Frames wählen.</translation>
         <translation>Projekt wird geladen…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="578"/>
+        <location filename="../../gui/main_window.py" line="573"/>
+        <location filename="../../gui/main_window.py" line="583"/>
+        <source>Locate Images</source>
+        <translation>Bilder lokalisieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="575"/>
+        <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
+        <translation>Der gewählte Ordner enthält nicht die Frames von Kamera {0} dieses Projekts. Wählen Sie den Ordner mit den ursprünglichen Bilddateien, oder brechen Sie ab, um den Ladevorgang zu beenden.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="585"/>
+        <source>The image folder saved with this project was not found:
+{0}
+
+Select the folder that now contains the camera {1} frames (file names must match).</source>
+        <translation>Der mit diesem Projekt gespeicherte Bildordner wurde nicht gefunden:
+{0}
+
+Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen müssen übereinstimmen).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="592"/>
+        <source>Locate images for camera {0}</source>
+        <translation>Bilder für Kamera {0} lokalisieren</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="638"/>
         <source>Saving project…</source>
         <translation>Projekt wird gespeichert…</translation>
     </message>
@@ -1884,13 +1911,13 @@ Bewegung zwischen Frames wählen.</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="515"/>
-        <location filename="../../gui/main_window.py" line="560"/>
+        <location filename="../../gui/main_window.py" line="620"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D-Projekt (*.aldic3d)</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="354"/>
-        <location filename="../../gui/main_window.py" line="558"/>
+        <location filename="../../gui/main_window.py" line="618"/>
         <source>Save Project</source>
         <translation>Projekt speichern</translation>
     </message>
@@ -2803,7 +2830,7 @@ Bewegung zwischen Frames wählen.</translation>
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="73"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="74"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -2816,32 +2843,37 @@ Bewegung zwischen Frames wählen.</translation>
 • Muss mindestens 3×3 Knoten umfassen: ≥ 2 × Knotenabstand + 1 px verwenden.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
         <source>Strain window</source>
         <translation>VSG-Fenster</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="96"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="94"/>
+        <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
+        <translation>Anzahl der Netzknoten pro Achse innerhalb des quadratischen VSG-Fensters — die lokale Ebenenanpassung verwendet jeden gültigen Knoten darin. Die mm-Größe rechnet das Pixelfenster über den Median des 3D-Abstands benachbarter Knoten auf der Referenzoberfläche um.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>Off</source>
         <translation>Aus</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="97"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>Leicht (σ = 0,5 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="98"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>Mittel (σ = 1 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="99"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>Stark (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="105"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -2854,57 +2886,67 @@ Bewegung zwischen Frames wählen.</translation>
   Stark (2 × step) ⚠: aggressiv, kann echte Gradienten verwischen.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
         <source>Strain field smoothing</source>
         <translation>Dehnungsfeldglättung</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="135"/>
         <source>Surface tangent plane</source>
         <translation>Tangentialebene der Oberfläche</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="136"/>
         <source>Left camera frame</source>
         <translation>Koordinatensystem der linken Kamera</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="137"/>
         <source>Custom (3 points)</source>
         <translation>Benutzerdefiniert (3 Punkte)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="121"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>Pro Knoten an die Referenzfläche gefittete Tangentialebene: z ist die zur Kamera zeigende Flächennormale, x die Projektion der +X-Achse der linken Kamera auf die Ebene, y = z × x. Der richtige Standard für gekrümmte Proben.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="127"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>Dehnung in den festen Achsen der linken Kamera (Weltkoordinaten) angeben. Sinnvoll für ebene, zur Bildebene ausgerichtete Proben.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="150"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>Ein festes Proben-Koordinatensystem aus 3 im Referenzbild gewählten Punkten: Ursprung, ein Punkt entlang +X und ein Punkt auf der +Y-Seite.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="149"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="168"/>
         <source>Coordinate system</source>
         <translation>Koordinatensystem</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="173"/>
         <source>Pick 3 points…</source>
         <translation>3 Punkte wählen…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="178"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
         <translation>Klicken Sie drei Punkte auf dem Referenzbild an: den Ursprung, einen Punkt entlang +X, dann einen Punkt auf der +Y-Seite. Jeder Klick rastet am nächsten gültigen Netzknoten ein. Nur bei „Benutzerdefiniert (3 Punkte)“ aktiv.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="266"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="303"/>
+        <source>Strain window ≈ {0}×{1} nodes</source>
+        <translation>VSG-Fenster ≈ {0}×{1} Knoten</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="307"/>
+        <source>≈ {0} × {1} mm</source>
+        <translation>≈ {0} × {1} mm</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="317"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ Fensterradius ({0} px) &lt; Knotenabstand ({1} px); der Ebenen-Fit braucht eine 3×3-Knoten-Messstelle. ≥ {2} px verwenden.</translation>
     </message>
@@ -2996,7 +3038,7 @@ Bewegung zwischen Frames wählen.</translation>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="173"/>
-        <location filename="../../gui/strain_window.py" line="661"/>
+        <location filename="../../gui/strain_window.py" line="667"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>Verschiebungs- und Dehnungsergebnisse als NPZ / MAT / CSV exportieren</translation>
     </message>
@@ -3127,24 +3169,24 @@ Bewegung zwischen Frames wählen.</translation>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="646"/>
+        <location filename="../../gui/strain_window.py" line="652"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>Führen Sie zuerst eine 3D-Analyse aus — die Dehnung braucht Verschiebungsergebnisse.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="650"/>
+        <location filename="../../gui/strain_window.py" line="656"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>Wählen Sie zuerst die 3 Punkte des Probenkoordinatensystems (Ursprung, +X, +Y).</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="655"/>
+        <location filename="../../gui/strain_window.py" line="661"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>Green-Lagrange-Oberflächendehnung aus dem Verschiebungsfeld mit den obigen Parametern berechnen.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="665"/>
-        <source>Compute strain first — there is nothing to export yet.</source>
-        <translation>Zuerst die Dehnung berechnen — es gibt noch nichts zu exportieren.</translation>
+        <location filename="../../gui/strain_window.py" line="671"/>
+        <source>Run an analysis first — there are no results yet.</source>
+        <translation>Führen Sie zuerst eine Analyse aus — es gibt noch keine Ergebnisse.</translation>
     </message>
 </context>
 <context>
@@ -3267,12 +3309,6 @@ Rad: Zoom · Rechts-/Mittelklick-Ziehen: Verschieben · Leertaste: Verschiebemod
         <source>Zoom out</source>
         <translation>Verkleinern</translation>
     </message>
-</context>
-<context>
-    <name>_CameraDropZone</name>
-</context>
-<context>
-    <name>_PairBars</name>
 </context>
 <context>
     <name>dialog</name>

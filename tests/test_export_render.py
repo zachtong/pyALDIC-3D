@@ -133,6 +133,134 @@ def test_render_field_frame_unavailable_field_returns_none(result, image_files):
 
 
 # ---------------------------------------------------------------------------
+# R1.3 — NaN guards (2D 75a8fb6 / 149be17 concepts, proven by regression)
+# ---------------------------------------------------------------------------
+
+
+def _with_nan_nodes(result, frame_k: int = 1, n_nodes: int = 4):
+    """Copy of *result* whose ``n_nodes`` central nodes lose their track at
+    ``frame_k``: deformed positions AND values go NaN from that frame on (the
+    invalid-propagates-end-to-end contract). Returns (new_result, node_idx)."""
+    from dataclasses import replace
+
+    cs, rec = result.correspondence, result.reconstruction
+    valid = np.isfinite(cs.xL[frame_k]).all(axis=1)
+    centre = np.nanmedian(cs.xL[0][valid], axis=0)
+    order = np.argsort(np.linalg.norm(np.nan_to_num(cs.xL[0], nan=1e9) - centre, axis=1))
+    idx = np.asarray([i for i in order if valid[i]][:n_nodes])
+
+    xL, xR = cs.xL.copy(), cs.xR.copy()
+    xL[frame_k:, idx] = np.nan
+    xR[frame_k:, idx] = np.nan
+    pts, disp = rec.points.copy(), rec.displacement.copy()
+    pts[frame_k:, idx] = np.nan
+    disp[frame_k:, idx] = np.nan
+    return (
+        replace(
+            result,
+            correspondence=replace(cs, xL=xL, xR=xR),
+            reconstruction=replace(rec, points=pts, displacement=disp),
+        ),
+        idx,
+    )
+
+
+def test_render_field_frame_nan_deformed_positions(result, image_files):
+    """Invalid tracks (NaN deformed positions) must render as blanked holes."""
+    nan_result, idx = _with_nan_nodes(result)
+    bg = cv2.imread(image_files["L"][1], cv2.IMREAD_GRAYSCALE)
+    cfg = FieldImageConfig(field_id="U", opacity=1.0)
+    rendered = render_field_frame(
+        nan_result, "L", "U", 1, bg, cfg, mesh_step=16, show_deformed=True
+    )
+    assert rendered is not None  # no "Points cannot contain NaN" crash
+    img, _vmin, _vmax = rendered
+    bg_bgr = cv2.cvtColor(bg, cv2.COLOR_GRAY2BGR)
+    assert (img != bg_bgr).any()  # the surviving field is still drawn
+    # The destroyed nodes' pixels show untouched background (transparent hole,
+    # not values interpolated across the invalid region).
+    ref = nan_result.correspondence.xL[0][idx]
+    ys = np.clip(np.round(ref[:, 1]).astype(int), 0, bg.shape[0] - 1)
+    xs = np.clip(np.round(ref[:, 0]).astype(int), 0, bg.shape[1] - 1)
+    assert (img[ys, xs] == bg_bgr[ys, xs]).all()
+
+
+def test_export_image_frames_nan_deformed_positions(result, image_files, tmp_path):
+    nan_result, _idx = _with_nan_nodes(result)
+    paths = export_image_frames(
+        tmp_path,
+        "nan",
+        "20260722000001",
+        nan_result,
+        image_files,
+        [FieldImageConfig(field_id="U")],
+        cameras=("L", "R"),
+        mesh_step=16,
+        show_deformed=True,
+        include_colorbar=True,
+        output_max_dim=256,
+    )
+    n_frames = nan_result.reconstruction.n_frames
+    assert len(paths) == 2 * n_frames  # every camera/frame written, no crash
+    assert all(p.exists() and p.stat().st_size > 0 for p in paths)
+
+
+def test_export_animation_nan_deformed_positions(result, image_files, tmp_path):
+    nan_result, _idx = _with_nan_nodes(result)
+    paths = export_animation(
+        tmp_path,
+        "nan",
+        "20260722000002",
+        nan_result,
+        image_files,
+        [FieldImageConfig(field_id="U")],
+        cameras=("L",),
+        fmt="gif",
+        fps=5,
+        mesh_step=16,
+        show_deformed=True,
+        include_colorbar=False,
+        output_max_dim=128,
+    )
+    assert len(paths) == 1 and paths[0].stat().st_size > 0
+
+
+def test_render_strain_nan_edge_ring_not_blank(result, image_files):
+    """A NaN edge ring (min-neighbors trim) must neither blank the whole image
+    nor be back-filled by interpolation across the ring (2D 149be17)."""
+    from dataclasses import replace
+
+    assert result.strain is not None
+    ref = result.correspondence.xL[0]
+    finite = np.isfinite(ref).all(axis=1)
+    lo, hi = np.nanmin(ref, axis=0), np.nanmax(ref, axis=0)
+    edge = finite & (
+        (ref[:, 0] <= lo[0]) | (ref[:, 0] >= hi[0]) | (ref[:, 1] <= lo[1]) | (ref[:, 1] >= hi[1])
+    )
+    exx = result.strain.exx.copy()
+    exx[:, edge] = np.nan
+    nan_result = replace(result, strain=replace(result.strain, exx=exx))
+
+    bg = cv2.imread(image_files["L"][0], cv2.IMREAD_GRAYSCALE)
+    cfg = FieldImageConfig(field_id="exx", opacity=1.0)
+    rendered = render_field_frame(
+        nan_result, "L", "exx", 1, bg, cfg, mesh_step=16, show_deformed=False
+    )
+    assert rendered is not None
+    img, _vmin, _vmax = rendered
+    bg_bgr = cv2.cvtColor(bg, cv2.COLOR_GRAY2BGR)
+    # Interior still renders (NOT a blank full image)...
+    interior = ~edge & finite
+    ys = np.round(ref[interior, 1]).astype(int)
+    xs = np.round(ref[interior, 0]).astype(int)
+    assert (img[ys, xs] != bg_bgr[ys, xs]).any()
+    # ... while the trimmed edge nodes stay transparent (background showing).
+    ye = np.round(ref[edge, 1]).astype(int)
+    xe = np.round(ref[edge, 0]).astype(int)
+    assert (img[ye, xe] == bg_bgr[ye, xe]).all()
+
+
+# ---------------------------------------------------------------------------
 # Batch image export
 # ---------------------------------------------------------------------------
 

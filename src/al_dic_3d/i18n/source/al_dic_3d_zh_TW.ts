@@ -1837,7 +1837,34 @@ inter-frame motion.</source>
         <translation>正在載入專案…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="578"/>
+        <location filename="../../gui/main_window.py" line="573"/>
+        <location filename="../../gui/main_window.py" line="583"/>
+        <source>Locate Images</source>
+        <translation>定位影像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="575"/>
+        <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
+        <translation>所選資料夾中不包含本專案相機 {0} 的影像幀。請選擇存放原始影像檔案的資料夾，或取消以中止開啟。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="585"/>
+        <source>The image folder saved with this project was not found:
+{0}
+
+Select the folder that now contains the camera {1} frames (file names must match).</source>
+        <translation>隨專案儲存的影像資料夾未找到：
+{0}
+
+請選擇目前存放相機 {1} 影像幀的資料夾（檔案名稱必須一致）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="592"/>
+        <source>Locate images for camera {0}</source>
+        <translation>定位相機 {0} 的影像</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="638"/>
         <source>Saving project…</source>
         <translation>正在儲存專案…</translation>
     </message>
@@ -1873,13 +1900,13 @@ inter-frame motion.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="515"/>
-        <location filename="../../gui/main_window.py" line="560"/>
+        <location filename="../../gui/main_window.py" line="620"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 專案 (*.aldic3d)</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="354"/>
-        <location filename="../../gui/main_window.py" line="558"/>
+        <location filename="../../gui/main_window.py" line="618"/>
         <source>Save Project</source>
         <translation>儲存專案</translation>
     </message>
@@ -2792,7 +2819,7 @@ inter-frame motion.</source>
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="73"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="74"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -2805,32 +2832,37 @@ inter-frame motion.</source>
 • 至少需涵蓋 3×3 個節點：請使用 ≥ 2 × 節點間距 + 1 px。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
         <source>Strain window</source>
         <translation>應變窗（VSG）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="96"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="94"/>
+        <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
+        <translation>方形應變窗內每個座標軸方向涵蓋的網格節點數——局部平面擬合會使用窗內的所有有效節點。毫米尺寸透過參考表面上相鄰節點三維間距的中位數將像素視窗換算為實體尺寸。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>Off</source>
         <translation>關閉</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="97"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>輕度（σ = 0.5 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="98"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>中等（σ = 1 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="99"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>強（σ = 2 × step）⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="105"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -2843,57 +2875,67 @@ inter-frame motion.</source>
   強（2 × step）⚠：激進，可能模糊真實梯度。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
         <source>Strain field smoothing</source>
         <translation>應變場平滑</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="135"/>
         <source>Surface tangent plane</source>
         <translation>表面切平面</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="136"/>
         <source>Left camera frame</source>
         <translation>左相機座標系</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="137"/>
         <source>Custom (3 points)</source>
         <translation>自訂（三點）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="121"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>對參考曲面逐節點擬合的切平面：z 為指向相機的表面法線，x 為左相機 +X 在該平面上的投影，y = z × x。曲面試樣的最佳預設選擇。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="127"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>在固定的左相機（世界）座標軸中回報應變。適用於與像平面對齊的平面試樣。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="150"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>由參考影像上拾取的 3 個點構建的固定試樣座標系：原點、+X 方向上的一點、以及 +Y 一側的一點。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="149"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="168"/>
         <source>Coordinate system</source>
         <translation>座標系</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="173"/>
         <source>Pick 3 points…</source>
         <translation>拾取 3 個點…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="178"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
         <translation>在參考影像上依次點擊三個點：原點、+X 方向上的一點、+Y 一側的一點。每次點擊都會吸附到最近的有效網格節點。僅在「自訂（3 點）」模式下可用。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="266"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="303"/>
+        <source>Strain window ≈ {0}×{1} nodes</source>
+        <translation>應變窗 ≈ {0}×{1} 個節點</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="307"/>
+        <source>≈ {0} × {1} mm</source>
+        <translation>≈ {0} × {1} mm</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="317"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ 視窗半徑（{0} px）&lt; 節點間距（{1} px）；平面擬合至少需要 3×3 節點的應變計。請使用 ≥ {2} px。</translation>
     </message>
@@ -2985,7 +3027,7 @@ inter-frame motion.</source>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="173"/>
-        <location filename="../../gui/strain_window.py" line="661"/>
+        <location filename="../../gui/strain_window.py" line="667"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>將位移和應變結果匯出為 NPZ / MAT / CSV</translation>
     </message>
@@ -3116,24 +3158,24 @@ inter-frame motion.</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="646"/>
+        <location filename="../../gui/strain_window.py" line="652"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>請先執行 3D 分析 — 應變計算需要位移結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="650"/>
+        <location filename="../../gui/strain_window.py" line="656"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>請先揀取 3 個試件座標系點（原點、+X、+Y）。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="655"/>
+        <location filename="../../gui/strain_window.py" line="661"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>使用上方參數由位移場計算 Green-Lagrange 表面應變。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="665"/>
-        <source>Compute strain first — there is nothing to export yet.</source>
-        <translation>請先計算應變 — 目前尚無可匯出的內容。</translation>
+        <location filename="../../gui/strain_window.py" line="671"/>
+        <source>Run an analysis first — there are no results yet.</source>
+        <translation>請先執行分析 — 目前還沒有結果。</translation>
     </message>
 </context>
 <context>
@@ -3256,12 +3298,6 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <source>Zoom out</source>
         <translation>縮小</translation>
     </message>
-</context>
-<context>
-    <name>_CameraDropZone</name>
-</context>
-<context>
-    <name>_PairBars</name>
 </context>
 <context>
     <name>dialog</name>

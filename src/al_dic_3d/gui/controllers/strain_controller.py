@@ -103,6 +103,29 @@ class StrainController3D:
         return self.apply(self.compute(override))
 
     # ------------------------------------------------------------------
+    # Geometry info (R1.4: physical VSG size readout)
+    # ------------------------------------------------------------------
+
+    def node_spacing_mm(self) -> float | None:
+        """Median 3D distance between adjacent reference-mesh nodes (mm).
+
+        The robust per-node spacing estimate the strain window uses to
+        translate the pixel VSG into a physical gauge size; ``None`` when no
+        result exists or too few nodes have finite reference coordinates.
+        """
+        result = self._workflow.state.result
+        if result is None:
+            return None
+        from al_dic_3d.viz3d.surface import median_nn_spacing
+
+        pts = np.asarray(result.reconstruction.points[0], dtype=np.float64)
+        pts = pts[np.isfinite(pts).all(axis=1)]
+        if pts.shape[0] < 2:
+            return None
+        spacing = median_nn_spacing(pts)
+        return float(spacing) if spacing > 0.0 else None
+
+    # ------------------------------------------------------------------
     # 3-point specimen frame
     # ------------------------------------------------------------------
 

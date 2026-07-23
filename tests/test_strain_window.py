@@ -100,10 +100,11 @@ def test_trigger_compute_populates_strain_and_enables_ui(qapp):
     win = StrainWindow3D(ctrl, signals)
     win.show()
 
-    # before compute: strain fields locked, export locked
+    # before compute: strain fields locked; Export already enabled (R1.2,
+    # 2D 01ed129 — displacement is exportable before strain is computed).
     assert ctrl.state.result.strain is None
     assert not win._field_selector._buttons["exx"].isEnabled()
-    assert not win._export_btn.isEnabled()
+    assert win._export_btn.isEnabled()
 
     fired = []
     signals.results_changed.connect(lambda: fired.append(1))

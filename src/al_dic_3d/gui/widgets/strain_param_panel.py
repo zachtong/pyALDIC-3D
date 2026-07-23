@@ -56,6 +56,7 @@ class StrainParamPanel3D(QWidget):
         super().__init__(parent)
         self._winstepsize = max(1, int(winstepsize))
         self._specimen_R: np.ndarray | None = None
+        self._node_spacing_mm: float | None = None  # R1.4 physical readout
         self._dirty = False
 
         layout = QFormLayout(self)
@@ -79,6 +80,24 @@ class StrainParamPanel3D(QWidget):
             )
         )
         layout.addRow(self.tr("Strain window"), self._win_spin)
+
+        # R1.4 (2D 531fa3d idea): live read-only readout translating the pixel
+        # VSG into the effective N×N NODE window the plane fit spans — plus
+        # the physical gauge size once the window supplies the mean 3D node
+        # spacing (set_node_spacing_mm). Informational only.
+        self._win_readout = QLabel("")
+        self._win_readout.setStyleSheet(
+            f"color: {COLORS.TEXT_SECONDARY}; font-size: 10px; padding-left: 4px;"
+        )
+        self._win_readout.setToolTip(
+            self.tr(
+                "Number of mesh nodes per axis inside the square strain window "
+                "— the local plane fit uses every valid node in it. The mm "
+                "size maps the pixel window through the median 3D spacing of "
+                "adjacent nodes on the reference surface."
+            )
+        )
+        layout.addRow("", self._win_readout)
 
         # Inline warning when the gauge radius is below the node spacing
         # (fewer than 3x3 nodes fit -> the plane fit degenerates to NaN).
@@ -213,6 +232,16 @@ class StrainParamPanel3D(QWidget):
         self._winstepsize = step
         self._refresh_warning()
 
+    def set_node_spacing_mm(self, spacing: float | None) -> None:
+        """Median 3D spacing of adjacent mesh nodes (mm) for the VSG readout.
+
+        ``None`` (or a non-positive value) hides the physical part of the
+        readout — the N×N node count is always shown.
+        """
+        valid = spacing is not None and float(spacing) > 0.0
+        self._node_spacing_mm = float(spacing) if valid else None
+        self._refresh_readout()
+
     def specimen_R(self) -> np.ndarray | None:
         return self._specimen_R
 
@@ -257,7 +286,29 @@ class StrainParamPanel3D(QWidget):
         )
         self._mark_dirty()
 
+    def _effective_nodes(self) -> int:
+        """Nodes per axis the VSG spans — exactly ``strain_size``.
+
+        The compute maps the pixel window to ``strain_size = round((px-1)/
+        step)+1`` grid steps (see :meth:`get_override`), and the Chebyshev
+        radius ``((N-1)*step+1)/2`` captures precisely N nodes per axis on a
+        uniform grid, so the readout shows what the fit actually uses.
+        """
+        px = int(self._win_spin.value())
+        return max(3, int(round((px - 1) / self._winstepsize)) + 1)
+
+    def _refresh_readout(self) -> None:
+        """R1.4: update the 'N×N nodes (≈ mm)' line under the VSG spinbox."""
+        n = self._effective_nodes()
+        text = self.tr("Strain window ≈ {0}×{1} nodes").format(n, n)
+        if self._node_spacing_mm is not None:
+            # Physical side of the pixel gauge: px × (mm per px on the mesh).
+            side_mm = self._win_spin.value() * self._node_spacing_mm / self._winstepsize
+            text += " " + self.tr("≈ {0} × {1} mm").format(f"{side_mm:.2f}", f"{side_mm:.2f}")
+        self._win_readout.setText(text)
+
     def _refresh_warning(self) -> None:
+        self._refresh_readout()  # R1.4: same triggers (init / VSG / step edits)
         rad = (self._win_spin.value() - 1) / 2.0
         step = self._winstepsize
         if rad < step:

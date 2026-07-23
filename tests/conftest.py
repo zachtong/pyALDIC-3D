@@ -26,6 +26,11 @@ def _headless_close_guards(monkeypatch):
     if mw is not None:
         monkeypatch.setattr(mw.MainWindow3D, "_prompt_unsaved", lambda self: "discard")
         monkeypatch.setattr(mw.MainWindow3D, "_confirm_cancel_run", lambda self: True)
+        # R1.1 locate-images prompt: default to "cancel" (None) offscreen —
+        # relocation tests override this with scripted pickers.
+        monkeypatch.setattr(
+            mw.MainWindow3D, "_prompt_locate_images", lambda self, cam, old, retry: None
+        )
     sw = sys.modules.get("al_dic_3d.gui.strain_window")
     if sw is not None:
         monkeypatch.setattr(sw.StrainWindow3D, "_confirm_close_during_compute", lambda self: True)

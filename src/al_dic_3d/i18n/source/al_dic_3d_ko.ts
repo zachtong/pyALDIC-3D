@@ -673,7 +673,7 @@ Default on; turn off to declutter the canvas.</source>
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
         <translation>메시 노드 위에 마우스를 올리면 해당 상관 서브셋 창(서브셋 크기 상자)이 표시됩니다.
-&apos;그리드 표시&apos;가 필요합니다. 서브셋이 충분한 스페클 텍스처를 포함하는지 판단하는 데 사용하세요.</translation>
+'그리드 표시'가 필요합니다. 서브셋이 충분한 스페클 텍스처를 포함하는지 판단하는 데 사용하세요.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/canvas_area.py" line="161"/>
@@ -999,12 +999,12 @@ to the 2D image view. Requires results.</source>
     <message>
         <location filename="../../gui/dialogs/export_dialog.py" line="135"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
-        <translation>카메라별 필드 오버레이를 프레임당 한 장의 PNG 이미지로 렌더링합니다(&apos;미리보기와 컬러바&apos; 스타일 사용).</translation>
+        <translation>카메라별 필드 오버레이를 프레임당 한 장의 PNG 이미지로 렌더링합니다('미리보기와 컬러바' 스타일 사용).</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/export_dialog.py" line="139"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
-        <translation>프레임 전반의 필드 오버레이 GIF / MP4 애니메이션(&apos;미리보기와 컬러바&apos; 스타일 사용).</translation>
+        <translation>프레임 전반의 필드 오버레이 GIF / MP4 애니메이션('미리보기와 컬러바' 스타일 사용).</translation>
     </message>
     <message>
         <location filename="../../gui/dialogs/export_dialog.py" line="143"/>
@@ -1300,7 +1300,7 @@ previous solution. Robust default — the search radius is the
 Temporal Search parameter.</source>
         <translation>전체 그리드 상호상관이 1번 프레임(증분 모드에서는 기준 프레임이
 바뀔 때마다)의 초기값을 제공합니다. 이후 프레임은 이전 해에서
-웜스타트합니다. 안정적인 기본값 — 탐색 반경은 &apos;시간 탐색&apos;
+웜스타트합니다. 안정적인 기본값 — 탐색 반경은 '시간 탐색'
 매개변수로 정합니다.</translation>
     </message>
     <message>
@@ -1839,7 +1839,34 @@ inter-frame motion.</source>
         <translation>프로젝트 불러오는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="578"/>
+        <location filename="../../gui/main_window.py" line="573"/>
+        <location filename="../../gui/main_window.py" line="583"/>
+        <source>Locate Images</source>
+        <translation>이미지 위치 지정</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="575"/>
+        <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
+        <translation>선택한 폴더에 이 프로젝트의 카메라 {0} 프레임이 없습니다. 원본 이미지 파일이 있는 폴더를 선택하거나, 취소하여 열기를 중단하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="585"/>
+        <source>The image folder saved with this project was not found:
+{0}
+
+Select the folder that now contains the camera {1} frames (file names must match).</source>
+        <translation>프로젝트와 함께 저장된 이미지 폴더를 찾을 수 없습니다:
+{0}
+
+현재 카메라 {1} 프레임이 있는 폴더를 선택하세요(파일 이름이 일치해야 합니다).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="592"/>
+        <source>Locate images for camera {0}</source>
+        <translation>카메라 {0} 이미지 위치 지정</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="638"/>
         <source>Saving project…</source>
         <translation>프로젝트 저장 중…</translation>
     </message>
@@ -1875,13 +1902,13 @@ inter-frame motion.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="515"/>
-        <location filename="../../gui/main_window.py" line="560"/>
+        <location filename="../../gui/main_window.py" line="620"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 프로젝트 (*.aldic3d)</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="354"/>
-        <location filename="../../gui/main_window.py" line="558"/>
+        <location filename="../../gui/main_window.py" line="618"/>
         <source>Save Project</source>
         <translation>프로젝트 저장</translation>
     </message>
@@ -2794,7 +2821,7 @@ inter-frame motion.</source>
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="73"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="74"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -2807,32 +2834,37 @@ inter-frame motion.</source>
 • 최소 3×3 노드를 포함해야 합니다: ≥ 2 × 노드 간격 + 1 px 를 사용하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="82"/>
         <source>Strain window</source>
         <translation>VSG 윈도우</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="96"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="94"/>
+        <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
+        <translation>정사각형 변형률 윈도우 안에서 각 축 방향으로 포함되는 메시 노드 수 — 국소 평면 피팅은 윈도우 안의 모든 유효 노드를 사용합니다. mm 크기는 기준 표면에서 인접 노드 간 3D 간격의 중앙값으로 픽셀 윈도우를 환산한 것입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="115"/>
         <source>Off</source>
         <translation>끔</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="97"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>약함 (σ = 0.5 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="98"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>중간 (σ = 1 × step)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="99"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>강함 (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="105"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -2845,57 +2877,67 @@ inter-frame motion.</source>
   강함 (2 × step) ⚠: 강력, 실제 구배가 흐려질 수 있음.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="112"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
         <source>Strain field smoothing</source>
         <translation>변형률장 평활화</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="116"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="135"/>
         <source>Surface tangent plane</source>
         <translation>표면 접평면</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="117"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="136"/>
         <source>Left camera frame</source>
         <translation>왼쪽 카메라 좌표계</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="118"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="137"/>
         <source>Custom (3 points)</source>
         <translation>사용자 지정 (3점)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="121"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>참조 표면에 노드별로 피팅한 접평면: z 는 카메라를 향하는 표면 법선, x 는 왼쪽 카메라 +X 의 평면 투영, y = z × x. 곡면 시편에 적합한 기본값입니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="127"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>고정된 왼쪽 카메라(월드) 축에서 변형률을 보고합니다. 이미지 평면과 정렬된 평판 시편에 유효합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="131"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="150"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>참조 이미지에서 선택한 3점으로 구성되는 고정 시편 좌표계: 원점, +X 방향의 점, +Y 쪽의 점.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="149"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="168"/>
         <source>Coordinate system</source>
         <translation>좌표계</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="154"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="173"/>
         <source>Pick 3 points…</source>
         <translation>3점 선택…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="159"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="178"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
-        <translation>기준 이미지에서 세 점을 클릭하세요: 원점, +X 방향의 점, +Y 쪽의 점. 각 클릭은 가장 가까운 유효 메시 노드에 스냅됩니다. &apos;사용자 지정(3점)&apos;에서만 사용할 수 있습니다.</translation>
+        <translation>기준 이미지에서 세 점을 클릭하세요: 원점, +X 방향의 점, +Y 쪽의 점. 각 클릭은 가장 가까운 유효 메시 노드에 스냅됩니다. '사용자 지정(3점)'에서만 사용할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="266"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="303"/>
+        <source>Strain window ≈ {0}×{1} nodes</source>
+        <translation>VSG 윈도우 ≈ {0}×{1} 노드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="307"/>
+        <source>≈ {0} × {1} mm</source>
+        <translation>≈ {0} × {1} mm</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="317"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ 윈도우 반경({0} px) &lt; 노드 간격({1} px); 평면 피팅에는 3×3 노드 게이지가 필요합니다. ≥ {2} px 를 사용하세요.</translation>
     </message>
@@ -2987,7 +3029,7 @@ inter-frame motion.</source>
     </message>
     <message>
         <location filename="../../gui/strain_window.py" line="173"/>
-        <location filename="../../gui/strain_window.py" line="661"/>
+        <location filename="../../gui/strain_window.py" line="667"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>변위 및 변형률 결과를 NPZ / MAT / CSV로 내보내기</translation>
     </message>
@@ -3118,24 +3160,24 @@ inter-frame motion.</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="646"/>
+        <location filename="../../gui/strain_window.py" line="652"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>먼저 3D 분석을 실행하세요 — 변형률에는 변위 결과가 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="650"/>
+        <location filename="../../gui/strain_window.py" line="656"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>먼저 시편 좌표계의 3점(원점, +X, +Y)을 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="655"/>
+        <location filename="../../gui/strain_window.py" line="661"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>위의 매개변수로 변위장에서 Green-Lagrange 표면 변형률을 계산합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="665"/>
-        <source>Compute strain first — there is nothing to export yet.</source>
-        <translation>먼저 변형률을 계산하세요 — 아직 내보낼 것이 없습니다.</translation>
+        <location filename="../../gui/strain_window.py" line="671"/>
+        <source>Run an analysis first — there are no results yet.</source>
+        <translation>먼저 분석을 실행하세요 — 아직 결과가 없습니다.</translation>
     </message>
 </context>
 <context>
@@ -3258,12 +3300,6 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <source>Zoom out</source>
         <translation>축소</translation>
     </message>
-</context>
-<context>
-    <name>_CameraDropZone</name>
-</context>
-<context>
-    <name>_PairBars</name>
 </context>
 <context>
     <name>dialog</name>

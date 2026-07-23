@@ -529,12 +529,72 @@ class MainWindow3D(QMainWindow):
         if not ok:
             self.signals.log.emit(f"open failed: {out}", "error")
             return
-        self.controller.adopt_state(out)  # loaded state: dirty is False
+        # R1.1: relocate moved image sequences BEFORE adopting the state so a
+        # cancelled locate-prompt leaves the current project untouched.
+        if not self._relocate_session_images(out, path):
+            return
+        self.controller.adopt_state(out)  # loaded state: dirty only if relocated
         persistence.add_recent_project(path)  # G3.2
         persistence.set_last_dir("project", path)
         self._resync_all()
         self._update_window_title()
         self.signals.log.emit(f"opened {path}", "success")
+
+    def _relocate_session_images(self, state, path: str) -> bool:
+        """R1.1: auto-relocate moved images (prompting as last resort).
+
+        Rewrites ``state.draft`` in place and marks the state dirty so the next
+        save persists the corrected paths. False = the user cancelled the
+        locate prompt — the caller must abort the open.
+        """
+        from al_dic_3d.project.relocate import RelocationCancelled, relocate_draft_images
+
+        try:
+            moves = relocate_draft_images(
+                state.draft, path, locate_dir_cb=self._prompt_locate_images
+            )
+        except RelocationCancelled as exc:
+            self.signals.log.emit(f"open cancelled: {exc}", "warn")
+            return False
+        for m in moves:
+            self.signals.log.emit(
+                f"relocated {m.n_files} camera-{m.camera} images: {m.old_dir} -> {m.new_dir}",
+                "info",
+            )
+        if moves:
+            state.mark_dirty()  # the rewritten draft should reach the next save
+        return True
+
+    def _prompt_locate_images(self, camera: str, old_dir: str, is_retry: bool) -> str | None:
+        """Directory picker for images that could not be auto-relocated (R1.1)."""
+        if is_retry:
+            QMessageBox.warning(
+                self,
+                self.tr("Locate Images"),
+                self.tr(
+                    "The selected folder does not contain this project's "
+                    "camera {0} frames. Pick the folder holding the original "
+                    "image files, or cancel to abort opening."
+                ).format(camera),
+            )
+        else:
+            QMessageBox.information(
+                self,
+                self.tr("Locate Images"),
+                self.tr(
+                    "The image folder saved with this project was not found:\n"
+                    "{0}\n\nSelect the folder that now contains the camera {1} "
+                    "frames (file names must match)."
+                ).format(old_dir, camera),
+            )
+        folder = QFileDialog.getExistingDirectory(
+            self,
+            self.tr("Locate images for camera {0}").format(camera),
+            persistence.last_dir("images"),
+        )
+        if folder:
+            persistence.set_last_dir("images", folder)
+        return folder or None
 
     def _save_project(self) -> bool:
         """G2.8 Save (Ctrl+S): write to the bound project file, no dialog.
