@@ -1,0 +1,45 @@
+# pyALDIC-3D quickstart — headless stereo-DIC on the shipped 3-pair sample.
+#
+# Run it from the repo root with:
+#     al-dic-3d run examples/quickstart/config.toml -o examples/quickstart/out
+# (or `python -m al_dic_3d run ...`). All relative paths below resolve against
+# THIS file's directory, so the config works regardless of your CWD.
+#
+# The dataset is the Stereo-DIC Challenge 1.0 "Sample 3" D-specimen: three
+# synchronized left/right pairs (1920x1200) plus a DICe-format calibration.
+# See README.md in this folder for the step-by-step walkthrough.
+
+[calibration]
+# DICe-formatted OpenCV camera-system XML shipped alongside the images.
+file = "../Images_Stereo_Sample3_images/cal.xml"
+format = "dice"
+
+[sequence]
+# Left / right image globs (naturally sorted -> temporal order 0000, 0001, ...).
+left = "../Images_Stereo_Sample3_images/L/*_0.tif"
+right = "../Images_Stereo_Sample3_images/R/*_1.tif"
+
+[roi]
+# Rectangular region over the speckled specimen face (pixels on the LEFT,
+# frame-1 image). Kept inside the coupon to avoid the dark background; the
+# GUI's ROI toolbox can draw an arbitrary-shape mask instead (see README).
+xmin = 340
+xmax = 1560
+ymin = 430
+ymax = 690
+
+[matching]
+strategy = "track_both"          # v1 default: track both cameras temporally
+reference_mode = "incremental"   # each frame vs. the previous (large motion)
+winsize = 32                     # subset (correlation window) size, px
+winstepsize = 16                 # node spacing, px (must be a power of 2)
+stereo_search = 60               # stereo disparity search half-width, px
+fft_search = 60                  # temporal FFT init search half-width, px
+
+[strain]
+enabled = true                   # surface Green-Lagrange strain (post-process)
+strain_size = 5                  # virtual strain gauge window (nodes)
+
+[output]
+dir = "out"                      # written under examples/quickstart/out/
+prefix = "quickstart"
