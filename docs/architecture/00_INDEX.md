@@ -64,6 +64,27 @@
 
 ## Changelog
 
+- 2026-07-23 v1.10.0 — **核心算法审计 + 种子传播 + 裂纹感知 + 文档收官（F/S/C/D，全程 Opus 4.8 多代理对抗式）**
+  （`c57f76c`+`8011cb4`+`ca83481`+`4c1f865`+`8110b2b`，584 tests，i18n 646×7 100%，P1/P2 parity 全程复跑通过）。
+  **核心算法审计**：以 6 份 2D v0.7.0 判决基准规范（追踪模式/复合插值/求解器数值/整数搜索播种/场显示/
+  应变链）对我方实现做对抗式鞭打（33 个 Opus 4.8 代理，13 条指控经数值实验坐实）。F-compute（`c57f76c`）
+  修真 bug：A3-1 `_znssd` 出界样本污染相关（死判据 `isfinite(g)`→引擎规则 `|g|>1e-10`，边界完美匹配
+  1.336→~0，不再被质量/诚实门误杀）+ A3-2 中心连通域掩膜 + A3-3 近边缘部分子集 + A6-1 边缘修剪补齐网格
+  外边界（干净平板 ~1600µε 偏置环现被修剪）。F-gui（`8011cb4`）诚实化：A4-1 默认配置下 FFT 时序控件是
+  死开关→置灰+解释（实测 20→200 字节不变）+ A4-2/A1-2/A6-2 提示标签 + A5-3/A5-1 画布/导出/应变窗口统一
+  2–98 百分位（真 WYSIWYG，超越 2D）。
+  **S 种子传播**（`ca83481`）：Starting Points 多种子初猜——外部网格下引擎自身 seed-prop 被跳过,故直接
+  复用引擎 `propagate_from_seeds`/`auto_place_seeds_on_mesh`/`precompute_node_regions` 在我方外部网格上
+  构建逐节点 F-aware U0；对抗审查（4 维 Opus）+ 修复 6 缺陷（空 seed_points tuple→list 漂移致 4 测试红、
+  遗留会话迁移、GUI 就绪度用 runner 节点级区域逻辑、点击期错视图守卫、低覆盖回退 FFT、auto-fill 诚实措辞）。
+  **C 裂纹感知立体 DIC**（`4c1f865`）：复合裂纹感知继承自 0.7 引擎（仅验证）；新建外部网格切断
+  （`mark_bridging`）、strain3d 视线邻域排除（`segment_hits_barrier`）、strain_valid 掩膜（完成 A5-2 遗留,
+  值保持稠密）、viz3d 跨屏障三角形空白化、GUI 裂纹感知指示；对抗审查（4 维 Opus）8/8 CONFIRMED + 修复
+  （C1 近屏障门欧氏→切比雪夫 ×√2、C2 左裂纹经帧1对应 warp 到右相机、C3/C4 strain_valid 与 barrier 贯通
+  全部导出/画布/动画/3D 视图消费路径）；全程门控在"掩膜有细屏障",无裂纹字节不变（parity 证）。
+  **D 文档**（`8110b2b`）：重写失实 README（"pre-development"→v1 完整应用,诚实 badge/定位/引用）+ 14 章
+  markdown 用户手册（docs/user-guide/,以 2D LaTeX TOC 为骨架 + 3D 专属标定章）+ 可实跑 quickstart；
+  准确性审查（3 并行 Opus 核对声称 vs 代码）修 6 处文档-代码不符。
 - 2026-07-22 v1.9.0 — **批次 Q：与 pyALDIC-2D 的快速功能对齐（Q1–Q8，8 项）**
   （`0718f35`，534 tests = 495 基线 + 39 新增，i18n 642×7 100%，P1/P2 parity gate 复跑通过；
   前置：R1 健壮性包 `5199a88` + R3 Numba 应变核 `58887f8`（6.5–19×）+ R2 引擎升级 al-dic 0.7.*
