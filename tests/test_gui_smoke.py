@@ -220,7 +220,7 @@ def test_init_guess_section_maps_to_draft(qapp, scene):
     win.close()
 
 
-def test_seed_placement_one_shot_updates_draft(qapp, scene):
+def test_seed_placement_multiseed_updates_draft(qapp, scene):
     from PySide6.QtCore import QPointF
 
     win = _loaded_window(scene)
@@ -228,34 +228,74 @@ def test_seed_placement_one_shot_updates_draft(qapp, scene):
     widget = win._left.init_guess_widget
     canvas = win._canvas_area.canvas
 
-    # Toggling "Place point…" arms the canvas seed tool and jumps to L frame 1.
+    # Toggling "Place points…" arms the canvas seed tool and jumps to L frame 1.
     win.signals.set_camera("R")
     widget._btn_place.setChecked(True)
     assert canvas._tool == "seed"
     assert win.signals.current_camera == "L" and win.signals.current_frame == 0
 
-    # One click places the point, resets the tool, and releases the toggle.
+    # Batch S: a left-click ADDS a point and STAYS armed for the next placement.
     canvas._commit_seed_click(QPointF(84.0, 61.0))
+    assert draft.seed_points == [(84.0, 61.0)]
+    assert draft.seed_point == (84.0, 61.0)  # primary mirror = seed_points[0]
+    assert canvas._tool == "seed"  # still armed
+    assert widget._btn_place.isChecked()
+    assert len(canvas._seed_markers) == 1  # one accent marker
+
+    # A second click ACCUMULATES (never replaces the first).
+    canvas._commit_seed_click(QPointF(120.0, 90.0))
+    assert draft.seed_points == [(84.0, 61.0), (120.0, 90.0)]
+    assert len(canvas._seed_markers) == 2
+
+    # A right-click removes the point NEAREST the cursor.
+    canvas.seed_remove_requested.emit(118.0, 92.0)
+    assert draft.seed_points == [(84.0, 61.0)]
     assert draft.seed_point == (84.0, 61.0)
-    assert canvas._tool == "select"
-    assert not widget._btn_place.isChecked()
-    assert canvas._seed_marker is not None  # accent marker at the point
 
-    # A second placement replaces the previous point (never accumulates).
-    widget._btn_place.setChecked(True)
-    canvas._commit_seed_click(QPointF(90.0, 70.0))
-    assert draft.seed_point == (90.0, 70.0)
-
-    # Esc cancels the armed tool without touching the stored point.
-    widget._btn_place.setChecked(True)
+    # Esc exits the armed tool without touching the stored points.
     canvas.set_seed_tool(False)
     canvas.drawing_finished.emit()
-    assert draft.seed_point == (90.0, 70.0) and not widget._btn_place.isChecked()
+    assert draft.seed_points == [(84.0, 61.0)] and not widget._btn_place.isChecked()
 
-    # Clear drops the point and the marker.
+    # Clear drops ALL points and markers.
     widget.clear_seed_requested.emit()
+    assert draft.seed_points == []
     assert draft.seed_point is None
-    assert canvas._seed_marker is None
+    assert not canvas._seed_markers
+    win.close()
+
+
+def test_seed_click_off_reference_view_is_rejected(qapp, scene):
+    """S4-3: the seed tool stays armed across clicks, but a click after the user
+    navigates away from LEFT/frame-1 must NOT record a phantom coordinate (it
+    would be counted yet invisible). A click can only land on L/frame-1."""
+    from PySide6.QtCore import QPointF
+
+    win = _loaded_window(scene)
+    draft = win.controller.state.draft
+    widget = win._left.init_guess_widget
+    canvas = win._canvas_area.canvas
+
+    widget._btn_place.setChecked(True)  # arms + jumps to L/frame-1
+    canvas._commit_seed_click(QPointF(84.0, 61.0))
+    assert draft.seed_points == [(84.0, 61.0)]
+
+    # Navigate to the RIGHT camera — the tool stays armed, but the click is refused.
+    win.signals.set_camera("R")
+    assert canvas._tool == "seed"
+    canvas._commit_seed_click(QPointF(120.0, 90.0))
+    assert draft.seed_points == [(84.0, 61.0)]  # no phantom right-camera seed
+
+    # Scrub to a later frame on the LEFT camera — still armed, still refused.
+    win.signals.set_camera("L")
+    win.signals.set_current_frame(2, 3)
+    canvas._commit_seed_click(QPointF(130.0, 70.0))
+    assert draft.seed_points == [(84.0, 61.0)]
+
+    # Back on L/frame-1 the click records normally again.
+    win.signals.set_current_frame(0, 3)
+    canvas._commit_seed_click(QPointF(130.0, 70.0))
+    assert draft.seed_points == [(84.0, 61.0), (130.0, 70.0)]
     win.close()
 
 

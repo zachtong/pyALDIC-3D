@@ -50,6 +50,11 @@ class ProjectDraft:
     # when no point was placed (warning, never blocks).
     init_guess: str = "seed"  # "seed" | "fft" | "previous"
     seed_point: tuple[float, float] | None = None  # (x, y) on LEFT frame 1
+    # Batch S — multi-seed Starting Points: the placed LEFT frame-1 seed pixels.
+    # The GUI edits this list (add / remove / clear); ``seed_point`` is kept in
+    # sync as the primary (seed_points[0]) for back-compat. build() forwards the
+    # effective list so a single legacy ``seed_point`` still seeds one region.
+    seed_points: list[tuple[float, float]] = field(default_factory=list)
     quality_gate: bool = False
     use_global_step: bool = True  # AL-DIC global step (ADMM), audit default
     admm_max_iter: int = 3
@@ -92,6 +97,7 @@ class ProjectDraft:
         "disparity_offset",
         "init_guess",
         "seed_point",
+        "seed_points",
         "quality_gate",
         "use_global_step",
         "admm_max_iter",
@@ -148,6 +154,24 @@ class ProjectDraft:
     def is_ready(self) -> bool:
         return not self.issues()
 
+    def _effective_seed_points(self) -> tuple[tuple[float, float], ...]:
+        """The placed seed list, falling back to the legacy single ``seed_point``.
+
+        The GUI keeps ``seed_points`` authoritative; a session/TOML that only
+        carried ``seed_point`` still yields a one-element list so single-seed
+        projects behave identically.
+        """
+        if self.seed_points:
+            return tuple((float(p[0]), float(p[1])) for p in self.seed_points)
+        if self.seed_point is not None:
+            return ((float(self.seed_point[0]), float(self.seed_point[1])),)
+        return ()
+
+    def _effective_seed_point(self) -> tuple[float, float] | None:
+        """The primary seed (seed_points[0] else the legacy single seed_point)."""
+        pts = self._effective_seed_points()
+        return pts[0] if pts else None
+
     def _write_mask_png(self, array: object | None, out_dir: Path, name: str) -> Path | None:
         """Persist a canvas-painted (H, W) mask array as ``out_dir/name`` PNG."""
         if array is None:
@@ -201,7 +225,8 @@ class ProjectDraft:
             stereo_search=self.stereo_search,
             disparity_offset=self.disparity_offset,
             init_guess=self.init_guess,
-            seed_point=tuple(self.seed_point) if self.seed_point is not None else None,
+            seed_point=self._effective_seed_point(),
+            seed_points=self._effective_seed_points(),
             quality_gate=self.quality_gate,
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,

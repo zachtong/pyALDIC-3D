@@ -53,6 +53,13 @@ justification.
 | `al_dic.core.data_structures.FrameResult` | per-frame element of `result_disp`; `temporal_track` reads `.U_accum` (cumulative) / `.U` (attribute access, not imported) | public |
 | `al_dic.mesh.mesh_setup.mesh_setup` | build the uniform Q8 reference mesh from grid coords in `build_grid_mesh` | public (re-exported in `al_dic.mesh.__init__`) |
 | `al_dic.solver.seed_prop_pipeline.build_grid_for_roi` | FFT-path `(x0, y0)` grid for the reference mesh (matches `run_aldic`'s internal grid) | public (module-level, no underscore) |
+| `al_dic.solver.seed_propagation.propagate_from_seeds` | Batch S: F-aware BFS seed propagation reused verbatim to build a per-node `U0` field from sparse seeds (`matching.seed_propagation.build_seed_u0`) — the engine's own seed-prop path is skipped under an external mesh, so we drive this routine ourselves | public (import via full path; not in `solver.__all__`) |
+| `al_dic.solver.seed_propagation.build_node_adjacency` | Q8 node adjacency graph for the propagation BFS (Batch S) | public (import via full path) |
+| `al_dic.solver.seed_propagation.covered_region_ids` | which regions already have a seed, so auto-fill only touches unseeded regions (Batch S) | public (import via full path) |
+| `al_dic.solver.seed_propagation.Seed` / `.SeedSet` | seed + tuning record types passed to `propagate_from_seeds` (Batch S) | public (import via full path) |
+| `al_dic.solver.seed_propagation.SeedPropagationError` | typed failure -> `build_seed_u0` returns None -> FFT fallback (Batch S) | public (import via full path) |
+| `al_dic.solver.seed_auto_place.auto_place_seeds_on_mesh` / `.AutoPlaceConfig` | 3-tier auto-place (quality/edge/topology) for regions the user left unseeded (Batch S auto-fill + rescue) | public (import via full path; not in `solver.__all__`) |
+| `al_dic.utils.region_analysis.precompute_node_regions` | connected-component region map of the ROI mask (per-region seed validation + GUI readiness) (Batch S) | public (import via full path) |
 | `al_dic.gui.widgets.console_log.ConsoleLog` | base class of `ConsoleLog3D` (right sidebar + strain window log): 3D subclasses it for the context menu / replayable entries (G3.1c/G3.5) — relies on its QTextEdit styling and `append_log` | internal (GUI widget; import via full path) |
 | `al_dic.gui.theme.build_stylesheet` | shared pyALDIC dark-navy QSS applied in `create_app` (visual consistency with 2D) | internal (GUI theme; import via full path) |
 | `al_dic.gui.theme.COLORS` | shared palette tokens used across the 3D GUI panels/widgets (incl. the ported ROI toolbar) | internal (GUI theme; import via full path) |

@@ -95,6 +95,17 @@ def _config_from_json(d: dict | None) -> RunConfig | None:
         kw["disparity_offset"] = tuple(kw["disparity_offset"])
     if kw.get("seed_point") is not None:
         kw["seed_point"] = tuple(kw["seed_point"])
+    # ``dataclasses.asdict`` always emits ``seed_points`` (an empty tuple ()
+    # serializes to []), so guard on presence, NOT truthiness: an empty list is
+    # falsy but must still coerce to the tuple () — leaving a mutable list on a
+    # frozen RunConfig breaks equality (``[] != ()``) and hashability. When the
+    # multi-seed KEY is entirely ABSENT (a pre-Batch-S session) migrate the legacy
+    # single ``seed_point`` into the list so old sessions stay self-consistent.
+    raw_seed_points = kw.get("seed_points")
+    if raw_seed_points is None and kw.get("seed_point") is not None:
+        raw_seed_points = [kw["seed_point"]]
+    if raw_seed_points is not None:
+        kw["seed_points"] = tuple((float(p[0]), float(p[1])) for p in raw_seed_points)
     if kw.get("ref_update_frames") is not None:
         kw["ref_update_frames"] = tuple(int(f) for f in kw["ref_update_frames"])
     return RunConfig(**kw)
@@ -130,6 +141,18 @@ def _draft_from_json(d: dict | None) -> ProjectDraft:
         kw["disparity_offset"] = tuple(kw["disparity_offset"])
     if kw.get("seed_point") is not None:
         kw["seed_point"] = tuple(kw["seed_point"])
+    # ``ProjectDraft.seed_points`` is the surface the GUI trusts (readout +
+    # markers); ``build()`` only falls back to the legacy ``seed_point`` via
+    # ``_effective_seed_points``. When the multi-seed KEY is entirely ABSENT (a
+    # pre-Batch-S session) migrate the legacy single seed into the list so an old
+    # session surfaces its seed instead of reading "no points placed". A
+    # present-but-empty list is left untouched (a current no-seed draft). Kept a
+    # list (mutable) to match the field type + the canvas edit path.
+    raw_seed_points = kw.get("seed_points")
+    if raw_seed_points is None and kw.get("seed_point") is not None:
+        raw_seed_points = [kw["seed_point"]]
+    if raw_seed_points is not None:
+        kw["seed_points"] = [(float(p[0]), float(p[1])) for p in raw_seed_points]
     return ProjectDraft(**kw)
 
 

@@ -773,27 +773,27 @@ to the 2D image view. Requires results.</source>
         <translation>3D 檢視</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="339"/>
+        <location filename="../../gui/panels/canvas_area.py" line="340"/>
         <source>Save Mask</source>
         <translation>儲存掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="339"/>
+        <location filename="../../gui/panels/canvas_area.py" line="340"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 影像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="532"/>
+        <location filename="../../gui/panels/canvas_area.py" line="533"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>分析未產生任何有效點——沒有可顯示的內容。請查看日誌。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="605"/>
+        <location filename="../../gui/panels/canvas_area.py" line="606"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="611"/>
+        <location filename="../../gui/panels/canvas_area.py" line="612"/>
         <source>Selected field is not available.</source>
         <translation>所選場變量不可用。</translation>
     </message>
@@ -801,32 +801,37 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>CanvasToolsMixin</name>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="105"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="81"/>
+        <source>Starting points are placed on the LEFT camera, frame 1 — switch there to add a point</source>
+        <translation>種子點只能放置在左相機第 1 幀——請切換到該視圖後再新增</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_tools.py" line="147"/>
         <source>Fit</source>
         <translation>適配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="107"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="149"/>
         <source>Zoom to 100%</source>
         <translation>縮放至 100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="110"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="152"/>
         <source>Copy image to clipboard</source>
         <translation>複製影像到剪貼簿</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="113"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="155"/>
         <source>Clear ROI</source>
         <translation>清除 ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="116"/>
-        <source>Clear seed point</source>
+        <location filename="../../gui/panels/canvas_tools.py" line="158"/>
+        <source>Clear seed points</source>
         <translation>清除種子點</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="141"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="183"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
@@ -1337,52 +1342,54 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>InitGuessSection3D</name>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
-        <source>Starting Point</source>
-        <translation>種子點</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
-        <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
-is matched automatically into the right camera (stereo offset)
-and into frame 2 (motion seed) — no search tuning needed.
-Best for wide stereo baselines or large first-frame motion.
-If no point is placed, the run falls back to FFT.</source>
-        <translation>在左相機第 1 幀上點擊一個點。軟體會自動將其鄰域
-匹配到右相機（立體偏移）以及第 2 幀（運動種子）——
-無需調整搜尋參數。適合寬基線立體或首幀大位移場景。
-若未放置種子點，執行時將回退為 FFT。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
-        <source>Place point…</source>
-        <translation>放置種子點…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
-        <source>Enter placement mode on the canvas. Click once on the LEFT
-camera, frame 1 — a new click replaces the point; Esc cancels.</source>
-        <translation>進入畫布放置模式。在左相機第 1 幀上點擊一次——
-新的點擊會取代舊點；按 Esc 取消。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="86"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="88"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="87"/>
-        <source>Remove the Starting Point</source>
-        <translation>移除種子點</translation>
+        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
+        <source>Starting Points</source>
+        <translation>種子點</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="96"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
+        <source>Click one or more points on the LEFT camera, frame 1 — at least
+one per connected ROI region. Each point&apos;s neighborhood is matched
+automatically into the right camera (stereo offset) and into
+frame 2 (motion seed), then a first-order deformation field is
+propagated to every mesh node — no search tuning needed. Best for
+wide stereo baselines, large first-frame motion, or discontinuous
+fields. If no point is placed, the run falls back to FFT.</source>
+        <translation>在左相機第 1 幀上點擊一個或多個點——每個連通的 ROI 區域至少一個。
+每個點的鄰域會自動匹配到右相機（立體偏移）以及第 2 幀（運動種子），
+隨後將一階變形場傳播到每個網格節點——無需調整搜尋參數。適合寬基線
+立體、首幀大位移或不連續場。若未放置種子點，執行時將回退為 FFT。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="79"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="166"/>
+        <source>Place points…</source>
+        <translation>放置種子點…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="83"/>
+        <source>Enter placement mode on the canvas. Left-click the LEFT camera,
+frame 1 to ADD a point; right-click removes the nearest; Esc exits.</source>
+        <translation>進入畫布放置模式。在左相機第 1 幀上左鍵點擊以新增一個點；
+右鍵點擊移除最近的點；按 Esc 離開。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="89"/>
+        <source>Remove all Starting Points</source>
+        <translation>移除所有種子點</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="98"/>
         <source>FFT (cross-correlation)</source>
         <translation>FFT（互相關）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="101"/>
         <source>Full-grid cross-correlation seeds frame 1 (and every reference
 switch in incremental mode); later frames warm-start from the
 previous solution. Robust default — the search radius is the
@@ -1392,12 +1399,12 @@ Temporal Search parameter.</source>
 搜尋半徑由「時序搜尋」參數決定。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="108"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="110"/>
         <source>Previous frame</source>
         <translation>上一幀</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="113"/>
         <source>Start every frame from the previous frame&apos;s solution — no
 cross-correlation at all. Fastest; can silently freeze on large
 motion or decorrelation — the validity gate will flag affected
@@ -1407,19 +1414,29 @@ frames.</source>
 有效性門檻會標記受影響的幀。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="166"/>
         <source>Placing… (click to exit)</source>
         <translation>放置中…（再次點擊離開）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="167"/>
-        <source>No point placed — FFT fallback at run</source>
+        <location filename="../../gui/widgets/init_guess_section.py" line="201"/>
+        <source>No points placed — FFT fallback at run</source>
         <translation>未放置種子點——執行時回退為 FFT</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="170"/>
-        <source>Point: ({0}, {1}) px</source>
-        <translation>點：({0}, {1}) px</translation>
+        <location filename="../../gui/widgets/init_guess_section.py" line="205"/>
+        <source>{0} point(s) placed</source>
+        <translation>已放置 {0} 個種子點</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="208"/>
+        <source>{0} point(s) · {1}/{2} regions ready</source>
+        <translation>{0} 個種子點 · {1}/{2} 個區域就緒</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="215"/>
+        <source>{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run</source>
+        <translation>{0} 個種子點 · 已布種 {1}/{2} 個區域——其餘將在執行時自動布種</translation>
     </message>
 </context>
 <context>

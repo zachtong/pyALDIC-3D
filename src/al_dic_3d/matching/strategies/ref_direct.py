@@ -35,10 +35,12 @@ from al_dic_3d.matching.primitives import make_dicpara, match_points
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
+    effective_seed_points,
     frame_view,
     mask_stream,
     resolve_init,
-    temporal_u0,
+    stereo_seed_u0,
+    temporal_camera_u0,
 )
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import temporal_track
@@ -119,8 +121,33 @@ class RefDirectStrategy:
         # Initial-guess resolution (F2): effective mode + seed-derived stereo
         # offset (an explicit cfg.disparity_offset overrides the seed match).
         init_mode, stereo_offset = resolve_init(cfg, left[0], right[0])
+        seeds_L = effective_seed_points(cfg) if init_mode == "seed" else ()
+        primary_L = seeds_L[0] if seeds_L else cfg.seed_point  # single-seed fallback
 
-        u0_L = temporal_u0(init_mode, left[0], left[1], cfg.seed_point, n_pts)
+        # Batch S: F-aware propagated left-track U0 (falls back to single-seed).
+        u0_L = temporal_camera_u0(
+            init_mode,
+            left[0],
+            left[1],
+            mesh_L,
+            mask_L1,
+            seeds_L,
+            primary_L,
+            para_L,
+            n_pts,
+            search_radius=self.fft_search,
+        )
+        # Per-node L->R disparity prior for the frame-0 stereo match (seed mode).
+        stereo_prior = stereo_seed_u0(
+            init_mode,
+            left[0],
+            right[0],
+            mesh_L,
+            mask_L1,
+            seeds_L,
+            para_L,
+            search_radius=self.stereo_search,
+        )
         tf_L = temporal_track(
             left,
             mesh_L,
@@ -161,6 +188,7 @@ class RefDirectStrategy:
                     disparity_offset=stereo_offset,
                     search_radius=self.stereo_search,
                     frame_idx=0,
+                    seed_u0=stereo_prior,
                 )
                 m_k, znssd_k, valid_m = field.d, field.znssd, field.valid
                 diag += stereo_rows(field)

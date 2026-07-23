@@ -94,6 +94,12 @@ class RunConfig:
     # "fft" (pre-F2 behavior); the GUI draft defaults to "seed".
     init_guess: str = "fft"
     seed_point: tuple[float, float] | None = None  # (x, y) on LEFT frame 1
+    # Batch S — multi-seed Starting Points: the full list of LEFT frame-1 seed
+    # pixels driving F-aware propagation. ``seed_point`` stays the back-compat
+    # primary (= seed_points[0]); when only ``seed_point`` is set it acts as a
+    # one-element list. TOML accepts either ``seed_point = [x, y]`` or
+    # ``seed_points = [[x1,y1], [x2,y2], ...]``.
+    seed_points: tuple[tuple[float, float], ...] = ()
     temporal_gate_znssd: float = 1.0  # honesty gate on cumulative tracks; <=0 off
     # P3.6 opt-in: track both cameras concurrently (track_both strategy).
     # ~2x faster on the numba/numpy-heavy engine, doubles peak memory.
@@ -183,6 +189,17 @@ def load_config(path: str | Path) -> RunConfig:
         )
     seed = match.get("seed_point")
     seed_point = (float(seed[0]), float(seed[1])) if seed is not None else None
+    seed_pts_raw = match.get("seed_points")
+    if seed_pts_raw is not None:
+        seed_points = tuple((float(p[0]), float(p[1])) for p in seed_pts_raw)
+    elif seed_point is not None:
+        seed_points = (seed_point,)
+    else:
+        seed_points = ()
+    # Keep the primary seed in sync so single-seed consumers (and the readback)
+    # always see seed_points[0] as seed_point.
+    if seed_point is None and seed_points:
+        seed_point = seed_points[0]
     seq = table.get("sequence", {})
     out = table.get("output", {})
     qual = table.get("quality", {})
@@ -218,6 +235,7 @@ def load_config(path: str | Path) -> RunConfig:
         fft_auto_expand=bool(match.get("fft_auto_expand", True)),
         init_guess=init_guess,
         seed_point=seed_point,
+        seed_points=seed_points,
         temporal_gate_znssd=float(match.get("temporal_gate_znssd", 1.0)),
         parallel_cameras=bool(match.get("parallel_cameras", False)),
         refine_inner=bool(match.get("refine_inner", False)),
@@ -539,6 +557,7 @@ def run_pipeline(
         disparity_offset=cfg.disparity_offset,
         init_guess=cfg.init_guess,  # type: ignore[arg-type]
         seed_point=cfg.seed_point,
+        seed_points=tuple(getattr(cfg, "seed_points", ()) or ()),
     )
     cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress, stop=stop)
     # R2 (engine 0.7 partial-results): a cooperative cancel mid-run RETURNS a

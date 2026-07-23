@@ -93,6 +93,7 @@ def stereo_match_pair(
     search_radius: int = 40,
     tol: float = 1e-3,
     frame_idx: int = 0,
+    seed_u0: NDArray[np.float64] | None = None,
 ) -> DisparityField:
     """Match reference left points into the right image (frame-1 stereo).
 
@@ -108,6 +109,11 @@ def stereo_match_pair(
         search_radius: NCC half-window (pixels) around the (offset) center.
         tol: IC-GN convergence tolerance (``1e-3``, matching StereoMatch_STAQ).
         frame_idx: frame this disparity belongs to (``0`` for the frame-1 match).
+        seed_u0: optional ``(n, 2)`` per-point disparity prior from multi-seed
+            F-aware propagation (Batch S). Where a row is finite it REPLACES the
+            integer NCC seed for that point (a strong, spatially-varying prior
+            for wide baselines); NaN rows keep the per-point NCC seed. ``None``
+            (the default, single-seed / FFT path) is byte-identical to before.
 
     Returns:
         A :class:`DisparityField` with ``left_pts``, disparity ``d`` (``right_pts
@@ -122,6 +128,14 @@ def stereo_match_pair(
 
     # (1) integer NCC seed per point (spatially-varying disparity prior).
     seed, seed_ok = _ncc_seed(left, right, pts, offset, int(search_radius), half)
+
+    # (1b) override with the propagated per-point disparity where it exists — a
+    # far stronger prior than the recentred NCC search on wide-baseline gradients.
+    if seed_u0 is not None:
+        su = np.asarray(seed_u0, dtype=np.float64).reshape(-1, 2)
+        if su.shape[0] == seed.shape[0]:
+            fin = np.isfinite(su).all(axis=1)
+            seed[fin] = su[fin]
 
     # (2) sub-pixel local IC-GN refinement at the scattered points.
     u, znssd, valid = match_points(left, right, pts, seed, para, tol=tol)

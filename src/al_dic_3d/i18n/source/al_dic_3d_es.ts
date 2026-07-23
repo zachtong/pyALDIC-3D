@@ -777,27 +777,27 @@ imagen 2D. Requiere resultados.</translation>
         <translation>Vista 3D</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="339"/>
+        <location filename="../../gui/panels/canvas_area.py" line="340"/>
         <source>Save Mask</source>
         <translation>Guardar máscara</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="339"/>
+        <location filename="../../gui/panels/canvas_area.py" line="340"/>
         <source>PNG image (*.png)</source>
         <translation>Imagen PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="532"/>
+        <location filename="../../gui/panels/canvas_area.py" line="533"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>El análisis no produjo puntos válidos — nada que mostrar. Consulte el registro.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="605"/>
+        <location filename="../../gui/panels/canvas_area.py" line="606"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>Vista 3D — ejecute un análisis para ver la superficie reconstruida.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="611"/>
+        <location filename="../../gui/panels/canvas_area.py" line="612"/>
         <source>Selected field is not available.</source>
         <translation>El campo seleccionado no está disponible.</translation>
     </message>
@@ -805,32 +805,37 @@ imagen 2D. Requiere resultados.</translation>
 <context>
     <name>CanvasToolsMixin</name>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="105"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="81"/>
+        <source>Starting points are placed on the LEFT camera, frame 1 — switch there to add a point</source>
+        <translation>Los puntos de inicio se colocan en la cámara IZQUIERDA, fotograma 1 — cambie a esa vista para añadir uno</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_tools.py" line="147"/>
         <source>Fit</source>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="107"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="149"/>
         <source>Zoom to 100%</source>
         <translation>Zoom al 100 %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="110"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="152"/>
         <source>Copy image to clipboard</source>
         <translation>Copiar la imagen al portapapeles</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="113"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="155"/>
         <source>Clear ROI</source>
         <translation>Borrar la ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="116"/>
-        <source>Clear seed point</source>
-        <translation>Borrar el punto inicial</translation>
+        <location filename="../../gui/panels/canvas_tools.py" line="158"/>
+        <source>Clear seed points</source>
+        <translation>Borrar los puntos de inicio</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="141"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="183"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
@@ -1341,54 +1346,57 @@ imagen 2D. Requiere resultados.</translation>
 <context>
     <name>InitGuessSection3D</name>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
-        <source>Starting Point</source>
-        <translation>Punto de inicio</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
-        <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
-is matched automatically into the right camera (stereo offset)
-and into frame 2 (motion seed) — no search tuning needed.
-Best for wide stereo baselines or large first-frame motion.
-If no point is placed, the run falls back to FFT.</source>
-        <translation>Haga clic en UN punto en la cámara IZQUIERDA, fotograma 1. Su
-vecindario se empareja automáticamente en la cámara derecha
-(desplazamiento estéreo) y en el fotograma 2 (semilla de movimiento):
-sin ajustar parámetros de búsqueda. Ideal para líneas base anchas o
-grandes movimientos iniciales. Sin punto colocado, la ejecución
-recurre a la FFT.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
-        <source>Place point…</source>
-        <translation>Colocar punto…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
-        <source>Enter placement mode on the canvas. Click once on the LEFT
-camera, frame 1 — a new click replaces the point; Esc cancels.</source>
-        <translation>Modo de colocación en el lienzo. Haga clic una vez en la cámara
-IZQUIERDA, fotograma 1 — un nuevo clic reemplaza el punto; Esc cancela.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="86"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="88"/>
         <source>Clear</source>
         <translation>Limpiar</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="87"/>
-        <source>Remove the Starting Point</source>
-        <translation>Eliminar el punto de inicio</translation>
+        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
+        <source>Starting Points</source>
+        <translation>Puntos de inicio</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="96"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
+        <source>Click one or more points on the LEFT camera, frame 1 — at least
+one per connected ROI region. Each point&apos;s neighborhood is matched
+automatically into the right camera (stereo offset) and into
+frame 2 (motion seed), then a first-order deformation field is
+propagated to every mesh node — no search tuning needed. Best for
+wide stereo baselines, large first-frame motion, or discontinuous
+fields. If no point is placed, the run falls back to FFT.</source>
+        <translation>Haga clic en uno o más puntos en la cámara IZQUIERDA, fotograma 1 — al menos
+uno por cada región ROI conexa. El vecindario de cada punto se empareja
+automáticamente en la cámara derecha (desplazamiento estéreo) y en el
+fotograma 2 (semilla de movimiento); luego se propaga un campo de deformación
+de primer orden a cada nodo de la malla — sin ajustar parámetros de búsqueda.
+Ideal para líneas base anchas, grandes movimientos iniciales o campos
+discontinuos. Sin punto colocado, la ejecución recurre a la FFT.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="79"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="166"/>
+        <source>Place points…</source>
+        <translation>Colocar puntos…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="83"/>
+        <source>Enter placement mode on the canvas. Left-click the LEFT camera,
+frame 1 to ADD a point; right-click removes the nearest; Esc exits.</source>
+        <translation>Modo de colocación en el lienzo. Clic izquierdo en la cámara IZQUIERDA,
+fotograma 1 para AÑADIR un punto; clic derecho elimina el más cercano; Esc sale.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="89"/>
+        <source>Remove all Starting Points</source>
+        <translation>Eliminar todos los puntos de inicio</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="98"/>
         <source>FFT (cross-correlation)</source>
         <translation>FFT (correlación cruzada)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="101"/>
         <source>Full-grid cross-correlation seeds frame 1 (and every reference
 switch in incremental mode); later frames warm-start from the
 previous solution. Robust default — the search radius is the
@@ -1399,12 +1407,12 @@ posteriores parten de la solución anterior. Valor predeterminado
 robusto — el radio de búsqueda es el parámetro «Búsqueda temporal».</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="108"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="110"/>
         <source>Previous frame</source>
         <translation>Fotograma anterior</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="113"/>
         <source>Start every frame from the previous frame&apos;s solution — no
 cross-correlation at all. Fastest; can silently freeze on large
 motion or decorrelation — the validity gate will flag affected
@@ -1415,19 +1423,29 @@ silencio con movimientos grandes o descorrelación — la puerta de
 validez marcará los fotogramas afectados.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="166"/>
         <source>Placing… (click to exit)</source>
         <translation>Colocando… (clic para salir)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="167"/>
-        <source>No point placed — FFT fallback at run</source>
-        <translation>Sin punto colocado — al ejecutar se usa FFT</translation>
+        <location filename="../../gui/widgets/init_guess_section.py" line="201"/>
+        <source>No points placed — FFT fallback at run</source>
+        <translation>Sin puntos colocados — al ejecutar se usa FFT</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="170"/>
-        <source>Point: ({0}, {1}) px</source>
-        <translation>Punto: ({0}, {1}) px</translation>
+        <location filename="../../gui/widgets/init_guess_section.py" line="205"/>
+        <source>{0} point(s) placed</source>
+        <translation>{0} punto(s) colocado(s)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="208"/>
+        <source>{0} point(s) · {1}/{2} regions ready</source>
+        <translation>{0} punto(s) · {1}/{2} regiones listas</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="215"/>
+        <source>{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run</source>
+        <translation>{0} punto(s) · {1}/{2} regiones sembradas — el resto se siembra automáticamente al ejecutar</translation>
     </message>
 </context>
 <context>

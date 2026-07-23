@@ -97,3 +97,87 @@ def test_unknown_schema_rejected(tmp_path):
         zf.writestr("session.json", json.dumps({"schema_version": 999, "has_results": False}))
     with pytest.raises(SessionError, match="unsupported session schema"):
         parse_session(bad)
+
+
+def _minimal_config(tmp_path):
+    """A glob-string RunConfig (hashable: left/right are str, not lists)."""
+    from al_dic_3d.runner import RunConfig
+
+    return RunConfig(
+        calibration_file=tmp_path / "calib.yml",
+        calibration_format="opencv_yaml",
+        left="L_*.png",
+        right="R_*.png",
+        roi=(10, 100, 10, 100),
+        output_dir=tmp_path / "out",
+        base_dir=tmp_path,
+    )
+
+
+def test_empty_seed_points_roundtrip_is_tuple_and_hashable(tmp_path):
+    """S3-2: an empty seed list must load back as the tuple (), never a mutable [].
+
+    ``dataclasses.asdict`` always emits ``seed_points`` and json writes () as [];
+    a truthiness guard skipped the tuple coercion, leaving a frozen RunConfig
+    holding a list — which breaks equality (``[] != ()``) and hashability.
+    """
+    cfg = _minimal_config(tmp_path)
+    assert cfg.seed_points == () and hash(cfg)  # baseline: a fresh config hashes
+
+    loaded = load_session(save_session(AppState3D(config=cfg), tmp_path / "noseed.aldic3d"))
+    assert type(loaded.config.seed_points) is tuple  # not a list
+    assert loaded.config.seed_points == ()
+    assert loaded.config == cfg  # the 4-test regression: equality restored
+    assert hash(loaded.config) == hash(cfg)  # a list field would raise TypeError
+
+
+def test_placed_seed_points_roundtrip_as_tuple(tmp_path):
+    """Non-empty seeds also round-trip to a tuple of (float, float) tuples."""
+    cfg = replace(
+        _minimal_config(tmp_path), init_guess="seed", seed_points=((5.0, 6.0), (7.0, 8.0))
+    )
+    loaded = load_session(save_session(AppState3D(config=cfg), tmp_path / "seeds.aldic3d"))
+    assert loaded.config.seed_points == ((5.0, 6.0), (7.0, 8.0))
+    assert type(loaded.config.seed_points) is tuple
+    assert loaded.config == cfg
+
+
+def test_legacy_single_seed_session_migrates(tmp_path):
+    """S3-1: a pre-Batch-S session (a ``seed_point`` but no ``seed_points`` key)
+    surfaces its seed in the list the GUI trusts, and the config seeds from it."""
+    import json
+    import zipfile
+
+    session = {
+        "schema_version": SCHEMA_VERSION,
+        "config": {
+            "calibration_file": str(tmp_path / "c.yml"),
+            "calibration_format": "opencv_yaml",
+            "left": "L_*.png",
+            "right": "R_*.png",
+            "roi": [10, 100, 10, 100],
+            "output_dir": str(tmp_path / "out"),
+            "base_dir": str(tmp_path),
+            "init_guess": "seed",
+            "seed_point": [500.0, 400.0],  # NOTE: no "seed_points" key (legacy)
+        },
+        "draft": {
+            "init_guess": "seed",
+            "seed_point": [500.0, 400.0],  # NOTE: no "seed_points" key (legacy)
+        },
+        "view_state": {},
+        "workflow_step": 0,
+        "has_results": False,
+    }
+    path = tmp_path / "legacy.aldic3d"
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr("session.json", json.dumps(session))
+
+    loaded = load_session(path)
+    # The draft (the GUI's source of truth for the readout + markers) now lists it.
+    assert loaded.draft.seed_points == [(500.0, 400.0)]
+    assert loaded.draft.seed_point == (500.0, 400.0)
+    assert loaded.draft._effective_seed_points() == ((500.0, 400.0),)
+    # The config seeds from it too (migrated into the tuple).
+    assert loaded.config.seed_points == ((500.0, 400.0),)
+    assert loaded.config.seed_point == (500.0, 400.0)

@@ -70,6 +70,12 @@ class CorrespondenceConfig:
     # al_dic_3d.matching.seed module docstring.
     init_guess: Literal["seed", "fft", "previous"] = "fft"
     seed_point: tuple[float, float] | None = None  # (x, y) on LEFT frame 1
+    # Batch S — multi-seed Starting Points: the full list of LEFT frame-1 seed
+    # pixels. When non-empty (seed mode), a full per-node U0 is built by F-aware
+    # propagation (matching.seed_propagation); empty falls back to the single
+    # seed_point uniform path. Populated from draft/RunConfig; ``seed_point``
+    # stays the back-compat primary (seed_points[0]).
+    seed_points: tuple[tuple[float, float], ...] = ()
     refresh_interval: int | None = None  # adaptive: periodic re-anchor
     quality: QualityGate = field(default_factory=QualityGate)
 

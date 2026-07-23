@@ -228,6 +228,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
 
         self._canvas.roi_mask_edited.connect(self.commit_roi_mask)
         self._canvas.seed_clicked.connect(self._on_seed_clicked)
+        self._canvas.seed_remove_requested.connect(self._on_seed_remove)
         self._canvas.context_menu_requested.connect(self._on_canvas_menu)  # G3.1b
         self._canvas.notice.connect(signals.log)
         self._canvas.brush_changed.connect(self._on_brush_changed)

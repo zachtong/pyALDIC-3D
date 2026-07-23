@@ -772,27 +772,27 @@ to the 2D image view. Requires results.</source>
         <translation>3D ビュー</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="339"/>
+        <location filename="../../gui/panels/canvas_area.py" line="340"/>
         <source>Save Mask</source>
         <translation>マスクを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="339"/>
+        <location filename="../../gui/panels/canvas_area.py" line="340"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 画像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="532"/>
+        <location filename="../../gui/panels/canvas_area.py" line="533"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>解析で有効な点が得られませんでした — 表示できる内容がありません。ログを確認してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="605"/>
+        <location filename="../../gui/panels/canvas_area.py" line="606"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="611"/>
+        <location filename="../../gui/panels/canvas_area.py" line="612"/>
         <source>Selected field is not available.</source>
         <translation>選択した項目は利用できません。</translation>
     </message>
@@ -800,32 +800,37 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>CanvasToolsMixin</name>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="105"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="81"/>
+        <source>Starting points are placed on the LEFT camera, frame 1 — switch there to add a point</source>
+        <translation>シード点は左カメラの第 1 フレームに配置します — その表示に切り替えてから追加してください</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_tools.py" line="147"/>
         <source>Fit</source>
         <translation>フィット</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="107"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="149"/>
         <source>Zoom to 100%</source>
         <translation>100% にズーム</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="110"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="152"/>
         <source>Copy image to clipboard</source>
         <translation>画像をクリップボードにコピー</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="113"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="155"/>
         <source>Clear ROI</source>
         <translation>ROI をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="116"/>
-        <source>Clear seed point</source>
+        <location filename="../../gui/panels/canvas_tools.py" line="158"/>
+        <source>Clear seed points</source>
         <translation>シード点をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="141"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="183"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
@@ -1336,53 +1341,56 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>InitGuessSection3D</name>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
-        <source>Starting Point</source>
-        <translation>シード点</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
-        <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
-is matched automatically into the right camera (stereo offset)
-and into frame 2 (motion seed) — no search tuning needed.
-Best for wide stereo baselines or large first-frame motion.
-If no point is placed, the run falls back to FFT.</source>
-        <translation>左カメラの第 1 フレーム上で 1 点をクリックします。その近傍は
-右カメラ（ステレオオフセット）と第 2 フレーム（運動シード）へ
-自動的にマッチングされ、探索パラメータの調整は不要です。
-広い基線長や第 1 フレームの大きな運動に適しています。
-点が未配置の場合、実行時は FFT にフォールバックします。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
-        <source>Place point…</source>
-        <translation>シード点を配置…</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
-        <source>Enter placement mode on the canvas. Click once on the LEFT
-camera, frame 1 — a new click replaces the point; Esc cancels.</source>
-        <translation>キャンバスの配置モードに入ります。左カメラの第 1 フレームで
-1 回クリックします — 新しいクリックで置き換え、Esc でキャンセル。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="86"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="88"/>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="87"/>
-        <source>Remove the Starting Point</source>
-        <translation>シード点を削除</translation>
+        <location filename="../../gui/widgets/init_guess_section.py" line="59"/>
+        <source>Starting Points</source>
+        <translation>シード点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="96"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
+        <source>Click one or more points on the LEFT camera, frame 1 — at least
+one per connected ROI region. Each point&apos;s neighborhood is matched
+automatically into the right camera (stereo offset) and into
+frame 2 (motion seed), then a first-order deformation field is
+propagated to every mesh node — no search tuning needed. Best for
+wide stereo baselines, large first-frame motion, or discontinuous
+fields. If no point is placed, the run falls back to FFT.</source>
+        <translation>左カメラの第 1 フレーム上で 1 つ以上の点をクリックします — 連結した
+ROI 領域ごとに少なくとも 1 点。各点の近傍は右カメラ（ステレオオフセット）
+と第 2 フレーム（運動シード）へ自動的にマッチングされ、続いて一次の変形場が
+すべてのメッシュ節点へ伝播されます — 探索パラメータの調整は不要です。
+広い基線長、第 1 フレームの大きな運動、不連続場に適しています。点が未配置の
+場合、実行時は FFT にフォールバックします。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="79"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="166"/>
+        <source>Place points…</source>
+        <translation>シード点を配置…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="83"/>
+        <source>Enter placement mode on the canvas. Left-click the LEFT camera,
+frame 1 to ADD a point; right-click removes the nearest; Esc exits.</source>
+        <translation>キャンバスの配置モードに入ります。左カメラの第 1 フレームを左クリックで
+点を追加、右クリックで最も近い点を削除、Esc で終了します。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="89"/>
+        <source>Remove all Starting Points</source>
+        <translation>すべてのシード点を削除</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="98"/>
         <source>FFT (cross-correlation)</source>
         <translation>FFT(相互相関)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="101"/>
         <source>Full-grid cross-correlation seeds frame 1 (and every reference
 switch in incremental mode); later frames warm-start from the
 previous solution. Robust default — the search radius is the
@@ -1393,12 +1401,12 @@ Temporal Search parameter.</source>
 パラメータで決まります。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="108"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="110"/>
         <source>Previous frame</source>
         <translation>前フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="113"/>
         <source>Start every frame from the previous frame&apos;s solution — no
 cross-correlation at all. Fastest; can silently freeze on large
 motion or decorrelation — the validity gate will flag affected
@@ -1409,19 +1417,29 @@ frames.</source>
 フラグを立てます。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="166"/>
         <source>Placing… (click to exit)</source>
         <translation>配置中…(クリックで終了)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="167"/>
-        <source>No point placed — FFT fallback at run</source>
+        <location filename="../../gui/widgets/init_guess_section.py" line="201"/>
+        <source>No points placed — FFT fallback at run</source>
         <translation>点が未配置 — 実行時は FFT にフォールバック</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="170"/>
-        <source>Point: ({0}, {1}) px</source>
-        <translation>点: ({0}, {1}) px</translation>
+        <location filename="../../gui/widgets/init_guess_section.py" line="205"/>
+        <source>{0} point(s) placed</source>
+        <translation>{0} 点を配置</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="208"/>
+        <source>{0} point(s) · {1}/{2} regions ready</source>
+        <translation>{0} 点 · {1}/{2} 領域が準備完了</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/init_guess_section.py" line="215"/>
+        <source>{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run</source>
+        <translation>{0} 点 · {1}/{2} 領域にシード — 残りは実行時に自動シード</translation>
     </message>
 </context>
 <context>

@@ -113,7 +113,8 @@ class ImageCanvas3D(QGraphicsView):
 
     roi_mask_edited = Signal()  # a shape/brush op changed the ROI controller mask
     drawing_finished = Signal()  # one-shot tool committed/cancelled (toolbar resets)
-    seed_clicked = Signal(float, float)  # seed tool: scene (x, y) of the placed point
+    seed_clicked = Signal(float, float)  # seed tool: scene (x, y) of a placed point
+    seed_remove_requested = Signal(float, float)  # seed tool: right-click to remove nearest
     notice = Signal(str, str)  # (message, level) forwarded to the app log
     brush_changed = Signal()  # a refinement brush stroke finished (read brush_mask())
     view_changed = Signal()  # zoom / pan / resize (overlays reposition on this)
@@ -167,7 +168,7 @@ class ImageCanvas3D(QGraphicsView):
         self._draw_state: dict | None = None  # in-progress drawing data
         self._preview_items: list = []  # temp graphics items while drawing
         self._roi_ctrl: ROIController | None = None
-        self._seed_marker = None  # QGraphicsItemGroup at the placed seed point
+        self._seed_markers: list = []  # QGraphicsItemGroups at the placed seed points
 
         self._panning = False
         self._pan_button: Qt.MouseButton | None = None  # which button drives the pan
@@ -223,7 +224,7 @@ class ImageCanvas3D(QGraphicsView):
         self._bg_item.setPixmap(QPixmap())
         self.set_overlay_pixmap(None)
         self._roi_mask_item.setPixmap(QPixmap())
-        self.set_seed_marker(None)
+        self.set_seed_markers([])
         self._loaded_path = None
 
     # --- field overlay ---------------------------------------------------------
@@ -295,7 +296,11 @@ class ImageCanvas3D(QGraphicsView):
     # --- seed point (F2) ----------------------------------------------------------
 
     def set_seed_tool(self, active: bool) -> None:
-        """Arm / disarm the one-shot seed-point click tool (Esc cancels)."""
+        """Arm / disarm the multi-seed click tool.
+
+        Stays armed across clicks (left-click ADDS a Starting Point, right-click
+        REMOVES the nearest); Esc or toggling off exits. Batch S.
+        """
         self._cancel_drawing(emit=False)
         self._brush_last = None
         if active:
@@ -306,55 +311,60 @@ class ImageCanvas3D(QGraphicsView):
             self._tool = "select"
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
-    def set_seed_marker(self, xy: tuple[float, float] | None) -> None:
-        """Show a small accent marker + coordinate label at ``xy`` (None hides)."""
-        if self._seed_marker is not None:
-            self._scene.removeItem(self._seed_marker)
-            self._seed_marker = None
-        if xy is None:
-            return
+    def set_seed_markers(self, points) -> None:
+        """Show numbered accent markers at each placed Starting Point (Batch S).
+
+        ``points`` is an iterable of ``(x, y)`` scene coords; an empty iterable
+        clears all markers. Each marker is a constant-screen-size crosshair with
+        its 1-based index — legible even with many overlapping seeds.
+        """
+        for group in self._seed_markers:
+            self._scene.removeItem(group)
+        self._seed_markers = []
         from PySide6.QtGui import QFont
         from PySide6.QtWidgets import QGraphicsItemGroup, QGraphicsSimpleTextItem
 
-        x, y = float(xy[0]), float(xy[1])
         accent = QColor(COLORS.ACCENT)
         pen = QPen(accent, 1.5)
-        group = QGraphicsItemGroup()
-        # ItemIgnoresTransformations: constant screen size at any zoom level.
-        group.setFlag(group.GraphicsItemFlag.ItemIgnoresTransformations, True)
-        group.setZValue(2.5)
         r = 4.0
-        circle = QGraphicsEllipseItem(-r, -r, 2 * r, 2 * r)
-        circle.setPen(pen)
-        circle.setBrush(QBrush(QColor(accent.red(), accent.green(), accent.blue(), 70)))
-        group.addToGroup(circle)
-        for x1, y1, x2, y2 in (
-            (-10.0, 0.0, -r, 0.0),
-            (r, 0.0, 10.0, 0.0),
-            (0.0, -10.0, 0.0, -r),
-            (0.0, r, 0.0, 10.0),
-        ):
-            line = QGraphicsLineItem(x1, y1, x2, y2)
-            line.setPen(pen)
-            group.addToGroup(line)
-        label = QGraphicsSimpleTextItem(f"({x:.0f}, {y:.0f})")
-        label.setBrush(QBrush(accent))
-        label.setFont(QFont("", 8))
-        label.setPos(8.0, 6.0)
-        group.addToGroup(label)
-        group.setPos(x, y)
-        self._scene.addItem(group)
-        self._seed_marker = group
+        for i, xy in enumerate(points, start=1):
+            x, y = float(xy[0]), float(xy[1])
+            group = QGraphicsItemGroup()
+            # ItemIgnoresTransformations: constant screen size at any zoom level.
+            group.setFlag(group.GraphicsItemFlag.ItemIgnoresTransformations, True)
+            group.setZValue(2.5)
+            circle = QGraphicsEllipseItem(-r, -r, 2 * r, 2 * r)
+            circle.setPen(pen)
+            circle.setBrush(QBrush(QColor(accent.red(), accent.green(), accent.blue(), 70)))
+            group.addToGroup(circle)
+            for x1, y1, x2, y2 in (
+                (-10.0, 0.0, -r, 0.0),
+                (r, 0.0, 10.0, 0.0),
+                (0.0, -10.0, 0.0, -r),
+                (0.0, r, 0.0, 10.0),
+            ):
+                line = QGraphicsLineItem(x1, y1, x2, y2)
+                line.setPen(pen)
+                group.addToGroup(line)
+            label = QGraphicsSimpleTextItem(str(i))
+            label.setBrush(QBrush(accent))
+            label.setFont(QFont("", 8))
+            label.setPos(8.0, 6.0)
+            group.addToGroup(label)
+            group.setPos(x, y)
+            self._scene.addItem(group)
+            self._seed_markers.append(group)
+
+    def set_seed_marker(self, xy: tuple[float, float] | None) -> None:
+        """Back-compat single-seed marker (delegates to :meth:`set_seed_markers`)."""
+        self.set_seed_markers([] if xy is None else [xy])
 
     def _commit_seed_click(self, pos: QPointF) -> None:
-        """One-shot: clamp to the image, emit, reset to select, notify."""
+        """Add a Starting Point: clamp to the image, emit, STAY armed (Batch S)."""
         rect = self._scene.sceneRect()
         x = float(min(max(pos.x(), rect.left()), rect.right() - 1))
         y = float(min(max(pos.y(), rect.top()), rect.bottom() - 1))
-        self._tool = "select"
-        self.setCursor(Qt.CursorShape.ArrowCursor)
-        self.seed_clicked.emit(x, y)
-        self.drawing_finished.emit()
+        self.seed_clicked.emit(x, y)  # tool stays "seed" for the next placement
 
     # --- refinement brush -------------------------------------------------------
 
@@ -530,6 +540,14 @@ class ImageCanvas3D(QGraphicsView):
                 and self.has_image
             ):
                 self.context_menu_requested.emit(event.globalPosition().toPoint())
+            elif (
+                was_click
+                and event.button() == Qt.MouseButton.RightButton
+                and self._tool == "seed"  # Batch S: right-click removes nearest seed
+                and self.has_image
+            ):
+                sp = self.mapToScene(event.position().toPoint())
+                self.seed_remove_requested.emit(sp.x(), sp.y())
             return
         if (
             event.button() == Qt.MouseButton.LeftButton

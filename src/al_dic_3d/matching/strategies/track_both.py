@@ -35,10 +35,13 @@ from al_dic_3d.matching.primitives import make_dicpara
 from al_dic_3d.matching.stereo import stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
+    effective_seed_points,
     frame_view,
+    map_seeds_left_to_right,
     mask_stream,
     resolve_init,
-    temporal_u0,
+    stereo_seed_u0,
+    temporal_camera_u0,
 )
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import (
@@ -137,8 +140,23 @@ class TrackBothStrategy:
         # Initial-guess resolution (F2): effective mode + seed-derived stereo
         # offset (an explicit cfg.disparity_offset overrides the seed match).
         init_mode, stereo_offset = resolve_init(cfg, left[0], right[0])
+        seeds_L = effective_seed_points(cfg) if init_mode == "seed" else ()
+        primary_L = seeds_L[0] if seeds_L else cfg.seed_point  # single-seed fallback
 
-        # (1) frame-1 cross-camera match at the reference mesh nodes.
+        # (1) frame-1 cross-camera match at the reference mesh nodes. Batch S:
+        # in seed mode the placed seeds propagate a per-node L->R disparity prior
+        # (strong under wide-baseline disparity gradients); else the scalar
+        # offset + per-point NCC search exactly as before.
+        stereo_prior = stereo_seed_u0(
+            init_mode,
+            left[0],
+            right[0],
+            mesh_L,
+            mask_L1,
+            seeds_L,
+            para_L,
+            search_radius=self.stereo_search,
+        )
         disp = stereo_match_pair(
             left[0],
             right[0],
@@ -146,6 +164,7 @@ class TrackBothStrategy:
             para_L,
             disparity_offset=stereo_offset,
             search_radius=self.stereo_search,
+            seed_u0=stereo_prior,
         )
         right_pts = disp.right_pts  # (n_pts, 2); NaN where the stereo link failed
         base_valid = disp.valid  # (n_pts,)
@@ -160,7 +179,20 @@ class TrackBothStrategy:
         # (2) per-camera temporal tracks. The right camera runs on an
         # INDEPENDENT dense grid over right_pts; its setup (para/mesh/u0) is
         # hoisted BEFORE tracking so both tracks can launch together (P3.6).
-        u0_L = temporal_u0(init_mode, left[0], left[1], cfg.seed_point, n_pts)
+        # Batch S: the left track's U0 is the F-aware propagated field over the
+        # placed seeds (falls back to the single-seed uniform / FFT path).
+        u0_L = temporal_camera_u0(
+            init_mode,
+            left[0],
+            left[1],
+            mesh_L,
+            mask_L1,
+            seeds_L,
+            primary_L,
+            para_L,
+            n_pts,
+            search_radius=self.fft_search,
+        )
 
         valid_rp = np.isfinite(right_pts).all(axis=1)
         roi_R = bbox_roi(right_pts[valid_rp], img_h, img_w, margin=self.winsize)
@@ -180,17 +212,30 @@ class TrackBothStrategy:
             frame_schedule=cfg.schedule_R,
         )
         mesh_R = build_grid_mesh(para_R, img_h, img_w)
-        # The right camera's seed is the stereo-matched location of the left
-        # seed (seed + offset); without a usable offset the right track keeps
-        # the engine FFT (temporal_u0 handles seed_R=None).
+        # The right camera's seeds are the placed left seeds mapped into the
+        # right frame (per-seed L->R NCC); the single-seed prior (seed + offset)
+        # remains the fallback for the uniform path. Without a usable offset the
+        # right track keeps the engine FFT (temporal_camera_u0 handles None).
+        seeds_R = map_seeds_left_to_right(left[0], right[0], seeds_L) if seeds_L else ()
         seed_R = None
-        if init_mode == "seed" and stereo_offset is not None and cfg.seed_point is not None:
+        if init_mode == "seed" and stereo_offset is not None and primary_L is not None:
             seed_R = (
-                cfg.seed_point[0] + stereo_offset[0],
-                cfg.seed_point[1] + stereo_offset[1],
+                primary_L[0] + stereo_offset[0],
+                primary_L[1] + stereo_offset[1],
             )
         n_r_nodes = int(np.asarray(mesh_R.coordinates_fem).shape[0])
-        u0_R = temporal_u0(init_mode, right[0], right[1], seed_R, n_r_nodes)
+        u0_R = temporal_camera_u0(
+            init_mode,
+            right[0],
+            right[1],
+            mesh_R,
+            mask_R1,
+            seeds_R,
+            seed_R,
+            para_R,
+            n_r_nodes,
+            search_radius=self.fft_search,
+        )
 
         def _check_left_alignment(tf) -> None:
             if not np.allclose(tf.ref_coords, coords_L, atol=1e-6):

@@ -44,36 +44,78 @@ class CanvasToolsMixin:
         self._canvas.set_seed_tool(False)
 
     def clear_seed(self) -> None:
-        """Drop the Starting Point from the draft and the canvas."""
+        """Drop ALL Starting Points from the draft and the canvas (Batch S)."""
         draft = self.controller.state.draft
-        if draft.seed_point is None:
+        if not draft.seed_points and draft.seed_point is None:
             return
+        draft.seed_points = []
         draft.seed_point = None
-        self._canvas.set_seed_marker(None)
+        self._canvas.set_seed_markers([])
         self.controller.state.mark_dirty()
-        self.signals.log.emit("starting point cleared", "info")
+        self.signals.log.emit("starting points cleared", "info")
         self.signals.params_changed.emit()
 
-    def _on_seed_clicked(self, x: float, y: float) -> None:
-        """Persist the placed seed (replaces any previous point)."""
-        draft = self.controller.state.draft
-        draft.seed_point = (float(x), float(y))
-        self.controller.state.mark_dirty()
-        self.signals.log.emit(f"starting point placed at ({x:.1f}, {y:.1f})", "info")
-        self._sync_seed_marker()
-        self.signals.params_changed.emit()
-
-    def _sync_seed_marker(self) -> None:
-        """Marker shows on the LEFT camera's frame 1 only (the seed's home view)."""
-        draft = self.controller.state.draft
-        show = (
+    def _is_left_reference_view(self) -> bool:
+        """True only on the LEFT camera, frame 1, 2D canvas — the seeds' home view."""
+        return (
             self._stack.currentIndex() == 0
             and self.signals.current_camera == "L"
             and self.signals.current_frame == 0
             and self._canvas.has_image
-            and draft.seed_point is not None
         )
-        self._canvas.set_seed_marker(draft.seed_point if show else None)
+
+    def _on_seed_clicked(self, x: float, y: float) -> None:
+        """Append a placed Starting Point to the list (Batch S multi-seed).
+
+        The multi-seed tool deliberately stays armed across clicks, so — unlike
+        the one-shot ROI tools — a click can land after the user navigated to
+        another camera or frame. A Starting Point is a LEFT-camera frame-1
+        coordinate, so a click off that view would record a bogus pixel that is
+        counted but never shown (its marker only paints on L/frame 1). Refuse it
+        at click time so a click can NEVER record a non-L/frame-1 coordinate.
+        """
+        draft = self.controller.state.draft
+        if not self._is_left_reference_view():
+            self.signals.log.emit(
+                self.tr(
+                    "Starting points are placed on the LEFT camera, frame 1 — "
+                    "switch there to add a point"
+                ),
+                "warning",
+            )
+            return
+        draft.seed_points = [*draft.seed_points, (float(x), float(y))]
+        draft.seed_point = draft.seed_points[0]  # primary stays seed_points[0]
+        self.controller.state.mark_dirty()
+        n = len(draft.seed_points)
+        self.signals.log.emit(f"starting point {n} placed at ({x:.1f}, {y:.1f})", "info")
+        self._sync_seed_marker()
+        self.signals.params_changed.emit()
+
+    def _on_seed_remove(self, x: float, y: float) -> None:
+        """Remove the Starting Point nearest to ``(x, y)`` (right-click, Batch S)."""
+        import numpy as np
+
+        draft = self.controller.state.draft
+        if not draft.seed_points:
+            return
+        pts = np.asarray(draft.seed_points, dtype=float)
+        idx = int(np.argmin(np.sum((pts - np.array([x, y])) ** 2, axis=1)))
+        removed = draft.seed_points[idx]
+        draft.seed_points = [p for i, p in enumerate(draft.seed_points) if i != idx]
+        draft.seed_point = draft.seed_points[0] if draft.seed_points else None
+        self.controller.state.mark_dirty()
+        self.signals.log.emit(
+            f"starting point removed at ({removed[0]:.1f}, {removed[1]:.1f})", "info"
+        )
+        self._sync_seed_marker()
+        self.signals.params_changed.emit()
+
+    def _sync_seed_marker(self) -> None:
+        """Markers show on the LEFT camera's frame 1 only (the seeds' home view)."""
+        draft = self.controller.state.draft
+        show = self._is_left_reference_view() and bool(draft.seed_points)
+        self._canvas.set_seed_markers(draft.seed_points if show else [])
 
     # ---- refinement brush ------------------------------------------------------
 
@@ -113,8 +155,8 @@ class CanvasToolsMixin:
         clear_roi = menu.addAction(self.tr("Clear ROI"))
         clear_roi.setEnabled(draft.roi_mask_array is not None)
         clear_roi.triggered.connect(self.roi_clear)
-        clear_seed = menu.addAction(self.tr("Clear seed point"))
-        clear_seed.setEnabled(draft.seed_point is not None)
+        clear_seed = menu.addAction(self.tr("Clear seed points"))
+        clear_seed.setEnabled(bool(draft.seed_points))
         clear_seed.triggered.connect(self.clear_seed)
         menu.exec(global_pos)
 

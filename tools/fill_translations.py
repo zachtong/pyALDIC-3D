@@ -4936,6 +4936,129 @@ for _loc, _entries in _BATCH_AUDIT.items():
     TRANSLATIONS[_loc].update(_entries)
 
 
+# ---------------------------------------------------------------------------
+# Batch S — multi-seed Starting Points (init_guess_section / canvas_tools).
+# Generalizes the F2 seed strings from one point to a list; reuses the F2
+# Starting-Point terminology (种子点 / シード点 / 시드점 / Startpunkt / point de
+# départ / punto de inicio). Format strings keep the {0}/{1}/{2} placeholders.
+# ---------------------------------------------------------------------------
+
+_S_SEED_TIP = (
+    "Click one or more points on the LEFT camera, frame 1 — at least\n"
+    "one per connected ROI region. Each point's neighborhood is matched\n"
+    "automatically into the right camera (stereo offset) and into\n"
+    "frame 2 (motion seed), then a first-order deformation field is\n"
+    "propagated to every mesh node — no search tuning needed. Best for\n"
+    "wide stereo baselines, large first-frame motion, or discontinuous\n"
+    "fields. If no point is placed, the run falls back to FFT."
+)
+_S_PLACE_TIP = (
+    "Enter placement mode on the canvas. Left-click the LEFT camera,\n"
+    "frame 1 to ADD a point; right-click removes the nearest; Esc exits."
+)
+_S_WRONG_VIEW = (
+    "Starting points are placed on the LEFT camera, frame 1 — "
+    "switch there to add a point"
+)
+
+_BATCH_S: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        "Starting Points": "种子点",
+        "Place points…": "放置种子点…",
+        "Remove all Starting Points": "移除所有种子点",
+        "Clear seed points": "清除种子点",
+        "No points placed — FFT fallback at run": "未放置种子点——运行时回退为 FFT",
+        "{0} point(s) placed": "已放置 {0} 个种子点",
+        "{0} point(s) · {1}/{2} regions ready": "{0} 个种子点 · {1}/{2} 个区域就绪",
+        "{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run": "{0} 个种子点 · 已布种 {1}/{2} 个区域——其余将在运行时自动布种",
+        _S_SEED_TIP: "在左相机第 1 帧上点击一个或多个点——每个连通的 ROI 区域至少一个。\n每个点的邻域会自动匹配到右相机（立体偏移）以及第 2 帧（运动种子），\n随后将一阶变形场传播到每个网格节点——无需调整搜索参数。适合宽基线\n立体、首帧大位移或不连续场。若未放置种子点，运行时将回退为 FFT。",
+        _S_PLACE_TIP: "进入画布放置模式。在左相机第 1 帧上左键单击以添加一个点；\n右键单击移除最近的点；按 Esc 退出。",
+        _S_WRONG_VIEW: "种子点只能放置在左相机第 1 帧——请切换到该视图后再添加",
+    },
+    "zh_TW": {
+        "Starting Points": "種子點",
+        "Place points…": "放置種子點…",
+        "Remove all Starting Points": "移除所有種子點",
+        "Clear seed points": "清除種子點",
+        "No points placed — FFT fallback at run": "未放置種子點——執行時回退為 FFT",
+        "{0} point(s) placed": "已放置 {0} 個種子點",
+        "{0} point(s) · {1}/{2} regions ready": "{0} 個種子點 · {1}/{2} 個區域就緒",
+        "{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run": "{0} 個種子點 · 已布種 {1}/{2} 個區域——其餘將在執行時自動布種",
+        _S_SEED_TIP: "在左相機第 1 幀上點擊一個或多個點——每個連通的 ROI 區域至少一個。\n每個點的鄰域會自動匹配到右相機（立體偏移）以及第 2 幀（運動種子），\n隨後將一階變形場傳播到每個網格節點——無需調整搜尋參數。適合寬基線\n立體、首幀大位移或不連續場。若未放置種子點，執行時將回退為 FFT。",
+        _S_PLACE_TIP: "進入畫布放置模式。在左相機第 1 幀上左鍵點擊以新增一個點；\n右鍵點擊移除最近的點；按 Esc 離開。",
+        _S_WRONG_VIEW: "種子點只能放置在左相機第 1 幀——請切換到該視圖後再新增",
+    },
+    "ja": {
+        "Starting Points": "シード点",
+        "Place points…": "シード点を配置…",
+        "Remove all Starting Points": "すべてのシード点を削除",
+        "Clear seed points": "シード点をクリア",
+        "No points placed — FFT fallback at run": "点が未配置 — 実行時は FFT にフォールバック",
+        "{0} point(s) placed": "{0} 点を配置",
+        "{0} point(s) · {1}/{2} regions ready": "{0} 点 · {1}/{2} 領域が準備完了",
+        "{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run": "{0} 点 · {1}/{2} 領域にシード — 残りは実行時に自動シード",
+        _S_SEED_TIP: "左カメラの第 1 フレーム上で 1 つ以上の点をクリックします — 連結した\nROI 領域ごとに少なくとも 1 点。各点の近傍は右カメラ（ステレオオフセット）\nと第 2 フレーム（運動シード）へ自動的にマッチングされ、続いて一次の変形場が\nすべてのメッシュ節点へ伝播されます — 探索パラメータの調整は不要です。\n広い基線長、第 1 フレームの大きな運動、不連続場に適しています。点が未配置の\n場合、実行時は FFT にフォールバックします。",
+        _S_PLACE_TIP: "キャンバスの配置モードに入ります。左カメラの第 1 フレームを左クリックで\n点を追加、右クリックで最も近い点を削除、Esc で終了します。",
+        _S_WRONG_VIEW: "シード点は左カメラの第 1 フレームに配置します — その表示に切り替えてから追加してください",
+    },
+    "ko": {
+        "Starting Points": "시드점",
+        "Place points…": "시드점 배치…",
+        "Remove all Starting Points": "모든 시드점 제거",
+        "Clear seed points": "시드점 지우기",
+        "No points placed — FFT fallback at run": "점이 배치되지 않음 — 실행 시 FFT로 대체",
+        "{0} point(s) placed": "{0}개 점 배치됨",
+        "{0} point(s) · {1}/{2} regions ready": "{0}개 점 · {1}/{2} 영역 준비됨",
+        "{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run": "{0}개 점 · {1}/{2} 영역 시드됨 — 나머지는 실행 시 자동 시드",
+        _S_SEED_TIP: "왼쪽 카메라 1번 프레임에서 하나 이상의 점을 클릭하십시오 — 연결된 각 ROI\n영역마다 최소 하나씩. 각 점의 주변 영역이 오른쪽 카메라(스테레오 오프셋)와\n2번 프레임(운동 시드)으로 자동 매칭된 뒤, 1차 변형장이 모든 메시 노드로\n전파됩니다 — 탐색 파라미터 조정이 필요 없습니다. 넓은 기선, 첫 프레임의 큰\n움직임 또는 불연속 장에 적합합니다. 점을 배치하지 않으면 실행 시 FFT로\n대체됩니다.",
+        _S_PLACE_TIP: "캔버스 배치 모드로 들어갑니다. 왼쪽 카메라 1번 프레임을 왼쪽 클릭하여\n점을 추가하고, 오른쪽 클릭으로 가장 가까운 점을 제거하며, Esc로 종료합니다.",
+        _S_WRONG_VIEW: "시드점은 왼쪽 카메라 1번 프레임에 배치합니다 — 해당 화면으로 전환한 뒤 추가하세요",
+    },
+    "de": {
+        "Starting Points": "Startpunkte",
+        "Place points…": "Punkte platzieren…",
+        "Remove all Starting Points": "Alle Startpunkte entfernen",
+        "Clear seed points": "Startpunkte löschen",
+        "No points placed — FFT fallback at run": "Keine Punkte gesetzt — beim Lauf FFT-Fallback",
+        "{0} point(s) placed": "{0} Punkt(e) gesetzt",
+        "{0} point(s) · {1}/{2} regions ready": "{0} Punkt(e) · {1}/{2} Regionen bereit",
+        "{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run": "{0} Punkt(e) · {1}/{2} Regionen besät — Rest wird beim Lauf automatisch besät",
+        _S_SEED_TIP: "Klicken Sie einen oder mehrere Punkte auf der LINKEN Kamera, Frame 1 —\nmindestens einen pro zusammenhängender ROI-Region. Die Umgebung jedes\nPunkts wird automatisch in die rechte Kamera (Stereo-Versatz) und in Frame 2\n(Bewegungs-Seed) eingepasst, dann wird ein Verschiebungsfeld erster Ordnung\nauf jeden Netzknoten propagiert — keine Suchparameter nötig. Ideal für breite\nBasislinien, große Bewegung im ersten Frame oder unstetige Felder. Ohne\ngesetzten Punkt fällt der Lauf auf FFT zurück.",
+        _S_PLACE_TIP: "Platzierungsmodus auf der Leinwand. Linksklick auf die LINKE Kamera,\nFrame 1 fügt einen Punkt hinzu; Rechtsklick entfernt den nächsten; Esc beendet.",
+        _S_WRONG_VIEW: "Startpunkte werden auf der LINKEN Kamera, Frame 1 gesetzt — dorthin wechseln, um einen Punkt hinzuzufügen",
+    },
+    "fr": {
+        "Starting Points": "Points de départ",
+        "Place points…": "Placer des points…",
+        "Remove all Starting Points": "Supprimer tous les points de départ",
+        "Clear seed points": "Effacer les points de départ",
+        "No points placed — FFT fallback at run": "Aucun point placé — repli FFT à l'exécution",
+        "{0} point(s) placed": "{0} point(s) placé(s)",
+        "{0} point(s) · {1}/{2} regions ready": "{0} point(s) · {1}/{2} régions prêtes",
+        "{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run": "{0} point(s) · {1}/{2} régions amorcées — le reste est amorcé automatiquement à l'exécution",
+        _S_SEED_TIP: "Cliquez un ou plusieurs points sur la caméra GAUCHE, image 1 — au moins un\npar région ROI connexe. Le voisinage de chaque point est apparié\nautomatiquement dans la caméra droite (décalage stéréo) et dans l'image 2\n(amorce de mouvement), puis un champ de déformation du premier ordre est\npropagé à chaque nœud du maillage — aucun réglage de recherche nécessaire.\nIdéal pour les larges bases stéréo, les grands mouvements initiaux ou les\nchamps discontinus. Sans point placé, l'exécution retombe sur la FFT.",
+        _S_PLACE_TIP: "Mode placement sur le canevas. Clic gauche sur la caméra GAUCHE, image 1\npour AJOUTER un point ; clic droit supprime le plus proche ; Échap quitte.",
+        _S_WRONG_VIEW: "Les points de départ se placent sur la caméra GAUCHE, image 1 — basculez-y pour ajouter un point",
+    },
+    "es": {
+        "Starting Points": "Puntos de inicio",
+        "Place points…": "Colocar puntos…",
+        "Remove all Starting Points": "Eliminar todos los puntos de inicio",
+        "Clear seed points": "Borrar los puntos de inicio",
+        "No points placed — FFT fallback at run": "Sin puntos colocados — al ejecutar se usa FFT",
+        "{0} point(s) placed": "{0} punto(s) colocado(s)",
+        "{0} point(s) · {1}/{2} regions ready": "{0} punto(s) · {1}/{2} regiones listas",
+        "{0} point(s) · {1}/{2} regions seeded — rest auto-seeded at run": "{0} punto(s) · {1}/{2} regiones sembradas — el resto se siembra automáticamente al ejecutar",
+        _S_SEED_TIP: "Haga clic en uno o más puntos en la cámara IZQUIERDA, fotograma 1 — al menos\nuno por cada región ROI conexa. El vecindario de cada punto se empareja\nautomáticamente en la cámara derecha (desplazamiento estéreo) y en el\nfotograma 2 (semilla de movimiento); luego se propaga un campo de deformación\nde primer orden a cada nodo de la malla — sin ajustar parámetros de búsqueda.\nIdeal para líneas base anchas, grandes movimientos iniciales o campos\ndiscontinuos. Sin punto colocado, la ejecución recurre a la FFT.",
+        _S_PLACE_TIP: "Modo de colocación en el lienzo. Clic izquierdo en la cámara IZQUIERDA,\nfotograma 1 para AÑADIR un punto; clic derecho elimina el más cercano; Esc sale.",
+        _S_WRONG_VIEW: "Los puntos de inicio se colocan en la cámara IZQUIERDA, fotograma 1 — cambie a esa vista para añadir uno",
+    },
+}
+
+for _loc, _entries in _BATCH_S.items():
+    TRANSLATIONS[_loc].update(_entries)
+
+
 def main() -> int:
     ok = True
     for locale in TRANSLATIONS:
