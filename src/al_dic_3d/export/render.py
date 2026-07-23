@@ -37,7 +37,7 @@ from al_dic_3d.export.colorbar import (
 )
 from al_dic_3d.export.tables import field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
-from al_dic_3d.viz3d.fieldmap import FieldmapRenderer, visible_values
+from al_dic_3d.viz3d.fieldmap import FieldmapRenderer, auto_range, visible_values
 
 if TYPE_CHECKING:
     from al_dic_3d.runner import RunResult
@@ -140,17 +140,21 @@ def field_color_range(
     frame_k: int,
     roi_mask: NDArray[np.bool_] | None,
 ) -> tuple[float, float]:
-    """Auto color range from the VISIBLE nodes of one frame (GUI contract)."""
+    """Auto color range from the VISIBLE nodes of one frame (GUI contract).
+
+    A5-3: shares the canvas/strain-window reduction — ``visible_values`` then
+    :func:`al_dic_3d.viz3d.fieldmap.auto_range` (2–98 percentile) — so an
+    exported frame is truly WYSIWYG (same range and colorbar end-labels the
+    live canvas shows). This is a deliberate improvement over the 2D app, whose
+    PNG export uses plain min/max while its canvas uses the percentile; routing
+    all three consumers through the one helper keeps them from drifting again.
+    """
     vals = field_frame(result, field_id, frame_k)
     if vals is None:
         return 0.0, 1.0
     cs = result.correspondence
     ref_pts = (cs.xL if camera == "L" else cs.xR)[0]
-    vis = visible_values(vals, ref_pts, roi_mask)
-    finite = vis[np.isfinite(vis)]
-    if finite.size:
-        return float(finite.min()), float(finite.max())
-    return 0.0, 1.0
+    return auto_range(visible_values(vals, ref_pts, roi_mask))
 
 
 def render_field_frame(

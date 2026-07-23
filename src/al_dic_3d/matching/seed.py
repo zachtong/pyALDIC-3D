@@ -35,11 +35,16 @@ Hence the three 3D modes map to:
     ``U0 = None`` — the engine's own path: FFT on frame 1 and on every
     reference switch, sibling warm-start elsewhere. (Pre-F2 behavior.)
 ``"previous"``
-    ``U0 = zeros`` — no cross-correlation ever runs for the temporal track:
-    frame 1 starts from zero (the "previous" frame IS the reference), later
-    frames warm-start from the previous converged field. Fastest; can silently
-    freeze on large motion or decorrelation (the v1.4.7 lesson) — the ZNSSD
-    validity gate flags affected frames.
+    ``U0 = zeros`` — frame 1 starts from zero (the "previous" frame IS the
+    reference). In ACCUMULATIVE mode no cross-correlation ever runs for the
+    temporal track: every frame >= 2 warm-starts from the previous converged
+    field (fastest). In INCREMENTAL mode (or ``every_n`` / ``custom`` reference
+    updates) this "no FFT" claim does NOT hold: each reference switch clears the
+    warm start and forces the engine's FFT integer search (pipeline.py:966-979),
+    so an FFT runs on every frame after a switch regardless of ``init_guess`` —
+    the passed ``U0 = zeros`` only seeds frame 1. Can still silently freeze on
+    large motion or decorrelation (the v1.4.7 lesson) — the ZNSSD validity gate
+    flags affected frames.
 """
 
 from __future__ import annotations

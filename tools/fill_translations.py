@@ -4684,6 +4684,258 @@ for _loc, _entries in _BATCH_R2.items():
     TRANSLATIONS[_loc].update(_entries)
 
 
+# ---------------------------------------------------------------------------
+# Adversarial-audit GUI honesty batch (A4-1 / A4-2 temporal-FFT tooltips,
+# A6-2 Almansi label + tooltip). Math expressions are locale-invariant.
+# ---------------------------------------------------------------------------
+
+_TEMP_BASE = (
+    "Half-width (pixels) of the temporal FFT integer search that seeds\n"
+    "each per-frame match. Set comfortably larger than the expected\n"
+    "inter-frame motion; with Auto-expand on (default) the engine can\n"
+    "still grow the search past this on a boundary-clipped peak."
+)
+_TEMP_CAP = (
+    "Current images: the engine starts the FFT search clamped to\n"
+    "{0} px (max(10, min(H, W) / 4 - subset)); Auto-expand can grow\n"
+    "it to {1} px (max(32, min(H, W) / 2)) on clipped peaks."
+)
+_FFT_INERT = (
+    "Inactive with the current Initial Guess / Tracking Mode: the\n"
+    "temporal FFT runs only when Initial Guess = FFT, or at reference\n"
+    "switches in Incremental mode; in Accumulative + Starting Point /\n"
+    "Previous frame no FFT runs, so this control has no effect."
+)
+_ALMANSI_LABEL = "Almansi (Eulerian, true tensor)"
+_ALMANSI_TIP = (
+    "Finite-strain measure derived from the SAME displacement-\n"
+    "gradient fit, in the same tangent frame:\n"
+    "Green-Lagrange E = ½(FᵀF − I) — finite strain, reference\n"
+    "configuration (default).\n"
+    "Infinitesimal e = ½(∇u + ∇uᵀ) — small-strain linearization.\n"
+    "Almansi (Eulerian, true tensor) e = ½(I − F⁻ᵀF⁻¹) — the EXACT\n"
+    "finite-strain tensor in the deformed configuration. This is NOT\n"
+    "the 2D app's linearized per-axis 'Eulerian-Almansi' formula\n"
+    "(1/(1−∂u/∂x)−1, …), which differs by ~22% at 10% strain."
+)
+
+_BATCH_AUDIT: dict[str, dict[str, str]] = {
+    "zh_CN": {
+        _TEMP_BASE: (
+            "时序 FFT 整数搜索的半宽（像素），用于为每一帧的匹配提供初值。\n"
+            "请设置为明显大于预期的帧间运动；当“自动扩大”开启（默认）时，\n"
+            "峰值触及搜索边界时引擎仍可将搜索范围扩大到超过此值。"
+        ),
+        _TEMP_CAP: (
+            "当前图像：引擎在运行开始时会将 FFT 搜索限制为 {0} px\n"
+            "（max(10, min(H, W) / 4 - 子区)）；当峰值被截断时，“自动扩大”\n"
+            "可将其增大到 {1} px（max(32, min(H, W) / 2)）。"
+        ),
+        _FFT_INERT: (
+            "在当前的初始猜测 / 追踪模式下无效：仅当初始猜测 = FFT，\n"
+            "或在增量式模式的参考帧切换处，才会运行时序 FFT。在累积式 +\n"
+            "种子点 / 上一帧下不会运行 FFT，因此此控件不起作用。"
+        ),
+        _ALMANSI_LABEL: "Almansi（欧拉，真实张量）",
+        _ALMANSI_TIP: (
+            "由同一位移梯度拟合、在同一切平面坐标系中导出的有限应变度量：\n"
+            "Green-Lagrange E = ½(FᵀF − I) — 参考构形下的有限应变（默认）。\n"
+            "Infinitesimal e = ½(∇u + ∇uᵀ) — 小应变线性化。\n"
+            "Almansi（欧拉，真实张量）e = ½(I − F⁻ᵀF⁻¹) — 变形构形下的\n"
+            "精确有限应变张量。这不是 2D 应用中线性化的逐轴“欧拉-阿尔曼西”\n"
+            "公式（1/(1−∂u/∂x)−1, …），后者在 10% 应变时相差约 22%。"
+        ),
+    },
+    "zh_TW": {
+        _TEMP_BASE: (
+            "時序 FFT 整數搜尋的半寬（像素），用於為每一幀的匹配提供初始值。\n"
+            "請設定為明顯大於預期的幀間運動；當「自動擴大」開啟（預設）時，\n"
+            "峰值觸及搜尋邊界時引擎仍可將搜尋範圍擴大到超過此值。"
+        ),
+        _TEMP_CAP: (
+            "目前影像：引擎在執行開始時會將 FFT 搜尋限制為 {0} px\n"
+            "（max(10, min(H, W) / 4 - 子區)）；當峰值被截斷時，「自動擴大」\n"
+            "可將其增大到 {1} px（max(32, min(H, W) / 2)）。"
+        ),
+        _FFT_INERT: (
+            "在目前的初始猜測 / 追蹤模式下無效：僅當初始猜測 = FFT，\n"
+            "或在增量式模式的參考幀切換處，才會執行時序 FFT。在累積式 +\n"
+            "種子點 / 上一幀下不會執行 FFT，因此此控制項不起作用。"
+        ),
+        _ALMANSI_LABEL: "Almansi（歐拉，真實張量）",
+        _ALMANSI_TIP: (
+            "由同一位移梯度擬合、在同一切平面座標系中導出的有限應變度量：\n"
+            "Green-Lagrange E = ½(FᵀF − I) — 參考組態下的有限應變（預設）。\n"
+            "Infinitesimal e = ½(∇u + ∇uᵀ) — 小應變線性化。\n"
+            "Almansi（歐拉，真實張量）e = ½(I − F⁻ᵀF⁻¹) — 變形組態下的\n"
+            "精確有限應變張量。這不是 2D 應用中線性化的逐軸「歐拉-阿爾曼西」\n"
+            "公式（1/(1−∂u/∂x)−1, …），後者在 10% 應變時相差約 22%。"
+        ),
+    },
+    "ja": {
+        _TEMP_BASE: (
+            "各フレームのマッチングを初期化する時系列 FFT 整数探索の半幅（ピクセル）。\n"
+            "予想されるフレーム間の動きより十分に大きく設定してください。自動拡大が\n"
+            "オン（既定）の場合、ピークが探索境界に達するとエンジンは探索範囲をこの\n"
+            "値を超えて広げることができます。"
+        ),
+        _TEMP_CAP: (
+            "現在の画像：エンジンは実行開始時に FFT 探索を {0} px\n"
+            "（max(10, min(H, W) / 4 - サブセット)）に制限します。ピークがクリップ\n"
+            "されると、自動拡大により {1} px（max(32, min(H, W) / 2)）まで拡大できます。"
+        ),
+        _FFT_INERT: (
+            "現在の初期推定 / 追跡モードでは無効です。時系列 FFT は初期推定 = FFT\n"
+            "のとき、または逐次式モードの参照フレーム切り替え時にのみ実行されます。\n"
+            "累積式 + シード点 / 前フレームでは FFT は実行されないため、この\n"
+            "コントロールは効果がありません。"
+        ),
+        _ALMANSI_LABEL: "Almansi（オイラー、真のテンソル）",
+        _ALMANSI_TIP: (
+            "同じ変位勾配フィットから、同じ接平面座標系で導出される有限ひずみ尺度：\n"
+            "Green-Lagrange E = ½(FᵀF − I) — 参照配置の有限ひずみ（既定）。\n"
+            "Infinitesimal e = ½(∇u + ∇uᵀ) — 微小ひずみ線形化。\n"
+            "Almansi（オイラー、真のテンソル）e = ½(I − F⁻ᵀF⁻¹) — 変形配置における\n"
+            "厳密な有限ひずみテンソル。これは 2D アプリの線形化された軸ごとの\n"
+            "「Euler-Almansi」式（1/(1−∂u/∂x)−1, …）ではなく、10% ひずみで約 22%\n"
+            "異なります。"
+        ),
+    },
+    "ko": {
+        _TEMP_BASE: (
+            "각 프레임의 매칭을 초기화하는 시간 FFT 정수 검색의 반폭(픽셀).\n"
+            "예상되는 프레임 간 이동보다 충분히 크게 설정하세요. 자동 확장이\n"
+            "켜져 있으면(기본값) 피크가 검색 경계에 닿을 때 엔진이 검색 범위를\n"
+            "이 값 이상으로 넓힐 수 있습니다."
+        ),
+        _TEMP_CAP: (
+            "현재 이미지: 엔진은 실행 시작 시 FFT 검색을 {0} px\n"
+            "(max(10, min(H, W) / 4 - 서브셋))로 제한합니다. 피크가 잘리면\n"
+            "자동 확장이 이를 {1} px(max(32, min(H, W) / 2))까지 늘릴 수 있습니다."
+        ),
+        _FFT_INERT: (
+            "현재 초기 추정 / 추적 모드에서는 작동하지 않습니다. 시간 FFT는\n"
+            "초기 추정 = FFT일 때 또는 증분형 모드의 기준 프레임 전환 지점에서만\n"
+            "실행됩니다. 누적형 + 시드점 / 이전 프레임에서는 FFT가 실행되지 않으므로\n"
+            "이 컨트롤은 효과가 없습니다."
+        ),
+        _ALMANSI_LABEL: "Almansi(오일러, 참 텐서)",
+        _ALMANSI_TIP: (
+            "동일한 변위 기울기 피팅에서 동일한 접평면 좌표계로 유도되는 유한 변형률 척도:\n"
+            "Green-Lagrange E = ½(FᵀF − I) — 기준 배치의 유한 변형률(기본).\n"
+            "Infinitesimal e = ½(∇u + ∇uᵀ) — 소변형 선형화.\n"
+            "Almansi(오일러, 참 텐서) e = ½(I − F⁻ᵀF⁻¹) — 변형 배치의 정확한\n"
+            "유한 변형률 텐서. 이는 2D 앱의 선형화된 축별 'Euler-Almansi' 공식\n"
+            "(1/(1−∂u/∂x)−1, …)이 아니며, 10% 변형률에서 약 22% 차이가 납니다."
+        ),
+    },
+    "de": {
+        _TEMP_BASE: (
+            "Halbbreite (Pixel) der zeitlichen ganzzahligen FFT-Suche, die jede\n"
+            "Frame-Zuordnung initialisiert. Deutlich größer als die erwartete\n"
+            "Bewegung pro Frame wählen; bei aktivierter Auto-Erweiterung (Standard)\n"
+            "kann die Engine die Suche über diesen Wert hinaus vergrößern, wenn ein\n"
+            "Peak den Suchrand erreicht."
+        ),
+        _TEMP_CAP: (
+            "Aktuelle Bilder: Die Engine begrenzt die FFT-Suche zu Beginn auf\n"
+            "{0} px (max(10, min(H, W) / 4 - Subset)); bei abgeschnittenen Peaks\n"
+            "kann die Auto-Erweiterung sie auf {1} px (max(32, min(H, W) / 2))\n"
+            "vergrößern."
+        ),
+        _FFT_INERT: (
+            "Bei der aktuellen Anfangsschätzung / dem Tracking-Modus wirkungslos:\n"
+            "Die zeitliche FFT läuft nur bei Anfangsschätzung = FFT oder an\n"
+            "Referenzwechseln im inkrementellen Modus. Bei Akkumulativ + Startpunkt /\n"
+            "Vorheriger Frame läuft keine FFT, dieses Element hat also keine Wirkung."
+        ),
+        _ALMANSI_LABEL: "Almansi (Euler, echter Tensor)",
+        _ALMANSI_TIP: (
+            "Finite-Dehnungs-Maß aus demselben Verschiebungsgradienten-Fit, im\n"
+            "selben Tangentialsystem:\n"
+            "Green-Lagrange E = ½(FᵀF − I) — finite Dehnung, Referenzkonfiguration\n"
+            "(Standard).\n"
+            "Infinitesimal e = ½(∇u + ∇uᵀ) — Linearisierung kleiner Dehnungen.\n"
+            "Almansi (Euler, echter Tensor) e = ½(I − F⁻ᵀF⁻¹) — der EXAKTE finite\n"
+            "Dehnungstensor in der verformten Konfiguration. Dies ist NICHT die\n"
+            "linearisierte achsenweise „Euler-Almansi“-Formel der 2D-App\n"
+            "(1/(1−∂u/∂x)−1, …), die bei 10 % Dehnung um ~22 % abweicht."
+        ),
+    },
+    "fr": {
+        _TEMP_BASE: (
+            "Demi-largeur (pixels) de la recherche entière FFT temporelle qui\n"
+            "initialise chaque appariement d'image. À régler nettement au-dessus\n"
+            "du mouvement attendu entre images ; avec l'extension automatique\n"
+            "activée (par défaut), le moteur peut agrandir la recherche au-delà de\n"
+            "cette valeur lorsqu'un pic atteint le bord."
+        ),
+        _TEMP_CAP: (
+            "Images actuelles : le moteur limite au départ la recherche FFT à\n"
+            "{0} px (max(10, min(H, W) / 4 - sous-ensemble)) ; sur un pic écrêté,\n"
+            "l'extension automatique peut la porter à {1} px\n"
+            "(max(32, min(H, W) / 2))."
+        ),
+        _FFT_INERT: (
+            "Sans effet avec l'estimation initiale / le mode de suivi actuels :\n"
+            "la FFT temporelle ne s'exécute que si l'estimation initiale = FFT, ou\n"
+            "aux changements de référence en mode incrémental. En cumulatif + Point\n"
+            "de départ / Image précédente, aucune FFT ne s'exécute, ce réglage n'a\n"
+            "donc aucun effet."
+        ),
+        _ALMANSI_LABEL: "Almansi (eulérien, tenseur exact)",
+        _ALMANSI_TIP: (
+            "Mesure de déformation finie issue du MÊME ajustement du gradient de\n"
+            "déplacement, dans le même repère tangent :\n"
+            "Green-Lagrange E = ½(FᵀF − I) — déformation finie, configuration de\n"
+            "référence (par défaut).\n"
+            "Infinitesimal e = ½(∇u + ∇uᵀ) — linéarisation des petites déformations.\n"
+            "Almansi (eulérien, tenseur exact) e = ½(I − F⁻ᵀF⁻¹) — le tenseur de\n"
+            "déformation finie EXACT dans la configuration déformée. Ce n'est PAS la\n"
+            "formule « Euler-Almansi » linéarisée par axe de l'app 2D\n"
+            "(1/(1−∂u/∂x)−1, …), qui diffère d'environ 22 % à 10 % de déformation."
+        ),
+    },
+    "es": {
+        _TEMP_BASE: (
+            "Semiancho (píxeles) de la búsqueda entera de FFT temporal que\n"
+            "inicializa cada emparejamiento por fotograma. Ajústelo bastante por\n"
+            "encima del movimiento esperado entre fotogramas; con la expansión\n"
+            "automática activada (predeterminado), el motor puede ampliar la\n"
+            "búsqueda más allá de este valor cuando un pico llega al borde."
+        ),
+        _TEMP_CAP: (
+            "Imágenes actuales: el motor limita al inicio la búsqueda FFT a\n"
+            "{0} px (max(10, min(H, W) / 4 - subconjunto)); ante un pico recortado,\n"
+            "la expansión automática puede aumentarla a {1} px\n"
+            "(max(32, min(H, W) / 2))."
+        ),
+        _FFT_INERT: (
+            "Sin efecto con la estimación inicial / el modo de seguimiento\n"
+            "actuales: la FFT temporal solo se ejecuta si la estimación inicial =\n"
+            "FFT, o en los cambios de referencia en modo incremental. En acumulativo\n"
+            "+ Punto inicial / Fotograma anterior no se ejecuta ninguna FFT, así que\n"
+            "este control no tiene efecto."
+        ),
+        _ALMANSI_LABEL: "Almansi (euleriano, tensor exacto)",
+        _ALMANSI_TIP: (
+            "Medida de deformación finita derivada del MISMO ajuste del gradiente\n"
+            "de desplazamiento, en el mismo sistema tangente:\n"
+            "Green-Lagrange E = ½(FᵀF − I) — deformación finita, configuración de\n"
+            "referencia (predeterminado).\n"
+            "Infinitesimal e = ½(∇u + ∇uᵀ) — linealización de pequeñas deformaciones.\n"
+            "Almansi (euleriano, tensor exacto) e = ½(I − F⁻ᵀF⁻¹) — el tensor de\n"
+            "deformación finita EXACTO en la configuración deformada. NO es la\n"
+            "fórmula «Euler-Almansi» linealizada por eje de la app 2D\n"
+            "(1/(1−∂u/∂x)−1, …), que difiere ~22 % con 10 % de deformación."
+        ),
+    },
+}
+
+for _loc, _entries in _BATCH_AUDIT.items():
+    TRANSLATIONS[_loc].update(_entries)
+
+
 def main() -> int:
     ok = True
     for locale in TRANSLATIONS:

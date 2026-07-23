@@ -28,6 +28,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from al_dic_3d.gui.fft_activity import fft_controls_active
+from al_dic_3d.gui.panels.sidebar_images import list_images
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.advanced_section import AdvancedSection3D
 from al_dic_3d.gui.widgets.calibration_section import CalibrationSection3D
@@ -43,23 +45,9 @@ from al_dic_3d.gui.widgets.section_header import SectionHeader
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
 
-_IMAGE_EXTS = {".png", ".tif", ".tiff", ".jpg", ".jpeg", ".bmp"}
-
 # Subset Step options: powers of two only (the 2D app uses a power-of-2 combo;
 # the refinement formula min_size = max(2, step // 2**level) stays integral).
 _STEP_OPTIONS = (2, 4, 8, 16, 32, 64, 128)
-
-
-def _natural_key(name: str) -> list:
-    import re
-
-    return [int(t) if t.isdigit() else t.lower() for t in re.findall(r"\d+|\D+", name)]
-
-
-def _list_images(folder: str, natural: bool) -> list[str]:
-    paths = [p for p in Path(folder).iterdir() if p.suffix.lower() in _IMAGE_EXTS]
-    key = (lambda p: _natural_key(p.name)) if natural else (lambda p: p.name)
-    return [str(p) for p in sorted(paths, key=key)]
 
 
 class LeftSidebar3D(QWidget):
@@ -195,6 +183,10 @@ class LeftSidebar3D(QWidget):
         ):
             sig.connect(self._refresh_next_hint)
         self._refresh_next_hint()
+        # A4-1: the FFT knobs' enable-state follows the Initial-Guess / mode
+        # selection (both funnel a params_changed emit through the sidebar).
+        self.signals.params_changed.connect(self._refresh_fft_enable)
+        self._refresh_fft_enable()
 
     def _refresh_next_hint(self) -> None:
         self._next_hint.refresh(self.controller.state.draft)
@@ -548,6 +540,7 @@ class LeftSidebar3D(QWidget):
         self._admm_spin = widget.admm_spin
         self._parallel_cb = widget.parallel_cb
         self._fft_expand_cb = widget.fft_expand_cb
+        self._fft_expand_base_tip = self._fft_expand_cb.toolTip()  # A4-1: base ⓘ text
         self._strategy_combo.currentIndexChanged.connect(self._apply_workflow)
         self._admm_spin.valueChanged.connect(self._apply_params)
         self._parallel_cb.toggled.connect(self._apply_params)
@@ -594,7 +587,7 @@ class LeftSidebar3D(QWidget):
         self._update_search_tooltips()  # winsize feeds the search-cap formulas
         self.signals.params_changed.emit()
 
-    # ---- search-range caps (F1.3) ---------------------------------------------------
+    # ---- search-range caps (F1.3) + temporal-FFT honesty (A4-1 / A4-2) --------------
 
     def _sequence_min_dim(self) -> int | None:
         """``min(H, W)`` of the first LEFT image (cached per path); None if unknown."""
@@ -618,12 +611,12 @@ class LeftSidebar3D(QWidget):
     def _update_search_tooltips(self) -> None:
         """Static guidance + the image-derived search caps once images are loaded.
 
-        The engine clamps the temporal FFT search region to
-        ``max(10, min(H, W) // 4 - winsize)`` at run start with only a warning
-        (2D pipeline behavior; the 2D GUI does not cap its spin either), and
-        the stereo NCC window is clamped at the image borders per point. The
-        spins stay uncapped — the tooltip surfaces the numbers so the run-start
-        auto-reduce is no surprise.
+        The run-start clamp ``max(10, min(H, W) // 4 - winsize)`` only REDUCES
+        the STARTING FFT radius (a warning, no hard cap); with Auto-expand on
+        (the default) the engine can still grow the search to
+        ``max(32, min(H, W) // 2)`` on a boundary-clipped peak (A4-2 — the old
+        tooltip presented the run-start clamp as the detectable-motion cap).
+        The stereo NCC window is clamped at the image borders per point.
         """
         stereo_tip = self.tr(
             "NCC search half-width (pixels) around each node for the\n"
@@ -631,31 +624,57 @@ class LeftSidebar3D(QWidget):
             "expected stereo disparity."
         )
         temporal_tip = self.tr(
-            "Maximum per-frame displacement the temporal FFT search can\n"
-            "detect (pixels). Set comfortably larger than the expected\n"
-            "inter-frame motion."
+            "Half-width (pixels) of the temporal FFT integer search that seeds\n"
+            "each per-frame match. Set comfortably larger than the expected\n"
+            "inter-frame motion; with Auto-expand on (default) the engine can\n"
+            "still grow the search past this on a boundary-clipped peak."
         )
         min_dim = self._sequence_min_dim()
         if min_dim is not None:
             win = int(self.controller.state.draft.winsize)
             stereo_cap = max(1, (min_dim - win) // 2)
             temporal_cap = max(10, min_dim // 4 - win)
+            expand_cap = max(32, min_dim // 2)
             stereo_tip += "\n" + self.tr(
                 "Current images: values above {0} px cannot widen the search\n"
                 "(the window is clamped at the image borders)."
             ).format(stereo_cap)
             temporal_tip += "\n" + self.tr(
-                "Current images: the engine caps this at {0} px at run start\n"
-                "(max(10, min(H, W) / 4 - subset))."
-            ).format(temporal_cap)
+                "Current images: the engine starts the FFT search clamped to\n"
+                "{0} px (max(10, min(H, W) / 4 - subset)); Auto-expand can grow\n"
+                "it to {1} px (max(32, min(H, W) / 2)) on clipped peaks."
+            ).format(temporal_cap, expand_cap)
         self._search_spin.setToolTip(stereo_tip)
         self._temporal_spin.setToolTip(temporal_tip)
         self._temporal_info.set_tip(temporal_tip)  # keep the ⓘ in sync (G2.1)
 
+    def _refresh_fft_enable(self) -> None:
+        """A4-1: grey out the temporal-FFT knobs when the current Initial Guess /
+        Tracking Mode means the engine never runs FFT (external mesh + a non-None
+        U0), so they can never masquerade as large-motion protection they do not
+        give. Recomputed live on every init_guess / mode change.
+        """
+        active = fft_controls_active(self.controller.state.draft)
+        self._temporal_spin.setEnabled(active)
+        self._fft_expand_cb.setEnabled(active)
+        self._update_search_tooltips()  # reset spin/ⓘ tips to base + caps
+        self._fft_expand_cb.setToolTip(self._fft_expand_base_tip)
+        if active:
+            return
+        note = "\n\n" + self.tr(
+            "Inactive with the current Initial Guess / Tracking Mode: the\n"
+            "temporal FFT runs only when Initial Guess = FFT, or at reference\n"
+            "switches in Incremental mode; in Accumulative + Starting Point /\n"
+            "Previous frame no FFT runs, so this control has no effect."
+        )
+        self._temporal_spin.setToolTip(self._temporal_spin.toolTip() + note)
+        self._temporal_info.set_tip(self._temporal_spin.toolTip())
+        self._fft_expand_cb.setToolTip(self._fft_expand_base_tip + note)
+
     # ---- IMAGES --------------------------------------------------------------------
 
     def _load_camera(self, cam: str, folder: str) -> None:
-        files = _list_images(folder, self._natural_sort.isChecked())
+        files = list_images(folder, self._natural_sort.isChecked())
         if not files:
             self.signals.log.emit(f"no images found in {folder}", "warning")
             return
@@ -773,5 +792,5 @@ class LeftSidebar3D(QWidget):
         self._ref_update.refresh_from_draft()  # Q5: mode/N/frames + visibility
         self._init_guess_widget.refresh_from_draft()
         self.refresh_images()
-        self._update_search_tooltips()
+        self._refresh_fft_enable()  # A4-1: tooltips + enable-state in one place
         self._sync_roi_label()

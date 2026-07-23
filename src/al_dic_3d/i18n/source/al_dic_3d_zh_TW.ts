@@ -14,7 +14,7 @@
         <translation>版本 {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/about_dialog.py" line="55"/>
+        <location filename="../../gui/dialogs/about_dialog.py" line="52"/>
         <source>Stereo (3D) digital image correlation — full-field displacement and surface strain from a calibrated camera pair.</source>
         <translation>立體（3D）數位影像相關——由已標定的相機對取得全場位移與表面應變。</translation>
     </message>
@@ -42,7 +42,7 @@
         <translation>參考幀直接匹配</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="47"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="39"/>
         <source>How stereo correspondences are propagated through time.
 Track Both (default): match stereo once at frame 1, then
 track each camera temporally — fastest, one stereo solve.
@@ -61,7 +61,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>策略</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="56"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="55"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = 單次全域求解（最快），3 = 預設值，5 次以上收益遞減</translation>
     </message>
@@ -81,7 +81,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>並行相機追蹤</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="71"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="68"/>
         <source>Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory</source>
         <translation>並行追蹤兩台相機——提速有限（求解器本已用滿全部核心），峰值記憶體加倍</translation>
     </message>
@@ -91,7 +91,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>FFT 峰值被截斷時自動擴大搜尋區域</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="84"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="79"/>
         <source>When the temporal FFT integer peak lands on the search-region
 boundary, retry with a larger region (engine default on).
 Disable for strictly bounded runtimes; then Temporal Search
@@ -150,7 +150,7 @@ must cover the largest per-frame motion by itself.</source>
         <translation>匯出動畫</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="132"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="131"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>請先載入影像序列（在主視窗中開啟專案）。</translation>
     </message>
@@ -428,7 +428,7 @@ must cover the largest per-frame motion by itself.</source>
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="366"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="702"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>影像檔 (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
@@ -508,8 +508,8 @@ must cover the largest per-frame motion by itself.</source>
         <translation>儲存偵測結果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="568"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="548"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="567"/>
         <source>NumPy detections (*.npz)</source>
         <translation>NumPy 偵測結果 (*.npz)</translation>
     </message>
@@ -524,7 +524,7 @@ must cover the largest per-frame motion by itself.</source>
         <translation>載入偵測結果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="590"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="589"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>已載入 {0} 組偵測結果——點擊重新校正即可免偵測重解</translation>
     </message>
@@ -534,7 +534,7 @@ must cover the largest per-frame motion by itself.</source>
         <translation>儲存校正板 PDF</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="677"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="676"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
@@ -559,7 +559,7 @@ must cover the largest per-frame motion by itself.</source>
         <translation>驗證失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="725"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>驗證：間距 {0:.4f} mm 對比 {1:g} mm——尺度誤差 {2:.3%}，平面 RMS {3:.4f} mm</translation>
     </message>
@@ -582,7 +582,7 @@ must cover the largest per-frame motion by itself.</source>
         <translation>從影像校正…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="59"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="54"/>
         <source>Run the built-in stereo calibrator on your target photos
 (checkerboard / ChArUco / dot grid). Writes an opencv_yaml
 file and loads it — the recommended path when you have
@@ -596,7 +596,7 @@ calibration images.</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="80"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="74"/>
         <source>File format of the calibration to import. Default opencv_yaml
 (written by the built-in calibrator). Pick the format matching
 your source: dice (DICe XML), matchid (MatchID .caldat),
@@ -613,7 +613,7 @@ matlabcv（MATLAB stereoParams .mat）。</translation>
         <translation>匯入標定…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="92"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="88"/>
         <source>Load an existing stereo calibration file in the selected
 Format. The status line below shows fx / fy and the baseline
 as a sanity check.</source>
@@ -626,7 +626,7 @@ as a sanity check.</source>
         <translation>手動輸入參數…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="103"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="99"/>
         <source>Type intrinsics and extrinsics by hand (fx, fy, cx, cy,
 distortion, R, T) — the fallback when no calibration file
 exists. Writes an opencv_yaml file and loads it.</source>
@@ -669,7 +669,7 @@ fx {1:.0f}  fy {2:.0f}  |  基線 {3:.1f} mm</translation>
         <translation>{0} 幀</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/camera_drop_zone.py" line="106"/>
+        <location filename="../../gui/widgets/camera_drop_zone.py" line="103"/>
         <source>Click to pick this camera&apos;s image folder, or drag the folder here. Both cameras need the same number of frames.</source>
         <translation>點擊選擇該相機的影像資料夾，或將資料夾拖到此處。兩台相機的幀數必須一致。</translation>
     </message>
@@ -715,7 +715,7 @@ fx {1:.0f}  fy {2:.0f}  |  基線 {3:.1f} mm</translation>
         <translation>將影像適配到視口 (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="109"/>
+        <location filename="../../gui/panels/canvas_area.py" line="106"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>當前縮放 — 點擊恢復 100%（1:1 像素）。
@@ -737,7 +737,7 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>顯示網格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="130"/>
+        <location filename="../../gui/panels/canvas_area.py" line="125"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -747,7 +747,7 @@ Default on; turn off to declutter the canvas.</source>
 預設開啟；關閉可讓畫布更簡潔。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="142"/>
+        <location filename="../../gui/panels/canvas_area.py" line="138"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -755,7 +755,7 @@ whether the subset spans enough speckle texture.</source>
 需先開啟「顯示網格」。可用來判斷子集是否涵蓋足夠的散斑紋理。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="155"/>
+        <location filename="../../gui/panels/canvas_area.py" line="151"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -778,17 +778,17 @@ to the 2D image view. Requires results.</source>
         <translation>儲存掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="340"/>
+        <location filename="../../gui/panels/canvas_area.py" line="339"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 影像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="533"/>
+        <location filename="../../gui/panels/canvas_area.py" line="532"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>分析未產生任何有效點——沒有可顯示的內容。請查看日誌。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="606"/>
+        <location filename="../../gui/panels/canvas_area.py" line="605"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
@@ -826,7 +826,7 @@ to the 2D image view. Requires results.</source>
         <translation>清除種子點</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="145"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="141"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
@@ -863,7 +863,7 @@ to the 2D image view. Requires results.</source>
         <translation>ADMM（{0} 次迭代）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
@@ -889,7 +889,7 @@ to the 2D image view. Requires results.</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="76"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
         <source>Incremental</source>
         <translation>增量式</translation>
     </message>
@@ -960,7 +960,7 @@ to the 2D image view. Requires results.</source>
         <translation>應變</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="73"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="72"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D 點、重投影誤差與來源旗標始終會被匯出。</translation>
     </message>
@@ -1071,27 +1071,27 @@ to the 2D image view. Requires results.</source>
         <translation>3D 檢視</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="133"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="131"/>
         <source>Numeric results: field-selective NPZ / MAT / CSV tables plus PLY / VTU meshes for external tools.</source>
         <translation>數值結果：可按場變數選擇的 NPZ / MAT / CSV 表格，以及供外部工具使用的 PLY / VTU 網格。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="137"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="135"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
         <translation>按相機渲染的場疊加圖 PNG 影像（每幀一張），使用「預覽與色條」樣式。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="139"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
         <translation>場疊加圖跨幀的 GIF / MP4 動畫，使用「預覽與色條」樣式。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="145"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="143"/>
         <source>WYSIWYG style source: the colorbar and margins configured here are used by every Images / Animation export.</source>
         <translation>所見即所得的樣式來源：此處設定的色條與邊距將用於所有影像/動畫匯出。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="149"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="147"/>
         <source>Offscreen renders of the 3D surface view (camera frusta included) as images or turntable animations.</source>
         <translation>3D 曲面視圖的離屏渲染（含相機視錐），可匯出為影像或環繞動畫。</translation>
     </message>
@@ -1193,17 +1193,17 @@ to the 2D image view. Requires results.</source>
         <translation>位移</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="70"/>
+        <location filename="../../gui/widgets/field_selector.py" line="69"/>
         <source>U — world-frame displacement along X (left camera&apos;s +X, image right), in mm</source>
         <translation>U — 世界座標系沿 X 的位移（左相機 +X，影像向右），單位 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="73"/>
+        <location filename="../../gui/widgets/field_selector.py" line="72"/>
         <source>V — world-frame displacement along Y (left camera&apos;s +Y, image down), in mm</source>
         <translation>V — 世界座標系沿 Y 的位移（左相機 +Y，影像向下），單位 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="77"/>
+        <location filename="../../gui/widgets/field_selector.py" line="75"/>
         <source>W — world-frame displacement along Z (left camera&apos;s optical axis, toward the scene): out-of-plane motion, in mm</source>
         <translation>W — 世界座標系沿 Z 的位移（左相機光軸，指向場景）：離面運動，單位 mm</translation>
     </message>
@@ -1213,8 +1213,8 @@ to the 2D image view. Requires results.</source>
         <translation>|D| — 位移幅值 √(U²+V²+W²)，單位 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="83"/>
-        <location filename="../../gui/widgets/field_selector.py" line="111"/>
+        <location filename="../../gui/widgets/field_selector.py" line="80"/>
+        <location filename="../../gui/widgets/field_selector.py" line="107"/>
         <source>Velocity — per-node speed |D(k) − D(k−1)| × frame rate, in the display unit per second. Depends on the frame rate set in the UNITS section; frame 1 has no predecessor (empty).</source>
         <translation>速度 — 每節點速率 |D(k) − D(k−1)| × 幀率，以每秒顯示單位表示。取決於 UNITS 區域中設定的幀率；第 1 幀沒有前一幀（顯示為空）。</translation>
     </message>
@@ -1319,7 +1319,7 @@ to the 2D image view. Requires results.</source>
         <translation>匯出影像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="127"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="126"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>請先載入影像序列（在主視窗中開啟專案）。</translation>
     </message>
@@ -1342,7 +1342,7 @@ to the 2D image view. Requires results.</source>
         <translation>種子點</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="68"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
         <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
 is matched automatically into the right camera (stereo offset)
 and into frame 2 (motion seed) — no search tuning needed.
@@ -1355,12 +1355,12 @@ If no point is placed, the run falls back to FFT.</source>
     </message>
     <message>
         <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
-        <location filename="../../gui/widgets/init_guess_section.py" line="162"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
         <source>Place point…</source>
         <translation>放置種子點…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="84"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
         <source>Enter placement mode on the canvas. Click once on the LEFT
 camera, frame 1 — a new click replaces the point; Esc cancels.</source>
         <translation>進入畫布放置模式。在左相機第 1 幀上點擊一次——
@@ -1382,7 +1382,7 @@ camera, frame 1 — a new click replaces the point; Esc cancels.</source>
         <translation>FFT（互相關）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="104"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
         <source>Full-grid cross-correlation seeds frame 1 (and every reference
 switch in incremental mode); later frames warm-start from the
 previous solution. Robust default — the search radius is the
@@ -1397,7 +1397,7 @@ Temporal Search parameter.</source>
         <translation>上一幀</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="116"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
         <source>Start every frame from the previous frame&apos;s solution — no
 cross-correlation at all. Fastest; can silently freeze on large
 motion or decorrelation — the validity gate will flag affected
@@ -1425,12 +1425,12 @@ frames.</source>
 <context>
     <name>Issues</name>
     <message>
-        <location filename="../../gui/issue_text.py" line="27"/>
+        <location filename="../../gui/issue_text.py" line="25"/>
         <source>calibration file not set</source>
         <translation>未設定標定檔</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="30"/>
+        <location filename="../../gui/issue_text.py" line="28"/>
         <source>left/right sequences not set</source>
         <translation>未設定左/右影像序列</translation>
     </message>
@@ -1445,12 +1445,12 @@ frames.</source>
         <translation>未設定 ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="35"/>
+        <location filename="../../gui/issue_text.py" line="33"/>
         <source>ROI is empty (xmin&lt;xmax, ymin&lt;ymax required)</source>
         <translation>ROI 為空（需 xmin&lt;xmax 且 ymin&lt;ymax）</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="50"/>
+        <location filename="../../gui/issue_text.py" line="49"/>
         <source>sequence length mismatch: {0} vs {1}</source>
         <translation>序列長度不符：左 {0} 幀，右 {1} 幀</translation>
     </message>
@@ -1458,72 +1458,72 @@ frames.</source>
 <context>
     <name>LeftSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="92"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="80"/>
         <source>IMAGES</source>
         <translation>影像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="99"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="87"/>
         <source>Drop LEFT camera
 folder or click</source>
         <translation>拖入左相機資料夾
 或點擊選擇</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="100"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="88"/>
         <source>Drop RIGHT camera
 folder or click</source>
         <translation>拖入右相機資料夾
 或點擊選擇</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="105"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="93"/>
         <source>Natural Sort (1, 2, …, 10)</source>
         <translation>自然排序 (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="112"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="96"/>
         <source>Sort file names numerically (img2 before img10). Default on; turn off for strict alphabetical order. Applies to the next folder load.</source>
         <translation>按數字大小排序檔名（img2 在 img10 之前）。預設開啟；關閉則使用嚴格字母序。對下一次載入的資料夾生效。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="126"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="698"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="114"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="717"/>
         <source>No images loaded</source>
         <translation>尚未載入影像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="152"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="140"/>
         <source>CALIBRATION</source>
         <translation>標定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="156"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="144"/>
         <source>WORKFLOW TYPE</source>
         <translation>工作流類型</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="163"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="151"/>
         <source>INITIAL GUESS</source>
         <translation>初始猜測</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="167"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="155"/>
         <source>REGION OF INTEREST</source>
         <translation>感興趣區域</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="171"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="159"/>
         <source>PARAMETERS</source>
         <translation>參數</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="175"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="163"/>
         <source>ADVANCED</source>
         <translation>高級</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="308"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="294"/>
         <source>Incremental: each frame is compared to the previous reference frame.
 Suitable for large accumulated deformation, required for large rotations.
 
@@ -1536,12 +1536,12 @@ Accurate for small, monotonic deformation only.</source>
 僅適用於小的、單調的變形。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="320"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="312"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="330"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="314"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1559,12 +1559,12 @@ AL-DIC：全局 FEM 正則化的增廣拉格朗日方法。
 噪聲影像，或對應變精度要求高的場景。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="332"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="324"/>
         <source>Solver</source>
         <translation>求解器</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="346"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="332"/>
         <source>Post-run filters: demote points whose ZNSSD correlation,
 reprojection error or 3D-outlier distance fails the gate to
 NaN. Default off (keep every tracked point); enable for noisy
@@ -1575,18 +1575,18 @@ reports how many points each gate removed.</source>
 日誌會報告每個門控剔除的點數。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="405"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="423"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="397"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="415"/>
         <source>bbox: not set</source>
         <translation>包圍盒：未設定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="426"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="418"/>
         <source>bbox: {0}–{1}, {2}–{3} px</source>
         <translation>包圍盒：{0}–{1}，{2}–{3} 像素</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="451"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="438"/>
         <source>IC-GN subset window size in pixels (odd number). Default 33.
 Larger = more robust on sparse speckle, smoother fields;
 smaller = finer spatial detail but noisier. The subset must
@@ -1596,57 +1596,57 @@ span several speckles.</source>
 子集必須涵蓋若干散斑。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="297"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="289"/>
         <source>Accumulative</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="240"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="232"/>
         <source>Remove Image Pairs</source>
         <translation>移除影像對</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="245"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="235"/>
         <source>Removing {0} pair(s) changes the sequence — the current results will be discarded. Continue?</source>
         <translation>移除 {0} 個影像對將改變序列 — 目前結果將被捨棄。是否繼續？</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="241"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="250"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="242"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="298"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="290"/>
         <source>Incremental</source>
         <translation>增量式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="309"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="301"/>
         <source>Tracking Mode</source>
         <translation>追蹤模式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="337"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="329"/>
         <source>Quality gates (ZNSSD / outliers)</source>
         <translation>品質門檻（ZNSSD / 離群點）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="390"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="379"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>在左相機第 1 幀上繪製——所有後續幀與右相機都由它推算。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="452"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="444"/>
         <source>Subset Size</source>
         <translation>子集尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="464"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="452"/>
         <source>Node spacing in pixels (power of 2). Default 16. Smaller =
 denser measurement grid and longer runs; larger = faster but
 coarser fields. Typically ¼–½ of the Subset Size.</source>
@@ -1654,32 +1654,32 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
 更大 = 更快但場更粗糙。通常取子集尺寸的 1/4 到 1/2。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="465"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="457"/>
         <source>Subset Step</source>
         <translation>子集步長</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="471"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
         <source>Stereo Search</source>
         <translation>立體搜尋</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="484"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="476"/>
         <source>Temporal Search</source>
         <translation>時序搜尋</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="490"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="482"/>
         <source>Mesh refinement</source>
         <translation>網格加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="497"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="489"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>在遮罩邊界（孔洞）處加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="505"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="492"/>
         <source>Quadtree-subdivide mesh elements crossing interior mask
 holes so the mesh hugs the hole edges. Default off (uniform
 grid); enable when the ROI mask has cut-outs whose rims you
@@ -1688,12 +1688,12 @@ care about.</source>
 預設關閉（均勻網格）；當 ROI 掩膜有需要關注邊緣的挖空時可啟用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="507"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="499"/>
         <source>Refine at ROI edges</source>
         <translation>在 ROI 邊緣處加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="514"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="502"/>
         <source>Quadtree-subdivide mesh elements along the outer ROI
 boundary. Default off; enable for curved / irregular ROI
 outlines where the uniform grid staircases.</source>
@@ -1701,7 +1701,7 @@ outlines where the uniform grid staircases.</source>
 預設關閉；ROI 輪廓彎曲/不規則、均勻網格出現鋸齒時可啟用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="526"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="514"/>
         <source>How aggressively refined elements shrink: the minimum element
 is step / 2^level. Default 1 (light); 3 is heavy — finer
 boundary detail but many more nodes and a slower run.</source>
@@ -1709,12 +1709,12 @@ boundary detail but many more nodes and a slower run.</source>
 預設 1（輕度）；3 為重度 — 邊界細節更精細，但節點大幅增加、執行更慢。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="527"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="519"/>
         <source>Refinement Level</source>
         <translation>加密級別</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="633"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="622"/>
         <source>NCC search half-width (pixels) around each node for the
 left-to-right stereo match. Set larger than the largest
 expected stereo disparity.</source>
@@ -1722,34 +1722,48 @@ expected stereo disparity.</source>
 應大於預期的最大立體視差。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="638"/>
-        <source>Maximum per-frame displacement the temporal FFT search can
-detect (pixels). Set comfortably larger than the expected
-inter-frame motion.</source>
-        <translation>時序 FFT 搜尋可偵測的最大逐幀位移（像素）。
-應設定得明顯大於預期的幀間運動。</translation>
+        <location filename="../../gui/panels/left_sidebar.py" line="627"/>
+        <source>Half-width (pixels) of the temporal FFT integer search that seeds
+each per-frame match. Set comfortably larger than the expected
+inter-frame motion; with Auto-expand on (default) the engine can
+still grow the search past this on a boundary-clipped peak.</source>
+        <translation>時序 FFT 整數搜尋的半寬（像素），用於為每一幀的匹配提供初始值。
+請設定為明顯大於預期的幀間運動；當「自動擴大」開啟（預設）時，
+峰值觸及搜尋邊界時引擎仍可將搜尋範圍擴大到超過此值。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="646"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="643"/>
+        <source>Current images: the engine starts the FFT search clamped to
+{0} px (max(10, min(H, W) / 4 - subset)); Auto-expand can grow
+it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
+        <translation>目前影像：引擎在執行開始時會將 FFT 搜尋限制為 {0} px
+（max(10, min(H, W) / 4 - 子區)）；當峰值被截斷時，「自動擴大」
+可將其增大到 {1} px（max(32, min(H, W) / 2)）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
+        <source>Inactive with the current Initial Guess / Tracking Mode: the
+temporal FFT runs only when Initial Guess = FFT, or at reference
+switches in Incremental mode; in Accumulative + Starting Point /
+Previous frame no FFT runs, so this control has no effect.</source>
+        <translation>在目前的初始猜測 / 追蹤模式下無效：僅當初始猜測 = FFT，
+或在增量式模式的參考幀切換處，才會執行時序 FFT。在累積式 +
+種子點 / 上一幀下不會執行 FFT，因此此控制項不起作用。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="639"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>目前影像：超過 {0} px 的取值無法再擴大搜尋
 （搜尋視窗在影像邊界處被裁剪）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="650"/>
-        <source>Current images: the engine caps this at {0} px at run start
-(max(10, min(H, W) / 4 - subset)).</source>
-        <translation>目前影像：執行開始時引擎會將其限制為 {0} px
-（max(10, min(H, W) / 4 - 子集尺寸)）。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="703"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="722"/>
         <source>Paired: {0} frames per camera</source>
         <translation>已配對：每相機 {0} 幀</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="709"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="728"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>數量不符：左 {0} 幀，右 {1} 幀</translation>
     </message>
@@ -1845,7 +1859,7 @@ inter-frame motion.</source>
         <translation>將 .aldic3d 檔案關聯到 pyALDIC-3D…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="375"/>
+        <location filename="../../gui/main_window.py" line="372"/>
         <source>Register .aldic3d so double-clicking a project file opens pyALDIC-3D (current user only, no admin rights needed).</source>
         <translation>註冊 .aldic3d 關聯後，雙擊專案檔案即可在 pyALDIC-3D 中開啟（僅目前使用者，無需管理員權限）。</translation>
     </message>
@@ -1876,7 +1890,7 @@ inter-frame motion.</source>
         <translation>無法註冊 .aldic3d 關聯：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="443"/>
+        <location filename="../../gui/main_window.py" line="441"/>
         <source>Done — double-clicking a .aldic3d file now opens it in pyALDIC-3D (registered for the current user).</source>
         <translation>完成 — 現在雙擊 .aldic3d 檔案即可在 pyALDIC-3D 中開啟（已為目前使用者註冊）。</translation>
     </message>
@@ -1902,12 +1916,12 @@ inter-frame motion.</source>
         <translation>定位影像</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="619"/>
+        <location filename="../../gui/main_window.py" line="616"/>
         <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
         <translation>所選資料夾中不包含本專案相機 {0} 的影像幀。請選擇存放原始影像檔案的資料夾，或取消以中止開啟。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="629"/>
+        <location filename="../../gui/main_window.py" line="626"/>
         <source>The image folder saved with this project was not found:
 {0}
 
@@ -1933,12 +1947,12 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>在此專案檔案中包含分析結果嗎？</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="682"/>
+        <location filename="../../gui/main_window.py" line="679"/>
         <source>Including results (about {0} uncompressed) lets you reopen the project without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>包含結果（未壓縮約 {0}）可在重新開啟專案時無需重新計算。選擇「否」則儲存一個便於分享的小型純設定檔。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="718"/>
+        <location filename="../../gui/main_window.py" line="717"/>
         <source>unknown size</source>
         <translation>未知大小</translation>
     </message>
@@ -1963,7 +1977,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>語言</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="502"/>
+        <location filename="../../gui/main_window.py" line="501"/>
         <source>Untitled</source>
         <translation>未命名</translation>
     </message>
@@ -2023,7 +2037,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>{0}（mm）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/manual_params_dialog.py" line="90"/>
+        <location filename="../../gui/dialogs/manual_params_dialog.py" line="87"/>
         <source>Euler composition R = Rz·Ry·Rx in degrees (MatchID/OpenCorr convention); distortion order k1, k2, p1, p2, k3 (OpenCV).</source>
         <translation>尤拉角組合 R = Rz·Ry·Rx（度，MatchID/OpenCorr 約定）；畸變係數順序 k1, k2, p1, p2, k3（OpenCV）。</translation>
     </message>
@@ -2079,17 +2093,17 @@ Select the folder that now contains the camera {1} frames (file names must match
 <context>
     <name>NextStepHint</name>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="49"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="48"/>
         <source>Load the left and right camera folders</source>
         <translation>載入左右相機資料夾</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="53"/>
         <source>Calibrate from images or import a calibration</source>
         <translation>從影像標定或匯入標定</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="55"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
         <source>Draw the ROI on the left camera, frame 1</source>
         <translation>在左相機第 1 幀上繪製 ROI</translation>
     </message>
@@ -2210,7 +2224,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>套用到所有欄位</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="155"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="152"/>
         <source>Apply this field&apos;s colormap, opacity and auto-range to every enabled field (each field keeps its own min/max).</source>
         <translation>將該欄位的 colormap、不透明度和自動範圍套用到所有已啟用欄位（每個欄位保留各自的 min/max）。</translation>
     </message>
@@ -2267,7 +2281,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>背景</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="211"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="208"/>
         <source>Add a blank border around the exported content, as a fraction of the long edge (0 = none).</source>
         <translation>在匯出內容外圍加一圈空白邊框，寬度為長邊的比例（0 = 無）。</translation>
     </message>
@@ -2323,7 +2337,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>+ 添加</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="75"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="74"/>
         <source>Add region to the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>向感興趣區域添加形狀（多邊形 / 矩形 / 圓形）</translation>
     </message>
@@ -2333,7 +2347,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>裁剪</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="81"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="80"/>
         <source>Cut region from the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>從感興趣區域裁剪形狀（多邊形 / 矩形 / 圓形）</translation>
     </message>
@@ -2343,7 +2357,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>+ 加密</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="90"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="87"/>
         <source>Paint extra mesh-refinement zones with a brush
 (on the LEFT camera, frame 1 — the reference mesh geometry)</source>
         <translation>用畫筆繪製額外的網格加密區域
@@ -2463,7 +2477,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>自定義幀</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="72"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="65"/>
         <source>How often the incremental reference frame advances.
 Every Frame (default): frame k matches against k−1 — tracks
 large accumulated deformation, but drift can accumulate.
@@ -2488,7 +2502,7 @@ Custom Frames: reference updates exactly at the listed frames.</source>
         <translation> 幀</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="88"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="87"/>
         <source>Reference-update interval N: frames k use the last reference at i·N &lt; k</source>
         <translation>參考幀更新間隔 N：第 k 幀使用 i·N &lt; k 的最近參考幀</translation>
     </message>
@@ -2498,7 +2512,7 @@ Custom Frames: reference updates exactly at the listed frames.</source>
         <translation>例如 5, 10, 20（從 0 開始的幀索引）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="100"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="96"/>
         <source>Comma-separated 0-based frame indices that become reference
 frames (frame 0 always is one). The last frame cannot be a
 reference.</source>
@@ -2506,7 +2520,7 @@ reference.</source>
 （第 0 幀始終是參考幀）。最後一幀不能作為參考幀。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="142"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="141"/>
         <source>Enter comma-separated 0-based frame numbers, e.g. 5, 10, 20</source>
         <translation>請輸入以逗號分隔、從 0 開始的幀編號，例如 5, 10, 20</translation>
     </message>
@@ -2519,8 +2533,8 @@ reference.</source>
         <translation>執行 3D 分析</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="91"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="431"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="88"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="428"/>
         <source>Run the full stereo correspondence + triangulation pipeline on the loaded image pairs (F5).</source>
         <translation>對已載入的影像對執行完整的立體對應 + 三角化流程（F5）。</translation>
     </message>
@@ -2576,7 +2590,7 @@ reference.</source>
         <translation>在變形幀上顯示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="173"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="170"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>勾選後，將結果疊加在變形（當前）幀上，而非參考幀</translation>
     </message>
@@ -2591,7 +2605,7 @@ reference.</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="189"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="186"/>
         <source>Show the LEFT camera&apos;s images (the reference view: ROI, seed and mesh live here). Default.</source>
         <translation>顯示左相機的影像（參考視圖：ROI、起始點與網格都定義在這裡）。預設。</translation>
     </message>
@@ -2601,7 +2615,7 @@ reference.</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="196"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="193"/>
         <source>Show the RIGHT camera&apos;s images with the field warped onto them — a cross-check that the stereo match is sound.</source>
         <translation>顯示右相機的影像，並將場變數映射到其上 — 用於檢查立體匹配是否可靠。</translation>
     </message>
@@ -2616,7 +2630,7 @@ reference.</source>
         <translation>色彩對映</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="224"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="220"/>
         <source>Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.</source>
         <translation>場疊加圖與 3D 曲面使用的顏色映射。預設 turbo（感知有序、高對比）；對以零為中心的有符號場可選 RdBu_r 或 coolwarm。</translation>
     </message>
@@ -2626,7 +2640,7 @@ reference.</source>
         <translation>自動範圍</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="237"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="233"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>根據每幀的資料範圍自動縮放顏色範圍（取可見值的 2–98 百分位）。預設開啟；取消勾選可輸入對所有幀生效的固定最小/最大值。</translation>
     </message>
@@ -2721,7 +2735,7 @@ reference.</source>
         <translation>儲存日誌</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="395"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="394"/>
         <source>Text files (*.txt)</source>
         <translation>文字檔 (*.txt)</translation>
     </message>
@@ -2737,22 +2751,22 @@ reference.</source>
         <translation>就緒，可以執行。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="473"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="472"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>將位移和應變結果匯出為 NPZ / MAT / CSV</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="479"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="476"/>
         <source>Compute and visualize strain in a separate post-processing window. Requires displacement results from a completed Run.</source>
         <translation>在獨立的後處理窗口中計算並可視化應變。需先完成一次運行以獲得位移結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="483"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="482"/>
         <source>Available after the running analysis finishes.</source>
         <translation>待正在執行的分析完成後可用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="485"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="484"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>請先執行分析 — 目前還沒有結果。</translation>
     </message>
@@ -2787,7 +2801,7 @@ reference.</source>
         <translation>分析完成</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="586"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="584"/>
         <source>Stopped early at frame {0}/{1} — kept {2} computed frames (later frames are empty)</source>
         <translation>在第 {0}/{1} 幀提前停止——已保留 {2} 個已計算幀（其後幀為空）</translation>
     </message>
@@ -2802,7 +2816,7 @@ reference.</source>
         <translation>第 1 幀立體匹配：{0}/{1} 個點匹配成功（{2}%）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="604"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="602"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>相機 {0}：有效性門檻移除了 {1} 個節點幀（與第 1 幀的相關性驗證失敗）</translation>
     </message>
@@ -2827,12 +2841,12 @@ reference.</source>
         <translation>3D 離群點過濾移除了 {0} 個位置</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="628"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="626"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>所有幀均無有效點——本次執行產生了空結果。請檢查 ROI、遮罩與種子點設定（詳見上方訊息）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="636"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="634"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>分析完成——共 {0} 幀，中位有效率 {1}%，{2} 幀低於 {3}%（見上方）</translation>
     </message>
@@ -2843,7 +2857,7 @@ reference.</source>
         <translation>失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="105"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="101"/>
         <source>Cancel the current analysis. Frames computed so far are kept as a partial result; only when nothing was computed yet does the run return to IDLE.</source>
         <translation>取消目前分析。已計算的幀將作為部分結果保留；僅當尚未計算任何幀時，執行才會恢復為閒置狀態。</translation>
     </message>
@@ -3007,7 +3021,7 @@ reference.</source>
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="88"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -3025,7 +3039,7 @@ reference.</source>
         <translation>應變窗（VSG）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="101"/>
         <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
         <translation>方形應變窗內每個座標軸方向涵蓋的網格節點數——局部平面擬合會使用窗內的所有有效節點。毫米尺寸透過參考表面上相鄰節點三維間距的中位數將像素視窗換算為實體尺寸。</translation>
     </message>
@@ -3040,31 +3054,35 @@ reference.</source>
         <translation>無窮小應變</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="121"/>
-        <source>Eulerian-Almansi</source>
-        <translation>歐拉-阿爾曼西應變</translation>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
+        <source>Almansi (Eulerian, true tensor)</source>
+        <translation>Almansi（歐拉，真實張量）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="133"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="128"/>
         <source>Finite-strain measure derived from the SAME displacement-
 gradient fit, in the same tangent frame:
 Green-Lagrange E = ½(FᵀF − I) — finite strain, reference
 configuration (default).
 Infinitesimal e = ½(∇u + ∇uᵀ) — small-strain linearization.
-Eulerian-Almansi e = ½(I − F⁻ᵀF⁻¹) — finite strain, deformed
-configuration.</source>
+Almansi (Eulerian, true tensor) e = ½(I − F⁻ᵀF⁻¹) — the EXACT
+finite-strain tensor in the deformed configuration. This is NOT
+the 2D app&apos;s linearized per-axis &apos;Eulerian-Almansi&apos; formula
+(1/(1−∂u/∂x)−1, …), which differs by ~22% at 10% strain.</source>
         <translation>由同一位移梯度擬合、在同一切平面座標系中導出的有限應變度量：
-Green-Lagrange E = ½(FᵀF − I) — 參考構形的有限應變（預設）。
-無窮小應變 e = ½(∇u + ∇uᵀ) — 小應變線性化。
-歐拉-阿爾曼西 e = ½(I − F⁻ᵀF⁻¹) — 變形構形的有限應變。</translation>
+Green-Lagrange E = ½(FᵀF − I) — 參考組態下的有限應變（預設）。
+Infinitesimal e = ½(∇u + ∇uᵀ) — 小應變線性化。
+Almansi（歐拉，真實張量）e = ½(I − F⁻ᵀF⁻¹) — 變形組態下的
+精確有限應變張量。這不是 2D 應用中線性化的逐軸「歐拉-阿爾曼西」
+公式（1/(1−∂u/∂x)−1, …），後者在 10% 應變時相差約 22%。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="134"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="139"/>
         <source>Strain type</source>
         <translation>應變類型</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="151"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="148"/>
         <source>Hides low-confidence strain near invalid or missing nodes, where
 the strain window loses support on one side and the local plane
 fit becomes unreliable.
@@ -3079,32 +3097,32 @@ on the reference grid).
 位移不受影響。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="156"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="161"/>
         <source>Trim low-confidence edges</source>
         <translation>裁剪低可信度邊緣</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="173"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="178"/>
         <source>Off</source>
         <translation>關閉</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="174"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="179"/>
         <source>Light (σ = 0.5 × step)</source>
         <translation>輕度（σ = 0.5 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="175"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="180"/>
         <source>Medium (σ = 1 × step)</source>
         <translation>中等（σ = 1 × step）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="176"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="181"/>
         <source>Strong (σ = 2 × step) ⚠</source>
         <translation>強（σ = 2 × step）⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="188"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="187"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -3117,72 +3135,72 @@ on the reference grid).
   強（2 × step）⚠：激進，可能模糊真實梯度。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="189"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="194"/>
         <source>Strain field smoothing</source>
         <translation>應變場平滑</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="193"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="198"/>
         <source>Surface tangent plane</source>
         <translation>表面切平面</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="194"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="199"/>
         <source>Left camera frame</source>
         <translation>左相機座標系</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="195"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="200"/>
         <source>Custom (3 points)</source>
         <translation>自訂（三點）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="202"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="203"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>對參考曲面逐節點擬合的切平面：z 為指向相機的表面法線，x 為左相機 +X 在該平面上的投影，y = z × x。曲面試樣的最佳預設選擇。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="206"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="209"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>在固定的左相機（世界）座標軸中回報應變。適用於與像平面對齊的平面試樣。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="211"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="213"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>由參考影像上拾取的 3 個點構建的固定試樣座標系：原點、+X 方向上的一點、以及 +Y 一側的一點。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="226"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="231"/>
         <source>Coordinate system</source>
         <translation>座標系</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="231"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="236"/>
         <source>Pick 3 points…</source>
         <translation>拾取 3 個點…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="240"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="241"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
         <translation>在參考影像上依次點擊三個點：原點、+X 方向上的一點、+Y 一側的一點。每次點擊都會吸附到最近的有效網格節點。僅在「自訂（3 點）」模式下可用。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="292"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="297"/>
         <source>Trimmed: {0} nodes ({1}%)</source>
         <translation>已裁剪：{0} 個節點 ({1}%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="382"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="387"/>
         <source>Strain window ≈ {0}×{1} nodes</source>
         <translation>應變窗 ≈ {0}×{1} 個節點</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="386"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="391"/>
         <source>≈ {0} × {1} mm</source>
         <translation>≈ {0} × {1} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="398"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="401"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ 視窗半徑（{0} px）&lt; 節點間距（{1} px）；平面擬合至少需要 3×3 節點的應變計。請使用 ≥ {2} px。</translation>
     </message>
@@ -3195,12 +3213,12 @@ on the reference grid).
         <translation>在變形幀上顯示</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="43"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="40"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>勾選後，將結果疊加在變形（當前）幀上，而非參考幀</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="53"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="50"/>
         <source>Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.</source>
         <translation>應變疊加圖使用的顏色映射。預設 turbo；對以零為中心的有符號應變可選 RdBu_r 或 coolwarm。</translation>
     </message>
@@ -3215,7 +3233,7 @@ on the reference grid).
         <translation>自動範圍</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="64"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="60"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>根據每幀的資料範圍自動縮放顏色範圍（取可見值的 2–98 百分位）。預設開啟；取消勾選可輸入對所有幀生效的固定最小/最大值。</translation>
     </message>
@@ -3273,8 +3291,8 @@ on the reference grid).
         <translation>匯出結果</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="170"/>
-        <location filename="../../gui/strain_window.py" line="659"/>
+        <location filename="../../gui/strain_window.py" line="169"/>
+        <location filename="../../gui/strain_window.py" line="658"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>將位移和應變結果匯出為 NPZ / MAT / CSV</translation>
     </message>
@@ -3339,7 +3357,7 @@ on the reference grid).
     <message>
         <location filename="../../gui/strain_window.py" line="410"/>
         <location filename="../../gui/strain_window.py" line="538"/>
-        <location filename="../../gui/strain_window.py" line="566"/>
+        <location filename="../../gui/strain_window.py" line="565"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>請在影像上依次點擊原點、+X 點、+Y 點</translation>
     </message>
@@ -3405,22 +3423,22 @@ on the reference grid).
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="644"/>
+        <location filename="../../gui/strain_window.py" line="643"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>請先執行 3D 分析 — 應變計算需要位移結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="648"/>
+        <location filename="../../gui/strain_window.py" line="647"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>請先揀取 3 個試件座標系點（原點、+X、+Y）。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="655"/>
+        <location filename="../../gui/strain_window.py" line="652"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>使用上方參數由位移場計算 Green-Lagrange 表面應變。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="663"/>
+        <location filename="../../gui/strain_window.py" line="662"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>請先執行分析 — 目前還沒有結果。</translation>
     </message>
@@ -3428,7 +3446,7 @@ on the reference grid).
 <context>
     <name>UnitsSection3D</name>
     <message>
-        <location filename="../../gui/widgets/units_section.py" line="41"/>
+        <location filename="../../gui/widgets/units_section.py" line="37"/>
         <source>Display unit for displacement and velocity values (colorbar,
 3D scalar bar). Display only — the data and every export stay
 in millimetres. Strain is dimensionless and unaffected.</source>
@@ -3442,7 +3460,7 @@ in millimetres. Strain is dimensionless and unaffected.</source>
         <translation>顯示單位</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/units_section.py" line="56"/>
+        <location filename="../../gui/widgets/units_section.py" line="52"/>
         <source>Acquisition frame rate. Used only by the Velocity field:
 velocity = |D(k) − D(k−1)| × frame rate, shown in the
 display unit per second.</source>
@@ -3458,7 +3476,7 @@ display unit per second.</source>
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="98"/>
+        <location filename="../../gui/widgets/view3d.py" line="97"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
@@ -3559,7 +3577,7 @@ display unit per second.</source>
         <translation>將影像適配到視口</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="71"/>
+        <location filename="../../gui/widgets/strain_support.py" line="68"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>當前縮放 — 點擊恢復 100%（1:1 像素）。

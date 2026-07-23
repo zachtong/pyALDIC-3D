@@ -718,6 +718,15 @@ class StrainWindow3D(QMainWindow):
 
         field = self._field_selector.current_field()
         vals = getattr(strain, field)[k]
+        # A5-2 (partial): the reference view already plots frame-0 GEOMETRY
+        # (pts = cs.xL[0] below), matching the 2D rule. But the frame-k TRIM is
+        # baked destructively into these arrays at compute time
+        # (strain3d/compute.py NaNs the alpha*VSG band from frame k's own
+        # validity), and the untrimmed field is NOT retained, so a later-frame
+        # void carves into the frame-1 mesh here too — unlike 2D, whose
+        # reference view recomputes the trim from the frame-0 ROI. Fully fixing
+        # this needs the compute layer to keep the untrimmed field OR a per-
+        # frame strain_valid mask (compute.py owns that; see the audit note).
         # Q4: live 'Trimmed: N nodes' readout for the frame on screen.
         trimmed = None if strain.n_trimmed is None else int(strain.n_trimmed[k])
         self._param_panel.set_trim_readout(trimmed, int(strain.n_pts))

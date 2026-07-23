@@ -118,7 +118,10 @@ class StrainParamPanel3D(QWidget):
         self._type_combo = QComboBox()
         self._type_combo.addItem(self.tr("Green-Lagrange (default)"))
         self._type_combo.addItem(self.tr("Infinitesimal"))
-        self._type_combo.addItem(self.tr("Eulerian-Almansi"))
+        # A6-2: name the Almansi option unambiguously — it is the EXACT tensor,
+        # NOT the 2D app's identically-labelled linearized per-axis form (they
+        # differ ~22% at 10% strain, so a 2D-vs-3D cross-comparison must know).
+        self._type_combo.addItem(self.tr("Almansi (Eulerian, true tensor)"))
         self._type_combo.setCurrentIndex(0)
         self._type_combo.setToolTip(
             self.tr(
@@ -127,8 +130,10 @@ class StrainParamPanel3D(QWidget):
                 "Green-Lagrange E = ½(FᵀF − I) — finite strain, reference\n"
                 "configuration (default).\n"
                 "Infinitesimal e = ½(∇u + ∇uᵀ) — small-strain linearization.\n"
-                "Eulerian-Almansi e = ½(I − F⁻ᵀF⁻¹) — finite strain, deformed\n"
-                "configuration."
+                "Almansi (Eulerian, true tensor) e = ½(I − F⁻ᵀF⁻¹) — the EXACT\n"
+                "finite-strain tensor in the deformed configuration. This is NOT\n"
+                "the 2D app's linearized per-axis 'Eulerian-Almansi' formula\n"
+                "(1/(1−∂u/∂x)−1, …), which differs by ~22% at 10% strain."
             )
         )
         layout.addRow(self.tr("Strain type"), self._type_combo)
