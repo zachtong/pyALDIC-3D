@@ -14,7 +14,7 @@
         <translation>Version {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/about_dialog.py" line="52"/>
+        <location filename="../../gui/dialogs/about_dialog.py" line="55"/>
         <source>Stereo (3D) digital image correlation — full-field displacement and surface strain from a calibrated camera pair.</source>
         <translation>Stereo-(3D-)digitale Bildkorrelation — vollflächige Verschiebungen und Oberflächendehnungen aus einem kalibrierten Kamerapaar.</translation>
     </message>
@@ -72,7 +72,7 @@
         <translation>Animation exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="131"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="132"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>Zuerst eine Bildsequenz laden (Projekt im Hauptfenster öffnen).</translation>
     </message>
@@ -350,7 +350,7 @@
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="366"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="702"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>Bilder (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
@@ -430,8 +430,8 @@
         <translation>Detektionen speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="548"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="567"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="568"/>
         <source>NumPy detections (*.npz)</source>
         <translation>NumPy-Detektionen (*.npz)</translation>
     </message>
@@ -446,7 +446,7 @@
         <translation>Detektionen laden</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="589"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="590"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>{0} Detektionspaare geladen — Neu kalibrieren löst ohne erneute Detektion</translation>
     </message>
@@ -456,7 +456,7 @@
         <translation>Tafel-PDF speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="676"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="677"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
@@ -481,7 +481,7 @@
         <translation>Verifikation fehlgeschlagen: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="725"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>Verifikation: Abstand {0:.4f} mm vs. {1:g} mm — Skalenfehler {2:.3%}, Ebenen-RMS {3:.4f} mm</translation>
     </message>
@@ -504,7 +504,7 @@
         <translation>Aus Bildern kalibrieren…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="54"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="59"/>
         <source>Run the built-in stereo calibrator on your target photos
 (checkerboard / ChArUco / dot grid). Writes an opencv_yaml
 file and loads it — the recommended path when you have
@@ -518,7 +518,7 @@ Schreibt eine opencv_yaml-Datei und lädt sie — der empfohlene Weg, wenn Kalib
         <translation>Format</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="74"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="80"/>
         <source>File format of the calibration to import. Default opencv_yaml
 (written by the built-in calibrator). Pick the format matching
 your source: dice (DICe XML), matchid (MatchID .caldat),
@@ -535,7 +535,7 @@ mmc (MultiDIC/MMC .mat), matlabcv (MATLAB stereoParams .mat).</translation>
         <translation>Kalibrierung importieren…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="88"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="92"/>
         <source>Load an existing stereo calibration file in the selected
 Format. The status line below shows fx / fy and the baseline
 as a sanity check.</source>
@@ -548,7 +548,7 @@ Die Statuszeile darunter zeigt fx / fy und die Basislinie zur Plausibilitätspr�
         <translation>Parameter manuell eingeben…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="99"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="103"/>
         <source>Type intrinsics and extrinsics by hand (fx, fy, cx, cy,
 distortion, R, T) — the fallback when no calibration file
 exists. Writes an opencv_yaml file and loads it.</source>
@@ -591,7 +591,7 @@ fx {1:.0f}  fy {2:.0f}  |  Basislinie {3:.1f} mm</translation>
         <translation>{0} Frames</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/camera_drop_zone.py" line="103"/>
+        <location filename="../../gui/widgets/camera_drop_zone.py" line="106"/>
         <source>Click to pick this camera&apos;s image folder, or drag the folder here. Both cameras need the same number of frames.</source>
         <translation>Klicken, um den Bildordner dieser Kamera zu wählen, oder den Ordner hierher ziehen. Beide Kameras brauchen dieselbe Frame-Anzahl.</translation>
     </message>
@@ -637,7 +637,7 @@ fx {1:.0f}  fy {2:.0f}  |  Basislinie {3:.1f} mm</translation>
         <translation>Bild an den Ansichtsbereich anpassen (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="116"/>
+        <location filename="../../gui/panels/canvas_area.py" line="119"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>Aktueller Zoom — Klick setzt auf 100 % (1:1 Pixel) zurück.
@@ -659,7 +659,7 @@ Rad: Zoom · Rechts-/Mittelklick-Ziehen: Verschieben · Leertaste: Verschiebemod
         <translation>Gitter anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="135"/>
+        <location filename="../../gui/panels/canvas_area.py" line="140"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -670,7 +670,7 @@ Verfeinerungseinstellungen neu aufgebaut — das angezeigte Netz ist das des Lau
 Standard: an; ausschalten, um die Ansicht zu entlasten.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="148"/>
+        <location filename="../../gui/panels/canvas_area.py" line="152"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -679,7 +679,7 @@ whether the subset spans enough speckle texture.</source>
 ob das Subset genügend Speckle-Textur umfasst.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="161"/>
+        <location filename="../../gui/panels/canvas_area.py" line="165"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -703,17 +703,17 @@ Erfordert Ergebnisse.</translation>
         <translation>Maske speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="341"/>
+        <location filename="../../gui/panels/canvas_area.py" line="342"/>
         <source>PNG image (*.png)</source>
         <translation>PNG-Bild (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="533"/>
+        <location filename="../../gui/panels/canvas_area.py" line="534"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>Die Analyse lieferte keine gültigen Punkte — nichts anzuzeigen. Siehe Protokoll.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="600"/>
+        <location filename="../../gui/panels/canvas_area.py" line="601"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D-Ansicht — führen Sie eine Analyse aus, um die rekonstruierte Oberfläche zu sehen.</translation>
     </message>
@@ -751,7 +751,7 @@ Erfordert Ergebnisse.</translation>
         <translation>Startpunkt löschen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="137"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="141"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
@@ -788,7 +788,7 @@ Erfordert Ergebnisse.</translation>
         <translation>ADMM ({0} Iter.)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
@@ -814,7 +814,7 @@ Erfordert Ergebnisse.</translation>
         <translation>Akkumulativ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="76"/>
         <source>Incremental</source>
         <translation>Inkrementell</translation>
     </message>
@@ -885,7 +885,7 @@ Erfordert Ergebnisse.</translation>
         <translation>Dehnung</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="72"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="73"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D-Punkte, Reprojektionsfehler und Quell-Flags werden immer exportiert.</translation>
     </message>
@@ -996,27 +996,27 @@ Erfordert Ergebnisse.</translation>
         <translation>3D-Ansicht</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="131"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="133"/>
         <source>Numeric results: field-selective NPZ / MAT / CSV tables plus PLY / VTU meshes for external tools.</source>
         <translation>Numerische Ergebnisse: feldselektive NPZ- / MAT- / CSV-Tabellen sowie PLY- / VTU-Netze für externe Tools.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="135"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="137"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
         <translation>Gerenderte Feld-Überlagerungen je Kamera als PNG-Bilder, eines pro Frame, im Stil von „Vorschau &amp; Farbleiste“.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
         <translation>GIF- / MP4-Animationen der Feld-Überlagerung über die Frames, im Stil von „Vorschau &amp; Farbleiste“.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="143"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="145"/>
         <source>WYSIWYG style source: the colorbar and margins configured here are used by every Images / Animation export.</source>
         <translation>WYSIWYG-Stilquelle: Die hier konfigurierte Farbleiste und Ränder werden für jeden Bild- / Animationsexport verwendet.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="147"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="149"/>
         <source>Offscreen renders of the 3D surface view (camera frusta included) as images or turntable animations.</source>
         <translation>Offscreen-Renderings der 3D-Oberflächenansicht (inkl. Kamera-Frusta) als Bilder oder Turntable-Animationen.</translation>
     </message>
@@ -1118,17 +1118,17 @@ Erfordert Ergebnisse.</translation>
         <translation>VERSCHIEBUNG</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="68"/>
+        <location filename="../../gui/widgets/field_selector.py" line="69"/>
         <source>U — world-frame displacement along X (left camera&apos;s +X, image right), in mm</source>
         <translation>U — Verschiebung im Weltkoordinatensystem entlang X (+X der linken Kamera, im Bild nach rechts), in mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="71"/>
+        <location filename="../../gui/widgets/field_selector.py" line="72"/>
         <source>V — world-frame displacement along Y (left camera&apos;s +Y, image down), in mm</source>
         <translation>V — Verschiebung im Weltkoordinatensystem entlang Y (+Y der linken Kamera, im Bild nach unten), in mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="74"/>
+        <location filename="../../gui/widgets/field_selector.py" line="76"/>
         <source>W — world-frame displacement along Z (left camera&apos;s optical axis, toward the scene): out-of-plane motion, in mm</source>
         <translation>W — Verschiebung im Weltkoordinatensystem entlang Z (optische Achse der linken Kamera, zur Szene): Out-of-plane-Bewegung, in mm</translation>
     </message>
@@ -1233,7 +1233,7 @@ Erfordert Ergebnisse.</translation>
         <translation>Bilder exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="126"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="127"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>Zuerst eine Bildsequenz laden (Projekt im Hauptfenster öffnen).</translation>
     </message>
@@ -1256,7 +1256,7 @@ Erfordert Ergebnisse.</translation>
         <translation>Startpunkt</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="68"/>
         <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
 is matched automatically into the right camera (stereo offset)
 and into frame 2 (motion seed) — no search tuning needed.
@@ -1270,12 +1270,12 @@ Frame. Ohne gesetzten Punkt fällt der Lauf auf FFT zurück.</translation>
     </message>
     <message>
         <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="162"/>
         <source>Place point…</source>
         <translation>Punkt platzieren…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="84"/>
         <source>Enter placement mode on the canvas. Click once on the LEFT
 camera, frame 1 — a new click replaces the point; Esc cancels.</source>
         <translation>Platzierungsmodus auf der Leinwand. Einmal auf der LINKEN Kamera,
@@ -1297,7 +1297,7 @@ Frame 1 klicken — ein neuer Klick ersetzt den Punkt; Esc bricht ab.</translati
         <translation>FFT (Kreuzkorrelation)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="104"/>
         <source>Full-grid cross-correlation seeds frame 1 (and every reference
 switch in incremental mode); later frames warm-start from the
 previous solution. Robust default — the search radius is the
@@ -1313,7 +1313,7 @@ Standard — der Suchradius ist der Parameter „Zeitliche Suche“.</translatio
         <translation>Vorheriger Frame</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="116"/>
         <source>Start every frame from the previous frame&apos;s solution — no
 cross-correlation at all. Fastest; can silently freeze on large
 motion or decorrelation — the validity gate will flag affected
@@ -1342,12 +1342,12 @@ betroffene Frames.</translation>
 <context>
     <name>Issues</name>
     <message>
-        <location filename="../../gui/issue_text.py" line="25"/>
+        <location filename="../../gui/issue_text.py" line="27"/>
         <source>calibration file not set</source>
         <translation>Kalibrierdatei nicht gesetzt</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="28"/>
+        <location filename="../../gui/issue_text.py" line="30"/>
         <source>left/right sequences not set</source>
         <translation>linke/rechte Sequenzen nicht gesetzt</translation>
     </message>
@@ -1362,12 +1362,12 @@ betroffene Frames.</translation>
         <translation>ROI nicht gesetzt</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="33"/>
+        <location filename="../../gui/issue_text.py" line="35"/>
         <source>ROI is empty (xmin&lt;xmax, ymin&lt;ymax required)</source>
         <translation>ROI ist leer (xmin&lt;xmax, ymin&lt;ymax erforderlich)</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="49"/>
+        <location filename="../../gui/issue_text.py" line="50"/>
         <source>sequence length mismatch: {0} vs {1}</source>
         <translation>Sequenzlängen stimmen nicht überein: {0} vs. {1}</translation>
     </message>
@@ -1399,7 +1399,7 @@ ablegen oder klicken</translation>
         <translation>Natürliche Sortierung (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="106"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="110"/>
         <source>Sort file names numerically (img2 before img10). Default on; turn off for strict alphabetical order. Applies to the next folder load.</source>
         <translation>Dateinamen numerisch sortieren (img2 vor img10). Standard: an; ausschalten für strikt alphabetische Reihenfolge. Gilt ab dem nächsten Ordnerladen.</translation>
     </message>
@@ -1440,7 +1440,7 @@ ablegen oder klicken</translation>
         <translation>ERWEITERT</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="300"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="306"/>
         <source>Incremental: each frame is compared to the previous reference frame.
 Suitable for large accumulated deformation, required for large rotations.
 
@@ -1458,7 +1458,7 @@ Nur für kleine, monotone Verformungen genau.</translation>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="315"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="323"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1482,7 +1482,7 @@ verrauschte Bilder oder hohe Dehnungsgenauigkeit.</translation>
         <translation>Löser</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="333"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="339"/>
         <source>Post-run filters: demote points whose ZNSSD correlation,
 reprojection error or 3D-outlier distance fails the gate to
 NaN. Default off (keep every tracked point); enable for noisy
@@ -1505,7 +1505,7 @@ Das Protokoll meldet, wie viele Punkte jedes Gate entfernt hat.</translation>
         <translation>Begrenzungsrahmen: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="438"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="443"/>
         <source>IC-GN subset window size in pixels (odd number). Default 33.
 Larger = more robust on sparse speckle, smoother fields;
 smaller = finer spatial detail but noisier. The subset must
@@ -1515,7 +1515,7 @@ Größer = robuster bei spärlichem Speckle, glattere Felder; kleiner = feinere 
 Das Subset muss mehrere Speckles umfassen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="576"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="579"/>
         <source>Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory</source>
         <translation>Beide Kameras gleichzeitig verfolgen — begrenzter Gewinn (der Löser nutzt bereits alle Kerne), doppelter Spitzenspeicher</translation>
     </message>
@@ -1535,7 +1535,7 @@ Das Subset muss mehrere Speckles umfassen.</translation>
         <translation>Referenz direkt</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="555"/>
         <source>How stereo correspondences are propagated through time.
 Track Both (default): match stereo once at frame 1, then
 track each camera temporally — fastest, one stereo solve.
@@ -1564,7 +1564,7 @@ Referenz direkt: jeden Frame in beiden Kameras direkt mit Frame 1 abgleichen —
         <translation>Bildpaare entfernen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="241"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="243"/>
         <source>Removing {0} pair(s) changes the sequence — the current results will be discarded. Continue?</source>
         <translation>Das Entfernen von {0} Paar(en) ändert die Sequenz — die aktuellen Ergebnisse werden verworfen. Fortfahren?</translation>
     </message>
@@ -1594,7 +1594,7 @@ Referenz direkt: jeden Frame in beiden Kameras direkt mit Frame 1 abgleichen —
         <translation>Qualitätsprüfungen (ZNSSD / Ausreißer)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="379"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="382"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>Auf der LINKEN Kamera, Frame 1 zeichnen — alle späteren Frames und die rechte Kamera folgen daraus.</translation>
     </message>
@@ -1604,7 +1604,7 @@ Referenz direkt: jeden Frame in beiden Kameras direkt mit Frame 1 abgleichen —
         <translation>Subset-Größe</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="452"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="456"/>
         <source>Node spacing in pixels (power of 2). Default 16. Smaller =
 denser measurement grid and longer runs; larger = faster but
 coarser fields. Typically ¼–½ of the Subset Size.</source>
@@ -1637,7 +1637,7 @@ und längere Läufe; größer = schneller, aber gröbere Felder. Üblich: ¼–�
         <translation>An Maskengrenzen (Löchern) verfeinern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="492"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="497"/>
         <source>Quadtree-subdivide mesh elements crossing interior mask
 holes so the mesh hugs the hole edges. Default off (uniform
 grid); enable when the ROI mask has cut-outs whose rims you
@@ -1652,7 +1652,7 @@ Aussparungen hat, deren Ränder wichtig sind.</translation>
         <translation>An ROI-Rändern verfeinern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="502"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="506"/>
         <source>Quadtree-subdivide mesh elements along the outer ROI
 boundary. Default off; enable for curved / irregular ROI
 outlines where the uniform grid staircases.</source>
@@ -1660,7 +1660,7 @@ outlines where the uniform grid staircases.</source>
 Standard: aus; aktivieren bei gekrümmten / unregelmäßigen ROI-Konturen, wo das gleichmäßige Gitter Treppen bildet.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="514"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="518"/>
         <source>How aggressively refined elements shrink: the minimum element
 is step / 2^level. Default 1 (light); 3 is heavy — finer
 boundary detail but many more nodes and a slower run.</source>
@@ -1673,7 +1673,7 @@ Standard 1 (leicht); 3 ist stark — feinere Randdetails, aber deutlich mehr Kno
         <translation>Verfeinerungsstufe</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="563"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="564"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = einmaliger Durchlauf (schnellste), 3 = Standard, 5+ = abnehmender Ertrag</translation>
     </message>
@@ -1693,7 +1693,7 @@ Standard 1 (leicht); 3 ist stark — feinere Randdetails, aber deutlich mehr Kno
         <translation>Paralleles Kamera-Tracking</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="658"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="662"/>
         <source>NCC search half-width (pixels) around each node for the
 left-to-right stereo match. Set larger than the largest
 expected stereo disparity.</source>
@@ -1702,7 +1702,7 @@ Links-rechts-Stereoabgleich. Größer als die größte
 erwartete Stereo-Disparität wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="663"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="667"/>
         <source>Maximum per-frame displacement the temporal FFT search can
 detect (pixels). Set comfortably larger than the expected
 inter-frame motion.</source>
@@ -1711,14 +1711,14 @@ erkennen kann (Pixel). Deutlich größer als die erwartete
 Bewegung zwischen Frames wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="673"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="675"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>Aktuelle Bilder: Werte über {0} px vergrößern die Suche nicht weiter
 (das Suchfenster wird an den Bildrändern beschnitten).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="677"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="679"/>
         <source>Current images: the engine caps this at {0} px at run start
 (max(10, min(H, W) / 4 - subset)).</source>
         <translation>Aktuelle Bilder: Die Engine begrenzt diesen Wert beim Start auf {0} px
@@ -1854,12 +1854,12 @@ Bewegung zwischen Frames wählen.</translation>
         <translation>Bilder lokalisieren</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="575"/>
+        <location filename="../../gui/main_window.py" line="578"/>
         <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
         <translation>Der gewählte Ordner enthält nicht die Frames von Kamera {0} dieses Projekts. Wählen Sie den Ordner mit den ursprünglichen Bilddateien, oder brechen Sie ab, um den Ladevorgang zu beenden.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="585"/>
+        <location filename="../../gui/main_window.py" line="588"/>
         <source>The image folder saved with this project was not found:
 {0}
 
@@ -1895,7 +1895,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="464"/>
+        <location filename="../../gui/main_window.py" line="465"/>
         <source>Untitled</source>
         <translation>Unbenannt</translation>
     </message>
@@ -1955,7 +1955,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>{0} (mm)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/manual_params_dialog.py" line="87"/>
+        <location filename="../../gui/dialogs/manual_params_dialog.py" line="90"/>
         <source>Euler composition R = Rz·Ry·Rx in degrees (MatchID/OpenCorr convention); distortion order k1, k2, p1, p2, k3 (OpenCV).</source>
         <translation>Euler-Komposition R = Rz·Ry·Rx in Grad (MatchID/OpenCorr-Konvention); Verzeichnungsreihenfolge k1, k2, p1, p2, k3 (OpenCV).</translation>
     </message>
@@ -1993,17 +1993,17 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
 <context>
     <name>NextStepHint</name>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="48"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="49"/>
         <source>Load the left and right camera folders</source>
         <translation>Die Ordner der linken und rechten Kamera laden</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="53"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
         <source>Calibrate from images or import a calibration</source>
         <translation>Aus Bildern kalibrieren oder eine Kalibrierung importieren</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="55"/>
         <source>Draw the ROI on the left camera, frame 1</source>
         <translation>Die ROI auf der linken Kamera, Bild 1, zeichnen</translation>
     </message>
@@ -2124,7 +2124,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Auf alle Felder anwenden</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="152"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="155"/>
         <source>Apply this field&apos;s colormap, opacity and auto-range to every enabled field (each field keeps its own min/max).</source>
         <translation>Colormap, Deckkraft und Auto-Bereich dieses Felds auf alle aktivierten Felder anwenden (jedes Feld behält sein eigenes Min/Max).</translation>
     </message>
@@ -2181,7 +2181,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Hintergrund</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="208"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="211"/>
         <source>Add a blank border around the exported content, as a fraction of the long edge (0 = none).</source>
         <translation>Fügt einen leeren Rand um den exportierten Inhalt hinzu, als Anteil der langen Kante (0 = keiner).</translation>
     </message>
@@ -2237,7 +2237,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>+ Hinzufügen</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="74"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="75"/>
         <source>Add region to the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>Region zum Interessenbereich hinzufügen (Polygon / Rechteck / Kreis)</translation>
     </message>
@@ -2247,7 +2247,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Ausschneiden</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="80"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="81"/>
         <source>Cut region from the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>Region aus dem Interessenbereich ausschneiden (Polygon / Rechteck / Kreis)</translation>
     </message>
@@ -2257,7 +2257,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>+ Verfeinern</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="87"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="90"/>
         <source>Paint extra mesh-refinement zones with a brush
 (on the LEFT camera, frame 1 — the reference mesh geometry)</source>
         <translation>Zusätzliche Netzverfeinerungszonen mit einem Pinsel malen
@@ -2362,8 +2362,8 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>3D-Analyse starten</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="86"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="421"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="89"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="425"/>
         <source>Run the full stereo correspondence + triangulation pipeline on the loaded image pairs (F5).</source>
         <translation>Führt die vollständige Pipeline aus Stereokorrespondenz + Triangulation auf den geladenen Bildpaaren aus (F5).</translation>
     </message>
@@ -2373,320 +2373,335 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="99"/>
-        <source>Cancel the current analysis. Already-computed frames are kept; the run is marked as IDLE (not DONE).</source>
-        <translation>Laufende Analyse abbrechen. Bereits berechnete Frames bleiben erhalten; der Lauf wird als IDLE (nicht DONE) markiert.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="107"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
         <source>Export Results</source>
         <translation>Ergebnisse exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="115"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="116"/>
         <source>Open Strain Window</source>
         <translation>Dehnungsfenster öffnen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="128"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="129"/>
         <source>Parameters changed since this result — re-run to update</source>
         <translation>Parameter seit diesem Ergebnis geändert — zum Aktualisieren erneut ausführen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="136"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="137"/>
         <source>PROGRESS</source>
         <translation>FORTSCHRITT</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="143"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="633"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="144"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="653"/>
         <source>Ready</source>
         <translation>Bereit</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="148"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="149"/>
         <source>ELAPSED  --:--</source>
         <translation>VERSTRICHEN  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="151"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="152"/>
         <source>REMAINING  --:--</source>
         <translation>VERBLEIBEND  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="157"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="158"/>
         <source>FIELD</source>
         <translation>FELD</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="163"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="164"/>
         <source>Show on deformed frame</source>
         <translation>Auf deformiertem Frame anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="167"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="171"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>Wenn aktiviert, werden die Ergebnisse auf dem deformierten (aktuellen) Frame statt auf dem Referenzframe überlagert</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="176"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="177"/>
         <source>Camera</source>
         <translation>Kamera</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="180"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="181"/>
         <source>Left</source>
         <translation>Links</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="183"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
         <source>Show the LEFT camera&apos;s images (the reference view: ROI, seed and mesh live here). Default.</source>
         <translation>Zeigt die Bilder der LINKEN Kamera (Referenzansicht: ROI, Startpunkt und Netz leben hier). Standard.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
         <source>Right</source>
         <translation>Rechts</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="190"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="194"/>
         <source>Show the RIGHT camera&apos;s images with the field warped onto them — a cross-check that the stereo match is sound.</source>
         <translation>Zeigt die Bilder der RECHTEN Kamera mit dem darauf verzerrten Feld — ein Gegencheck, dass der Stereoabgleich stimmt.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="208"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="209"/>
         <source>VISUALIZATION</source>
         <translation>VISUALISIERUNG</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="211"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="212"/>
         <source>Colormap</source>
         <translation>Farbskala</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="219"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="224"/>
         <source>Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.</source>
         <translation>Farbskala für die Feld-Überlagerung und die 3D-Oberfläche. Standard: turbo (wahrnehmungsgeordnet, kontraststark); für vorzeichenbehaftete Felder um Null RdBu_r oder coolwarm wählen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="228"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="229"/>
         <source>Auto range</source>
         <translation>Auto-Bereich</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="232"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="237"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>Farbbereich an den Datenbereich jedes Frames anpassen (2–98-Perzentil der sichtbaren Werte). Standard: an; abwählen, um feste Min/Max-Grenzen einzugeben, die über alle Frames gelten.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="244"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="245"/>
         <source>Min</source>
         <translation>Min</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="248"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="249"/>
         <source>Lower color-range bound (only with Auto range off)</source>
         <translation>Untere Grenze des Farbbereichs (nur bei ausgeschaltetem Auto-Bereich)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="250"/>
         <source>Upper color-range bound (only with Auto range off)</source>
         <translation>Obere Grenze des Farbbereichs (nur bei ausgeschaltetem Auto-Bereich)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="258"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="259"/>
         <source>Max</source>
         <translation>Max</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="264"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="265"/>
         <source>Opacity</source>
         <translation>Deckkraft</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="271"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="272"/>
         <source>Overlay opacity (0 = transparent, 100 = opaque)</source>
         <translation>Deckkraft der Überlagerung (0 = transparent, 100 = deckend)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="279"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="280"/>
         <source>LOG</source>
         <translation>PROTOKOLL</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="288"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="289"/>
         <source>All messages</source>
         <translation>Alle Meldungen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="289"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="290"/>
         <source>Info</source>
         <translation>Info</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="290"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="291"/>
         <source>Warnings + errors</source>
         <translation>Warnungen + Fehler</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="291"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="292"/>
         <source>Errors only</source>
         <translation>Nur Fehler</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="294"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="295"/>
         <source>Show only log messages of this severity</source>
         <translation>Nur Protokollmeldungen dieser Stufe anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="297"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="298"/>
         <source>Save…</source>
         <translation>Speichern…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="302"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="303"/>
         <source>Save the full log to a text file</source>
         <translation>Das vollständige Protokoll als Textdatei speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="305"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="306"/>
         <source>Clear</source>
         <translation>Leeren</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="310"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="311"/>
         <source>Clear the log console (messages are not recoverable)</source>
         <translation>Protokollkonsole leeren (Meldungen sind nicht wiederherstellbar)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="387"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="388"/>
         <source>Save log</source>
         <translation>Protokoll speichern</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="387"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="389"/>
         <source>Text files (*.txt)</source>
         <translation>Textdateien (*.txt)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="417"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="428"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="418"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="429"/>
         <source>Not ready — {0}</source>
         <translation>Nicht bereit — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="430"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="431"/>
         <source>Ready to run.</source>
         <translation>Bereit zur Ausführung.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="464"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="466"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>Verschiebungs- und Dehnungsergebnisse als NPZ / MAT / CSV exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="468"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="472"/>
         <source>Compute and visualize strain in a separate post-processing window. Requires displacement results from a completed Run.</source>
         <translation>Dehnung in einem separaten Nachbearbeitungsfenster berechnen und visualisieren. Benötigt Verschiebungsergebnisse eines abgeschlossenen Laufs.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="474"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="476"/>
         <source>Available after the running analysis finishes.</source>
         <translation>Verfügbar, sobald die laufende Analyse abgeschlossen ist.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="476"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="478"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>Führen Sie zuerst eine Analyse aus — es gibt noch keine Ergebnisse.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="494"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="495"/>
         <source>Not ready: {0}</source>
         <translation>Nicht bereit: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="509"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="510"/>
         <source>Starting 3D analysis…</source>
         <translation>3D-Analyse wird gestartet…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="529"/>
         <source>Cancelling — finishing current frame…</source>
         <translation>Abbruch läuft — aktueller Frame wird abgeschlossen…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="529"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="530"/>
         <source>Cancelling…</source>
         <translation>Wird abgebrochen…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="559"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="548"/>
+        <source>Stopped early — partial results kept</source>
+        <translation>Vorzeitig gestoppt — Teilergebnisse behalten</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="565"/>
         <source>Analysis complete</source>
         <translation>Analyse abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="567"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="579"/>
+        <source>Stopped early at frame {0}/{1} — kept {2} computed frames (later frames are empty)</source>
+        <translation>Vorzeitig gestoppt bei Frame {0}/{1} — {2} berechnete Frames behalten (spätere Frames sind leer)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="583"/>
+        <source>Run interrupted: {0}</source>
+        <translation>Lauf unterbrochen: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="587"/>
         <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
         <translation>Stereo-Zuordnung Frame 1: {0}/{1} Punkte zugeordnet ({2} %)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="575"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="597"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>Kamera {0}: Validitätsgate entfernte {1} Knoten-Frames (Korrelation mit Frame 1 fehlgeschlagen)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="582"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="602"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>Frame {0}: nur {1} % der Punkte gültig</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="589"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="609"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>Qualitätsgate (ZNSSD) entfernte {0} Positionen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="590"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="610"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>Reprojektionsgate entfernte {0} Positionen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="591"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="611"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>3D-Ausreißerfilter entfernte {0} Positionen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="599"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="621"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Keine gültigen Punkte in IRGENDEINEM Frame — der Lauf lieferte ein leeres Ergebnis. Prüfen Sie ROI, Masken und Startpunkt (Details oben).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="607"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="629"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse abgeschlossen — {0} Frames, mediane Validität {1} %, {2} Frame(s) unter {3} % (siehe oben)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="395"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="623"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="396"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="643"/>
         <source>Failed: {0}</source>
         <translation>Fehlgeschlagen: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="636"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="103"/>
+        <source>Cancel the current analysis. Frames computed so far are kept as a partial result; only when nothing was computed yet does the run return to IDLE.</source>
+        <translation>Bricht die aktuelle Analyse ab. Bereits berechnete Frames werden als Teilergebnis behalten; nur wenn noch nichts berechnet wurde, kehrt der Lauf in den Leerlauf zurück.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="656"/>
         <source>Run cancelled</source>
         <translation>Lauf abgebrochen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="506"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="634"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="643"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="507"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="654"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="663"/>
         <source>ELAPSED  {0}</source>
         <translation>VERSTRICHEN  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="507"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="540"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="635"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="649"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="508"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="655"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="669"/>
         <source>REMAINING  {0}</source>
         <translation>VERBLEIBEND  {0}</translation>
     </message>
@@ -2830,7 +2845,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="74"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -2848,7 +2863,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>VSG-Fenster</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="94"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="99"/>
         <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
         <translation>Anzahl der Netzknoten pro Achse innerhalb des quadratischen VSG-Fensters — die lokale Ebenenanpassung verwendet jeden gültigen Knoten darin. Die mm-Größe rechnet das Pixelfenster über den Median des 3D-Abstands benachbarter Knoten auf der Referenzoberfläche um.</translation>
     </message>
@@ -2873,7 +2888,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Stark (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="130"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -2906,17 +2921,17 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Benutzerdefiniert (3 Punkte)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="144"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>Pro Knoten an die Referenzfläche gefittete Tangentialebene: z ist die zur Kamera zeigende Flächennormale, x die Projektion der +X-Achse der linken Kamera auf die Ebene, y = z × x. Der richtige Standard für gekrümmte Proben.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="148"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>Dehnung in den festen Achsen der linken Kamera (Weltkoordinaten) angeben. Sinnvoll für ebene, zur Bildebene ausgerichtete Proben.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="150"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>Ein festes Proben-Koordinatensystem aus 3 im Referenzbild gewählten Punkten: Ursprung, ein Punkt entlang +X und ein Punkt auf der +Y-Seite.</translation>
     </message>
@@ -2931,7 +2946,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>3 Punkte wählen…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="178"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="182"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
         <translation>Klicken Sie drei Punkte auf dem Referenzbild an: den Ursprung, einen Punkt entlang +X, dann einen Punkt auf der +Y-Seite. Jeder Klick rastet am nächsten gültigen Netzknoten ein. Nur bei „Benutzerdefiniert (3 Punkte)“ aktiv.</translation>
     </message>
@@ -2946,7 +2961,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>≈ {0} × {1} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="317"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="319"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ Fensterradius ({0} px) &lt; Knotenabstand ({1} px); der Ebenen-Fit braucht eine 3×3-Knoten-Messstelle. ≥ {2} px verwenden.</translation>
     </message>
@@ -2959,12 +2974,12 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Auf deformiertem Frame anzeigen</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="40"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="43"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>Wenn aktiviert, werden die Ergebnisse auf dem deformierten (aktuellen) Frame statt auf dem Referenzframe überlagert</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="50"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="53"/>
         <source>Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.</source>
         <translation>Farbskala für die Dehnungsüberlagerung. Standard: turbo; für vorzeichenbehaftete Dehnung um Null RdBu_r oder coolwarm wählen.</translation>
     </message>
@@ -2979,7 +2994,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Auto-Bereich</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="60"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="64"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>Farbbereich an den Datenbereich jedes Frames anpassen (2–98-Perzentil der sichtbaren Werte). Standard: an; abwählen, um feste Min/Max-Grenzen einzugeben, die über alle Frames gelten.</translation>
     </message>
@@ -3017,174 +3032,174 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="115"/>
+        <location filename="../../gui/strain_window.py" line="111"/>
         <source>Strain Post-Processing</source>
         <translation>Dehnungs-Nachbearbeitung</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="154"/>
+        <location filename="../../gui/strain_window.py" line="150"/>
         <source>STRAIN PARAMETERS</source>
         <translation>DEHNUNGSPARAMETER</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="163"/>
+        <location filename="../../gui/strain_window.py" line="159"/>
         <source>Compute Strain</source>
         <translation>Dehnung berechnen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="169"/>
+        <location filename="../../gui/strain_window.py" line="165"/>
         <source>Export Results</source>
         <translation>Ergebnisse exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="173"/>
-        <location filename="../../gui/strain_window.py" line="667"/>
+        <location filename="../../gui/strain_window.py" line="170"/>
+        <location filename="../../gui/strain_window.py" line="662"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>Verschiebungs- und Dehnungsergebnisse als NPZ / MAT / CSV exportieren</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="192"/>
+        <location filename="../../gui/strain_window.py" line="188"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="194"/>
+        <location filename="../../gui/strain_window.py" line="190"/>
         <source>Stop the strain computation at the next frame.</source>
         <translation>Die Dehnungsberechnung beim nächsten Frame anhalten.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="203"/>
+        <location filename="../../gui/strain_window.py" line="199"/>
         <source>FIELD</source>
         <translation>FELD</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="209"/>
+        <location filename="../../gui/strain_window.py" line="205"/>
         <source>VISUALIZATION</source>
         <translation>VISUALISIERUNG</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="213"/>
+        <location filename="../../gui/strain_window.py" line="209"/>
         <source>LOG</source>
         <translation>PROTOKOLL</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="332"/>
+        <location filename="../../gui/strain_window.py" line="328"/>
         <source>Computation Running</source>
         <translation>Berechnung läuft</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="333"/>
+        <location filename="../../gui/strain_window.py" line="329"/>
         <source>A strain computation is running — cancel it and close?</source>
         <translation>Eine Dehnungsberechnung läuft — abbrechen und schließen?</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="338"/>
+        <location filename="../../gui/strain_window.py" line="334"/>
         <source>Yes</source>
         <translation>Ja</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="339"/>
+        <location filename="../../gui/strain_window.py" line="335"/>
         <source>No</source>
         <translation>Nein</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="399"/>
-        <location filename="../../gui/strain_window.py" line="467"/>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="395"/>
+        <location filename="../../gui/strain_window.py" line="463"/>
+        <location filename="../../gui/strain_window.py" line="566"/>
         <source>Strain compute failed: {0}</source>
         <translation>Dehnungsberechnung fehlgeschlagen: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="411"/>
-        <location filename="../../gui/strain_window.py" line="534"/>
+        <location filename="../../gui/strain_window.py" line="407"/>
+        <location filename="../../gui/strain_window.py" line="530"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>Zuerst die 3D-Analyse ausführen — keine Ergebnisse zur Nachbearbeitung.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="414"/>
-        <location filename="../../gui/strain_window.py" line="545"/>
-        <location filename="../../gui/strain_window.py" line="572"/>
+        <location filename="../../gui/strain_window.py" line="410"/>
+        <location filename="../../gui/strain_window.py" line="541"/>
+        <location filename="../../gui/strain_window.py" line="569"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>Klicken Sie im Bild auf den Ursprung, dann +X, dann +Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="421"/>
+        <location filename="../../gui/strain_window.py" line="417"/>
         <source>Computing strain…</source>
         <translation>Dehnung wird berechnet…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="438"/>
+        <location filename="../../gui/strain_window.py" line="434"/>
         <source>Cancelling…</source>
         <translation>Wird abgebrochen…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="443"/>
+        <location filename="../../gui/strain_window.py" line="439"/>
         <source>Computing strain… {0}%</source>
         <translation>Dehnung wird berechnet… {0}%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="455"/>
+        <location filename="../../gui/strain_window.py" line="451"/>
         <source>Complete</source>
         <translation>Abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="472"/>
+        <location filename="../../gui/strain_window.py" line="468"/>
         <source>Strain computation cancelled.</source>
         <translation>Dehnungsberechnung abgebrochen.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="477"/>
+        <location filename="../../gui/strain_window.py" line="473"/>
         <source>Strain computation complete.</source>
         <translation>Dehnungsberechnung abgeschlossen.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="482"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ Parameter geändert — „Dehnung berechnen“ klicken</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="563"/>
-        <location filename="../../gui/strain_window.py" line="580"/>
+        <location filename="../../gui/strain_window.py" line="559"/>
+        <location filename="../../gui/strain_window.py" line="576"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 Punkte gewählt</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="582"/>
+        <location filename="../../gui/strain_window.py" line="578"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="593"/>
+        <location filename="../../gui/strain_window.py" line="589"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="593"/>
+        <location filename="../../gui/strain_window.py" line="589"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="593"/>
+        <location filename="../../gui/strain_window.py" line="589"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="652"/>
+        <location filename="../../gui/strain_window.py" line="647"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>Führen Sie zuerst eine 3D-Analyse aus — die Dehnung braucht Verschiebungsergebnisse.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="656"/>
+        <location filename="../../gui/strain_window.py" line="651"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>Wählen Sie zuerst die 3 Punkte des Probenkoordinatensystems (Ursprung, +X, +Y).</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="661"/>
+        <location filename="../../gui/strain_window.py" line="658"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>Green-Lagrange-Oberflächendehnung aus dem Verschiebungsfeld mit den obigen Parametern berechnen.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="671"/>
+        <location filename="../../gui/strain_window.py" line="666"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>Führen Sie zuerst eine Analyse aus — es gibt noch keine Ergebnisse.</translation>
     </message>
@@ -3192,7 +3207,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="97"/>
+        <location filename="../../gui/widgets/view3d.py" line="98"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D-Ansicht — führen Sie eine Analyse aus, um die rekonstruierte Oberfläche zu sehen.</translation>
     </message>
@@ -3293,7 +3308,7 @@ Wählen Sie den Ordner, der jetzt die Frames von Kamera {1} enthält (Dateinamen
         <translation>Bild an den Ansichtsbereich anpassen</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="68"/>
+        <location filename="../../gui/widgets/strain_support.py" line="71"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>Aktueller Zoom — Klick setzt auf 100 % (1:1 Pixel) zurück.

@@ -137,8 +137,13 @@ class RefDirectStrategy:
 
         diag: list[dict] = list(temporal_rows("L", tf_L))
         prev_m = np.zeros((n_pts, 2), dtype=np.float64)  # chain seed for M(L1 -> R_k)
+        # Partial-run bookkeeping (R2): S3 does REAL per-frame cross-match work,
+        # so the loop still honours the stop — frames matched before the break
+        # are kept (already written into xL/xR), later frames stay NaN.
+        loop_stopped_at: int | None = None
         for k in range(n_frames):
             if stop is not None and stop():
+                loop_stopped_at = k
                 break
             xl_k = coords_L + tf_L.u_accum[k]
             valid_l = tf_L.valid[k] & np.isfinite(xl_k).all(axis=1)
@@ -189,6 +194,15 @@ class RefDirectStrategy:
             if progress is not None:
                 progress((k + 1) / n_frames, f"ref_direct {k + 1}/{n_frames}")
 
+        stopped_early = tf_L.stopped_early or loop_stopped_at is not None
+        stopped_at = None
+        stop_reason = ""
+        if stopped_early:
+            stopped_at = min(
+                tf_L.n_tracked,
+                n_frames if loop_stopped_at is None else loop_stopped_at,
+            )
+            stop_reason = tf_L.stop_reason or "Computation cancelled by user."
         return CorrespondenceSet(
             strategy=self.name,
             xL=xL,
@@ -196,4 +210,7 @@ class RefDirectStrategy:
             quality=quality,
             source=source,
             diagnostics=tuple(diag),
+            stopped_early=stopped_early,
+            stopped_at_frame=stopped_at,
+            stop_reason=stop_reason,
         )

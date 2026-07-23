@@ -212,6 +212,31 @@ def test_run_pipeline_cooperative_cancel(tmp_path):
         run_pipeline(cfg, stop=lambda: True)  # stop trips at the first checkpoint
 
 
+def test_run_pipeline_cancel_keeps_partial_frames(tmp_path):
+    # R2 (engine 0.7 partial-results): a cancel that fires AFTER some frames
+    # tracked in both cameras keeps those frames instead of discarding the run.
+    scene = synth_stereo.build_scene(tmp_path, n_frames=4)
+    cfg = load_config(synth_stereo.write_config(tmp_path, scene))
+
+    polls = {"n": 0}
+
+    def stop() -> bool:
+        # Sequential track_both polls once per engine frame: L gets polls 1-3
+        # (completes), R gets poll 4 (frame 1 tracks) and trips on poll 5 ->
+        # the correspondence keeps frames 0..1, loses frames 2..3.
+        polls["n"] += 1
+        return polls["n"] >= 5
+
+    result = run_pipeline(cfg, stop=stop)
+
+    assert result.meta["stopped_early"] is True
+    assert result.meta["stopped_at_frame"] == 2
+    assert result.meta["stop_reason"]
+    finite = np.isfinite(result.reconstruction.points).all(axis=2)
+    assert finite[0].any() and finite[1].any()  # kept frames reconstruct
+    assert not finite[2:].any()  # untracked frames stay NaN end-to-end
+
+
 def test_run_pipeline_computes_and_writes_strain(tmp_path):
     from dataclasses import replace
 

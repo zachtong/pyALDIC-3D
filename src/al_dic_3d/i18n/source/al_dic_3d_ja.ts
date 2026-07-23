@@ -14,7 +14,7 @@
         <translation>バージョン {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/about_dialog.py" line="52"/>
+        <location filename="../../gui/dialogs/about_dialog.py" line="55"/>
         <source>Stereo (3D) digital image correlation — full-field displacement and surface strain from a calibrated camera pair.</source>
         <translation>ステレオ（3D）デジタル画像相関 — 校正済みカメラペアから全視野の変位と表面ひずみを取得します。</translation>
     </message>
@@ -72,7 +72,7 @@
         <translation>アニメーションをエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="131"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="132"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>先に画像シーケンスを読み込んでください（メインウィンドウでプロジェクトを開いてください）。</translation>
     </message>
@@ -350,7 +350,7 @@
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="366"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="702"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>画像 (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
@@ -430,8 +430,8 @@
         <translation>検出結果を保存</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="548"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="567"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="568"/>
         <source>NumPy detections (*.npz)</source>
         <translation>NumPy 検出結果 (*.npz)</translation>
     </message>
@@ -446,7 +446,7 @@
         <translation>検出結果を読み込み</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="589"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="590"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>{0} ペアの検出結果を読み込みました — 再キャリブレーションで検出なしに再計算できます</translation>
     </message>
@@ -456,7 +456,7 @@
         <translation>ボード PDF を保存</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="676"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="677"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
@@ -481,7 +481,7 @@
         <translation>検証に失敗しました：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="725"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>検証：ピッチ {0:.4f} mm 対 {1:g} mm — スケール誤差 {2:.3%}、平面 RMS {3:.4f} mm</translation>
     </message>
@@ -504,7 +504,7 @@
         <translation>画像からキャリブレーション…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="54"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="59"/>
         <source>Run the built-in stereo calibrator on your target photos
 (checkerboard / ChArUco / dot grid). Writes an opencv_yaml
 file and loads it — the recommended path when you have
@@ -518,7 +518,7 @@ opencv_yaml ファイルを書き出して読み込みます — キャリブレ
         <translation>形式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="74"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="80"/>
         <source>File format of the calibration to import. Default opencv_yaml
 (written by the built-in calibrator). Pick the format matching
 your source: dice (DICe XML), matchid (MatchID .caldat),
@@ -534,7 +534,7 @@ opencorr（OpenCorr CSV）、mmc（MultiDIC/MMC .mat）、matlabcv（MATLAB ster
         <translation>キャリブレーションを読み込む…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="88"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="92"/>
         <source>Load an existing stereo calibration file in the selected
 Format. The status line below shows fx / fy and the baseline
 as a sanity check.</source>
@@ -547,7 +547,7 @@ as a sanity check.</source>
         <translation>パラメータを手動入力…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="99"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="103"/>
         <source>Type intrinsics and extrinsics by hand (fx, fy, cx, cy,
 distortion, R, T) — the fallback when no calibration file
 exists. Writes an opencv_yaml file and loads it.</source>
@@ -590,7 +590,7 @@ fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
         <translation>{0} フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/camera_drop_zone.py" line="103"/>
+        <location filename="../../gui/widgets/camera_drop_zone.py" line="106"/>
         <source>Click to pick this camera&apos;s image folder, or drag the folder here. Both cameras need the same number of frames.</source>
         <translation>クリックしてこのカメラの画像フォルダーを選択するか、フォルダーをここにドラッグします。両カメラのフレーム数は一致している必要があります。</translation>
     </message>
@@ -636,7 +636,7 @@ fx {1:.0f}  fy {2:.0f}  |  基線長 {3:.1f} mm</translation>
         <translation>画像をビューポートに合わせる (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="116"/>
+        <location filename="../../gui/panels/canvas_area.py" line="119"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>現在のズーム — クリックで 100%（1:1 ピクセル）に戻します。
@@ -658,7 +658,7 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>グリッドを表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="135"/>
+        <location filename="../../gui/panels/canvas_area.py" line="140"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -668,7 +668,7 @@ Default on; turn off to declutter the canvas.</source>
 既定はオン。キャンバスを整理したいときはオフにします。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="148"/>
+        <location filename="../../gui/panels/canvas_area.py" line="152"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -676,7 +676,7 @@ whether the subset spans enough speckle texture.</source>
 「グリッド表示」が必要です。サブセットが十分なスペックル模様を含むかの判断に使えます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="161"/>
+        <location filename="../../gui/panels/canvas_area.py" line="165"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -699,17 +699,17 @@ to the 2D image view. Requires results.</source>
         <translation>マスクを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="341"/>
+        <location filename="../../gui/panels/canvas_area.py" line="342"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 画像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="533"/>
+        <location filename="../../gui/panels/canvas_area.py" line="534"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>解析で有効な点が得られませんでした — 表示できる内容がありません。ログを確認してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="600"/>
+        <location filename="../../gui/panels/canvas_area.py" line="601"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
@@ -747,7 +747,7 @@ to the 2D image view. Requires results.</source>
         <translation>シード点をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="137"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="141"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
@@ -784,7 +784,7 @@ to the 2D image view. Requires results.</source>
         <translation>ADMM ({0} 反復)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="80"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
@@ -810,7 +810,7 @@ to the 2D image view. Requires results.</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="76"/>
         <source>Incremental</source>
         <translation>逐次式</translation>
     </message>
@@ -881,7 +881,7 @@ to the 2D image view. Requires results.</source>
         <translation>ひずみ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="72"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="73"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D 点・再投影誤差・ソースフラグは常にエクスポートされます。</translation>
     </message>
@@ -992,27 +992,27 @@ to the 2D image view. Requires results.</source>
         <translation>3D ビュー</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="131"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="133"/>
         <source>Numeric results: field-selective NPZ / MAT / CSV tables plus PLY / VTU meshes for external tools.</source>
         <translation>数値結果: フィールドを選択できる NPZ / MAT / CSV テーブルと、外部ツール向けの PLY / VTU メッシュ。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="135"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="137"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
         <translation>カメラごとのフィールドオーバーレイを PNG 画像として書き出します（各フレーム 1 枚、「プレビューとカラーバー」のスタイルを使用）。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="141"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
         <translation>フィールドオーバーレイのフレーム間 GIF / MP4 アニメーション（「プレビューとカラーバー」のスタイルを使用）。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="143"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="145"/>
         <source>WYSIWYG style source: the colorbar and margins configured here are used by every Images / Animation export.</source>
         <translation>WYSIWYG のスタイル設定元: ここで設定したカラーバーと余白が、すべての画像／アニメーションのエクスポートに使われます。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="147"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="149"/>
         <source>Offscreen renders of the 3D surface view (camera frusta included) as images or turntable animations.</source>
         <translation>3D 表面ビューのオフスクリーンレンダリング（カメラ視錐台を含む）。画像またはターンテーブルアニメーションとして書き出します。</translation>
     </message>
@@ -1114,17 +1114,17 @@ to the 2D image view. Requires results.</source>
         <translation>変位</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="68"/>
+        <location filename="../../gui/widgets/field_selector.py" line="69"/>
         <source>U — world-frame displacement along X (left camera&apos;s +X, image right), in mm</source>
         <translation>U — ワールド座標系 X 方向の変位（左カメラの +X、画像右向き）、単位 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="71"/>
+        <location filename="../../gui/widgets/field_selector.py" line="72"/>
         <source>V — world-frame displacement along Y (left camera&apos;s +Y, image down), in mm</source>
         <translation>V — ワールド座標系 Y 方向の変位（左カメラの +Y、画像下向き）、単位 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="74"/>
+        <location filename="../../gui/widgets/field_selector.py" line="76"/>
         <source>W — world-frame displacement along Z (left camera&apos;s optical axis, toward the scene): out-of-plane motion, in mm</source>
         <translation>W — ワールド座標系 Z 方向の変位（左カメラの光軸、シーン向き）: 面外運動、単位 mm</translation>
     </message>
@@ -1229,7 +1229,7 @@ to the 2D image view. Requires results.</source>
         <translation>画像をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="126"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="127"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>先に画像シーケンスを読み込んでください（メインウィンドウでプロジェクトを開いてください）。</translation>
     </message>
@@ -1252,7 +1252,7 @@ to the 2D image view. Requires results.</source>
         <translation>シード点</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="62"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="68"/>
         <source>Click ONE point on the LEFT camera, frame 1. Its neighborhood
 is matched automatically into the right camera (stereo offset)
 and into frame 2 (motion seed) — no search tuning needed.
@@ -1266,12 +1266,12 @@ If no point is placed, the run falls back to FFT.</source>
     </message>
     <message>
         <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
-        <location filename="../../gui/widgets/init_guess_section.py" line="161"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="162"/>
         <source>Place point…</source>
         <translation>シード点を配置…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="81"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="84"/>
         <source>Enter placement mode on the canvas. Click once on the LEFT
 camera, frame 1 — a new click replaces the point; Esc cancels.</source>
         <translation>キャンバスの配置モードに入ります。左カメラの第 1 フレームで
@@ -1293,7 +1293,7 @@ camera, frame 1 — a new click replaces the point; Esc cancels.</source>
         <translation>FFT(相互相関)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="99"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="104"/>
         <source>Full-grid cross-correlation seeds frame 1 (and every reference
 switch in incremental mode); later frames warm-start from the
 previous solution. Robust default — the search radius is the
@@ -1309,7 +1309,7 @@ Temporal Search parameter.</source>
         <translation>前フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="111"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="116"/>
         <source>Start every frame from the previous frame&apos;s solution — no
 cross-correlation at all. Fastest; can silently freeze on large
 motion or decorrelation — the validity gate will flag affected
@@ -1338,12 +1338,12 @@ frames.</source>
 <context>
     <name>Issues</name>
     <message>
-        <location filename="../../gui/issue_text.py" line="25"/>
+        <location filename="../../gui/issue_text.py" line="27"/>
         <source>calibration file not set</source>
         <translation>校正ファイルが未設定です</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="28"/>
+        <location filename="../../gui/issue_text.py" line="30"/>
         <source>left/right sequences not set</source>
         <translation>左/右シーケンスが未設定です</translation>
     </message>
@@ -1358,12 +1358,12 @@ frames.</source>
         <translation>ROI が未設定です</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="33"/>
+        <location filename="../../gui/issue_text.py" line="35"/>
         <source>ROI is empty (xmin&lt;xmax, ymin&lt;ymax required)</source>
         <translation>ROI が空です(xmin&lt;xmax かつ ymin&lt;ymax が必要)</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="49"/>
+        <location filename="../../gui/issue_text.py" line="50"/>
         <source>sequence length mismatch: {0} vs {1}</source>
         <translation>シーケンス長が一致しません：{0} 対 {1}</translation>
     </message>
@@ -1395,7 +1395,7 @@ folder or click</source>
         <translation>自然順ソート (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="106"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="110"/>
         <source>Sort file names numerically (img2 before img10). Default on; turn off for strict alphabetical order. Applies to the next folder load.</source>
         <translation>ファイル名を数値順に並べ替えます（img2 が img10 の前）。既定はオン。オフにすると厳密なアルファベット順になります。次のフォルダー読み込みから適用されます。</translation>
     </message>
@@ -1436,7 +1436,7 @@ folder or click</source>
         <translation>詳細設定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="300"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="306"/>
         <source>Incremental: each frame is compared to the previous reference frame.
 Suitable for large accumulated deformation, required for large rotations.
 
@@ -1454,7 +1454,7 @@ Accurate for small, monotonic deformation only.</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="315"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="323"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1476,7 +1476,7 @@ AL-DIC: 全体 FEM 正則化付き拡張ラグランジュ。
         <translation>ソルバー</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="333"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="339"/>
         <source>Post-run filters: demote points whose ZNSSD correlation,
 reprojection error or 3D-outlier distance fails the gate to
 NaN. Default off (keep every tracked point); enable for noisy
@@ -1498,7 +1498,7 @@ reports how many points each gate removed.</source>
         <translation>境界ボックス: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="438"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="443"/>
         <source>IC-GN subset window size in pixels (odd number). Default 33.
 Larger = more robust on sparse speckle, smoother fields;
 smaller = finer spatial detail but noisier. The subset must
@@ -1508,7 +1508,7 @@ span several speckles.</source>
 サブセットは複数のスペックルを含む必要があります。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="576"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="579"/>
         <source>Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory</source>
         <translation>両カメラを同時に追跡 — 高速化は限定的（ソルバーは既に全コアを使用）、ピークメモリは 2 倍</translation>
     </message>
@@ -1528,7 +1528,7 @@ span several speckles.</source>
         <translation>参照フレーム直接マッチング</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="547"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="555"/>
         <source>How stereo correspondences are propagated through time.
 Track Both (default): match stereo once at frame 1, then
 track each camera temporally — fastest, one stereo solve.
@@ -1557,7 +1557,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>画像ペアの削除</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="241"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="243"/>
         <source>Removing {0} pair(s) changes the sequence — the current results will be discarded. Continue?</source>
         <translation>{0} 組のペアを削除するとシーケンスが変わります — 現在の結果は破棄されます。続行しますか？</translation>
     </message>
@@ -1587,7 +1587,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>品質ゲート（ZNSSD / 外れ値）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="379"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="382"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>左カメラの第 1 フレームに描画します——以降のフレームと右カメラはそこから導かれます。</translation>
     </message>
@@ -1597,7 +1597,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>サブセットサイズ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="452"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="456"/>
         <source>Node spacing in pixels (power of 2). Default 16. Smaller =
 denser measurement grid and longer runs; larger = faster but
 coarser fields. Typically ¼–½ of the Subset Size.</source>
@@ -1630,7 +1630,7 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
         <translation>マスク境界（穴）で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="492"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="497"/>
         <source>Quadtree-subdivide mesh elements crossing interior mask
 holes so the mesh hugs the hole edges. Default off (uniform
 grid); enable when the ROI mask has cut-outs whose rims you
@@ -1644,7 +1644,7 @@ care about.</source>
         <translation>ROI の縁で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="502"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="506"/>
         <source>Quadtree-subdivide mesh elements along the outer ROI
 boundary. Default off; enable for curved / irregular ROI
 outlines where the uniform grid staircases.</source>
@@ -1652,7 +1652,7 @@ outlines where the uniform grid staircases.</source>
 既定はオフ。ROI の輪郭が曲線的・不規則で、一様グリッドが階段状になる場合に有効化してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="514"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="518"/>
         <source>How aggressively refined elements shrink: the minimum element
 is step / 2^level. Default 1 (light); 3 is heavy — finer
 boundary detail but many more nodes and a slower run.</source>
@@ -1665,7 +1665,7 @@ boundary detail but many more nodes and a slower run.</source>
         <translation>細分化レベル</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="563"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="564"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = 単一パス（最速）、3 = デフォルト、5 以上は効果逓減</translation>
     </message>
@@ -1685,7 +1685,7 @@ boundary detail but many more nodes and a slower run.</source>
         <translation>カメラの並列追跡</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="658"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="662"/>
         <source>NCC search half-width (pixels) around each node for the
 left-to-right stereo match. Set larger than the largest
 expected stereo disparity.</source>
@@ -1693,7 +1693,7 @@ expected stereo disparity.</source>
 想定される最大の視差より大きく設定してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="663"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="667"/>
         <source>Maximum per-frame displacement the temporal FFT search can
 detect (pixels). Set comfortably larger than the expected
 inter-frame motion.</source>
@@ -1701,14 +1701,14 @@ inter-frame motion.</source>
 想定されるフレーム間の動きより十分大きく設定してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="673"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="675"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>現在の画像では {0} px を超える値にしても探索範囲は広がりません
 （探索ウィンドウは画像境界でクリップされます）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="677"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="679"/>
         <source>Current images: the engine caps this at {0} px at run start
 (max(10, min(H, W) / 4 - subset)).</source>
         <translation>現在の画像では、実行開始時にエンジンがこの値を {0} px に制限します
@@ -1844,12 +1844,12 @@ inter-frame motion.</source>
         <translation>画像の場所を指定</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="575"/>
+        <location filename="../../gui/main_window.py" line="578"/>
         <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
         <translation>選択したフォルダーには本プロジェクトのカメラ {0} のフレームが含まれていません。元の画像ファイルがあるフォルダーを選択するか、キャンセルして開く操作を中止してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="585"/>
+        <location filename="../../gui/main_window.py" line="588"/>
         <source>The image folder saved with this project was not found:
 {0}
 
@@ -1885,7 +1885,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="464"/>
+        <location filename="../../gui/main_window.py" line="465"/>
         <source>Untitled</source>
         <translation>無題</translation>
     </message>
@@ -1945,7 +1945,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>{0}（mm）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/manual_params_dialog.py" line="87"/>
+        <location filename="../../gui/dialogs/manual_params_dialog.py" line="90"/>
         <source>Euler composition R = Rz·Ry·Rx in degrees (MatchID/OpenCorr convention); distortion order k1, k2, p1, p2, k3 (OpenCV).</source>
         <translation>オイラー角合成 R = Rz·Ry·Rx（度、MatchID/OpenCorr 規約）。歪み係数の順序は k1, k2, p1, p2, k3（OpenCV）。</translation>
     </message>
@@ -1983,17 +1983,17 @@ Select the folder that now contains the camera {1} frames (file names must match
 <context>
     <name>NextStepHint</name>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="48"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="49"/>
         <source>Load the left and right camera folders</source>
         <translation>左右カメラのフォルダーを読み込んでください</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="53"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
         <source>Calibrate from images or import a calibration</source>
         <translation>画像から校正するか、校正を読み込んでください</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="55"/>
         <source>Draw the ROI on the left camera, frame 1</source>
         <translation>左カメラのフレーム 1 に ROI を描いてください</translation>
     </message>
@@ -2114,7 +2114,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>すべてのフィールドに適用</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="152"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="155"/>
         <source>Apply this field&apos;s colormap, opacity and auto-range to every enabled field (each field keeps its own min/max).</source>
         <translation>このフィールドの colormap・不透明度・自動範囲を、有効なすべてのフィールドに適用します（各フィールドの min/max は保持）。</translation>
     </message>
@@ -2171,7 +2171,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>背景</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="208"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="211"/>
         <source>Add a blank border around the exported content, as a fraction of the long edge (0 = none).</source>
         <translation>書き出す内容の周囲に空白の枠を追加します。幅は長辺に対する割合です（0 = なし）。</translation>
     </message>
@@ -2227,7 +2227,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>+ 追加</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="74"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="75"/>
         <source>Add region to the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>関心領域に形状を追加します(多角形 / 矩形 / 円)</translation>
     </message>
@@ -2237,7 +2237,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>切り取り</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="80"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="81"/>
         <source>Cut region from the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>関心領域から形状を切り取ります(多角形 / 矩形 / 円)</translation>
     </message>
@@ -2247,7 +2247,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>+ 細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="87"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="90"/>
         <source>Paint extra mesh-refinement zones with a brush
 (on the LEFT camera, frame 1 — the reference mesh geometry)</source>
         <translation>ブラシで追加の細分化領域を塗ります
@@ -2352,8 +2352,8 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>3D 解析を実行</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="86"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="421"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="89"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="425"/>
         <source>Run the full stereo correspondence + triangulation pipeline on the loaded image pairs (F5).</source>
         <translation>読み込んだ画像ペアに対してステレオ対応付け＋三角測量のパイプライン全体を実行します（F5）。</translation>
     </message>
@@ -2363,320 +2363,335 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="99"/>
-        <source>Cancel the current analysis. Already-computed frames are kept; the run is marked as IDLE (not DONE).</source>
-        <translation>現在の解析をキャンセルします。計算済みのフレームは保持され、ジョブは IDLE（DONE ではない）となります。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="107"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
         <source>Export Results</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="115"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="116"/>
         <source>Open Strain Window</source>
         <translation>ひずみウィンドウを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="128"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="129"/>
         <source>Parameters changed since this result — re-run to update</source>
         <translation>この結果の後にパラメーターが変更されました — 再実行して更新してください</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="136"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="137"/>
         <source>PROGRESS</source>
         <translation>進捗</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="143"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="633"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="144"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="653"/>
         <source>Ready</source>
         <translation>準備完了</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="148"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="149"/>
         <source>ELAPSED  --:--</source>
         <translation>経過  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="151"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="152"/>
         <source>REMAINING  --:--</source>
         <translation>残り  --:--</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="157"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="158"/>
         <source>FIELD</source>
         <translation>表示項目</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="163"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="164"/>
         <source>Show on deformed frame</source>
         <translation>変形後フレームに表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="167"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="171"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>オンにすると、結果を参照フレームではなく変形後(現在)フレームに重ねて表示します</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="176"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="177"/>
         <source>Camera</source>
         <translation>カメラ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="180"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="181"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="183"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
         <source>Show the LEFT camera&apos;s images (the reference view: ROI, seed and mesh live here). Default.</source>
         <translation>左カメラの画像を表示します（参照ビュー: ROI・開始点・メッシュはここに定義されます）。既定。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="188"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="190"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="194"/>
         <source>Show the RIGHT camera&apos;s images with the field warped onto them — a cross-check that the stereo match is sound.</source>
         <translation>右カメラの画像に、フィールドをワープして重ねて表示します — ステレオマッチングの健全性チェックに使えます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="208"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="209"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="211"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="212"/>
         <source>Colormap</source>
         <translation>カラーマップ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="219"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="224"/>
         <source>Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.</source>
         <translation>フィールドオーバーレイと 3D 表面のカラーマップ。既定は turbo（知覚的に順序付き、高コントラスト）。ゼロ中心の符号付きフィールドには RdBu_r か coolwarm を選んでください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="228"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="229"/>
         <source>Auto range</source>
         <translation>自動レンジ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="232"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="237"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>各フレームのデータ範囲に合わせてカラーレンジを再スケールします（可視値の 2–98 パーセンタイル）。既定はオン。オフにすると全フレームで保持される固定の最小/最大値を入力できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="244"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="245"/>
         <source>Min</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="248"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="249"/>
         <source>Lower color-range bound (only with Auto range off)</source>
         <translation>カラーレンジの下限（自動範囲がオフのときのみ）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="250"/>
         <source>Upper color-range bound (only with Auto range off)</source>
         <translation>カラーレンジの上限（自動範囲がオフのときのみ）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="258"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="259"/>
         <source>Max</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="264"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="265"/>
         <source>Opacity</source>
         <translation>不透明度</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="271"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="272"/>
         <source>Overlay opacity (0 = transparent, 100 = opaque)</source>
         <translation>オーバーレイの不透明度(0 = 透明、100 = 不透明)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="279"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="280"/>
         <source>LOG</source>
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="288"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="289"/>
         <source>All messages</source>
         <translation>すべてのメッセージ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="289"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="290"/>
         <source>Info</source>
         <translation>情報</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="290"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="291"/>
         <source>Warnings + errors</source>
         <translation>警告とエラー</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="291"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="292"/>
         <source>Errors only</source>
         <translation>エラーのみ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="294"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="295"/>
         <source>Show only log messages of this severity</source>
         <translation>この重要度のログメッセージのみ表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="297"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="298"/>
         <source>Save…</source>
         <translation>保存…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="302"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="303"/>
         <source>Save the full log to a text file</source>
         <translation>全ログをテキストファイルに保存</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="305"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="306"/>
         <source>Clear</source>
         <translation>クリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="310"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="311"/>
         <source>Clear the log console (messages are not recoverable)</source>
         <translation>ログコンソールをクリアします（メッセージは元に戻せません）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="387"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="388"/>
         <source>Save log</source>
         <translation>ログを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="387"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="389"/>
         <source>Text files (*.txt)</source>
         <translation>テキストファイル (*.txt)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="417"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="428"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="418"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="429"/>
         <source>Not ready — {0}</source>
         <translation>未準備 — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="430"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="431"/>
         <source>Ready to run.</source>
         <translation>実行できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="464"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="466"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>変位とひずみ結果を NPZ / MAT / CSV にエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="468"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="472"/>
         <source>Compute and visualize strain in a separate post-processing window. Requires displacement results from a completed Run.</source>
         <translation>別ウィンドウでひずみを計算・可視化します。完了した実行結果の変位データが必要です。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="474"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="476"/>
         <source>Available after the running analysis finishes.</source>
         <translation>実行中の解析が完了すると利用できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="476"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="478"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>まず解析を実行してください — まだ結果がありません。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="494"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="495"/>
         <source>Not ready: {0}</source>
         <translation>未準備：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="509"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="510"/>
         <source>Starting 3D analysis…</source>
         <translation>3D 解析を開始しています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="528"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="529"/>
         <source>Cancelling — finishing current frame…</source>
         <translation>キャンセル中 — 現在のフレームを処理し終えています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="529"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="530"/>
         <source>Cancelling…</source>
         <translation>キャンセルしています…</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="559"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="548"/>
+        <source>Stopped early — partial results kept</source>
+        <translation>早期停止 — 部分的な結果を保持しました</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="565"/>
         <source>Analysis complete</source>
         <translation>解析が完了しました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="567"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="579"/>
+        <source>Stopped early at frame {0}/{1} — kept {2} computed frames (later frames are empty)</source>
+        <translation>フレーム {0}/{1} で早期停止 — 計算済みの {2} フレームを保持しました（以降のフレームは空です）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="583"/>
+        <source>Run interrupted: {0}</source>
+        <translation>実行が中断されました: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="587"/>
         <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
         <translation>第 1 フレームのステレオマッチング: {0}/{1} 点が一致 ({2}%)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="575"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="597"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>カメラ {0}: 有効性ゲートが {1} 個のノードフレームを除外 (第 1 フレームとの相関検証に失敗)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="582"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="602"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>フレーム {0}: 有効な点は {1}% のみ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="589"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="609"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>品質ゲート (ZNSSD) が {0} 個の位置を除外</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="590"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="610"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>再投影ゲートが {0} 個の位置を除外</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="591"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="611"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>3D 外れ値フィルタが {0} 個の位置を除外</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="599"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="621"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>どのフレームにも有効な点がありません — 実行結果は空です。ROI・マスク・シード設定を確認してください (詳細は上記)。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="607"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="629"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>解析完了 — {0} フレーム、有効率の中央値 {1}%、{2} フレームが {3}% 未満 (上記参照)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="395"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="623"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="396"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="643"/>
         <source>Failed: {0}</source>
         <translation>失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="636"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="103"/>
+        <source>Cancel the current analysis. Frames computed so far are kept as a partial result; only when nothing was computed yet does the run return to IDLE.</source>
+        <translation>現在の解析をキャンセルします。計算済みのフレームは部分的な結果として保持されます。まだ何も計算されていない場合のみ、実行はアイドル状態に戻ります。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/right_sidebar.py" line="656"/>
         <source>Run cancelled</source>
         <translation>実行をキャンセルしました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="506"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="634"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="643"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="507"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="654"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="663"/>
         <source>ELAPSED  {0}</source>
         <translation>経過  {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="507"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="540"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="635"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="649"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="508"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="541"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="655"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="669"/>
         <source>REMAINING  {0}</source>
         <translation>残り  {0}</translation>
     </message>
@@ -2820,7 +2835,7 @@ Select the folder that now contains the camera {1} frames (file names must match
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="74"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -2838,7 +2853,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>VSGウィンドウ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="94"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="99"/>
         <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
         <translation>正方形のひずみウィンドウ内で各軸方向に含まれるメッシュ節点数 — 局所平面フィットはウィンドウ内のすべての有効節点を使用します。mm サイズは、参照表面上の隣接節点の 3D 間隔の中央値でピクセルウィンドウを換算したものです。</translation>
     </message>
@@ -2863,7 +2878,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>強（σ = 2 × step）⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="124"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="130"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -2896,17 +2911,17 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>カスタム（3点）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="140"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="144"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>参照曲面にノードごとに当てはめた接平面：z はカメラ側を向く表面法線、x は左カメラ +X の平面への射影、y = z × x。曲面試験片に最適な既定値です。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="146"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="148"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>固定された左カメラ（世界）座標軸でひずみを報告します。像平面に揃った平板試験片に有効です。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="150"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="153"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>参照画像上で選択した 3 点から構築する固定の試験片座標系：原点、+X 方向の点、+Y 側の点。</translation>
     </message>
@@ -2921,7 +2936,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>3点を選択…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="178"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="182"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
         <translation>参照画像上で 3 点をクリックします: 原点、+X 方向の点、+Y 側の点。クリックは最も近い有効なメッシュ節点にスナップします。「カスタム（3 点）」でのみ有効です。</translation>
     </message>
@@ -2936,7 +2951,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>≈ {0} × {1} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="317"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="319"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ ウィンドウ半径（{0} px）&lt; ノード間隔（{1} px）：平面フィットには 3×3 ノードのゲージが必要です。≥ {2} px を使用してください。</translation>
     </message>
@@ -2949,12 +2964,12 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>変形後フレームに表示</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="40"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="43"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>オンにすると、結果を参照フレームではなく変形後(現在)フレームに重ねて表示します</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="50"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="53"/>
         <source>Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.</source>
         <translation>ひずみオーバーレイのカラーマップ。既定は turbo。ゼロ中心の符号付きひずみには RdBu_r か coolwarm を選んでください。</translation>
     </message>
@@ -2969,7 +2984,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>自動レンジ</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="60"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="64"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>各フレームのデータ範囲に合わせてカラーレンジを再スケールします（可視値の 2–98 パーセンタイル）。既定はオン。オフにすると全フレームで保持される固定の最小/最大値を入力できます。</translation>
     </message>
@@ -3007,174 +3022,174 @@ Select the folder that now contains the camera {1} frames (file names must match
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="115"/>
+        <location filename="../../gui/strain_window.py" line="111"/>
         <source>Strain Post-Processing</source>
         <translation>ひずみ後処理</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="154"/>
+        <location filename="../../gui/strain_window.py" line="150"/>
         <source>STRAIN PARAMETERS</source>
         <translation>ひずみパラメータ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="163"/>
+        <location filename="../../gui/strain_window.py" line="159"/>
         <source>Compute Strain</source>
         <translation>ひずみを計算</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="169"/>
+        <location filename="../../gui/strain_window.py" line="165"/>
         <source>Export Results</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="173"/>
-        <location filename="../../gui/strain_window.py" line="667"/>
+        <location filename="../../gui/strain_window.py" line="170"/>
+        <location filename="../../gui/strain_window.py" line="662"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>変位とひずみ結果を NPZ / MAT / CSV にエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="192"/>
+        <location filename="../../gui/strain_window.py" line="188"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="194"/>
+        <location filename="../../gui/strain_window.py" line="190"/>
         <source>Stop the strain computation at the next frame.</source>
         <translation>次のフレームでひずみ計算を停止します。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="203"/>
+        <location filename="../../gui/strain_window.py" line="199"/>
         <source>FIELD</source>
         <translation>表示項目</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="209"/>
+        <location filename="../../gui/strain_window.py" line="205"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="213"/>
+        <location filename="../../gui/strain_window.py" line="209"/>
         <source>LOG</source>
         <translation>ログ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="332"/>
+        <location filename="../../gui/strain_window.py" line="328"/>
         <source>Computation Running</source>
         <translation>計算を実行中</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="333"/>
+        <location filename="../../gui/strain_window.py" line="329"/>
         <source>A strain computation is running — cancel it and close?</source>
         <translation>ひずみ計算が実行中です — キャンセルして閉じますか？</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="338"/>
+        <location filename="../../gui/strain_window.py" line="334"/>
         <source>Yes</source>
         <translation>はい</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="339"/>
+        <location filename="../../gui/strain_window.py" line="335"/>
         <source>No</source>
         <translation>いいえ</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="399"/>
-        <location filename="../../gui/strain_window.py" line="467"/>
-        <location filename="../../gui/strain_window.py" line="570"/>
+        <location filename="../../gui/strain_window.py" line="395"/>
+        <location filename="../../gui/strain_window.py" line="463"/>
+        <location filename="../../gui/strain_window.py" line="566"/>
         <source>Strain compute failed: {0}</source>
         <translation>ひずみ計算に失敗しました：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="411"/>
-        <location filename="../../gui/strain_window.py" line="534"/>
+        <location filename="../../gui/strain_window.py" line="407"/>
+        <location filename="../../gui/strain_window.py" line="530"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>先に 3D 解析を実行してください — 後処理する結果がありません。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="414"/>
-        <location filename="../../gui/strain_window.py" line="545"/>
-        <location filename="../../gui/strain_window.py" line="572"/>
+        <location filename="../../gui/strain_window.py" line="410"/>
+        <location filename="../../gui/strain_window.py" line="541"/>
+        <location filename="../../gui/strain_window.py" line="569"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>画像上で原点、+X、+Y の順にクリックしてください</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="421"/>
+        <location filename="../../gui/strain_window.py" line="417"/>
         <source>Computing strain…</source>
         <translation>ひずみを計算中…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="438"/>
+        <location filename="../../gui/strain_window.py" line="434"/>
         <source>Cancelling…</source>
         <translation>キャンセルしています…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="443"/>
+        <location filename="../../gui/strain_window.py" line="439"/>
         <source>Computing strain… {0}%</source>
         <translation>ひずみを計算中… {0}%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="455"/>
+        <location filename="../../gui/strain_window.py" line="451"/>
         <source>Complete</source>
         <translation>完了</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="472"/>
+        <location filename="../../gui/strain_window.py" line="468"/>
         <source>Strain computation cancelled.</source>
         <translation>ひずみ計算をキャンセルしました。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="477"/>
+        <location filename="../../gui/strain_window.py" line="473"/>
         <source>Strain computation complete.</source>
         <translation>ひずみ計算が完了しました。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="482"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ パラメータが変更されました — 「ひずみを計算」をクリックしてください</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="563"/>
-        <location filename="../../gui/strain_window.py" line="580"/>
+        <location filename="../../gui/strain_window.py" line="559"/>
+        <location filename="../../gui/strain_window.py" line="576"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 点を選択済み</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="582"/>
+        <location filename="../../gui/strain_window.py" line="578"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="593"/>
+        <location filename="../../gui/strain_window.py" line="589"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="593"/>
+        <location filename="../../gui/strain_window.py" line="589"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="593"/>
+        <location filename="../../gui/strain_window.py" line="589"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="652"/>
+        <location filename="../../gui/strain_window.py" line="647"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>まず 3D 解析を実行してください — ひずみには変位結果が必要です。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="656"/>
+        <location filename="../../gui/strain_window.py" line="651"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>まず試料座標系の 3 点（原点、+X、+Y）を選んでください。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="661"/>
+        <location filename="../../gui/strain_window.py" line="658"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>上のパラメーターで変位場から Green-Lagrange 表面ひずみを計算します。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="671"/>
+        <location filename="../../gui/strain_window.py" line="666"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>まず解析を実行してください — まだ結果がありません。</translation>
     </message>
@@ -3182,7 +3197,7 @@ Select the folder that now contains the camera {1} frames (file names must match
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="97"/>
+        <location filename="../../gui/widgets/view3d.py" line="98"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
@@ -3283,7 +3298,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>画像をビューポートに合わせる</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="68"/>
+        <location filename="../../gui/widgets/strain_support.py" line="71"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>現在のズーム — クリックで 100%（1:1 ピクセル）に戻します。

@@ -221,15 +221,27 @@ class TrackBothStrategy:
                 **track_kwargs["R"],
             )
 
-        # (3) assemble the CorrespondenceSet frame by frame.
+        # Partial-run bookkeeping (R2, engine 0.7): either camera may have
+        # stopped early on a user cancel. A correspondence needs BOTH cameras
+        # at frame k, so the kept prefix is the intersection of the two tracked
+        # prefixes (a cancel during the LEFT track leaves the right track zero
+        # frames — only the frame-0 stereo link survives, and the runner then
+        # treats the run as fully cancelled).
+        stopped_early = tf_L.stopped_early or tf_R.stopped_early
+        stopped_at = min(tf_L.n_tracked, tf_R.n_tracked) if stopped_early else None
+        stop_reason = tf_L.stop_reason or tf_R.stop_reason
+
+        # (3) assemble the CorrespondenceSet frame by frame. Deliberately NO
+        # stop poll here: the heavy engine work is already done, assembling the
+        # frames that DID track is cheap, and it is exactly the partial result
+        # a cancel promises to keep (untracked frames are all-NaN in tf_L/tf_R
+        # and assemble to INVALID rows on their own).
         xL = np.full((n_frames, n_pts, 2), np.nan, dtype=np.float64)
         xR = np.full((n_frames, n_pts, 2), np.nan, dtype=np.float64)
         quality = np.full((n_frames, n_pts), np.nan, dtype=np.float64)
         source = np.full((n_frames, n_pts), INVALID, dtype=np.uint8)
 
         for k in range(n_frames):
-            if stop is not None and stop():
-                break
             xl_k = coords_L + tf_L.u_accum[k]
 
             motion_r = np.full((n_pts, 2), np.nan, dtype=np.float64)
@@ -273,6 +285,9 @@ class TrackBothStrategy:
             quality=quality,
             source=source,
             diagnostics=diagnostics,
+            stopped_early=stopped_early,
+            stopped_at_frame=stopped_at,
+            stop_reason=stop_reason,
         )
 
     def _track_parallel(

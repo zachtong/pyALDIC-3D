@@ -48,8 +48,8 @@ class _EngineFrames:
     Normalization is byte-identical to the engine's eager list path: the same
     ``compute_clamped_roi`` + ``normalize_one`` on the same float64-coerced
     frames, just computed per request behind a small LRU. The engine ``.copy()``s
-    every frame it fetches (``core/pipeline.py:816,831``), so serving cached
-    arrays is safe.
+    every frame it fetches (al-dic 0.7.0 ``core/pipeline.py:987,1002``), so
+    serving cached arrays is safe.
     """
 
     _CAPACITY = 4  # ref + current frame + slack for incremental (k-1, k) pairs
@@ -94,16 +94,30 @@ class TemporalField:
     ``n_gated`` counts, per frame, the nodes invalidated by the ZNSSD honesty
     gate (F3.1: the gate must be visible, never a silent NaN) — ``None`` when
     the gate was disabled.
+
+    Partial-run bookkeeping (R2, engine 0.7 partial-results-on-cancel): a
+    cooperative stop mid-run KEEPS the tracked prefix — frames
+    ``[0, stopped_at_frame)`` carry real data, every later frame is all-NaN /
+    invalid. ``stopped_at_frame`` is the 0-based index of the first UNTRACKED
+    frame (equals the count of kept frames); ``None`` for a complete run.
     """
 
     ref_coords: NDArray[np.float64]  # (n, 2) [x, y] frame-1 mesh nodes
     u_accum: NDArray[np.float64]  # (n_frames, n, 2) [u, v]; [0] == 0
     valid: NDArray[np.bool_]  # (n_frames, n)
     n_gated: NDArray[np.int64] | None = None  # (n_frames,) honesty-gate kills
+    stopped_early: bool = False  # a cooperative stop cut the track short
+    stopped_at_frame: int | None = None  # 0-based first UNTRACKED frame
+    stop_reason: str = ""  # engine's reason string (English)
 
     @property
     def n_frames(self) -> int:
         return int(self.u_accum.shape[0])
+
+    @property
+    def n_tracked(self) -> int:
+        """Leading frames with tracked data — ``n_frames`` for a complete run."""
+        return self.n_frames if self.stopped_at_frame is None else int(self.stopped_at_frame)
 
 
 def build_grid_mesh(
@@ -156,9 +170,10 @@ def temporal_track(
             arrays, or a lazy indexed sequence serving contiguous float64 (e.g.
             :class:`al_dic_3d.sequence.LazyMaskList`), which is passed through
             unmaterialized. Default all-ones (ONE shared array — the engine
-            ``.astype``-copies what it indexes, al_dic ``core/pipeline.py:815,824``)
-            — which keeps the external mesh byte-identical so the returned
-            ``ref_coords`` equal ``mesh.coordinates_fem`` exactly.
+            ``.astype``-copies what it indexes, al-dic 0.7.0
+            ``core/pipeline.py:986,995``) — which keeps the external mesh
+            byte-identical so the returned ``ref_coords`` equal
+            ``mesh.coordinates_fem`` exactly.
         u0: optional frame-0->frame-1 seed of length ``2*n_nodes``. ``None`` lets
             ``run_aldic`` compute an FFT integer guess (robust to larger motion).
         gate_znssd: honesty gate — per frame, each node's CUMULATIVE track is
@@ -175,9 +190,14 @@ def temporal_track(
             legitimately large-deformation data.
 
     Returns:
-        A :class:`TemporalField`. Raises ``RuntimeError`` if a frame fails to
-        solve (``run_aldic`` None-filters failures, breaking positional
-        alignment — a partial run is surfaced rather than silently misaligned).
+        A :class:`TemporalField`. A cooperative stop mid-run (engine 0.7
+        partial-results contract: ``run_aldic`` RETURNS on a user cancel with
+        ``stopped_early`` set and ``result_disp`` holding the contiguous prefix
+        of completed frames) keeps the tracked frames and NaNs the rest — see
+        the ``TemporalField`` partial-run fields. Raises ``RuntimeError`` if the
+        engine drops frames WITHOUT flagging a stop (``run_aldic`` None-filters
+        failures, breaking positional alignment — surfaced rather than silently
+        misaligned).
     """
     n_frames = len(frames)
     if n_frames < 2:
@@ -228,8 +248,10 @@ def temporal_track(
                 U0=u0,
             )
     except RuntimeError:
-        # The engine raises its own abort message when stop_fn trips; normalise
-        # to the uniform cooperative-cancel contract. Genuine errors re-raise.
+        # Engine 0.7 RETURNS a partial result on a user cancel (handled below),
+        # so a RuntimeError here is a genuine failure; when the stop tripped
+        # concurrently, normalise to the uniform cooperative-cancel contract
+        # (the run was being abandoned either way).
         if stop is not None and stop():
             raise RuntimeError("cancelled") from None
         raise
@@ -237,19 +259,37 @@ def temporal_track(
         if "All nodes are NaN" in str(w.message):
             raise RuntimeError(ZERO_FILL_ERROR)
         warnings.warn_explicit(w.message, w.category, w.filename, w.lineno)
-    if stop is not None and stop():
-        raise RuntimeError("cancelled")
 
     ref_coords = np.asarray(result.dic_mesh.coordinates_fem, dtype=np.float64)
+    if ref_coords.shape[0] == 0 and getattr(result, "stopped_early", False):
+        # A stop before the FIRST frame completed leaves the engine's canonical
+        # mesh empty (PipelineResult.dic_mesh snapshots per COMPLETED frame);
+        # fall back to the external mesh so the all-NaN partial field keeps the
+        # caller's node count and the strategies' alignment checks still hold.
+        ref_coords = np.asarray(mesh.coordinates_fem, dtype=np.float64)
     n = ref_coords.shape[0]
-    if len(result.result_disp) != n_frames - 1:
+    # Engine 0.7 partial-results contract: a user cancel RETURNS a partial
+    # result with ``stopped_early`` set and ``result_disp`` holding the
+    # contiguous PREFIX of completed frames (the engine's frame loop only ever
+    # breaks — never skips — so None-filtering cannot create mid-list holes;
+    # verified against al-dic 0.7.0 core/pipeline.py:937-1712). The tracked
+    # prefix is kept; untracked frames stay NaN/invalid below.
+    n_done = len(result.result_disp)
+    stopped_early = bool(getattr(result, "stopped_early", False))
+    stop_reason = str(getattr(result, "stop_reason", "") or "")
+    if n_done >= n_frames - 1:
+        stopped_early = False  # the stop raced the final frame: nothing lost
+        stop_reason = ""
+    elif not stopped_early:
         raise RuntimeError(
-            f"run_aldic returned {len(result.result_disp)} deformed frames for "
-            f"{n_frames - 1} expected — a frame failed and positional alignment "
-            f"is unreliable (partial-run handling is deferred to Phase 2)."
+            f"run_aldic returned {n_done} deformed frames for "
+            f"{n_frames - 1} expected without flagging a stop — a frame failed "
+            f"and positional alignment is unreliable."
         )
+    stopped_at = 1 + n_done if stopped_early else None
 
-    u_accum = np.zeros((n_frames, n, 2), dtype=np.float64)
+    u_accum = np.full((n_frames, n, 2), np.nan, dtype=np.float64)
+    u_accum[0] = 0.0  # reference frame: zero displacement by definition
     valid = np.zeros((n_frames, n), dtype=bool)
     valid[0] = True  # reference frame: zero displacement, all valid
     incremental = getattr(para, "reference_mode", "accumulative") == "incremental"
@@ -277,7 +317,15 @@ def temporal_track(
     if gate_znssd > 0:
         n_gated = _gate_by_znssd(frames, mask0, ref_coords, u_accum, valid, para, gate_znssd)
 
-    return TemporalField(ref_coords=ref_coords, u_accum=u_accum, valid=valid, n_gated=n_gated)
+    return TemporalField(
+        ref_coords=ref_coords,
+        u_accum=u_accum,
+        valid=valid,
+        n_gated=n_gated,
+        stopped_early=stopped_early,
+        stopped_at_frame=stopped_at,
+        stop_reason=stop_reason,
+    )
 
 
 def _gate_by_znssd(

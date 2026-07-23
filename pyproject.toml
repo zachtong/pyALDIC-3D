@@ -47,11 +47,11 @@ dependencies = [
     # not import cv2 yet); revisit if a conflict ever surfaces.
     "opencv-python-headless>=4.7",
     # pyALDIC-2D consumed as a PINNED, READ-ONLY library (decision D11). Resolves
-    # from PyPI in CI / for users. During development, satisfy the same `==0.6.*`
+    # from PyPI in CI / for users. During development, satisfy the same `==0.7.*`
     # constraint with an editable install of the sibling repo instead:
     #     pip install -e ../pyALDIC
     # docs/DEPENDS_ON_2D.md is the ledger of exactly which al_dic symbols we use.
-    "al-dic==0.6.*",
+    "al-dic==0.7.*",
 ]
 
 [project.optional-dependencies]

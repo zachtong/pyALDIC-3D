@@ -26,7 +26,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        # `al-dic==0.6.*` resolves from PyPI (published). It transitively pulls
+        # `al-dic==0.7.*` resolves from PyPI (published). It transitively pulls
         # the full 2D stack (PySide6, numba, ...), but the Phase 0 skeleton
         # imports NONE of it, so no Qt system libraries are needed yet. Add
         # `sudo apt-get install -y libegl1 libxkbcommon0 libdbus-1-3` when the

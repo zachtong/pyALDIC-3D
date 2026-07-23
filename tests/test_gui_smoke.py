@@ -370,6 +370,23 @@ def test_run_summary_written_to_log(qapp, scene):
     text = win._right._console.toPlainText()
     assert "Frame-1 stereo match:" in text
     assert "Analysis complete —" in text and "median validity" in text
+    assert "Stopped early" not in text  # complete run: no partial-run banner
+    win.close()
+
+
+def test_run_summary_reports_stopped_early(qapp, scene):
+    # R2 (engine 0.7 partial results): a cancelled-but-kept run logs ONE honest
+    # line saying how many frames survived, instead of discarding silently.
+    win = _loaded_window(scene)
+    win.controller.run()
+    win.controller.state.result.meta.update(
+        stopped_early=True, stopped_at_frame=2, stop_reason="Computation cancelled by user."
+    )
+    win._right._on_done()
+    text = win._right._console.toPlainText()
+    assert "Stopped early at frame 2/3" in text
+    assert "kept 2 computed frames" in text
+    assert "Stopped early" in win._right._progress_lbl.text()
     win.close()
 
 

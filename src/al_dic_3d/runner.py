@@ -406,8 +406,12 @@ def run_pipeline(
 ) -> RunResult:
     """Execute the full headless correspondence + reconstruction pipeline.
 
-    ``stop`` is a cooperative-cancel poll: when it returns True the strategy
-    aborts between stages/frames and the run raises ``RuntimeError("cancelled")``.
+    ``stop`` is a cooperative-cancel poll. When it trips mid-run the frames
+    tracked so far are KEPT (engine 0.7 partial-results semantics): the run
+    returns a :class:`RunResult` whose meta records ``stopped_early`` /
+    ``stopped_at_frame`` / ``stop_reason`` and whose later frames are all-NaN.
+    Only when nothing beyond the reference frame survived does the run raise
+    ``RuntimeError("cancelled")``.
     """
     seq_base = cfg.base_dir  # image/mask specs resolve against the config-file dir
 
@@ -504,7 +508,16 @@ def run_pipeline(
         seed_point=cfg.seed_point,
     )
     cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress, stop=stop)
-    if stop is not None and stop():
+    # R2 (engine 0.7 partial-results): a cooperative cancel mid-run RETURNS a
+    # partial CorrespondenceSet (frames [0, stopped_at_frame) kept, the rest
+    # NaN). Keep it when at least one DEFORMED frame survived in both cameras;
+    # with nothing beyond the reference there is nothing worth keeping and the
+    # run cancels outright (the pre-0.7 contract). A complete set that merely
+    # RACED the stop (stopped_early False) is likewise kept, never discarded.
+    stopped_early = bool(getattr(cs, "stopped_early", False))
+    stopped_at = getattr(cs, "stopped_at_frame", None)
+    stop_reason = str(getattr(cs, "stop_reason", "") or "")
+    if stopped_early and (stopped_at is None or stopped_at <= 1):
         raise RuntimeError("cancelled")
     ref_coords = np.asarray(mesh_L.coordinates_fem, dtype=np.float64)
 
@@ -538,16 +551,28 @@ def run_pipeline(
         gates["outliers_removed"] = n1 - _n_valid_positions(rec.points)
 
     strain = None
-    if cfg.compute_strain:
-        strain = compute_surface_strain(
-            rec,
-            ref_coords,
-            strain_size=cfg.strain_size,
-            winstepsize=cfg.winstepsize,
-            smooth_sigma=cfg.strain_smooth_sigma,
-            progress_cb=progress,  # P3.5: per-frame ticks + cooperative cancel
-            stop_event=stop,
-        )
+    if cfg.compute_strain and not stopped_early:
+        # Skipped on a partial run: the stop is already tripped and the strain
+        # loop's own cooperative cancel would abort at frame 0 anyway.
+        try:
+            strain = compute_surface_strain(
+                rec,
+                ref_coords,
+                strain_size=cfg.strain_size,
+                winstepsize=cfg.winstepsize,
+                smooth_sigma=cfg.strain_smooth_sigma,
+                progress_cb=progress,  # P3.5: per-frame ticks + cooperative cancel
+                stop_event=stop,
+            )
+        except RuntimeError as exc:
+            if "cancelled" not in str(exc):
+                raise
+            # A cancel DURING strain must not discard the finished displacement
+            # / 3D results (R2 partial-keeping): drop strain, note the reason.
+            strain = None
+            stop_reason = stop_reason or (
+                "Cancelled during strain computation — displacement results are complete."
+            )
 
     # F3.1: the post-run failure accounting — per-stage rows from the strategy
     # plus a summary over the FINAL reconstructed points. JSON-serializable so
@@ -569,6 +594,12 @@ def run_pipeline(
         "diagnostics": [dict(r) for r in cs.diagnostics],
         "summary": summary.to_meta(),
         "gates": gates,
+        # R2 partial-run bookkeeping (engine 0.7): frames [0, stopped_at_frame)
+        # are kept, later frames are NaN. stop_reason is also set (with
+        # stopped_early False) when only the strain pass was cancelled.
+        "stopped_early": stopped_early,
+        "stopped_at_frame": None if stopped_at is None else int(stopped_at),
+        "stop_reason": stop_reason,
     }
     return RunResult(
         strategy=cfg.strategy,

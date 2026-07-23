@@ -149,7 +149,7 @@ def page_title(pdf: PdfPages, gate: list[tuple[str, bool, str]], today: str) -> 
 
     summary = (
         "Independent stereo-DIC application scaffolded on top of the pyALDIC-2D\n"
-        "platform, consumed as a pinned, read-only library (al-dic==0.6.*). This\n"
+        "platform, consumed as a pinned, read-only library (al-dic==0.7.*). This\n"
         "phase ships structure only — no stereo/temporal algorithms. Deliverables:\n"
         "src-layout package (10 §B.1 modules), pyproject (dist al-dic-3d, CLI\n"
         "al-dic-3d), coupling ledger (docs/DEPENDS_ON_2D.md), pytest + ruff +\n"
@@ -279,7 +279,7 @@ def page_deps(pdf: PdfPages) -> None:
         ("numpy>=1.24", "arrays"),
         ("scipy>=1.10", "interpolation / linear algebra"),
         ("opencv-python-headless>=4.7", "image ops (headless; no display)"),
-        ("al-dic==0.6.*", "pinned read-only 2D engine (D11)"),
+        ("al-dic==0.7.*", "pinned read-only 2D engine (D11)"),
         ("[viz3d] pyvista, pyvistaqt", "optional 3D visualization (lazy)"),
         ("[dev] pytest, ruff, pre-commit", "test + lint + hooks"),
     ]
@@ -301,14 +301,14 @@ def page_deps(pdf: PdfPages) -> None:
     ax.text(
         0.06,
         0.55,
-        "How al-dic==0.6.* is satisfied",
+        "How al-dic==0.7.* is satisfied",
         fontsize=13,
         fontweight="bold",
         color=ACCENT,
         transform=ax.transAxes,
     )
     model = (
-        "CI / users   ->  resolves from PyPI (al-dic 0.6.0 is published)\n"
+        "CI / users   ->  resolves from PyPI (al-dic 0.7.0 is published)\n"
         "development  ->  pip install -e ../pyALDIC   (sibling repo, editable,\n"
         "                 reports 0.6.0 -> satisfies the same ==0.6.* pin)\n\n"
         "Either way the 2D repo is never modified. docs/DEPENDS_ON_2D.md records\n"

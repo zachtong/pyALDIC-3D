@@ -151,13 +151,29 @@ def summarize_run(
     )
 
 
-def summary_lines(summary: RunSummary, gates: dict | None = None) -> list[tuple[str, str]]:
+def summary_lines(
+    summary: RunSummary, gates: dict | None = None, stopped: dict | None = None
+) -> list[tuple[str, str]]:
     """English ``(level, message)`` lines for headless consumers (CLI, logs).
 
     The GUI builds its own tr()-wrapped equivalent from the same
-    :class:`RunSummary` numbers; this stays Qt-free by contract.
+    :class:`RunSummary` numbers; this stays Qt-free by contract. ``stopped``
+    accepts the run meta (or any dict with ``stopped_early`` /
+    ``stopped_at_frame`` / ``stop_reason``) and prepends the R2 partial-run
+    banner: frames ``[0, stopped_at_frame)`` were kept, the rest are NaN.
     """
     lines: list[tuple[str, str]] = []
+    if stopped and stopped.get("stopped_early"):
+        k = int(stopped.get("stopped_at_frame") or 0)
+        lines.append(
+            (
+                "warning",
+                f"stopped early at frame {k}/{summary.n_frames} — "
+                f"kept {k} computed frames (later frames are empty)",
+            )
+        )
+    elif stopped and stopped.get("stop_reason"):
+        lines.append(("warning", f"run interrupted: {stopped['stop_reason']}"))
     if summary.stereo_n_pts:
         frac = summary.stereo_n_valid / summary.stereo_n_pts
         level = "warning" if frac < LOW_VALIDITY_FRAC else "info"

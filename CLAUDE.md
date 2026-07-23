@@ -14,7 +14,7 @@
 pyALDIC-3D is an **independent application** (own repo, own project schema
 `.aldic3d`, own `AppState3D`, own workflow controllers, own 3D visualization
 layer) built **on top of** the pyALDIC-2D platform, which it consumes as a
-**pinned, read-only library** (`al-dic==0.6.*`). It is NOT a "3D mode" inside the 2D app.
+**pinned, read-only library** (`al-dic==0.7.*`). It is NOT a "3D mode" inside the 2D app.
 - Import package: `al_dic_3d` — PyPI dist: `al-dic-3d` — CLI: `al-dic-3d` — session ext: `.aldic3d`.
 - Scholarly identity is INDEPENDENT of the 2D project (decision D9): its own Zenodo concept DOI and its own standalone SoftwareX article ("Part 2"), not shared with or attached to the 2D record. N-camera support: post-v1 (D10).
 
@@ -23,7 +23,7 @@ The reference repos are how you consult the 2D engine and the algorithm. **If yo
 cannot find them, STOP and ask the user** — do not guess or reinvent.
 - Workspace = this folder (`pyALDIC-3D`).
 - Reference repos are **SIBLING directories** (same `MATLABCodes/` parent), **both READ-ONLY**:
-  - `../pyALDIC` — 2D platform (import `al_dic`), consumed as a **pinned library** (`al-dic==0.6.*`). **Do NOT modify it** (decision D11); the settings.json denies writes. The deferred 2D-platform backlog in `01 §C.1` is NOT your task.
+  - `../pyALDIC` — 2D platform (import `al_dic`), consumed as a **pinned library** (`al-dic==0.7.*`). **Do NOT modify it** (decision D11); the settings.json denies writes. The deferred 2D-platform backlog in `01 §C.1` is NOT your task.
   - `../3D-Stereo-ALDIC` — MATLAB algorithm reference.
 - Absolute paths on the author's machine (2026-07-02, orientation only):
   `C:\Users\13014\OneDrive - The University of Texas at Austin\Documents\MATLABCodes\{pyALDIC,3D-Stereo-ALDIC}`.
@@ -82,14 +82,14 @@ cannot find them, STOP and ask the user** — do not guess or reinvent.
   `docs/architecture/00_INDEX.md` changelog. Do **not** start the next phase.
 
 ## Dev setup, layout & commands (from Phase 0)
-- **Install (development)**: satisfy the `al-dic==0.6.*` pin from the sibling
+- **Install (development)**: satisfy the `al-dic==0.7.*` pin from the sibling
   source, then install this package editable:
   ```
-  pip install -e ../pyALDIC        # 2D engine, editable (reports 0.6.0)
+  pip install -e ../pyALDIC        # 2D engine, editable (reports 0.7.0)
   pip install -e ".[dev]"          # this package + pytest/ruff/pre-commit
   pre-commit install               # optional: enable hooks
   ```
-  In CI / for users, `al-dic==0.6.*` resolves from PyPI instead — the 2D repo is
+  In CI / for users, `al-dic==0.7.*` resolves from PyPI instead — the 2D repo is
   never modified either way.
 - **Run / test / lint**: `al-dic-3d --help` · `python -m al_dic_3d` ·
   `pytest` · `ruff check . && ruff format .`.

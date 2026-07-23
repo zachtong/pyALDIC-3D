@@ -85,6 +85,13 @@ class CorrespondenceSet:
     as plain JSON-serializable row dicts (see
     :mod:`al_dic_3d.matching.diagnostics`); downstream compute ignores it —
     only the runner/CLI/GUI read it to report WHY points went invalid.
+
+    Partial-run bookkeeping (R2, engine 0.7 partial-results-on-cancel): when a
+    cooperative stop fired mid-run, the leading frames ``[0, stopped_at_frame)``
+    keep their computed positions and every later frame is all-NaN/``INVALID``
+    (the normal invalid contract — downstream needs no special casing).
+    ``stopped_at_frame`` is the 0-based index of the FIRST frame without data,
+    which for a prefix equals the count of kept frames.
     """
 
     strategy: str
@@ -93,6 +100,9 @@ class CorrespondenceSet:
     quality: NDArray[np.float64]  # (n_frames, n_pts) ZNSSD
     source: NDArray[np.uint8]  # (n_frames, n_pts): TRACKED/STEREO_REFRESH/RESCUED/INVALID
     diagnostics: tuple[dict, ...] = ()  # JSON-serializable failure accounting
+    stopped_early: bool = False  # a cooperative stop cut the run short
+    stopped_at_frame: int | None = None  # 0-based first frame WITHOUT data
+    stop_reason: str = ""  # engine/strategy reason (English, for logs/meta)
 
     def __post_init__(self) -> None:
         if self.xL.shape != self.xR.shape or self.xL.ndim != 3 or self.xL.shape[2] != 2:

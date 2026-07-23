@@ -3,20 +3,22 @@
 The GUI's INITIAL GUESS choice maps onto the ONLY lever the pinned 2D engine
 exposes for external-mesh runs: the ``U0`` argument of ``run_aldic``. With an
 external mesh (how :func:`al_dic_3d.matching.temporal.temporal_track` always
-calls it), the engine behaves as follows (verified in
-``al_dic/core/pipeline.py``, v0.6.0):
+calls it), the engine behaves as follows (re-verified in
+``al_dic/core/pipeline.py``, v0.7.0):
 
-- ``need_fft = mesh is None or U0 is None`` (pipeline.py:887): passing ``U0``
-  SKIPS the frame-1 FFT integer search entirely; omitting it runs FFT once on
-  frame 1 (the FFT grid is interpolated onto the external mesh,
-  pipeline.py:1055-1089).
+- ``need_fft = dic_mesh is None or current_U0 is None`` (pipeline.py:1058):
+  passing ``U0`` SKIPS the frame-1 FFT integer search entirely; omitting it
+  runs FFT once on frame 1 (the FFT grid is interpolated onto the external
+  mesh, pipeline.py:1240-1274).
 - Frames >= 2 always warm-start from the previous converged field on the same
-  reference ("sibling reuse", pipeline.py:1113-1160). The per-frame FFT force
-  of ``init_guess_mode == "fft"`` (pipeline.py:855-864) and the periodic
-  ``fft_reset_interval`` (pipeline.py:869-880) are BOTH explicitly skipped when
-  the mesh is external, so they are NOT controllable from here.
+  reference ("sibling reuse", pipeline.py:1297-1372). The per-frame FFT force
+  of ``init_guess_mode == "fft"`` (pipeline.py:1026-1035) and the periodic
+  ``fft_reset_interval`` (pipeline.py:1037-1051) are BOTH explicitly skipped
+  when the mesh is external, so they are NOT controllable from here. (0.7
+  flipped the ``init_guess_mode`` DEFAULT to ``"fft"`` — a no-op here because
+  of that same external-mesh skip.)
 - A reference switch (incremental mode) clears the warm start and forces FFT
-  (pipeline.py:795-807) in every mode.
+  (pipeline.py:966-979) in every mode.
 
 Hence the three 3D modes map to:
 

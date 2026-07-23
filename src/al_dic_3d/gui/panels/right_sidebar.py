@@ -96,8 +96,9 @@ class RightSidebar3D(QWidget):
         self._cancel_btn.setEnabled(False)
         self._cancel_btn.setToolTip(
             self.tr(
-                "Cancel the current analysis. Already-computed frames are "
-                "kept; the run is marked as IDLE (not DONE)."
+                "Cancel the current analysis. Frames computed so far are kept "
+                "as a partial result; only when nothing was computed yet does "
+                "the run return to IDLE."
             )
         )
         self._cancel_btn.setIcon(icon_stop())
@@ -540,6 +541,11 @@ class RightSidebar3D(QWidget):
         self._remaining_lbl.setText(self.tr("REMAINING  {0}").format("00:00"))
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
+        result = self.controller.state.result
+        if result is not None and (result.meta or {}).get("stopped_early"):
+            # R2: a cancelled-but-kept run must not leave the G2.6 "Cancelling…"
+            # label behind — say what actually happened.
+            self._progress_lbl.setText(self.tr("Stopped early — partial results kept"))
         self._log_run_summary()
         self.signals.set_run_state("done")
         self.signals.results_changed.emit()
@@ -561,6 +567,20 @@ class RightSidebar3D(QWidget):
         from al_dic_3d.matching.diagnostics import LOW_VALIDITY_FRAC, summarize_run
 
         s = summarize_run(result.correspondence, result.reconstruction.points)
+        # R2 (engine 0.7 partial results): a cancelled-but-kept run announces
+        # itself FIRST — one honest line saying how many frames survived.
+        meta = result.meta or {}
+        if meta.get("stopped_early"):
+            k = int(meta.get("stopped_at_frame") or 0)
+            self._append_log(
+                self.tr(
+                    "Stopped early at frame {0}/{1} — kept {2} computed frames "
+                    "(later frames are empty)"
+                ).format(k, s.n_frames, k),
+                "warn",
+            )
+        elif meta.get("stop_reason"):
+            self._append_log(self.tr("Run interrupted: {0}").format(meta["stop_reason"]), "warn")
         if s.stereo_n_pts:
             frac = s.stereo_n_valid / s.stereo_n_pts
             self._append_log(

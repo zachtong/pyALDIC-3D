@@ -185,7 +185,7 @@ def _run_command(args: argparse.Namespace) -> int:
     from al_dic_3d.matching.diagnostics import summarize_run, summary_lines
 
     summary = summarize_run(result.correspondence, result.reconstruction.points)
-    for level, msg in summary_lines(summary, m.get("gates")):
+    for level, msg in summary_lines(summary, m.get("gates"), stopped=m):
         if level in ("warning", "error"):
             print(f"{level}: {msg}", file=sys.stderr)
         else:

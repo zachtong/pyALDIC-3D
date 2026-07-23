@@ -3,7 +3,7 @@
 An **independent application** (import package ``al_dic_3d``, distribution
 ``al-dic-3d``, CLI ``al-dic-3d``, session format ``.aldic3d``) built on top of
 the pyALDIC-2D platform, which it consumes as a **pinned, read-only library**
-(``al-dic==0.6.*``). It is NOT a "3D mode" inside the 2D app.
+(``al-dic==0.7.*``). It is NOT a "3D mode" inside the 2D app.
 
 The stereo/temporal-correlation algorithms are not implemented yet; this is the
 Phase 0 scaffold. See ``docs/architecture/`` (start with ``00_INDEX.md``) for the

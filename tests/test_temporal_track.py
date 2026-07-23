@@ -72,6 +72,58 @@ def test_temporal_track_recovers_cumulative_affine():
         assert np.median(err) < 0.05, f"frame {k}: median err {np.median(err):.3f}px"
 
 
+def test_temporal_track_cancel_keeps_partial_frames():
+    # Engine 0.7 partial-results-on-cancel: a mid-run stop RETURNS the frames
+    # tracked so far (stopped_early set) instead of raising. temporal_track must
+    # keep that prefix valid, NaN every untracked frame, and surface the stop.
+    h = w = 260
+    n_frames = 4
+    f0 = _speckle(h, w)
+    frames = [f0] + [_warp(f0, _affine_k(k)) for k in range(1, n_frames)]
+
+    para = make_local_dicpara(img_size=(h, w), roi=(40, w - 40, 40, h - 40), winsize=32)
+    mesh = build_grid_mesh(para, h, w)
+    coords = np.asarray(mesh.coordinates_fem, dtype=np.float64)
+
+    polls = {"n": 0}
+
+    def stop() -> bool:
+        # The engine polls once per frame at its loop head: poll 1 (frame 1)
+        # passes, poll 2 (frame 2) trips -> exactly one deformed frame tracked.
+        polls["n"] += 1
+        return polls["n"] > 1
+
+    tf = temporal_track(frames, mesh, para, stop=stop)
+
+    assert tf.stopped_early
+    assert tf.stopped_at_frame == 2  # frames 0..1 kept; frame 2 never tracked
+    assert tf.n_tracked == 2
+    assert tf.stop_reason  # the engine's honest reason string travels along
+    assert tf.valid[0].all()
+    gt = _apply(_affine_k(1), coords) - coords
+    good = tf.valid[1]
+    assert good.mean() > 0.9  # the kept frame is REAL tracked data
+    assert np.median(np.linalg.norm(tf.u_accum[1][good] - gt[good], axis=1)) < 0.05
+    for k in (2, 3):  # untracked frames: NaN per the existing invalid contract
+        assert not tf.valid[k].any()
+        assert np.isnan(tf.u_accum[k]).all()
+
+
+def test_temporal_track_complete_run_is_not_stopped():
+    # A run that finishes every frame reports no stop even if the caller's
+    # stop callback would trip afterwards (nothing was lost).
+    h = w = 260
+    f0 = _speckle(h, w)
+    frames = [f0, _warp(f0, _affine_k(1))]
+    para = make_local_dicpara(img_size=(h, w), roi=(40, w - 40, 40, h - 40), winsize=32)
+    mesh = build_grid_mesh(para, h, w)
+    tf = temporal_track(frames, mesh, para)
+    assert not tf.stopped_early
+    assert tf.stopped_at_frame is None
+    assert tf.n_tracked == 2
+    assert tf.stop_reason == ""
+
+
 def test_resample_to_points_linear_field_is_exact():
     # A field that is exactly affine in (x, y) is reproduced exactly by linear interp.
     rng = np.random.default_rng(0)

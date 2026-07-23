@@ -23,7 +23,7 @@ I/O、网格处理、GUI 组件与导出基础设施，以库依赖方式引入�
 
 | 仓库（相对路径） | 角色 | GitHub |
 |---|---|---|
-| `../pyALDIC` | 2D 平台（包 `al-dic`，PyPI 已发布 v0.6.0）——库依赖，只经声明缝隙修改 | `zachtong/pyALDIC` |
+| `../pyALDIC` | 2D 平台（包 `al-dic`，PyPI 已发布 v0.7.0）——库依赖，只经声明缝隙修改 | `zachtong/pyALDIC` |
 | `../3D-Stereo-ALDIC` | MATLAB 算法参考（只读；只信任 `gui/runPipelineCore.m` 主路径） | `zachtong/3D-Stereo-ALDIC` |
 | `../StereoDIC_Challenge_1`, `../StereoDIC_Challenge_2` | 验证数据集 | — |
 | `../ADIC3D-main`, `../MultiDIC-1.1.0` | 第三方立体 DIC 实现（策略对照参考） | — |

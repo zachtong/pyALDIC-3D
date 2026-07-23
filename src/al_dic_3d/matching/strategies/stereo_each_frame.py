@@ -134,8 +134,13 @@ class StereoEachFrameStrategy:
 
         diag: list[dict] = list(temporal_rows("L", tf_L))
         prev_d = np.zeros((n_pts, 2), dtype=np.float64)  # warm-start seed (last good disparity)
+        # Partial-run bookkeeping (R2): S2 does REAL per-frame stereo work, so
+        # the loop still honours the stop — frames matched before the break are
+        # kept (they are already written into xL/xR), later frames stay NaN.
+        loop_stopped_at: int | None = None
         for k in range(n_frames):
             if stop is not None and stop():
+                loop_stopped_at = k
                 break
             xl_k = coords_L + tf_L.u_accum[k]  # tracked left positions in L_k
             valid_l = tf_L.valid[k] & np.isfinite(xl_k).all(axis=1)
@@ -192,6 +197,15 @@ class StereoEachFrameStrategy:
             if progress is not None:
                 progress((k + 1) / n_frames, f"stereo_each_frame {k + 1}/{n_frames}")
 
+        stopped_early = tf_L.stopped_early or loop_stopped_at is not None
+        stopped_at = None
+        stop_reason = ""
+        if stopped_early:
+            stopped_at = min(
+                tf_L.n_tracked,
+                n_frames if loop_stopped_at is None else loop_stopped_at,
+            )
+            stop_reason = tf_L.stop_reason or "Computation cancelled by user."
         return CorrespondenceSet(
             strategy=self.name,
             xL=xL,
@@ -199,4 +213,7 @@ class StereoEachFrameStrategy:
             quality=quality,
             source=source,
             diagnostics=tuple(diag),
+            stopped_early=stopped_early,
+            stopped_at_frame=stopped_at,
+            stop_reason=stop_reason,
         )
