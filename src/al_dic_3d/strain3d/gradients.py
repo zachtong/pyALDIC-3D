@@ -21,12 +21,21 @@ Nodes whose fit is rank-deficient or near the numerical cutoff (where SVD
 implementations may legitimately disagree) are re-fit with the original
 per-node ``np.linalg.lstsq`` path, so results match the historical loop to
 machine precision everywhere (equivalence enforced by tests).
+
+R3 stacks a Numba engine on top (:mod:`al_dic_3d.strain3d.kernels`): a
+``prange`` closed-form normal-equations kernel over the same neighbour table.
+``engine="auto"`` (default) uses it when numba imports and silently falls back
+to the batched-SVD path otherwise; both engines share the neighbour cache, the
+``min_neighbors -> NaN`` contract, and the exact per-node lstsq fallback for
+degenerate nodes (equivalence < 1e-9 enforced by tests).
 """
 
 from __future__ import annotations
 
 import numpy as np
 from numpy.typing import NDArray
+
+from al_dic_3d.strain3d import kernels as _kernels
 
 MIN_NEIGHBORS = 9  # minimum nodes in a VSG for a stable plane + gradient fit
 
@@ -206,50 +215,23 @@ def _batched_lstsq(
     return x, degenerate
 
 
-def fit_gradients(
-    ref_2d: NDArray[np.float64],
+def _fit_batched(
+    coef: NDArray[np.float64],
+    idx_map: NDArray[np.int64],
+    nbr: NDArray[np.int64],
+    counts: NDArray[np.int64],
+    ok: NDArray[np.bool_],
+    finite: NDArray[np.bool_],
     ref_3d: NDArray[np.float64],
     disp: NDArray[np.float64],
-    vsg_radius: float,
-    *,
-    coordinate: str = "local",
-    specimen_R: NDArray[np.float64] | None = None,
-    min_neighbors: int = MIN_NEIGHBORS,
-    neighbor_cache: dict | None = None,
-) -> NDArray[np.float64]:
-    """Per-node displacement-gradient matrices ``(n, 3, 3)`` = ``d(disp_j)/d(axis_i)``.
+    coordinate: str,
+    specimen_R: NDArray[np.float64] | None,
+) -> list[tuple[int, NDArray[np.int64]]]:
+    """Batched min-norm SVD engine (P3.5): fills ``coef`` for the ``ok`` nodes.
 
-    Args:
-        ref_2d: ``(n, 2)`` reference node coords in the left image (VSG search space).
-        ref_3d: ``(n, 3)`` reference 3D world coords (Lagrangian fit).
-        disp: ``(n, 3)`` cumulative displacement.
-        vsg_radius: Chebyshev (square-window) radius in pixels = ``0.5*strain_length``.
-        coordinate: ``"local"`` (per-node tangent frame, default), ``"camera0"`` (world
-            frame, keeps the z-derivative row), or ``"specific"`` (fixed ``specimen_R``).
-        specimen_R: ``(3, 3)`` specimen frame for ``coordinate="specific"``.
-        neighbor_cache: optional dict reused across frames of one run so the
-            neighbour table is built once per validity pattern (P3.5); the
-            caller must key its lifetime to fixed ``ref_2d``/``vsg_radius``.
-
-    Returns:
-        ``(n, 3, 3)`` with rows = derivative axis, columns = displacement component;
-        ``NaN`` rows for void nodes (fewer than ``min_neighbors`` finite neighbours).
+    Returns the degenerate nodes as ``(original_index, neighbour_selection)``
+    pairs for the caller's exact per-node lstsq fallback.
     """
-    ref_2d = np.asarray(ref_2d, dtype=np.float64).reshape(-1, 2)
-    ref_3d = np.asarray(ref_3d, dtype=np.float64).reshape(-1, 3)
-    disp = np.asarray(disp, dtype=np.float64).reshape(-1, 3)
-    n = ref_2d.shape[0]
-
-    finite = np.isfinite(ref_2d).all(1) & np.isfinite(ref_3d).all(1) & np.isfinite(disp).all(1)
-    coef = np.full((n, 3, 3), np.nan, dtype=np.float64)
-    if finite.sum() < min_neighbors:
-        return coef
-
-    idx_map, nbr, counts = _neighbor_table(ref_2d, finite, vsg_radius, neighbor_cache)
-    ok = counts >= min_neighbors
-    if not ok.any():
-        return coef
-
     nodes = idx_map[ok]  # original indices of the fitted nodes
     rows = counts[ok]
     nbr_ok = nbr[ok]
@@ -281,12 +263,110 @@ def fit_gradients(
         coef[nodes, 1] = grad[:, 1]
         coef[nodes, 2] = 0.0  # surface gauge: out-of-plane derivative dropped
 
-    if degenerate.any():
-        # Exact-parity fallback: rank-deficient / near-cutoff systems rerun
-        # the original per-node lstsq path (same neighbour sets).
-        for pos in np.flatnonzero(degenerate):
-            sel = idx_map[nbr_ok[pos][~pad[pos]]]
-            _fit_node_into(coef, int(nodes[pos]), sel, ref_3d, disp, coordinate, specimen_R)
+    return [
+        (int(nodes[pos]), idx_map[nbr_ok[pos][~pad[pos]]]) for pos in np.flatnonzero(degenerate)
+    ]
+
+
+def _fit_numba(
+    coef: NDArray[np.float64],
+    idx_map: NDArray[np.int64],
+    nbr: NDArray[np.int64],
+    counts: NDArray[np.int64],
+    finite: NDArray[np.bool_],
+    ref_3d: NDArray[np.float64],
+    disp: NDArray[np.float64],
+    coordinate: str,
+    specimen_R: NDArray[np.float64] | None,
+    min_neighbors: int,
+) -> list[tuple[int, NDArray[np.int64]]]:
+    """Numba closed-form engine (R3): fills ``coef`` for all fit-worthy nodes.
+
+    Same return contract as :func:`_fit_batched`; nodes the kernel flags as
+    (near-)degenerate are left for the exact per-node lstsq fallback.
+    """
+    if coordinate == "camera0":
+        mode = _kernels.MODE_CAMERA0
+    elif coordinate == "specific" and specimen_R is not None:
+        mode = _kernels.MODE_SPECIFIC
+    else:
+        mode = _kernels.MODE_LOCAL
+    rmat = specimen_R if mode == _kernels.MODE_SPECIFIC else np.eye(3)
+    coef_f, degen = _kernels.fit_kernel(
+        ref_3d[finite], disp[finite], nbr, counts, min_neighbors, mode, rmat
+    )
+    coef[idx_map] = coef_f
+    return [(int(idx_map[pos]), idx_map[nbr[pos, : counts[pos]]]) for pos in np.flatnonzero(degen)]
+
+
+def fit_gradients(
+    ref_2d: NDArray[np.float64],
+    ref_3d: NDArray[np.float64],
+    disp: NDArray[np.float64],
+    vsg_radius: float,
+    *,
+    coordinate: str = "local",
+    specimen_R: NDArray[np.float64] | None = None,
+    min_neighbors: int = MIN_NEIGHBORS,
+    neighbor_cache: dict | None = None,
+    engine: str = "auto",
+) -> NDArray[np.float64]:
+    """Per-node displacement-gradient matrices ``(n, 3, 3)`` = ``d(disp_j)/d(axis_i)``.
+
+    Args:
+        ref_2d: ``(n, 2)`` reference node coords in the left image (VSG search space).
+        ref_3d: ``(n, 3)`` reference 3D world coords (Lagrangian fit).
+        disp: ``(n, 3)`` cumulative displacement.
+        vsg_radius: Chebyshev (square-window) radius in pixels = ``0.5*strain_length``.
+        coordinate: ``"local"`` (per-node tangent frame, default), ``"camera0"`` (world
+            frame, keeps the z-derivative row), or ``"specific"`` (fixed ``specimen_R``).
+        specimen_R: ``(3, 3)`` specimen frame for ``coordinate="specific"``.
+        neighbor_cache: optional dict reused across frames of one run so the
+            neighbour table is built once per validity pattern (P3.5); the
+            caller must key its lifetime to fixed ``ref_2d``/``vsg_radius``.
+        engine: ``"auto"`` (Numba kernel when numba imports, else the batched
+            SVD path — the default), ``"numba"`` (require the kernel), or
+            ``"batched"`` (force the P3.5 batched-SVD path).
+
+    Returns:
+        ``(n, 3, 3)`` with rows = derivative axis, columns = displacement component;
+        ``NaN`` rows for void nodes (fewer than ``min_neighbors`` finite neighbours).
+    """
+    if engine not in ("auto", "numba", "batched"):
+        raise ValueError(f"unknown engine {engine!r}; expected 'auto', 'numba' or 'batched'")
+    if engine == "auto":
+        engine = "numba" if _kernels.HAS_NUMBA else "batched"
+    elif engine == "numba" and not _kernels.HAS_NUMBA:
+        raise RuntimeError("engine='numba' requested but numba is not importable")
+
+    ref_2d = np.asarray(ref_2d, dtype=np.float64).reshape(-1, 2)
+    ref_3d = np.asarray(ref_3d, dtype=np.float64).reshape(-1, 3)
+    disp = np.asarray(disp, dtype=np.float64).reshape(-1, 3)
+    n = ref_2d.shape[0]
+
+    finite = np.isfinite(ref_2d).all(1) & np.isfinite(ref_3d).all(1) & np.isfinite(disp).all(1)
+    coef = np.full((n, 3, 3), np.nan, dtype=np.float64)
+    if finite.sum() < min_neighbors:
+        return coef
+
+    idx_map, nbr, counts = _neighbor_table(ref_2d, finite, vsg_radius, neighbor_cache)
+    ok = counts >= min_neighbors
+    if not ok.any():
+        return coef
+
+    if engine == "numba":
+        fallback = _fit_numba(
+            coef, idx_map, nbr, counts, finite, ref_3d, disp, coordinate, specimen_R, min_neighbors
+        )
+    else:
+        fallback = _fit_batched(
+            coef, idx_map, nbr, counts, ok, finite, ref_3d, disp, coordinate, specimen_R
+        )
+
+    # Exact-parity fallback: rank-deficient / near-cutoff systems rerun the
+    # original per-node lstsq path (same neighbour sets).
+    for node, sel in fallback:
+        _fit_node_into(coef, node, sel, ref_3d, disp, coordinate, specimen_R)
 
     return coef
 

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from numpy.typing import NDArray
 
+from al_dic_3d.strain3d import kernels
 from al_dic_3d.strain3d.gradients import MIN_NEIGHBORS, fit_gradients, green_lagrange_strain
 from al_dic_3d.strain3d.model import STRAIN_FIELDS, StrainResult3D
 
@@ -149,6 +150,7 @@ def compute_surface_strain(
     vsg_radius = 0.5 * strain_length
     stop_fn = stop_event.is_set if hasattr(stop_event, "is_set") else stop_event
     neighbor_cache: dict = {}  # one VSG table per validity pattern (P3.5)
+    kernels.warmup()  # R3: JIT compile/cache-load BEFORE the loop (honest frame ETAs)
 
     fields = {name: np.full((n_frames, n_pts), np.nan, dtype=np.float64) for name in STRAIN_FIELDS}
     for k in range(n_frames):
