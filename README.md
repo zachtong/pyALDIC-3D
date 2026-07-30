@@ -13,7 +13,7 @@ displacement, and surface strain from a synchronized two-camera setup.**
 </p>
 
 <p align="center">
-  <img src="assets/main_page.png" alt="pyALDIC-3D main window — three-column layout: dual-camera import + calibration + ROI + parameters on the left, interactive canvas in the center, run controls + fields + 3D view + log on the right" width="92%"/>
+  <img src="https://raw.githubusercontent.com/zachtong/pyALDIC-3D/main/assets/main_page.png" alt="pyALDIC-3D main window — three-column layout: dual-camera import + calibration + ROI + parameters on the left, interactive canvas in the center, run controls + fields + 3D view + log on the right" width="92%"/>
 </p>
 
 ---
@@ -56,24 +56,36 @@ into idiomatic, tested Python — not a literal translation.
 | **i18n & robustness** | GUI translated into **8 languages** (en, zh_CN, zh_TW, ja, ko, de, fr, es); pre-run RAM check with fail-fast projection; partial-results-kept-on-cancel; per-frame validity diagnostics surfaced in the log. |
 
 <p align="center">
-  <img src="assets/strain_window.png" alt="Surface strain window — colormapped strain field with colorbar, coordinate-system and strain-type selectors, and frame navigation" width="47%"/>
+  <img src="https://raw.githubusercontent.com/zachtong/pyALDIC-3D/main/assets/strain_window.png" alt="Surface strain window — colormapped strain field with colorbar, coordinate-system and strain-type selectors, and frame navigation" width="47%"/>
   &nbsp;
-  <img src="assets/export_window.png" alt="Export dialog — data, images, animation, and 3D-view export pages with field and format selection" width="47%"/>
+  <img src="https://raw.githubusercontent.com/zachtong/pyALDIC-3D/main/assets/export_window.png" alt="Export dialog — data, images, animation, and 3D-view export pages with field and format selection" width="47%"/>
 </p>
 
 ---
 
 ## Install
 
-pyALDIC-3D targets **Python ≥ 3.10** and installs from source (it is in active
-pre-release development). The `al-dic==0.7.*` 2D engine resolves automatically from PyPI.
+pyALDIC-3D targets **Python ≥ 3.10**. The `al-dic==0.7.*` 2D engine resolves
+automatically from PyPI.
+
+### From PyPI — available from v1.0.0
+
+Releases from **v1.0.0** onward are published on PyPI as
+[`al-dic-3d`](https://pypi.org/project/al-dic-3d/) (see
+[`docs/RELEASING.md`](docs/RELEASING.md) for the release process):
 
 ```bash
 # 1. Create an environment (conda shown; a venv works too)
 conda create -n pyaldic3d python=3.12
 conda activate pyaldic3d
 
-# 2. Clone and install with the GUI + 3D-view extras
+# 2. Install with the GUI + 3D-view extras
+pip install "al-dic-3d[gui,viz3d]"
+```
+
+### From source (development)
+
+```bash
 git clone https://github.com/zachtong/pyALDIC-3D.git
 cd pyALDIC-3D
 pip install -e ".[gui,viz3d]"
@@ -253,12 +265,29 @@ validation reports in the architecture docs for measured results.
 
 ## Citation
 
-pyALDIC-3D has its **own scholarly identity**, independent of the 2D project. A dedicated
-Zenodo record (concept DOI) and a standalone *SoftwareX* article ("Part 2") are
-forthcoming; this section will be updated on publication.
+pyALDIC-3D has its **own scholarly identity**, independent of the 2D project. Citation
+metadata ships in [`CITATION.cff`](CITATION.cff) — GitHub renders a *"Cite this
+repository"* button from it. A dedicated **Zenodo concept DOI is pending the first
+public release** (Zenodo mints it automatically when the first GitHub Release is
+published; it will then be added here and to `CITATION.cff`), and a standalone
+*SoftwareX* article ("Part 2") is forthcoming.
 
-Until then, if you use pyALDIC-3D in your research, please cite the underlying method, the
-MATLAB reference it ports, and the 2D software it is built on:
+To cite the software itself today:
+
+```bibtex
+@software{tong2026pyaldic3dsoftware,
+  author  = {Tong, Zixiang},
+  title   = {pyALDIC-3D: stereo / 3D Digital Image Correlation built on the
+             pyALDIC platform},
+  year    = {2026},
+  url     = {https://github.com/zachtong/pyALDIC-3D},
+  version = {1.0.0},
+  note    = {Zenodo DOI pending first release}
+}
+```
+
+Please also cite the underlying method, the MATLAB reference it ports, and the 2D
+software it is built on:
 
 ```bibtex
 @article{tong2025stereoaldic,
@@ -300,9 +329,21 @@ when available.*
 
 ---
 
+## Releases & versioning
+
+Package versions follow the single source of truth `__version__` in
+`src/al_dic_3d/__init__.py` (git tags `vX.Y.Z`, published to PyPI by CI). The "v1.x"
+numbers in the [`docs/architecture/00_INDEX.md`](docs/architecture/00_INDEX.md)
+changelog are **internal documentation milestones**, not package versions. The full
+release runbook (PyPI Trusted Publishing, Zenodo DOI) lives in
+[`docs/RELEASING.md`](docs/RELEASING.md).
+
+---
+
 ## License
 
-BSD 3-Clause. See [LICENSE](LICENSE).
+BSD 3-Clause. See [LICENSE](LICENSE). The `al-dic` 2D engine dependency is likewise
+BSD-3-Clause-licensed.
 
 ## Acknowledgements
 

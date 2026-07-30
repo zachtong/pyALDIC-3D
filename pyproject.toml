@@ -24,7 +24,7 @@ keywords = [
     "surface-strain",
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     # License metadata lives once in the SPDX `license` field above (PEP 639);
     # no `License ::` trove classifier, which PEP 639 discourages duplicating.
@@ -103,10 +103,12 @@ include = [
     "/pyproject.toml",
     "/README.md",
     "/LICENSE",
-    "/docs/architecture",
-    "/docs/DEPENDS_ON_2D.md",
+    "/CITATION.cff",
+    "/docs",
     "/.github/workflows",
 ]
+# NOT included on purpose: examples/ (13 MB of sample tifs), assets/ (README
+# screenshots), tools/, reports/, reference/ — the sdist stays install+test lean.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

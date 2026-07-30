@@ -1,0 +1,74 @@
+# Citation metadata for pyALDIC-3D (Citation File Format 1.2.0).
+# Maintainer notes:
+# - `version` must be bumped together with src/al_dic_3d/__init__.py at every
+#   release (see docs/RELEASING.md).
+# - `date-released` and the Zenodo concept DOI are filled in at the FIRST public
+#   release: Zenodo mints the DOI when the first GitHub Release is published
+#   (do not invent a DOI before that).
+cff-version: 1.2.0
+message: >-
+  If you use pyALDIC-3D in your research, please cite it using the metadata in
+  this file, together with the method papers listed under `references`.
+type: software
+title: "pyALDIC-3D: stereo / 3D Digital Image Correlation built on the pyALDIC platform"
+abstract: >-
+  pyALDIC-3D is an independent, self-contained desktop application and headless
+  CLI for stereo (two-camera) Digital Image Correlation. It reconstructs
+  full-field 3D shape, displacement, and Green-Lagrange surface strain from
+  synchronized stereo image sequences, using the Augmented-Lagrangian DIC engine
+  of the pyALDIC 2D platform (al-dic) and following the MATLAB 3D-Stereo-ALDIC
+  reference implementation as its mathematical model.
+authors:
+  - family-names: Tong
+    given-names: Zixiang
+    alias: Zach
+    email: zachtong@utexas.edu
+    affiliation: The University of Texas at Austin
+    # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: fill in real ORCID
+license: BSD-3-Clause
+version: 1.0.0
+# date-released: YYYY-MM-DD  # TODO: set at first public release
+repository-code: "https://github.com/zachtong/pyALDIC-3D"
+url: "https://github.com/zachtong/pyALDIC-3D"
+# identifiers:
+#   - type: doi
+#     value: 10.5281/zenodo.XXXXXXX  # concept DOI — minted by Zenodo at the
+#                                    # first GitHub Release; paste it here then.
+#     description: Zenodo concept DOI (all versions)
+keywords:
+  - digital image correlation
+  - DIC
+  - stereo DIC
+  - 3D DIC
+  - stereo
+  - experimental mechanics
+  - strain measurement
+  - photogrammetry
+  - triangulation
+references:
+  - type: article
+    title: 3D Stereo Adaptive Mesh Augmented Lagrangian Digital Image Correlation
+    authors:
+      - family-names: Tong
+        given-names: Zixiang
+      - family-names: Yang
+        given-names: Jin
+    journal: Experimental Mechanics
+    year: 2025
+    doi: 10.1007/s11340-025-01225-7
+    notes: The MATLAB reference implementation this software ports.
+  - type: article
+    title: >-
+      pyALDIC: A Python Implementation of Augmented Lagrangian Digital Image
+      Correlation with a GUI, Adaptive Meshing, and Mask-Aware Subset Splitting
+    authors:
+      - family-names: Tong
+        given-names: Zixiang
+      - family-names: Yang
+        given-names: Jin
+    year: 2026
+    doi: 10.48550/arXiv.2607.22755
+    url: "https://arxiv.org/abs/2607.22755"
+    notes: >-
+      Preprint (under review) describing the pyALDIC 2D platform (al-dic) this
+      application builds on.

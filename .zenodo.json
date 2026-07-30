@@ -1,0 +1,38 @@
+{
+  "title": "pyALDIC-3D: stereo / 3D Digital Image Correlation built on the pyALDIC platform",
+  "description": "<p>pyALDIC-3D is an independent, self-contained desktop application and headless CLI for stereo (two-camera) Digital Image Correlation. It reconstructs full-field 3D shape, displacement, and Green-Lagrange surface strain from synchronized stereo image sequences, using the Augmented-Lagrangian DIC engine of the pyALDIC 2D platform (<code>al-dic</code>) and following the MATLAB 3D-Stereo-ALDIC reference implementation as its mathematical model. Features include built-in QC-instrumented stereo calibration (chessboard, ChArUco, circle-grid, coded circular targets, plus 6 import formats), three pluggable correspondence strategies, crack-aware DIC, an interactive PyVista 3D view, NPZ/MAT/CSV/PLY/VTU export, an 8-language GUI, and a TOML-driven batch CLI.</p>",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "BSD-3-Clause",
+  "creators": [
+    {
+      "name": "Tong, Zixiang (Zach)",
+      "affiliation": "The University of Texas at Austin"
+    }
+  ],
+  "keywords": [
+    "digital image correlation",
+    "DIC",
+    "stereo DIC",
+    "3D DIC",
+    "stereo",
+    "experimental mechanics",
+    "strain measurement",
+    "photogrammetry",
+    "triangulation"
+  ],
+  "related_identifiers": [
+    {
+      "relation": "references",
+      "identifier": "10.1007/s11340-025-01225-7",
+      "scheme": "doi",
+      "resource_type": "publication-article"
+    },
+    {
+      "relation": "references",
+      "identifier": "arXiv:2607.22755",
+      "scheme": "arxiv",
+      "resource_type": "publication-preprint"
+    }
+  ]
+}
