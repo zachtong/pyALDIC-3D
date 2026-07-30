@@ -24,9 +24,9 @@ authors:
     alias: Zach
     email: zachtong@utexas.edu
     affiliation: The University of Texas at Austin
-    # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: fill in real ORCID
+    orcid: "https://orcid.org/0009-0008-6807-0757"
 license: BSD-3-Clause
-version: 1.0.1
+version: 1.0.2
 date-released: "2026-07-29"
 repository-code: "https://github.com/zachtong/pyALDIC-3D"
 url: "https://github.com/zachtong/pyALDIC-3D"

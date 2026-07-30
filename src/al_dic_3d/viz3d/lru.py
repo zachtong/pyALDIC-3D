@@ -33,7 +33,16 @@ class LRUCache(OrderedDict[K, V]):
 
     def __getitem__(self, key: K) -> V:
         value = super().__getitem__(key)
-        self.move_to_end(key)
+        # py3.10's C OrderedDict dispatches internal lookups (e.g. from
+        # popitem) to this override while the key is mid-removal from the
+        # linked list; move_to_end then raises KeyError although the hash
+        # lookup above succeeded (py3.12 no longer dispatches). Skipping the
+        # recency refresh for a key that is being evicted is semantically
+        # correct, so tolerate it.
+        try:
+            self.move_to_end(key)
+        except KeyError:
+            pass
         return value
 
     def get(self, key: K, default: V | None = None) -> V | None:  # type: ignore[override]
@@ -45,4 +54,7 @@ class LRUCache(OrderedDict[K, V]):
         super().__setitem__(key, value)
         self.move_to_end(key)
         while len(self) > self.maxsize:
-            self.popitem(last=False)
+            # NOT popitem(last=False): py3.10's popitem re-enters the subclass
+            # __getitem__ mid-removal (see above). Plain del via the oldest
+            # linked-list key never dispatches back into this class.
+            del self[next(iter(self))]

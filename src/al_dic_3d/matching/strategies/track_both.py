@@ -18,7 +18,9 @@ frames. The 3D layer downstream reads only the resulting ``CorrespondenceSet``.
 
 from __future__ import annotations
 
+import sys
 import threading
+import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
@@ -307,7 +309,21 @@ class TrackBothStrategy:
             "L": dict(masks=mask_stream(seq, "L"), u0=u0_L),
             "R": dict(masks=right_masks, u0=u0_R),
         }
-        if self.parallel_cameras:
+        if self.parallel_cameras and sys.platform == "darwin":
+            # numba's default macOS threading layer (workqueue) ABORTS the
+            # process when two host threads enter JIT-parallel regions
+            # concurrently — reproduced on the first macOS CI run (Abort
+            # trap 6 in the parallel-cameras test). The measured gain is only
+            # ~1.1x (the solver already saturates all cores), so on macOS we
+            # run the two tracks sequentially instead of crashing.
+            warnings.warn(
+                "parallel camera tracking is unavailable on macOS "
+                "(numba workqueue threading-layer constraint); "
+                "running the two cameras sequentially.",
+                UserWarning,
+                stacklevel=2,
+            )
+        if self.parallel_cameras and sys.platform != "darwin":
             tf_L, tf_R = self._track_parallel(
                 left, right, mesh_L, mesh_R, para_L, para_R, track_kwargs, progress, stop
             )

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions & discussion
+    url: https://github.com/zachtong/pyALDIC-3D/discussions
+    about: Usage questions, results interpretation, and general discussion — no bug template needed.
+  - name: User guide
+    url: https://github.com/zachtong/pyALDIC-3D/tree/main/docs/user-guide
+    about: The 14-chapter manual, from installation to troubleshooting.

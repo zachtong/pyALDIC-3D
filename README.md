@@ -260,6 +260,20 @@ validation reports in the architecture docs for measured results.
 
 ---
 
+## Support & contributing
+
+- **Bug reports** — [open an issue](https://github.com/zachtong/pyALDIC-3D/issues/new/choose):
+  the template asks for the version, OS, and the LOG panel's saved output.
+- **Questions & discussion** — [GitHub Discussions](https://github.com/zachtong/pyALDIC-3D/discussions).
+- **User guide** — [`docs/user-guide/`](docs/user-guide/index.md), including a
+  troubleshooting chapter.
+
+This is young software meeting real-world setups for the first time — reports
+of *"it broke on my machine/data"* are exactly what makes it robust, and small
+shareable datasets that reproduce a problem are the fastest path to a fix.
+
+---
+
 ## Citation
 
 pyALDIC-3D has its **own scholarly identity**, independent of the 2D project. Citation

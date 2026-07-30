@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a capability or workflow improvement
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: >
+        Describe the measurement/workflow situation, not just the feature —
+        "I need to X but currently must Y" beats "add a Z button".
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: How would it ideally work? References to how other DIC tools do it are welcome.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Calibration
+        - Correspondence / tracking
+        - 3D reconstruction / strain
+        - Visualization / 3D view
+        - Export
+        - GUI / workflow
+        - CLI / scripting
+        - Documentation
+        - Other

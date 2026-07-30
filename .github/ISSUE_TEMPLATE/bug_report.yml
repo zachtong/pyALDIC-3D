@@ -1,0 +1,68 @@
+name: Bug report
+description: Something crashed, produced wrong numbers, or behaved unexpectedly
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem — user reports are how
+        this software gets hardened. Please fill in what you can; partial
+        reports are still welcome.
+  - type: input
+    id: version
+    attributes:
+      label: pyALDIC-3D version
+      description: Output of `al-dic-3d --version` (or Help → About in the GUI).
+      placeholder: "al-dic-3d 1.0.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options:
+        - pip install al-dic-3d (PyPI)
+        - Windows installer (setup.exe)
+        - From source (git clone + pip install -e)
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Windows 11 / Ubuntu 24.04 / macOS 15 (Apple Silicon)"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description: Not needed for the Windows installer.
+      placeholder: "3.12"
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: >
+        What did you do, what did you expect, and what happened instead?
+        Screenshots help a lot for GUI issues.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log output
+      description: >
+        GUI: the LOG panel has a Save… button — paste or attach the saved log.
+        CLI: paste the console output. Crash dialogs / tracebacks are gold.
+      render: text
+  - type: textarea
+    id: data
+    attributes:
+      label: Data characteristics (if analysis-related)
+      description: >
+        Image resolution, number of frames, calibration source (built-in or
+        which import format), subset/step, strategy, and whether the ROI has
+        holes/cracks. A minimal shareable dataset makes fixes dramatically
+        faster, but is never required.
