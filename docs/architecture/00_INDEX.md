@@ -64,6 +64,26 @@
 
 ## Changelog
 
+- 2026-07-30 v1.11.1 — **首个公开发布落地 + 跨平台首触修复 + G4 规模实测**
+  （`c52af1a` v1.0.1 · `2b43d69` v1.0.2 · `e7c9804` · `c0e89f9`；CI 六腿全绿）。
+  **发布**：PyPI `al-dic-3d` 上线（洁净 venv 实测）、GitHub Release 三件套（wheel/sdist/196.5MB
+  Windows 安装包）、Zenodo concept DOI `10.5281/zenodo.21696564`、作者 ORCID `0009-0008-6807-0757`
+  回填；裸装即全功能（PySide6+pyvista 入核心依赖）。
+  **跨平台首触三轮修复**：v1.0.1 py3.10 `tomllib` 不可导入（3.11+ 才入标准库 → tomli 回退依赖，
+  真实 py3.10.20 验证）+ 无 GPU runner 的 GL 测试跳过；v1.0.2 **py3.10 LRU 逐出崩溃**（py3.10 的
+  C-OrderedDict `popitem` 会分派到子类 `__getitem__`，3.12 不会 → 改 `del self[next(iter(self))]`；
+  这是真实用户级崩溃）+ **macOS numba workqueue 并发 JIT abort**（darwin 上并行双相机改串行回退，
+  实测收益本仅 ~1.1×）；`e7c9804` 串行回退的次生断言（darwin 跳过 + 平台无关回退测试）。
+  **G4 规模实测**（tools/stress_test.py，v1.0.2 引擎）：Tier A 150帧×12Mpx（27,170 节点）58.9 min、
+  峰值 RSS 5.68 GB vs 预检投影 4.63 GB（**1.20×**）；Tier B 400帧×5Mpx 48.4 min、3.06 GB vs 2.45 GB
+  （1.21×）、逐帧追踪中位 **1.02 s**；两层**全程有效率 100%**、末帧对真值 xL 0.010–0.011 px /
+  3D 点 0.002–0.004 mm（**长序列无漂移**）；60% 处取消保留 82 帧且 `stopped_early` 正确。
+  **待办（性能头号目标）**：阶段计时显示 Tier B 有 `gap_L_to_R` 951 s + `gap_R_to_assembly` 986 s
+  ＝ 32 min（**总时长 66%**）不在追踪计算内（追踪本身仅 14 min），疑为 L/R 间解码/重采样/掩膜准备的
+  串行开销 → 下轮 perf 批优先定位。内存预检公式系统性低估 ~20%（仍在 70% 预算门内，未误放行）。
+  **门 5**：issue 模板 + Discussions + README 支持节上线；代码签名经评估**决定不买**（学术受众可接受
+  SmartScreen 提示，Ncorr/DICe 同样无签名），packaging/README 保留签名步骤备用。
+
 - 2026-07-29 v1.11.0 — **发布工程波（门 1–4）：首个公开发布 = 包版本 1.0.0**
   （`c8a04ea`+`403caca`+`33b6e11`+`6fe6be6`，674 tests = 638+36，P1/P2 parity 复跑通过（管线解码
   imread→imdecode 字节一致 + 门禁双证），al-dic 升 0.7.2）。
