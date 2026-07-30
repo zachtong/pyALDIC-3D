@@ -15,6 +15,7 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QT_QPA_FONTDIR", "C:/Windows/Fonts")
 
+import sys
 import threading
 import time
 from dataclasses import replace
@@ -516,6 +517,12 @@ def test_load_config_parses_parallel_cameras(parity_cfg):
     assert load_config(alt).parallel_cameras is True
 
 
+@pytest.mark.skipif(
+    sys.platform == "darwin",
+    reason="parallel_cameras falls back to sequential on macOS (numba workqueue "
+    "threading layer aborts on concurrent JIT entry) — no dual progress there; "
+    "the fallback itself is covered platform-independently below",
+)
 def test_parallel_cameras_identical_results_and_dual_progress(parity_cfg):
     seq_result = run_pipeline(parity_cfg)
 
@@ -542,6 +549,23 @@ def test_parallel_cameras_identical_results_and_dual_progress(parity_cfg):
     assert fracs[-1] == pytest.approx(1.0)
     msgs = " | ".join(m for _, m in seen)
     assert "L: " in msgs and "R: " in msgs  # both cameras reported (serialized)
+
+
+def test_parallel_cameras_darwin_falls_back_sequential(parity_cfg, monkeypatch):
+    """On macOS the parallel path must warn and run sequentially (v1.0.2).
+
+    numba's workqueue threading layer aborts the process when two host threads
+    enter JIT-parallel regions concurrently, so track_both serializes on
+    darwin. Monkeypatching sys.platform exercises that branch on every OS.
+    """
+    import al_dic_3d.matching.strategies.track_both as tb
+
+    monkeypatch.setattr(tb.sys, "platform", "darwin")
+    with pytest.warns(UserWarning, match="parallel camera tracking is unavailable on macOS"):
+        result = run_pipeline(replace(parity_cfg, parallel_cameras=True))
+    baseline = run_pipeline(parity_cfg)
+    np.testing.assert_array_equal(result.correspondence.xL, baseline.correspondence.xL)
+    np.testing.assert_array_equal(result.correspondence.xR, baseline.correspondence.xR)
 
 
 def test_parallel_cameras_cancel_reaches_both(parity_cfg):
