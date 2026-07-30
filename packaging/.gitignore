@@ -1,0 +1,6 @@
+# PyInstaller / Inno Setup build outputs
+build/
+dist/
+*.log
+# Locally bootstrapped tools (Inno Setup, etc.)
+tools/
