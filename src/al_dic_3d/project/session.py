@@ -3,10 +3,19 @@
 A session is a versioned ZIP bundle so a project resumes exactly where it was left,
 including a completed run (a long computation is never lost on close):
 
-    session.json   - schema version, the reproducible RunConfig, UI view state,
-                     workflow step, and the run metadata (human-readable)
-    results.npz    - the correspondence / reconstruction / strain arrays
-                     (present only when a run has completed)
+    session.json         - schema version, the reproducible RunConfig, UI view
+                           state, workflow step, and the run metadata
+    results.npz          - the correspondence / reconstruction / strain arrays
+                           (present only when a run has completed)
+    roi_mask.png         - the canvas-drawn arbitrary-shape ROI mask
+    refinement_mask.png  - the brush-painted refinement mask
+
+The two mask members are OPTIONAL and additive (absent when nothing was
+painted, and absent in every pre-batch-Z bundle), so ``SCHEMA_VERSION`` stays 1
+and old sessions keep loading. They are not decoration: the ROI mask is what
+bounds correlation, the crack barrier, the strain gauge and the exports, and
+the refinement brush is freehand — neither is rebuildable from anything else in
+the bundle, so dropping them silently changed what a reopened project computed.
 
 Schema is versioned (:data:`SCHEMA_VERSION`); an unknown version raises
 :class:`SessionError` rather than silently loading a newer format. Parsing is
@@ -36,6 +45,12 @@ if TYPE_CHECKING:
 SCHEMA_VERSION = 1
 _CONFIG_NAME = "session.json"
 _RESULTS_NAME = "results.npz"
+# ProjectDraft mask ARRAY field -> optional PNG member carrying it. ndarrays are
+# not JSON-serializable, so these ride beside session.json instead of inside it.
+_MASK_MEMBERS = {
+    "roi_mask_array": "roi_mask.png",
+    "refinement_mask_array": "refinement_mask.png",
+}
 _PATH_FIELDS = ("calibration_file", "output_dir", "base_dir")
 _OPT_PATH_FIELDS = ("refinement_mask", "roi_mask")  # Path | None on RunConfig
 
@@ -116,13 +131,43 @@ _DRAFT_PATH_FIELDS = ("calibration_file", "output_dir")
 
 def _draft_to_json(draft: ProjectDraft) -> dict:
     d = dataclasses.asdict(draft)
-    # The canvas-painted masks are ndarrays — not JSON-serializable and
-    # rebuildable from the canvas; they are materialized to PNGs at build().
-    d.pop("refinement_mask_array", None)
-    d.pop("roi_mask_array", None)
+    # The canvas-painted masks are ndarrays: not JSON-serializable, so they
+    # travel as the bundle's optional PNG members (_MASK_MEMBERS) instead.
+    for name in _MASK_MEMBERS:
+        d.pop(name, None)
     for name in _DRAFT_PATH_FIELDS:
         d[name] = str(d[name]) if d[name] is not None else None
     return d
+
+
+def _mask_members(draft: ProjectDraft) -> dict[str, bytes]:
+    """Encode whichever canvas masks the draft carries as ``member -> PNG bytes``."""
+    from al_dic_3d.project.draft import encode_mask_png
+
+    out: dict[str, bytes] = {}
+    for name, member in _MASK_MEMBERS.items():
+        array = getattr(draft, name, None)
+        if array is not None:
+            out[member] = encode_mask_png(array)
+    return out
+
+
+def _apply_mask_members(draft: ProjectDraft, zf: zipfile.ZipFile, names: set[str]) -> None:
+    """Restore the mask arrays from the bundle's PNG members (absent -> None).
+
+    Absent members are the pre-batch-Z / nothing-painted case and leave the
+    field at ``None``; a member that is PRESENT but undecodable is an error —
+    silently returning None there is exactly the data loss this member fixes.
+    """
+    from al_dic_3d.project.draft import decode_mask_png
+
+    for name, member in _MASK_MEMBERS.items():
+        if member not in names:
+            continue
+        try:
+            setattr(draft, name, decode_mask_png(zf.read(member)))
+        except (OSError, ValueError) as exc:
+            raise SessionError(f"corrupt mask member {member}: {exc}") from exc
 
 
 def _draft_from_json(d: dict | None) -> ProjectDraft:
@@ -260,6 +305,9 @@ def save_session(state: AppState3D, path: str | Path, *, include_results: bool =
     path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(_CONFIG_NAME, json.dumps(session, indent=2))
+        # The canvas-painted masks (binary, image-sized): DEFLATEd PNGs, tiny.
+        for member, blob in _mask_members(state.draft).items():
+            zf.writestr(member, blob)
         if save_results:
             # P2.5: stream the results member instead of materializing it in a
             # BytesIO + getvalue() copy (2x peak memory), and STORE it — the
@@ -285,6 +333,8 @@ def parse_session(path: str | Path) -> Session3DData:
         version = int(session.get("schema_version", -1))
         if version != SCHEMA_VERSION:
             raise SessionError(f"unsupported session schema {version} (expected {SCHEMA_VERSION})")
+        draft = _draft_from_json(session.get("draft"))
+        _apply_mask_members(draft, zf, names)
         result_arrays = None
         if session.get("has_results") and _RESULTS_NAME in names:
             with np.load(io.BytesIO(zf.read(_RESULTS_NAME)), allow_pickle=False) as npz:
@@ -292,7 +342,7 @@ def parse_session(path: str | Path) -> Session3DData:
     return Session3DData(
         schema_version=version,
         config=_config_from_json(session.get("config")),
-        draft=_draft_from_json(session.get("draft")),
+        draft=draft,
         view_state=session.get("view_state", {}),
         workflow_step=int(session.get("workflow_step", 0)),
         meta={**session.get("meta", {}), "_strategy": session.get("strategy")},

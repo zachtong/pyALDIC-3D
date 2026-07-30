@@ -1,12 +1,92 @@
-"""Saved ``view_state`` -> live display-state application (G3.10 / batch Q).
+"""``view_state`` <-> live display state (G3.10 / batch Q / batch Z).
 
 Extracted from ``RightSidebar3D`` (file-size discipline): pure widget/signal
-synchronisation with NO user-facing strings, applied when a project opens.
-Pushes the dict into ``GuiSignals`` AND the sidebar's widgets (signals
-blocked), then emits ONE ``display_changed``.
+synchronisation with NO user-facing strings. :func:`capture` snapshots the live
+display state when a project is saved; :func:`apply_to_sidebar` pushes a saved
+dict into ``GuiSignals`` AND the sidebar's widgets (signals blocked), then emits
+ONE ``display_changed``. :func:`apply_to_canvas` does the same for the central
+panel's toolbar toggles — it lives here rather than on ``CanvasArea3D`` for the
+same reason ``apply_to_sidebar`` does: file-size discipline on the panels.
+
+Batch Z: both directions derive from :data:`VIEW_STATE_KEYS`. A key that is
+saved but never read back silently reverts to its default on every reload (the
+bug 2D hit with ``show_subset_window``), so the fidelity test asserts the
+capture covers exactly this list and that a session round trip reproduces it.
 """
 
 from __future__ import annotations
+
+# Toolbar toggles owned by CanvasArea3D (Show Grid / Show Subset / 3D View).
+CANVAS_VIEW_KEYS = ("show_grid", "show_subset", "view_3d")
+
+# Every key a saved view_state carries.
+VIEW_STATE_KEYS = (
+    "display_field",
+    "colormap",
+    "color_auto",
+    "color_min",
+    "color_max",
+    "overlay_alpha",
+    "show_deformed",
+    "camera",
+    "current_frame",
+    "display_unit",  # Q1
+    "frame_rate",  # Q1/Q2
+    "mesh_line_color",  # Q8
+    "mesh_line_width",  # Q8
+    *CANVAS_VIEW_KEYS,  # Z2
+)
+
+
+def capture_canvas(canvas) -> dict:
+    """The central canvas's share of a ``view_state``: :data:`CANVAS_VIEW_KEYS`."""
+    return {
+        "show_grid": canvas._grid_cb.isChecked(),
+        "show_subset": canvas._subset_cb.isChecked(),
+        "view_3d": canvas._view3d_cb.isChecked(),
+    }
+
+
+def apply_to_canvas(canvas, vs: dict) -> None:
+    """Restore the canvas toolbar toggles from a saved ``view_state``.
+
+    Signals are deliberately NOT blocked: each toggle owns real side effects
+    (the mesh-preview build, the subset-hover enable, the 2D/3D page switch)
+    that the restored view must actually have. Show Grid goes first because
+    hiding it forces Show Subset off, and the 3D page last so it renders with the
+    field/colormap the sidebar has already restored.
+    """
+    grid, subset, view3d = canvas._grid_cb, canvas._subset_cb, canvas._view3d_cb
+    grid.setChecked(bool(vs.get("show_grid", grid.isChecked())))
+    if grid.isChecked():  # else the grid toggle already forced Show Subset off
+        subset.setChecked(bool(vs.get("show_subset", subset.isChecked())))
+    view3d.setChecked(bool(vs.get("view_3d", view3d.isChecked())))
+
+
+def capture(signals, canvas) -> dict:
+    """Snapshot the live display state as a persistable ``view_state`` dict.
+
+    Keys are exactly :data:`VIEW_STATE_KEYS`: the sidebar/``GuiSignals`` half
+    below plus :func:`capture_canvas`.
+    """
+    s = signals
+    vs = {
+        "display_field": str(s.display_field),
+        "colormap": str(s.colormap),
+        "color_auto": bool(s.color_auto),
+        "color_min": float(s.color_min),
+        "color_max": float(s.color_max),
+        "overlay_alpha": float(s.overlay_alpha),
+        "show_deformed": bool(s.show_deformed),
+        "camera": str(s.current_camera),
+        "current_frame": int(s.current_frame),
+        "display_unit": str(s.display_unit),
+        "frame_rate": float(s.frame_rate),
+        "mesh_line_color": str(s.mesh_line_color),
+        "mesh_line_width": int(s.mesh_line_width),
+    }
+    vs.update(capture_canvas(canvas))
+    return vs
 
 
 def set_blocked(widget, setter) -> None:

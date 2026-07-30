@@ -87,9 +87,10 @@ mirroring the 2D app's layout:
 
 pyALDIC-3D is an **independent application** with its own project format
 (`.aldic3d`), its own workflow, and its own 3D visualization layer. It is built
-**on top of** the pyALDIC-2D correlation engine, which it consumes as a pinned,
-read-only library (`al-dic==0.7.*`) — it is not a "3D mode" bolted into the 2D
-app. It currently supports a **two-camera** stereo rig; N-camera support is a
+**on top of** the pyALDIC-2D correlation engine
+([arXiv:2607.22755](https://arxiv.org/abs/2607.22755), preprint under review),
+which it consumes as a pinned, read-only library (`al-dic==0.7.*`) — it is not a
+"3D mode" bolted into the 2D app. It currently supports a **two-camera** stereo rig; N-camera support is a
 post-v1 goal.
 
 Unlike the 2D app, pyALDIC-3D **does** require a calibration. Reconstructing 3D

@@ -10,9 +10,12 @@ Interaction is a tool-mode state machine ported from the 2D canvas:
 drawing tool (add = accent preview, cut = red preview) that rasterizes through
 the attached :class:`ROIController` on commit and auto-resets to select;
 ``set_brush_tool(mode, radius)`` arms the freehand refinement brush (paint /
-erase). Zoom: Fit / 100% / +/- and mouse wheel (anchor under mouse), clamped to
-[5 %, 4000 %]; pan with the right or middle mouse button, or hold Space for a
-hand-drag pan mode (G2.4). Qt view layer; no user-facing strings.
+erase), whose buffers and painting live in
+:class:`~al_dic_3d.gui.widgets.image_view_brush.BrushToolMixin` (mixed in here;
+split out for the 800-line file cap). Zoom: Fit / 100% / +/- and mouse wheel
+(anchor under mouse), clamped to [5 %, 4000 %]; pan with the right or middle
+mouse button, or hold Space for a hand-drag pan mode (G2.4). Qt view layer; no
+user-facing strings.
 
 ``ImageView`` is kept as a thin alias for backward compatibility.
 """
@@ -35,6 +38,8 @@ from PySide6.QtWidgets import (
     QGraphicsView,
 )
 
+from al_dic_3d.gui.widgets.image_view_brush import BrushToolMixin
+
 if TYPE_CHECKING:
     from al_dic_3d.gui.controllers.roi_controller import ROIController
 
@@ -45,7 +50,6 @@ _PEN_CUT = QPen(QColor(239, 68, 68, 200), 2)  # red #ef4444
 _PEN_CUT.setCosmetic(True)
 
 _ROI_OVERLAY_RGBA = (59, 130, 246, 80)  # blue semi-transparent mask fill
-_BRUSH_OVERLAY_RGBA = (20, 220, 200, 110)  # cyan semi-transparent brush fill
 
 _SHAPE_TOOLS = ("rect", "polygon", "circle", "circle3")
 
@@ -108,7 +112,7 @@ def gray_to_qpixmap(arr: np.ndarray) -> QPixmap:
     return QPixmap.fromImage(gray_to_qimage(arr))
 
 
-class ImageCanvas3D(QGraphicsView):
+class ImageCanvas3D(BrushToolMixin, QGraphicsView):
     """Layered, zoomable canvas: image + overlays + ROI toolbox drawing tools."""
 
     roi_mask_edited = Signal()  # a shape/brush op changed the ROI controller mask
@@ -366,56 +370,7 @@ class ImageCanvas3D(QGraphicsView):
         y = float(min(max(pos.y(), rect.top()), rect.bottom() - 1))
         self.seed_clicked.emit(x, y)  # tool stays "seed" for the next placement
 
-    # --- refinement brush -------------------------------------------------------
-
-    def set_brush_tool(self, mode: str, radius: int | None = None) -> None:
-        """Arm the freehand refinement brush ('paint' adds, 'erase' removes)."""
-        self._cancel_drawing(emit=False)
-        self._tool = "brush"
-        self._brush_mode = "erase" if mode == "erase" else "paint"
-        if radius is not None:
-            self._brush_radius = max(2, int(radius))
-        self._brush_last = None
-        self.setCursor(Qt.CursorShape.CrossCursor)
-
-    def set_brush_radius(self, radius: int) -> None:
-        """Live radius update from the toolbar spinbox."""
-        self._brush_radius = max(2, int(radius))
-
-    def brush_mask(self) -> np.ndarray | None:
-        """The painted ``(H, W)`` uint8 mask (255 = refine here), or None."""
-        return self._brush_mask
-
-    def clear_brush(self) -> None:
-        self._brush_mask = None
-        self._brush_rgba = None
-        self._brush_item.setPixmap(QPixmap())
-        self.brush_changed.emit()
-
-    def _ensure_brush_buffers(self) -> bool:
-        if not self.has_image:
-            return False
-        size = self._bg_item.pixmap().size()
-        h, w = size.height(), size.width()
-        if self._brush_mask is None or self._brush_mask.shape != (h, w):
-            self._brush_mask = np.zeros((h, w), dtype=np.uint8)
-            self._brush_rgba = np.zeros((h, w, 4), dtype=np.uint8)
-        return True
-
-    def _brush_stroke_to(self, scene_pos: QPointF) -> None:
-        import cv2
-
-        pt = (int(round(scene_pos.x())), int(round(scene_pos.y())))
-        p0 = self._brush_last or pt
-        thickness = 2 * self._brush_radius
-        erase = self._brush_mode == "erase"
-        cv2.line(self._brush_mask, p0, pt, 0 if erase else 255, thickness=thickness)
-        fill = (0, 0, 0, 0) if erase else _BRUSH_OVERLAY_RGBA
-        cv2.line(self._brush_rgba, p0, pt, fill, thickness=thickness)
-        self._brush_last = pt
-        h, w = self._brush_mask.shape
-        img = QImage(self._brush_rgba.data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
-        self._brush_item.setPixmap(QPixmap.fromImage(img.copy()))
+    # --- refinement brush: see BrushToolMixin (image_view_brush.py) ---------------
 
     # --- zoom / pan ------------------------------------------------------------
 

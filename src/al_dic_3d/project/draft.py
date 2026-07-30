@@ -14,7 +14,59 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import numpy as np
+    from numpy.typing import NDArray
+
     from al_dic_3d.runner import RunConfig
+
+
+# --- canvas mask codec -------------------------------------------------------
+# ONE encoder and ONE decoder for every place a (H, W) canvas-painted mask
+# crosses a byte boundary: the run's ``roi_mask.png`` / ``refinement_mask.png``
+# (``build()``), the ``.aldic3d`` bundle members (project.session), and the ROI
+# toolbox's import/save (gui.controllers.roi_controller delegates here). Masks
+# are BINARY by contract — every consumer thresholds with ``> 0`` — so the wire
+# form is an 8-bit grayscale PNG with 255 inside the mask.
+
+
+def encode_mask_png(array: object) -> bytes:
+    """Encode a ``(H, W)`` mask (any dtype, ``> 0`` = inside) as PNG bytes."""
+    import cv2
+    import numpy as np
+
+    arr = (np.asarray(array) > 0).astype(np.uint8) * 255
+    ok, buf = cv2.imencode(".png", arr)
+    if not ok:
+        raise OSError(f"cannot encode a {arr.shape} mask as PNG")
+    return buf.tobytes()
+
+
+def decode_mask_png(data: bytes, target_shape: tuple[int, int] | None = None) -> NDArray[np.bool_]:
+    """Decode mask-image bytes to a boolean ``(H, W)`` array.
+
+    Pixels brighter than 50 % of the image maximum are ``True``, which
+    auto-detects 0/1, 0/255 and 16-bit encodings alike (so an externally
+    authored mask imports the same way one we wrote does). The image is
+    resized nearest-neighbour when ``target_shape`` differs.
+
+    Raises:
+        OSError: when the bytes are not a decodable image.
+    """
+    import cv2
+    import numpy as np
+
+    img = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    if img is None:
+        raise OSError("cannot decode mask image data")
+    if img.ndim == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.shape[2] == 3 else img[..., 0]
+    arr = img.astype(np.float64)
+    if target_shape is not None and arr.shape[:2] != tuple(target_shape):
+        arr = cv2.resize(arr, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_NEAREST)
+    max_val = float(arr.max()) if arr.size else 0.0
+    if max_val <= 0.0:
+        return np.zeros(arr.shape, dtype=bool)
+    return arr > (max_val / 2.0)
 
 
 @dataclass
@@ -176,13 +228,9 @@ class ProjectDraft:
         """Persist a canvas-painted (H, W) mask array as ``out_dir/name`` PNG."""
         if array is None:
             return None
-        import cv2
-        import numpy as np
-
-        arr = (np.asarray(array) > 0).astype("uint8") * 255
         out_dir.mkdir(parents=True, exist_ok=True)
         path = out_dir / name
-        cv2.imwrite(str(path), arr)
+        path.write_bytes(encode_mask_png(array))  # unicode-safe (cv2.imwrite is not)
         return path
 
     def _write_refinement_mask(self, out_dir: Path) -> Path | None:

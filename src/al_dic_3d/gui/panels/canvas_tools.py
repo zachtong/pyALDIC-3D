@@ -136,6 +136,22 @@ class CanvasToolsMixin:
         self.controller.state.mark_dirty()
         self.signals.params_changed.emit()
 
+    def _sync_brush_from_draft(self) -> None:
+        """Draft -> canvas: mirror restored refinement zones into the paint buffer.
+
+        A reopened session carries its painted zones on the draft (Z1); the
+        canvas keeps its own stroke buffer, so without this the zones would be
+        invisible and the next stroke would overwrite them.
+        """
+        mask = self.controller.state.draft.refinement_mask_array
+        current = self._canvas.brush_mask()
+        if mask is None:
+            if current is not None:
+                self._canvas.set_brush_mask(None)
+            return
+        if current is None or not np.array_equal(current > 0, np.asarray(mask) > 0):
+            self._canvas.set_brush_mask(np.asarray(mask))
+
     # ---- canvas context menu (G3.1b) ---------------------------------------------
 
     def _on_canvas_menu(self, global_pos) -> None:

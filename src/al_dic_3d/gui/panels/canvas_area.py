@@ -521,6 +521,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._vel_cache.clear()
         self.render()
         self._ensure_roi_ctrl()
+        self._sync_brush_from_draft()  # Z1: restored refinement zones -> canvas
         self._schedule_mesh_preview()
 
     def _on_results(self) -> None:

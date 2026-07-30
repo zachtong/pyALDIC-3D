@@ -62,13 +62,14 @@ def test_draft_survives_session_round_trip(tmp_path):
     assert loaded.draft.build().strategy == "ref_direct"
 
 
-def test_roi_mask_array_builds_png_and_session_drops_it(tmp_path):
+def test_roi_mask_array_builds_png_and_survives_the_session(tmp_path):
     import numpy as np
 
     pytest.importorskip("cv2")
     d = _ready_draft(tmp_path)
     mask = np.zeros((40, 50), dtype=bool)
     mask[10:30, 5:45] = True
+    mask[18:22, 24] = False  # a cut-out hole: a bbox-only restore would fill it in
     d.roi_mask_array = mask
     d.output_dir = tmp_path / "out"
 
@@ -76,11 +77,14 @@ def test_roi_mask_array_builds_png_and_session_drops_it(tmp_path):
     assert cfg.roi_mask == tmp_path / "out" / "roi_mask.png"
     assert cfg.roi_mask.exists()  # PNG materialized at build()
 
-    # Session round-trip: the ndarray is dropped from JSON (like the
-    # refinement mask); bbox roi and the config's mask PATH survive.
+    # Session round-trip (batch Z): the drawn mask rides in the bundle as an
+    # optional PNG member, so a reopened project correlates the SAME region
+    # instead of degrading to the bounding box. The bbox roi and the config's
+    # mask PATH survive alongside it.
     state = AppState3D(draft=d, config=cfg)
     loaded = load_session(save_session(state, tmp_path / "p.aldic3d"))
-    assert loaded.draft.roi_mask_array is None
+    assert loaded.draft.roi_mask_array is not None
+    assert np.array_equal(np.asarray(loaded.draft.roi_mask_array), mask)
     assert loaded.draft.roi == d.roi
     assert loaded.config is not None
     assert loaded.config.roi_mask == cfg.roi_mask

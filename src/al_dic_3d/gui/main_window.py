@@ -512,30 +512,28 @@ class MainWindow3D(QMainWindow):
         # BEFORE results_changed so the first result render uses it.
         view_state = self.controller.state.view_state
         if view_state:
+            from al_dic_3d.gui.view_state import apply_to_canvas
+
             draft = self.controller.state.draft
             self._right.apply_view_state(view_state, max(len(draft.left), len(draft.right)))
+            # Z2: the canvas toolbar toggles (Show Grid / Show Subset / 3D View),
+            # applied after the sidebar so the 3D page — if that was the saved
+            # view — renders with the restored field and colormap.
+            apply_to_canvas(self._canvas_area, view_state)
         if self.controller.state.has_results:
             self.signals.results_changed.emit()
         self._right.refresh_readiness()
 
     def _capture_view_state(self) -> dict:
-        """Snapshot the GuiSignals display state for persistence (G3.10)."""
-        s = self.signals
-        return {
-            "display_field": s.display_field,
-            "colormap": s.colormap,
-            "color_auto": s.color_auto,
-            "color_min": float(s.color_min),
-            "color_max": float(s.color_max),
-            "overlay_alpha": float(s.overlay_alpha),
-            "show_deformed": s.show_deformed,
-            "camera": s.current_camera,
-            "current_frame": int(s.current_frame),
-            "display_unit": s.display_unit,  # Q1
-            "frame_rate": float(s.frame_rate),  # Q1/Q2
-            "mesh_line_color": s.mesh_line_color,  # Q8
-            "mesh_line_width": int(s.mesh_line_width),  # Q8
-        }
+        """Snapshot the display state for persistence (G3.10 / Z2).
+
+        Single-sourced in :func:`al_dic_3d.gui.view_state.capture` (keys =
+        ``VIEW_STATE_KEYS``) so the save side cannot drift away from the restore
+        side in ``_resync_all``.
+        """
+        from al_dic_3d.gui.view_state import capture
+
+        return capture(self.signals, self._canvas_area)
 
     def _new_project(self) -> None:
         if not self._confirm_unsaved():  # G1.1: dirty work is never silently dropped

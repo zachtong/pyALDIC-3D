@@ -5,7 +5,7 @@ displacement, and surface strain from a synchronized two-camera setup.**
 
 <p align="center">
   <a href="https://github.com/zachtong/pyALDIC-3D/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zachtong/pyALDIC-3D/ci.yml?style=flat-square&label=CI" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/tests-584-22c55e?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-638-22c55e?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/3D-PyVista%2FVTK-blue?style=flat-square" alt="PyVista"/>
@@ -26,8 +26,9 @@ calibration, and it reconstructs the specimen surface in 3D and tracks its
 **displacement and Green–Lagrange surface strain** through the sequence — all in
 **millimetre-native world coordinates** (the left camera is the world origin).
 
-It is built **on top of** the peer-reviewed [pyALDIC-2D](https://github.com/zachtong/pyALDIC)
-platform, which it consumes as a **pinned, read-only library** (`al-dic==0.7.*`) for the
+It is built **on top of** the [pyALDIC-2D](https://github.com/zachtong/pyALDIC) platform
+([arXiv:2607.22755](https://arxiv.org/abs/2607.22755), preprint under review), which it
+consumes as a **pinned, read-only library** (`al-dic==0.7.*`) for the
 underlying 2D correlation engine (Augmented-Lagrangian DIC: local IC-GN subproblems
 coupled to a global FEM regularizer). Everything above the 2D solver — stereo
 calibration, correspondence strategies, triangulation, 3D surface strain, the 3D
@@ -256,8 +257,8 @@ pyALDIC-3D has its **own scholarly identity**, independent of the 2D project. A 
 Zenodo record (concept DOI) and a standalone *SoftwareX* article ("Part 2") are
 forthcoming; this section will be updated on publication.
 
-Until then, if you use pyALDIC-3D in your research, please cite the underlying method and
-the MATLAB reference it ports:
+Until then, if you use pyALDIC-3D in your research, please cite the underlying method, the
+MATLAB reference it ports, and the 2D software it is built on:
 
 ```bibtex
 @article{tong2025stereoaldic,
@@ -277,7 +278,22 @@ the MATLAB reference it ports:
   year    = {2019},
   doi     = {10.1007/s11340-018-00457-0}
 }
+
+@article{tong2026pyaldic,
+  author  = {Tong, Zixiang and Yang, Jin},
+  title   = {pyALDIC: A Python Implementation of Augmented Lagrangian Digital
+             Image Correlation with a GUI, Adaptive Meshing, and Mask-Aware
+             Subset Splitting},
+  journal = {arXiv preprint arXiv:2607.22755},
+  year    = {2026},
+  doi     = {10.48550/arXiv.2607.22755},
+  url     = {https://arxiv.org/abs/2607.22755}
+}
 ```
+
+The last entry describes the 2D software this application builds on — its architecture,
+adaptive quadtree meshing and mask-aware subset splitting — and is a **preprint under
+review**, not peer-reviewed yet.
 
 *A pyALDIC-3D software DOI (Zenodo) and the SoftwareX "Part 2" citation will be added here
 when available.*
@@ -291,7 +307,8 @@ BSD 3-Clause. See [LICENSE](LICENSE).
 ## Acknowledgements
 
 pyALDIC-3D is built on the **[pyALDIC](https://github.com/zachtong/pyALDIC)** 2D platform
-(the `al-dic` package) and follows the MATLAB
+(the `al-dic` package, described in [arXiv:2607.22755](https://arxiv.org/abs/2607.22755) —
+preprint under review) and follows the MATLAB
 **[3D-Stereo-ALDIC](https://github.com/zachtong/3D-Stereo-ALDIC)** reference. Developed in
 [Dr. Jin Yang's group](https://sites.utexas.edu/jyang/) at **The University of Texas at
 Austin**.

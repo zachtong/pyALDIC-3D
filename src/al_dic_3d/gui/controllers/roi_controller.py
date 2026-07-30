@@ -10,37 +10,34 @@ read-only library). Manages a 2-D boolean mask and exposes ``add_rectangle``,
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import cv2
 import numpy as np
 from numpy.typing import NDArray
+
+from al_dic_3d.project.draft import decode_mask_png, encode_mask_png
 
 
 def read_mask_as_bool(path: str, target_shape: tuple[int, int] | None = None) -> NDArray[np.bool_]:
     """Read a mask image as a boolean array (any bit depth, unicode-safe).
 
-    Pixels brighter than 50% of the image maximum become ``True``; this
-    auto-detects 0/1 vs 0/255 vs 16-bit encodings. The image is resized
-    (nearest-neighbour) when ``target_shape`` differs.
+    Thin file-level wrapper over the shared
+    :func:`~al_dic_3d.project.draft.decode_mask_png`, so an imported PNG, a
+    mask written next to a run, and a mask restored from a ``.aldic3d`` bundle
+    are all interpreted by exactly the same rule.
 
     Raises:
         IOError: If the file cannot be read or decoded as an image.
     """
     try:
-        buf = np.fromfile(str(path), dtype=np.uint8)  # unicode-safe on Windows
+        buf = Path(path).read_bytes()  # unicode-safe on Windows
     except OSError as exc:
         raise OSError(f"cannot read mask file: {path}") from exc
-    img = cv2.imdecode(buf, cv2.IMREAD_UNCHANGED)
-    if img is None:
-        raise OSError(f"cannot decode mask image: {path}")
-    if img.ndim == 3:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.shape[2] == 3 else img[..., 0]
-    arr = img.astype(np.float64)
-    if target_shape is not None and arr.shape[:2] != tuple(target_shape):
-        arr = cv2.resize(arr, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_NEAREST)
-    max_val = float(arr.max()) if arr.size else 0.0
-    if max_val <= 0.0:
-        return np.zeros(arr.shape, dtype=bool)
-    return arr > (max_val / 2.0)
+    try:
+        return decode_mask_png(buf, target_shape=target_shape)
+    except OSError as exc:
+        raise OSError(f"cannot decode mask image: {path}") from exc
 
 
 class ROIController:
@@ -150,11 +147,7 @@ class ROIController:
         Args:
             path: Filesystem path to write the image.
         """
-        img = (self.mask.astype(np.uint8)) * 255
-        success, buf = cv2.imencode(".png", img)
-        if not success:
-            raise OSError(f"Failed to encode mask to PNG: {path}")
-        buf.tofile(path)
+        Path(path).write_bytes(encode_mask_png(self.mask))
 
     def _apply(self, canvas: NDArray[np.uint8], mode: str) -> None:
         """Apply a rasterized shape to the mask.

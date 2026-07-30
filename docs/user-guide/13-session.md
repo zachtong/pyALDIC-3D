@@ -13,10 +13,16 @@ A `.aldic3d` file is a **versioned ZIP bundle** containing:
 - **`results.npz`** — present only when a run completed **and** you chose to
   include results (stored uncompressed inside the zip because the `.npz` is
   already per-array compressed).
+- **`roi_mask.png`** — present only when you drew an arbitrary-shape ROI; the
+  ROI mask as an 8-bit grayscale PNG (255 = inside the ROI, 0 = outside).
+- **`refinement_mask.png`** — present only when you painted refinement zones
+  with the brush; same encoding.
 
 The bundle is versioned: `session.json` carries `schema_version` (currently
 **1**). Opening a file with an unknown schema, or a file that is not a zip,
-raises an error rather than misinterpreting it.
+raises an error rather than misinterpreting it. The two mask members are
+**optional**, so a session written before they existed still opens normally (it
+simply comes back with no drawn mask).
 
 `session.json` top-level keys: `schema_version`, `config` (the reproducible
 `RunConfig`, or null), `draft` (the GUI project draft), `view_state`,
@@ -31,11 +37,14 @@ raises an error rather than misinterpreting it.
   are stored as strings).
 - **The project draft** — the ROI, disparity offset, output directory, and the
   calibration file reference.
-- **The ROI** — the drawn shapes / bounding box are saved. The pixel mask array
-  is *not* embedded in the bundle: it is dropped from `session.json` and rebuilt
-  on load. (Only when a run has executed does `build()` materialize a mask PNG,
-  and that PNG lives in the run's output folder and is referenced from the config
-  by path — never stored inside the `.aldic3d` bundle.)
+- **The ROI, exactly as drawn** — the bounding box lives in `session.json` and
+  the pixel mask itself is embedded as `roi_mask.png`. Polygons, circles, cut
+  shapes, brush strokes and imported PNG masks therefore all come back
+  pixel-for-pixel: reopening a project correlates the same region it did before,
+  cut-out holes included, and a crack barrier keeps its crack-aware behaviour.
+- **The refinement brush** — embedded as `refinement_mask.png`. It feeds the
+  quadtree refinement, so keeping it is what makes a re-run of a reopened
+  session build the *same* mesh as the run it was saved with.
 - **Seeds / Starting Points** — both the legacy single `seed_point` and the
   multi-seed `seed_points` list are saved and restored (a pre-multi-seed session
   migrates the single seed into the list on open).
@@ -49,19 +58,21 @@ raises an error rather than misinterpreting it.
 
 The persisted `view_state` restores: `display_field`, `colormap`, `color_auto`,
 `color_min`, `color_max`, `overlay_alpha`, `show_deformed`, `camera` (L/R),
-`current_frame`, `display_unit`, `frame_rate`, and the mesh overlay
-`mesh_line_color` / `mesh_line_width`.
+`current_frame`, `display_unit`, `frame_rate`, the mesh overlay
+`mesh_line_color` / `mesh_line_width`, and the canvas toolbar toggles
+`show_grid` / `show_subset` / `view_3d` — so a project reopens on the view you
+left it on, 3D page included.
 
-> The interactive **3D View** camera pose / turntable state is **not** among the
-> persisted keys — only the 2D display state above plus the L/R camera choice.
+> Whether the **3D View** page was showing is persisted (`view_3d`), but its
+> camera pose / turntable state is **not**: the reopened 3D view is framed from
+> the default viewpoint.
 
 ## What is *not* saved
 
 - **The images themselves** — the bundle stores folder paths and file names,
   never pixel data. Keep the image folders (or relocate them on open, below).
-- **The canvas-painted mask ndarrays in raw form** — they are rebuildable from
-  the canvas and are written out as PNGs at save time, not embedded as arrays in
-  the JSON.
+- **The undo history of your ROI edits** — the mask is saved as pixels, so the
+  shapes you drew to get there are not individually recoverable.
 - With **include-results = No**, the `results.npz` member is skipped entirely and
   the file reopens with no results (a small, shareable, config-only project).
 
