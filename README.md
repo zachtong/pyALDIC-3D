@@ -264,12 +264,11 @@ validation reports in the architecture docs for measured results.
 
 pyALDIC-3D has its **own scholarly identity**, independent of the 2D project. Citation
 metadata ships in [`CITATION.cff`](CITATION.cff) — GitHub renders a *"Cite this
-repository"* button from it. A dedicated **Zenodo concept DOI is pending the first
-public release** (Zenodo mints it automatically when the first GitHub Release is
-published; it will then be added here and to `CITATION.cff`), and a standalone
+repository"* button from it. All versions are archived on Zenodo under the concept DOI
+[**10.5281/zenodo.21696564**](https://doi.org/10.5281/zenodo.21696564), and a standalone
 *SoftwareX* article ("Part 2") is forthcoming.
 
-To cite the software itself today:
+To cite the software itself:
 
 ```bibtex
 @software{tong2026pyaldic3dsoftware,
@@ -279,7 +278,7 @@ To cite the software itself today:
   year    = {2026},
   url     = {https://github.com/zachtong/pyALDIC-3D},
   version = {1.0.0},
-  note    = {Zenodo DOI pending first release}
+  doi     = {10.5281/zenodo.21696564}
 }
 ```
 
@@ -321,8 +320,7 @@ The last entry describes the 2D software this application builds on — its arch
 adaptive quadtree meshing and mask-aware subset splitting — and is a **preprint under
 review**, not peer-reviewed yet.
 
-*A pyALDIC-3D software DOI (Zenodo) and the SoftwareX "Part 2" citation will be added here
-when available.*
+*The SoftwareX "Part 2" article citation will be added here when available.*
 
 ---
 

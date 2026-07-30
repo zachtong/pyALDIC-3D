@@ -27,14 +27,17 @@ authors:
     # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: fill in real ORCID
 license: BSD-3-Clause
 version: 1.0.0
-# date-released: YYYY-MM-DD  # TODO: set at first public release
+date-released: "2026-07-29"
 repository-code: "https://github.com/zachtong/pyALDIC-3D"
 url: "https://github.com/zachtong/pyALDIC-3D"
-# identifiers:
-#   - type: doi
-#     value: 10.5281/zenodo.XXXXXXX  # concept DOI — minted by Zenodo at the
-#                                    # first GitHub Release; paste it here then.
-#     description: Zenodo concept DOI (all versions)
+doi: 10.5281/zenodo.21696564
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.21696564
+    description: Zenodo concept DOI (all versions)
+  - type: doi
+    value: 10.5281/zenodo.21696565
+    description: Zenodo version DOI (v1.0.0)
 keywords:
   - digital image correlation
   - DIC
