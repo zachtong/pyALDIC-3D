@@ -64,6 +64,22 @@
 
 ## Changelog
 
+- 2026-07-29 v1.11.0 — **发布工程波（门 1–4）：首个公开发布 = 包版本 1.0.0**
+  （`c8a04ea`+`403caca`+`33b6e11`+`6fe6be6`，674 tests = 638+36，P1/P2 parity 复跑通过（管线解码
+  imread→imdecode 字节一致 + 门禁双证），al-dic 升 0.7.2）。
+  **G3 异构环境加固**（`c8a04ea`）：pathsafe.py 统一 Unicode 安全 OpenCV I/O（cv2.FileStorage 在
+  Windows Unicode 路径下读写全废——标定 YAML 双向改内存模式；imwrite 静默 False 改抛错；15 处调用点
+  全路由）+ 架构守卫测试（pathsafe 外禁 cv2 路径 I/O、文本 open 缺 encoding= 即红）+ CI 三平台×双
+  Python 六作业矩阵 + GL 降级测试补齐。
+  **G1 发布工程**（`403caca`）：版本 1.0.0（过时 Phase-0 docstring 修正）；许可证核查 = al-dic 为
+  BSD-3（同作者），无冲突；wheel/sdist 洁净 venv 实测（134 模块全导入、i18n 7/7、16 tests、twine
+  PASSED）；publish.yml Trusted Publishing（修 2D 版 tomllib 读法在动态版本下的 KeyError）；
+  CITATION.cff（CFF 1.2.0 过校验）+ .zenodo.json；docs/RELEASING.md 仪式手册。
+  **G2 安装包管线**（`33b6e11`）：PyInstaller onedir 824MB + Inno 安装包 196.5MB；冻结环境实测跑通
+  全管线含应变（numba 缓存冷 49.8s→跨目录热 8.6s）；修三个冻结深坑（conda PATH DLL 投毒、PYZ 相对
+  co_filename 致 numba 缓存失效、ICU 符号后缀冲突）；静默装卸全过;签名三档方案入册。
+  **G4 压测装置**（`6fe6be6`）：压测 harness 入库，测量运行按用户指示推迟。
+  账号侧：PyPI pending Trusted Publisher / 仓库转 PUBLIC / Zenodo 开关均已由用户完成。
 - 2026-07-29 v1.10.1 — **批次 Z：会话保真（掩膜入包 + 往返完整性审计）**（`0d80f89`，638 tests = 584+54）。
   跟进 2D v0.7.1/0.7.2（全为用户实报 bug）并核对我方：导出中途关窗杀进程=免疫（G3.12+v1.8 拆弹）；但
   **掩膜丢失同族 bug 更严重**——save 丢弃 `roi_mask_array`/`refinement_mask_array` 且加载无恢复：带形状
