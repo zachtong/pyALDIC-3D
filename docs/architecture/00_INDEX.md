@@ -64,6 +64,20 @@
 
 ## Changelog
 
+- 2026-07-29 v1.10.1 — **批次 Z：会话保真（掩膜入包 + 往返完整性审计）**（`0d80f89`，638 tests = 584+54）。
+  跟进 2D v0.7.1/0.7.2（全为用户实报 bug）并核对我方：导出中途关窗杀进程=免疫（G3.12+v1.8 拆弹）；但
+  **掩膜丢失同族 bug 更严重**——save 丢弃 `roi_mask_array`/`refinement_mask_array` 且加载无恢复：带形状
+  ROI（多边形/剪切/笔刷/导入 PNG）重载后静默退化为外接矩形（孔洞回填、**裂纹屏障丢失**）、笔刷丢失致重跑
+  网格悄变（result_signature 金丝雀测试收录）。修复 = 两掩膜作为可选 PNG 成员入 `.aldic3d`
+  （`_MASK_MEMBERS` 单声明；schema 仍 1，旧会话兼容；损坏成员 raise 而非静默 None；PNG 编解码统一为
+  draft.encode/decode_mask_png 三处共用）。同族追加两修：`cv2.imwrite` 非 ASCII 路径静默失败（CJK 输出目录
+  写不出掩膜）→ write_bytes；笔刷编辑缓冲重载后不镜像（首笔替换恢复区）→ 画布 adoption 时同步。
+  **Z2 审计即测试**（移植 2D b6e26bb 并行为化增强）：Draft 34 字段/RunConfig 43 字段/view_state 全键独特值
+  往返逐字段+类型比对，未持久化且未列 DELIBERATELY_TRANSIENT（draft 豁免集为空）即红；VIEW_STATE_KEYS 单
+  列表驱动 capture+restore，恢复后再捕获必须等于保存字典（"存了从不恢复"无处藏身）；补
+  show_grid/show_subset/view_3d 三开关入 view_state。**Z3**：README/手册引用 2D 论文真实预印本
+  arXiv:2607.22755；会话章不再把掩膜丢失当"设计意图"记载。奇偶校验免跑（未触 matching/strain 计算路径）。
+  记入待办：批处理示例脚本（2D 6ad78cd）、PyPI Trusted Publishing（2D f9773db，Phase 5 照抄）。
 - 2026-07-23 v1.10.0 — **核心算法审计 + 种子传播 + 裂纹感知 + 文档收官（F/S/C/D，全程 Opus 4.8 多代理对抗式）**
   （`c57f76c`+`8011cb4`+`ca83481`+`4c1f865`+`8110b2b`，584 tests，i18n 646×7 100%，P1/P2 parity 全程复跑通过）。
   **核心算法审计**：以 6 份 2D v0.7.0 判决基准规范（追踪模式/复合插值/求解器数值/整数搜索播种/场显示/
