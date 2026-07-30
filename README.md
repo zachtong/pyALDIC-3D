@@ -28,7 +28,7 @@ calibration, and it reconstructs the specimen surface in 3D and tracks its
 
 It is built **on top of** the [pyALDIC-2D](https://github.com/zachtong/pyALDIC) platform
 ([arXiv:2607.22755](https://arxiv.org/abs/2607.22755), preprint under review), which it
-consumes as a **pinned, read-only library** (`al-dic==0.7.*`) for the
+consumes as a **pinned, read-only library** for the
 underlying 2D correlation engine (Augmented-Lagrangian DIC: local IC-GN subproblems
 coupled to a global FEM regularizer). Everything above the 2D solver — stereo
 calibration, correspondence strategies, triangulation, 3D surface strain, the 3D
@@ -65,8 +65,8 @@ into idiomatic, tested Python — not a literal translation.
 
 ## Install
 
-pyALDIC-3D targets **Python ≥ 3.10**. The `al-dic==0.7.*` 2D engine resolves
-automatically from PyPI.
+pyALDIC-3D targets **Python ≥ 3.10**. All dependencies, including the 2D
+correlation engine it builds on, install automatically.
 
 ### From PyPI — available from v1.0.0
 
@@ -105,7 +105,7 @@ matplotlib for the test suite and report tooling.
 
 The 2D platform is consumed as a **pinned, read-only** dependency. To develop against a
 local checkout instead of the PyPI wheel, install the sibling repo editable first — it
-satisfies the same `al-dic==0.7.*` pin:
+satisfies the same `al-dic` version pin declared in `pyproject.toml`:
 
 ```bash
 pip install -e ../pyALDIC     # 2D engine, editable (reports 0.7.x)

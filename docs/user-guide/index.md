@@ -7,8 +7,8 @@ displacement** (`U`, `V`, `W`) and **surface strain** on the reconstructed
 point cloud.
 
 This guide walks through the graphical workflow from left to right, chapter by
-chapter, and documents every control against the shipping code. It is written
-for pyALDIC-3D `0.1.0.dev0` (built on the pinned 2D engine `al-dic==0.7.*`).
+chapter, and documents every control against the shipping code. It documents
+pyALDIC-3D **1.0.x**.
 
 > **New to 3D-DIC?** Read [Overview](01-overview.md) first, then
 > [Installation & launching](02-installation-launching.md), then
@@ -20,7 +20,7 @@ for pyALDIC-3D `0.1.0.dev0` (built on the pinned 2D engine `al-dic==0.7.*`).
 | # | Chapter | What it covers |
 |---|---------|----------------|
 | 1 | [Overview](01-overview.md) | What stereo-DIC computes here, the three-column GUI, a typical session. |
-| 2 | [Installation & launching](02-installation-launching.md) | Extras (`[gui]`, `[viz3d]`, `[dev]`), the `al-dic==0.7.*` pin, `al-dic-3d gui`, `python -m al_dic_3d`, opening a `.aldic3d`. |
+| 2 | [Installation & launching](02-installation-launching.md) | Installing from PyPI (GUI and 3D view included), `al-dic-3d gui`, `python -m al_dic_3d`, opening a `.aldic3d`. |
 | 3 | [Loading stereo images](03-loading-images.md) | LEFT / RIGHT drop zones, pairing, natural sort, the pair list. |
 | 4 | [Calibration](04-calibration.md) | The built-in stereo calibrator, the six import formats, manual parameters, the QC readout — a headline 3D feature. |
 | 5 | [Workflow type](05-workflow-type.md) | Accumulative vs incremental, reference-update policy, solver, quality gates. |

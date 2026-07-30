@@ -3,20 +3,13 @@
 pyALDIC-3D requires **Python 3.10 or newer**. It is distributed as the PyPI
 package `al-dic-3d` (import name `al_dic_3d`, console script `al-dic-3d`).
 
-## Runtime dependencies and the 2D-engine pin
+## What it is built on
 
-The core compute layer depends only on `numpy`, `scipy`,
-`opencv-python-headless`, and the pinned 2D engine:
-
-```
-al-dic == 0.7.*
-```
-
-pyALDIC-3D consumes pyALDIC-2D as a **pinned, read-only library**. It is not a
-"3D mode" inside the 2D app — it is a separate application that calls the 2D
-correlation engine. In CI and for end users the pin resolves from PyPI; during
-development you satisfy the same `==0.7.*` constraint with an editable install of
-the sibling 2D repo (see below).
+pyALDIC-3D is a **separate application**, not a "3D mode" inside the 2D app: it
+calls the pyALDIC 2D correlation engine (distributed as the `al-dic` package) as
+a library. That engine, and everything else it needs, installs automatically —
+the exact version pin lives in `pyproject.toml`, so nothing here needs to be
+installed by hand.
 
 ## What a bare install includes
 
