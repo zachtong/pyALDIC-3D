@@ -52,6 +52,10 @@ dependencies = [
     #     pip install -e ../pyALDIC
     # docs/DEPENDS_ON_2D.md is the ledger of exactly which al_dic symbols we use.
     "al-dic==0.7.*",
+    # TOML config parsing: stdlib tomllib exists only from Python 3.11; the
+    # API-identical tomli backport covers 3.10 (see the conditional import in
+    # runner.py). Without this, 1.0.0 was unimportable on py3.10.
+    'tomli>=2.0; python_version < "3.11"',
     # Full-featured by default (user decision 2026-07-29): a bare
     # `pip install al-dic-3d` ships the desktop GUI and the 3D view — the
     # target audience is GUI users, and a partial install that boots without

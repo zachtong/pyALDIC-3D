@@ -20,8 +20,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-import tomllib
 from numpy.typing import NDArray
+
+# tomllib entered the stdlib in Python 3.11; on 3.10 the API-identical `tomli`
+# backport (declared as a conditional dependency in pyproject) fills in.
+# 1.0.0 shipped with a bare `import tomllib`, which broke every runner/CLI
+# import on py3.10 despite requires-python >= 3.10 — caught by the first
+# cross-platform CI run.
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - py3.10 path, exercised in CI
+    import tomli as tomllib  # type: ignore[no-redef]
 
 from al_dic_3d import memcheck
 from al_dic_3d.calibration import load_calibration

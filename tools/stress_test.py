@@ -301,12 +301,17 @@ def _coverage_curve(cs) -> list[float]:
 
 
 def cmd_run(args) -> int:
+    import faulthandler
     from dataclasses import replace
 
     from al_dic_3d.runner import load_config, run_pipeline, write_results
 
     logs = Path(args.logs)
     logs.mkdir(parents=True, exist_ok=True)
+    # A native crash (access violation / abort) would otherwise kill the
+    # process with NO trace — dump the stacks of all threads to a file.
+    fault_file = (logs / f"{args.tag}_fault.log").open("w", encoding="utf-8")
+    faulthandler.enable(file=fault_file, all_threads=True)
     cfg = load_config(args.config)
 
     if args.limit_frames:

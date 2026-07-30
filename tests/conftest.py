@@ -7,6 +7,8 @@ Holds the cross-file GUI-safety default below; synthetic-scene helpers live in
 from __future__ import annotations
 
 import gc
+import os
+import re
 import sys
 
 import pytest
@@ -94,6 +96,29 @@ def _qt_native_teardown(_headless_close_guards):
     gc.collect()  # cycles die now; wrappers are already invalidated
     QCoreApplication.processEvents()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+# Hosted CI runners on Windows/macOS have no usable OpenGL: with pyvista/VTK
+# now a CORE dependency (v1.0.0 full-featured install), plotter-creating tests
+# stopped skipping on CI and hard-crash the interpreter (macOS abort trap 6,
+# Windows native crash — first cross-platform CI run, 2026-07-30). Linux VTK
+# wheels render offscreen via EGL and stay enabled. Name-based first cut;
+# refine with per-test markers as the matrix stabilizes.
+_CI_NO_GL = bool(os.environ.get("GITHUB_ACTIONS")) and sys.platform != "linux"
+_GL_NODE_PATTERN = re.compile(r"view3d|render3d|turntable|3d_view|surface_polydata", re.I)
+
+
+def pytest_collection_modifyitems(config, items):
+    if not _CI_NO_GL:
+        return
+    skip_gl = pytest.mark.skip(
+        reason="VTK OpenGL context unavailable on hosted Windows/macOS CI runners"
+    )
+    for item in items:
+        if "degradation" in item.nodeid:
+            continue  # simulated-failure tests never touch real GL
+        if _GL_NODE_PATTERN.search(item.nodeid):
+            item.add_marker(skip_gl)
 
 
 @pytest.fixture(autouse=True)
