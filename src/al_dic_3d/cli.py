@@ -246,9 +246,8 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     """Handle ``al-dic-3d calibrate`` (detect -> solve -> QC -> YAML)."""
     import glob as globlib
 
-    import cv2
-
     from al_dic_3d.calibration import calibrate_stereo, detect_board, summarize, to_opencv_yaml
+    from al_dic_3d.pathsafe import imread_unicode
 
     def fail(msg: str) -> None:
         print(f"error: {msg}", file=sys.stderr)
@@ -269,7 +268,7 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     def detect_all(files: list[str], tag: str):
         dets = []
         for f in files:
-            img = cv2.imread(f, cv2.IMREAD_UNCHANGED)
+            img = imread_unicode(f)
             if img is None:
                 fail(f"cannot read image: {f}")
             det = detect_board(img, spec)
@@ -282,7 +281,7 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     dl = detect_all(left_files, "L")
     dr = detect_all(right_files, "R")
 
-    first = cv2.imread(left_files[0], cv2.IMREAD_UNCHANGED)
+    first = imread_unicode(left_files[0])
     image_size = (first.shape[1], first.shape[0])
     dot_mm = getattr(spec, "dot_mm", None)
     ecc = None if args.no_ecc_correction or dot_mm is None else dot_mm / 2.0
@@ -345,8 +344,8 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     if args.verify_left:
         from al_dic_3d.calibration import verify_known_distance
 
-        det_vl = detect_board(cv2.imread(args.verify_left, cv2.IMREAD_UNCHANGED), spec)
-        det_vr = detect_board(cv2.imread(args.verify_right, cv2.IMREAD_UNCHANGED), spec)
+        det_vl = detect_board(imread_unicode(args.verify_left), spec)
+        det_vr = detect_board(imread_unicode(args.verify_right), spec)
         try:
             v = verify_known_distance(res.rig, det_vl, det_vr, spec)
         except ValueError as exc:

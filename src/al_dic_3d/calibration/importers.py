@@ -363,12 +363,15 @@ def from_opencv_yaml(path: str | Path) -> StereoRig:
     Expected nodes: ``cameraMatrix1``, ``distCoeffs1``, ``cameraMatrix2``,
     ``distCoeffs2``, ``R``, ``T`` — the ``cv2.stereoCalibrate`` output convention
     (``X_2 = R @ X_1 + T``), which already matches the target (cam1 = left = world).
+    Parsing is memory-backed (:func:`al_dic_3d.pathsafe.filestorage_read`, G3):
+    ``cv2.FileStorage`` cannot open non-ASCII Windows paths directly.
     """
-    import cv2
+    from al_dic_3d.pathsafe import filestorage_read
 
-    fs = cv2.FileStorage(str(path), cv2.FILE_STORAGE_READ)
-    if not fs.isOpened():
-        raise ValueError(f"cannot open OpenCV calibration file: {path}")
+    try:
+        fs = filestorage_read(path)
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"cannot open OpenCV calibration file: {path}") from exc
     try:
 
         def node(name: str) -> NDArray[np.float64]:

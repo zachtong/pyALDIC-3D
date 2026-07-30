@@ -385,8 +385,10 @@ class PreviewTab(QWidget):
         files = list(dialog.image_files.get(cam) or [])
         bg = None
         if files:
+            from al_dic_3d.pathsafe import imread_unicode
+
             idx = min(frame_k, len(files) - 1) if show_deformed else 0
-            bg = cv2.imread(str(files[idx]), cv2.IMREAD_GRAYSCALE)
+            bg = imread_unicode(files[idx], cv2.IMREAD_GRAYSCALE)
 
         # Item 4 WYSIWYG: the preview blanks crack-bridging cells exactly like the
         # image export it previews (drawn L ROI doubles as the barrier when crack-aware).

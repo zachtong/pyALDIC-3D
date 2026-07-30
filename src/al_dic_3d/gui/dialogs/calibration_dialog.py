@@ -549,14 +549,13 @@ class CalibrationDialog(QDialog):
         )
         if not path:
             return
-        import cv2
-
         from al_dic_3d.calibration import save_detections
+        from al_dic_3d.pathsafe import imread_unicode
 
         dl, dr = self._detections
         size = self._cached_size
         if size is None:
-            first = cv2.imread(str(self._files_l[0]), cv2.IMREAD_UNCHANGED)
+            first = imread_unicode(self._files_l[0])
             if first is not None:
                 size = (first.shape[1], first.shape[0])
         out = save_detections(path, self._files_l, self._files_r, dl, dr, image_size=size)
@@ -643,7 +642,7 @@ class CalibrationDialog(QDialog):
 
     def _refresh_live_preview(self) -> None:
         """Re-detect the SELECTED pair with the current board spec (preview only)."""
-        import cv2
+        from al_dic_3d.pathsafe import imread_unicode
 
         k = self._preview_idx
         if k is None or k >= min(len(self._files_l), len(self._files_r)):
@@ -656,7 +655,7 @@ class CalibrationDialog(QDialog):
         try:
             dets = []
             for path in (self._files_l[k], self._files_r[k]):
-                img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+                img = imread_unicode(path)
                 dets.append(detect_board(img, spec) if img is not None else None)
             self._render_preview(k, dets_override=tuple(dets))
         except Exception:  # noqa: BLE001 - a live preview must never break the dialog
@@ -688,9 +687,8 @@ class CalibrationDialog(QDialog):
 
     def _on_verify(self) -> None:
         """iDICs independent check: known distances on a fresh board pair."""
-        import cv2
-
         from al_dic_3d.calibration import verify_known_distance
+        from al_dic_3d.pathsafe import imread_unicode
 
         if self._result is None:
             return
@@ -711,8 +709,8 @@ class CalibrationDialog(QDialog):
         if not path_r:
             return
         try:
-            det_l = detect_board(cv2.imread(path_l, cv2.IMREAD_UNCHANGED), spec)
-            det_r = detect_board(cv2.imread(path_r, cv2.IMREAD_UNCHANGED), spec)
+            det_l = detect_board(imread_unicode(path_l), spec)
+            det_r = detect_board(imread_unicode(path_r), spec)
             v = verify_known_distance(self._result.rig, det_l, det_r, spec)
         except (ValueError, TypeError) as exc:
             self._verify_lbl.setText(self.tr("Verification failed: {0}").format(exc))

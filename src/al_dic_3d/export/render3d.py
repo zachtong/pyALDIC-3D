@@ -226,7 +226,7 @@ def export_view3d_frames(
     plotter. The per-frame field values are computed ONCE and shared between
     the color-range pass and the render loop.
     """
-    import cv2
+    from al_dic_3d.pathsafe import imwrite_unicode
 
     n_frames = int(result.reconstruction.n_frames)
     if frame_end < 0 or frame_end >= n_frames:
@@ -290,7 +290,8 @@ def export_view3d_frames(
             img = _screenshot_bgr(pl)
             if frames_dir is not None:
                 out = frames_dir / f"{frame_tag(k, n_frames)}.png"
-                cv2.imwrite(str(out), img)
+                # G3: raises on failure instead of cv2.imwrite's silent False.
+                imwrite_unicode(out, img)
                 paths.append(out)
             if animation_format is not None:
                 if writer is None:

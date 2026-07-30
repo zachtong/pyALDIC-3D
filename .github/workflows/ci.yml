@@ -8,13 +8,24 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: test (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        # Mirrors the 2D repo's support matrix (01 §G). Development happens on
-        # 3.13, but CI pins to the classified range.
-        python-version: ["3.10", "3.11", "3.12"]
+        # Alien-environment matrix (G3): every desktop OS x the endpoints of
+        # the classified Python range (01 §G: 3.10-3.12; 3.11 sits between the
+        # endpoints and adds no distinct wheel/ABI surface worth a 7th job).
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.12"]
+
+    env:
+      # Headless Qt everywhere — the exact mode the GUI tests use locally.
+      # pyvista/[viz3d] is NOT installed in CI: 3D-view tests skip via
+      # importorskip, and View3D's no-GL degradation path is covered by
+      # tests/test_view3d_degradation.py without any OpenGL context.
+      QT_QPA_PLATFORM: offscreen
 
     steps:
       - uses: actions/checkout@v4
@@ -25,20 +36,29 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
+      - name: Install Qt runtime libraries (Linux)
+        # PySide6 wheels bundle Qt but dlopen these system libraries even on
+        # the offscreen platform. fonts-dejavu-core + QT_QPA_FONTDIR gives the
+        # offscreen renderer real glyphs (mirrors the tests' Windows FONTDIR).
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libegl1 libgl1 libopengl0 libxkbcommon0 libxkbcommon-x11-0 \
+            libdbus-1-3 libglib2.0-0 libfontconfig1 libxrender1 \
+            fonts-dejavu-core
+          echo "QT_QPA_FONTDIR=/usr/share/fonts/truetype/dejavu" >> "$GITHUB_ENV"
+
       - name: Install dependencies
-        # `al-dic==0.7.*` resolves from PyPI (published). It transitively pulls
-        # the full 2D stack (PySide6, numba, ...), but the Phase 0 skeleton
-        # imports NONE of it, so no Qt system libraries are needed yet. Add
-        # `sudo apt-get install -y libegl1 libxkbcommon0 libdbus-1-3` when the
-        # GUI phase (01 §G, P4) starts importing `al_dic.gui`.
+        # `al-dic==0.7.*` resolves from PyPI (published); the sibling 2D repo
+        # is never touched in CI. [dev] brings pytest/ruff/PySide6/matplotlib.
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      # Lint/format are NOT run here: this mirrors the 2D repo's pytest-only CI
-      # and keeps CI to exactly the Phase 0 gate (import / --help / tests). Style
-      # is enforced by the pinned pre-commit hooks (.pre-commit-config.yaml), so a
-      # new ruff release cannot red an otherwise-unchanged build.
+      # Lint/format are NOT run here: this mirrors the 2D repo's pytest-only CI.
+      # Style is enforced by the pinned pre-commit hooks (.pre-commit-config.yaml),
+      # so a new ruff release cannot red an otherwise-unchanged build.
 
       - name: Gate — import al_dic_3d
         run: python -c "import al_dic_3d; print('al_dic_3d', al_dic_3d.__version__)"
@@ -47,4 +67,7 @@ jobs:
         run: al-dic-3d --help
 
       - name: Gate — test suite
+        # -m "not perf": throughput tests are excluded (runner CPU varies).
+        # Dataset-bound tests (MATLAB reference repo, real examples) skip
+        # themselves when the local data is absent — CI runs synthetic-only.
         run: pytest --tb=short -q -m "not perf"

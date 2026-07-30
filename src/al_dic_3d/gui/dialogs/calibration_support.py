@@ -46,7 +46,7 @@ class CalibWorker(QThread):
         self._image_size = image_size  # known size lets us skip reading images
 
     def run(self) -> None:  # noqa: N802 (Qt override)
-        import cv2
+        from al_dic_3d.pathsafe import imread_unicode
 
         try:
             if self._detections is None:
@@ -54,7 +54,7 @@ class CalibWorker(QThread):
                 for tag, files, out in (("L", self._files_l, dl), ("R", self._files_r, dr)):
                     for k, f in enumerate(files):
                         self.progress.emit(f"{tag} {k + 1}/{len(files)}")
-                        img = cv2.imread(str(f), cv2.IMREAD_UNCHANGED)
+                        img = imread_unicode(f)
                         if img is None:
                             raise ValueError(f"cannot read image: {f}")
                         out.append(detect_board(img, self._spec))
@@ -63,7 +63,7 @@ class CalibWorker(QThread):
             if self._image_size is not None:
                 image_size = self._image_size
             else:
-                first = cv2.imread(str(self._files_l[0]), cv2.IMREAD_UNCHANGED)
+                first = imread_unicode(self._files_l[0])
                 if first is None:
                     raise ValueError(f"cannot read image: {self._files_l[0]}")
                 image_size = (first.shape[1], first.shape[0])
@@ -159,9 +159,10 @@ def overlay_panel(path: str, det, height: int | None = 142) -> np.ndarray:
     import cv2
 
     from al_dic_3d.calibration.detect import to_gray_u8
+    from al_dic_3d.pathsafe import imread_unicode
 
     fallback = max(1, height or 142)
-    img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+    img = imread_unicode(path)
     if img is None:
         return np.full((fallback, fallback, 3), 20, dtype=np.uint8)
     gray = to_gray_u8(img)

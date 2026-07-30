@@ -33,10 +33,14 @@ def load_gray(path: str | Path) -> NDArray[np.float64]:
 
     ``IMREAD_UNCHANGED`` preserves the native bit depth (scientific DIC images
     are often 16-bit or float); colour input collapses to a single channel.
+    Decoding goes through :func:`al_dic_3d.pathsafe.imread_unicode` (G3):
+    byte-identical to ``cv2.imread`` but survives non-ASCII Windows paths.
     """
     import cv2
 
-    img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+    from al_dic_3d.pathsafe import imread_unicode
+
+    img = imread_unicode(path)
     if img is None:
         raise ValueError(f"cannot read image: {path}")
     if img.ndim == 3:

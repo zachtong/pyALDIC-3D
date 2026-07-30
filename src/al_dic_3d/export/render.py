@@ -37,6 +37,7 @@ from al_dic_3d.export.colorbar import (
 )
 from al_dic_3d.export.tables import display_field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
+from al_dic_3d.pathsafe import imread_unicode, imwrite_unicode
 from al_dic_3d.viz3d.fieldmap import FieldmapRenderer, auto_range, visible_values
 
 if TYPE_CHECKING:
@@ -107,9 +108,11 @@ def encode_params_for(ext: str, jpeg_quality: int) -> list[int]:
 
 
 def _load_gray_u8(path: str | Path) -> NDArray[np.uint8] | None:
-    """Load a background image as (H, W) uint8 grayscale; None on failure."""
-    img = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
-    return img
+    """Load a background image as (H, W) uint8 grayscale; None on failure.
+
+    Unicode-safe (G3): ``cv2.imread`` returns None on non-ASCII Windows paths.
+    """
+    return imread_unicode(path, cv2.IMREAD_GRAYSCALE)
 
 
 def _frame_geometry(
@@ -421,7 +424,8 @@ def export_image_frames(
                 img = add_margin(img, margin_ratio, margin_color)
                 field_dir = ensure_dir(images_dir / f"{cam}_{cfg.field_id}")
                 out = field_dir / f"{frame_tag(k, n_frames)}{ext}"
-                cv2.imwrite(str(out), img, enc_params)
+                # G3: raises on failure instead of cv2.imwrite's silent False.
+                imwrite_unicode(out, img, enc_params)
                 paths.append(out)
         renderer.clear_frame_caches()  # bound memory; keep the ref Delaunay
         done += 1

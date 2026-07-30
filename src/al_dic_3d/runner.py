@@ -398,7 +398,9 @@ def _build_reference_mesh(cfg: RunConfig, img_h: int, img_w: int, left_masks) ->
     if cfg.refinement_mask is not None:
         import cv2
 
-        img = cv2.imread(str(cfg.refinement_mask), cv2.IMREAD_GRAYSCALE)
+        from al_dic_3d.pathsafe import imread_unicode
+
+        img = imread_unicode(cfg.refinement_mask, cv2.IMREAD_GRAYSCALE)
         if img is None:
             raise ValueError(f"cannot read refinement mask: {cfg.refinement_mask}")
         brush = (img > 0).astype(np.float64)

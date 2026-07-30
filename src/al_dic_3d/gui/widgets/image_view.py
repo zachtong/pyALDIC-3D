@@ -83,7 +83,9 @@ def load_gray_image(path) -> np.ndarray:
     """Read any-bit-depth image as a ``(H, W)`` float64 grayscale array."""
     import cv2
 
-    img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+    from al_dic_3d.pathsafe import imread_unicode
+
+    img = imread_unicode(path)
     if img is None:
         raise ValueError(f"cannot read image: {path}")
     if img.ndim == 3:

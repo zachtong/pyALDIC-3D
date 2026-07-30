@@ -599,9 +599,9 @@ class LeftSidebar3D(QWidget):
         if self._shape_cache is not None and self._shape_cache[0] == path:
             return self._shape_cache[1]
         try:
-            import cv2
+            from al_dic_3d.pathsafe import imread_unicode
 
-            img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+            img = imread_unicode(path)
             min_dim = None if img is None else int(min(img.shape[:2]))
         except Exception:  # noqa: BLE001 - a bad frame must not break the sidebar
             min_dim = None

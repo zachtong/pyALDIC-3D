@@ -58,6 +58,13 @@ class StreamingAnimWriter:
     The output frame size is fixed by the first frame; later frames are
     resized to match. For MP4 the ``mp4v`` codec is tried first, falling back
     to XVID/.avi. ``ok`` is False when no encoder could be opened.
+
+    Path note (G3): unlike ``cv2.imread``/``imwrite``, ``cv2.VideoWriter``'s
+    FFMPEG backend converts UTF-8 paths itself on Windows, so non-ASCII
+    output directories work WITHOUT a pathsafe wrapper (verified on
+    opencv-python 5.0.0; regression-pinned by
+    tests/test_alien_paths.py::test_animation_writer_under_alien_path).
+    imageio's GIF writer uses Python file I/O and is unicode-clean too.
     """
 
     def __init__(

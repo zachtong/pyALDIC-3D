@@ -39,18 +39,17 @@ def to_opencv_yaml(
 
     Nodes match ``from_opencv_yaml``'s contract exactly: ``cameraMatrix1/2``,
     ``distCoeffs1/2`` (1x5, ``[k1, k2, p1, p2, k3]``), ``R``, ``T`` with
-    ``X_2 = R @ X_1 + T`` and camera 1 = left = world.
+    ``X_2 = R @ X_1 + T`` and camera 1 = left = world. Serialization is
+    memory-backed (:func:`al_dic_3d.pathsafe.filestorage_write`, G3):
+    ``cv2.FileStorage`` cannot open non-ASCII Windows paths directly.
     """
-    import cv2
+    from al_dic_3d.pathsafe import filestorage_write
 
     if set(rig.cameras) != {"L", "R"}:
         raise ValueError(f"opencv_yaml writer expects cameras L/R, got {sorted(rig.cameras)}")
     R, T = rig.pose("R")
     path = Path(path)
-    fs = cv2.FileStorage(str(path), cv2.FILE_STORAGE_WRITE)
-    if not fs.isOpened():
-        raise ValueError(f"cannot open for writing: {path}")
-    try:
+    with filestorage_write(path) as fs:
         fs.write("cameraMatrix1", rig.cameras["L"].K)
         fs.write("distCoeffs1", rig.cameras["L"].dist_coeffs.reshape(1, -1))
         fs.write("cameraMatrix2", rig.cameras["R"].K)
@@ -63,8 +62,6 @@ def to_opencv_yaml(
                 fs.write(node, value)
             else:
                 fs.write(node, float(value))
-    finally:
-        fs.release()
     return path
 
 
