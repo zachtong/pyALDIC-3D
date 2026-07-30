@@ -52,16 +52,23 @@ dependencies = [
     #     pip install -e ../pyALDIC
     # docs/DEPENDS_ON_2D.md is the ledger of exactly which al_dic symbols we use.
     "al-dic==0.7.*",
+    # Full-featured by default (user decision 2026-07-29): a bare
+    # `pip install al-dic-3d` ships the desktop GUI and the 3D view — the
+    # target audience is GUI users, and a partial install that boots without
+    # its headline features costs more support than the extra download.
+    # Imports stay lazy, so headless/CLI use still works where Qt or OpenGL
+    # cannot initialize.
+    "PySide6>=6.5",
+    "pyvista>=0.43",
+    "pyvistaqt>=0.11",
 ]
 
 [project.optional-dependencies]
-# Desktop GUI (PySide6/Qt). Optional so the headless compute layer + CLI stay
-# installable without Qt; `al-dic-3d gui` and the gui/ package need this.
+# Compatibility aliases: these packages are CORE dependencies since v1.0.0;
+# `pip install "al-dic-3d[gui,viz3d]"` from older docs keeps working.
 gui = [
     "PySide6>=6.5",
 ]
-# Interactive 3D visualization (heavy: pyvista/VTK). Kept optional and lazily
-# imported so the compute layer stays installable headless.
 viz3d = [
     "pyvista>=0.43",
     "pyvistaqt>=0.11",

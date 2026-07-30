@@ -5,7 +5,7 @@ displacement, and surface strain from a synchronized two-camera setup.**
 
 <p align="center">
   <a href="https://github.com/zachtong/pyALDIC-3D/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zachtong/pyALDIC-3D/ci.yml?style=flat-square&label=CI" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/tests-638-22c55e?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-674-22c55e?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/3D-PyVista%2FVTK-blue?style=flat-square" alt="PyVista"/>
@@ -79,8 +79,8 @@ Releases from **v1.0.0** onward are published on PyPI as
 conda create -n pyaldic3d python=3.12
 conda activate pyaldic3d
 
-# 2. Install with the GUI + 3D-view extras
-pip install "al-dic-3d[gui,viz3d]"
+# 2. Install (GUI and 3D view included)
+pip install al-dic-3d
 ```
 
 ### From source (development)
@@ -88,20 +88,17 @@ pip install "al-dic-3d[gui,viz3d]"
 ```bash
 git clone https://github.com/zachtong/pyALDIC-3D.git
 cd pyALDIC-3D
-pip install -e ".[gui,viz3d]"
+pip install -e ".[dev]"
 ```
 
-**Optional-dependency extras** (compose as needed, e.g. `.[gui,viz3d,dev]`):
+A bare `pip install al-dic-3d` is **full-featured**: it ships the desktop GUI
+(PySide6) and the interactive 3D view (pyvista/VTK) alongside the headless
+compute stack (numpy, scipy, OpenCV, `al-dic`). GUI and 3D imports are lazy,
+so `al-dic-3d run` / `calibrate` still work on headless servers where Qt or
+OpenGL cannot initialize. The historical `[gui]` / `[viz3d]` extras remain as
+no-op compatibility aliases; `[dev]` adds pytest, ruff, pre-commit, and
+matplotlib for the test suite and report tooling.
 
-| Extra | Pulls | Needed for |
-|---|---|---|
-| *(none)* | numpy, scipy, OpenCV, `al-dic` | headless compute + `al-dic-3d run` / `calibrate` |
-| `[gui]` | PySide6 | the desktop GUI (`al-dic-3d gui`) |
-| `[viz3d]` | pyvista, pyvistaqt (VTK) | the interactive 3D view + 3D-render export |
-| `[dev]` | pytest, ruff, pre-commit, matplotlib | running the test suite + reports |
-
-The base install is **headless** (no Qt/VTK), so the compute layer and CLI run on
-servers and CI without a display.
 
 <details>
 <summary><b>Developing against the sibling 2D repo</b></summary>
@@ -112,7 +109,7 @@ satisfies the same `al-dic==0.7.*` pin:
 
 ```bash
 pip install -e ../pyALDIC     # 2D engine, editable (reports 0.7.x)
-pip install -e ".[gui,viz3d,dev]"
+pip install -e ".[dev]"
 pre-commit install            # optional hooks
 ```
 
@@ -194,7 +191,7 @@ optional masks), `[roi]` (`xmin/xmax/ymin/ymax`, or an arbitrary-shape `mask` im
 al-dic-3d gui [SESSION]
 ```
 
-Launches the workflow GUI (requires the `[gui]` extra). An optional `.aldic3d` project
+Launches the workflow GUI (included in every install). An optional `.aldic3d` project
 path opens straight into that session.
 
 ### `calibrate` — built-in stereo calibration

@@ -140,7 +140,7 @@ For every release `vX.Y.Z` (including the first, `v1.0.0`):
 
    ```bash
    python -m venv /tmp/relcheck && . /tmp/relcheck/bin/activate   # or conda
-   pip install "al-dic-3d[gui,viz3d]==X.Y.Z"
+   pip install "al-dic-3d==X.Y.Z"
    al-dic-3d --version    # must print X.Y.Z
    al-dic-3d --help
    ```

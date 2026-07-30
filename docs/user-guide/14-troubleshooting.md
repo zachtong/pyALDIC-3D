@@ -85,10 +85,11 @@ rotation ([Strain post-processing](11-strain-processing.md)).
 - *3D view — run an analysis to see the reconstructed surface.* — the 3D View
   needs results; run first.
 - If checking **3D View** does nothing or errors, the interactive viewer needs
-  the `[viz3d]` extra (pyvista / VTK) and a working OpenGL context. Install it
-  with `pip install "al-dic-3d[viz3d]"`. On headless or remote sessions without
-  GPU/OpenGL, use the 2D field canvas and the image/animation exports instead;
-  the offscreen **3D View** export tab also needs `[viz3d]`.
+  a working OpenGL context (pyvista / VTK ship with the package since v1.0.0).
+  On headless or remote sessions without GPU/OpenGL, the 3D view degrades to an
+  explanatory placeholder — use the 2D field canvas and the image/animation
+  exports instead. If pyvista is missing (a stripped custom install), restore
+  it with `pip install pyvista pyvistaqt`.
 
 ## Physically implausible W (out-of-plane)
 

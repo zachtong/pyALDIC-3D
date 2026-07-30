@@ -18,26 +18,25 @@ correlation engine. In CI and for end users the pin resolves from PyPI; during
 development you satisfy the same `==0.7.*` constraint with an editable install of
 the sibling 2D repo (see below).
 
-## Optional extras
+## What a bare install includes
 
-The GUI and 3D visualization are **optional extras**, kept out of the core so
-the compute layer and CLI install cleanly on headless machines (CI, servers):
-
-| Extra | Pulls in | Needed for |
-|-------|----------|-----------|
-| `[gui]` | `PySide6 >= 6.5` | The desktop application (`al-dic-3d gui`, the whole `gui/` layer). |
-| `[viz3d]` | `pyvista >= 0.43`, `pyvistaqt >= 0.11` | The interactive **3D View** and VTU/3D-render exports. Lazily imported. |
-| `[dev]` | `pytest`, `pytest-xdist`, `ruff`, `pre-commit`, `PySide6`, `matplotlib` | Running the test suite and the report tooling. |
-
-To use the full desktop workflow with the 3D View, install both GUI extras:
+Since v1.0.0 a plain `pip install al-dic-3d` is **full-featured**: the desktop
+GUI (PySide6), the interactive **3D View** (pyvista/VTK), and the headless
+compute stack all ship together — there is nothing extra to install for the
+normal desktop workflow:
 
 ```bash
-pip install "al-dic-3d[gui,viz3d]"
+pip install al-dic-3d
 ```
 
-> Without `[viz3d]` everything except the interactive 3D View and the 3D-render
-> exports still works; the 2D-style field canvas, strain window, and data/image
-> exports do not need pyvista.
+GUI and 3D imports are lazy, so the same install still works headless (CI,
+servers, `al-dic-3d run` / `calibrate`) even where Qt or OpenGL cannot
+initialize — the 3D View degrades to an explanatory placeholder instead of
+crashing.
+
+The historical `[gui]` / `[viz3d]` extras remain as no-op compatibility
+aliases for older instructions. `[dev]` (`pytest`, `pytest-xdist`, `ruff`,
+`pre-commit`, `matplotlib`) is for running the test suite and report tooling.
 
 ## Development install (from source)
 
@@ -65,9 +64,9 @@ optional session path to open at startup:
 al-dic-3d gui path/to/project.aldic3d
 ```
 
-If PySide6 is not installed, the command prints
-`the GUI requires PySide6: ...` and exits with a non-zero code — install the
-`[gui]` extra.
+If PySide6 is somehow missing (a stripped custom install), the command prints
+`the GUI requires PySide6: ...` and exits with a non-zero code — PySide6 ships
+with every normal install of the package.
 
 ## Opening a `.aldic3d` project
 
@@ -90,7 +89,7 @@ al-dic-3d --version
 prints, for the tree this guide documents:
 
 ```
-al-dic-3d 0.1.0.dev0
+al-dic-3d 1.0.0
 ```
 
 ## The command-line interface at a glance
