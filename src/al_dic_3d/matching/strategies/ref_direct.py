@@ -37,10 +37,12 @@ from al_dic_3d.matching.strategies._common import (
     bbox_roi,
     effective_seed_points,
     frame_view,
+    loop_frac,
     mask_stream,
     resolve_init,
     stereo_seed_u0,
     temporal_camera_u0,
+    track_band,
 )
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import temporal_track
@@ -156,6 +158,7 @@ class RefDirectStrategy:
             u0=u0_L,
             stop=stop,
             gate_znssd=self.temporal_gate_znssd,
+            progress=track_band(progress),
         )
         if not np.allclose(tf_L.ref_coords, coords_L, atol=1e-6):
             raise RuntimeError("left temporal mesh drifted from mesh_L (masked track = Phase 2b)")
@@ -223,7 +226,7 @@ class RefDirectStrategy:
             prev_m = np.where(m_ok[:, None], m_k, prev_m)
 
             if progress is not None:
-                progress((k + 1) / n_frames, f"ref_direct {k + 1}/{n_frames}")
+                progress(loop_frac(k, n_frames), f"ref_direct {k + 1}/{n_frames}")
 
         stopped_early = tf_L.stopped_early or loop_stopped_at is not None
         stopped_at = None

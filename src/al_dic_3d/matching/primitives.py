@@ -21,7 +21,7 @@ from al_dic.core.data_structures import DICPara
 from al_dic.io.image_ops import compute_image_gradient
 from al_dic.solver.local_icgn import local_icgn_precompute, local_icgn_solve_subset
 from numpy.typing import NDArray
-from scipy.ndimage import label, map_coordinates
+from scipy.ndimage import label, map_coordinates, spline_filter
 
 # Per-subset 4-connectivity structure for the batched connected-component step:
 # the (3, 3, 3) structure connects the 4-neighbourhood WITHIN each (S, S) slice
@@ -153,6 +153,12 @@ def match_points(
 # of the multi-GB monolithic evaluation at 20k+ points (perf batch P1.3).
 _ZNSSD_CHUNK = 2048
 
+# Floor on the per-worker chunk when threading (perf batch P4): the chunk budget
+# is SPLIT across workers so the peak (chunk, S, S) footprint stays what P1.3
+# sized it at, but shrinking it without limit would trade memory for per-call
+# overhead on small point sets.
+_ZNSSD_MIN_CHUNK = 256
+
 
 def _znssd(
     ref: NDArray[np.float64],
@@ -164,6 +170,7 @@ def _znssd(
     valid: NDArray[np.bool_],
     mask: NDArray[np.float64],
     chunk: int = _ZNSSD_CHUNK,
+    workers: int = 1,
 ) -> NDArray[np.float64]:
     """ZNSSD per point at the converged warp (independent of the solver internals).
 
@@ -184,7 +191,19 @@ def _znssd(
 
     Evaluated in point chunks of ``chunk`` (each point is independent, so chunking
     is bit-identical to the monolithic evaluation) to bound the peak size of the
-    ``(m, S, S)`` intermediates.
+    ``(m, S, S)`` intermediates. ``workers > 1`` evaluates those chunks on a
+    thread pool (perf batch P4); scipy's ``map_coordinates`` and numpy's ufuncs
+    both release the GIL, and the chunk budget is split across workers so the
+    peak footprint is unchanged. Chunks write disjoint output rows and are
+    reassembled in submission order, so the result is bit-identical and
+    deterministic for ANY worker count.
+
+    Deformed sampling goes through the cubic spline coefficients ONCE per call:
+    ``map_coordinates(..., prefilter=True)`` re-filters the whole deformed image
+    on every call, so a 6-chunk frame paid that filter 6 times. Hoisting it and
+    passing ``prefilter=False`` is exactly the computation scipy performs
+    internally for ``mode='constant'`` (which needs no pre-padding, scipy
+    ``ndimage/_interpolation.py::_prepad_for_spline_filter``) — bit-identical.
     """
     h, w = ref.shape
     n = points.shape[0]
@@ -208,10 +227,34 @@ def _znssd(
     # on the common unmasked path.
     mask_has_holes = bool((np.asarray(mask) <= 0.5).any())
 
+    # One cubic prefilter for the whole call (see the docstring): every chunk
+    # then samples the SAME coefficient image with ``prefilter=False``.
+    coeffs = spline_filter(dfm, 3, output=np.float64, mode="constant")
+
+    workers = max(1, int(workers))
     chunk = max(1, int(chunk))
-    for start in range(0, idx.size, chunk):
-        sel = idx[start : start + chunk]
-        z[sel] = _znssd_block(ref, dfm, sel, x0, y0, u_2d, f_2d, offs, xx, yy, mask, mask_has_holes)
+    if workers > 1:
+        chunk = max(_ZNSSD_MIN_CHUNK, chunk // workers)
+    blocks = [idx[start : start + chunk] for start in range(0, idx.size, chunk)]
+
+    def evaluate(sel: NDArray[np.int64]) -> NDArray[np.float64]:
+        return _znssd_block(
+            ref, coeffs, sel, x0, y0, u_2d, f_2d, offs, xx, yy, mask, mask_has_holes
+        )
+
+    if workers == 1 or len(blocks) == 1:
+        for sel in blocks:
+            z[sel] = evaluate(sel)
+        return z
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(max_workers=min(workers, len(blocks))) as pool:
+        # ``map`` yields in SUBMISSION order and the main thread does every
+        # write, so neither the values nor their placement depend on which
+        # worker finished first.
+        for sel, values in zip(blocks, pool.map(evaluate, blocks), strict=True):
+            z[sel] = values
     return z
 
 
@@ -234,7 +277,7 @@ def _center_connected_stack(msub: NDArray[np.bool_]) -> NDArray[np.bool_]:
 
 def _znssd_block(
     ref: NDArray[np.float64],
-    dfm: NDArray[np.float64],
+    dfm_coeffs: NDArray[np.float64],
     idx: NDArray[np.int64],
     x0: NDArray[np.float64],
     y0: NDArray[np.float64],
@@ -246,7 +289,14 @@ def _znssd_block(
     mask: NDArray[np.float64],
     mask_has_holes: bool = False,
 ) -> NDArray[np.float64]:
-    """The vectorized ZNSSD kernel for one chunk of in-bounds point indices."""
+    """The vectorized ZNSSD kernel for one chunk of in-bounds point indices.
+
+    ``dfm_coeffs`` is the deformed image's CUBIC SPLINE COEFFICIENT array
+    (``spline_filter(dfm, 3, mode='constant')``), not raw intensities — the
+    caller hoists that filter out of the chunk loop (P4). Pure function: it
+    reads only its arguments and writes only its return value, so chunks can be
+    evaluated concurrently.
+    """
     h, w = ref.shape
     s = xx.shape[0]
     rx = x0[idx].astype(np.int64)
@@ -283,7 +333,14 @@ def _znssd_block(
         + ry[:, None, None]
         + vv[:, None, None]
     )
-    g = map_coordinates(dfm, [gv.ravel(), gu.ravel()], order=3, mode="constant", cval=0.0)
+    g = map_coordinates(
+        dfm_coeffs,
+        [gv.ravel(), gu.ravel()],
+        order=3,
+        mode="constant",
+        cval=0.0,
+        prefilter=False,  # already filtered ONCE by the caller (P4)
+    )
     g = g.reshape(idx.size, s, s)
 
     # A3-1: deformed samples that warp off the image are sampled as cval=0;

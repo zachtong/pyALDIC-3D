@@ -17,6 +17,6 @@ for the 2D coupling ledger.
 # Single source of truth for the version. pyproject.toml reads it back via
 # hatchling's dynamic-version hook ([tool.hatch.version] path = this file), so
 # the distribution version and ``al_dic_3d.__version__`` can never drift.
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 __all__ = ["__version__"]

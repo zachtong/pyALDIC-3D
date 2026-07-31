@@ -221,11 +221,16 @@ def test_run_pipeline_cancel_keeps_partial_frames(tmp_path):
     polls = {"n": 0}
 
     def stop() -> bool:
-        # Sequential track_both polls once per engine frame: L gets polls 1-3
-        # (completes), R gets poll 4 (frame 1 tracks) and trips on poll 5 ->
-        # the correspondence keeps frames 0..1, loses frames 2..3.
+        # Sequential track_both polls once per engine frame AND once per gate
+        # frame (P4: the honesty gate is cancellable too, so a cancel no longer
+        # waits out the whole verification pass). With 4 frames the sequence is
+        #   1-3   L engine frame heads      4-6   L honesty gate
+        #   7-9   R engine frame heads     10-12  R honesty gate
+        # Tripping on poll 8 = R's frame-2 head: L is fully tracked AND fully
+        # verified, R tracks + verifies frame 1 only -> the correspondence keeps
+        # frames 0..1 and loses frames 2..3.
         polls["n"] += 1
-        return polls["n"] >= 5
+        return polls["n"] >= 8
 
     result = run_pipeline(cfg, stop=stop)
 

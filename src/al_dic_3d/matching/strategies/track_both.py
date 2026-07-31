@@ -60,10 +60,27 @@ if TYPE_CHECKING:
     from al_dic_3d.calibration import StereoRig
     from al_dic_3d.sequence import StereoSequence
 
-# Fraction of the overall progress covered by the two temporal tracks when
-# they run in parallel (P3.6); the assembly loop maps into the remainder so
-# the reported fraction stays monotonic.
+# Fraction of the overall progress covered by the two temporal tracks (P3.6);
+# the assembly loop maps into the remainder so the reported fraction stays
+# monotonic. Parallel: the two cameras share the band as equal halves, each
+# reporting 0..1 of its own track. Sequential: the band is split into two
+# consecutive halves, L then R (P4 — before that the sequential path forwarded
+# no track progress at all, so the DEFAULT configuration showed nothing at all
+# while both cameras tracked, then jumped during assembly).
 _TRACK_PROGRESS_SHARE = 0.9
+
+
+def _camera_band(cam: str, progress: Callable[[float, str], None] | None):
+    """Map one camera's own 0..1 track progress into its half of the band."""
+    if progress is None:
+        return None
+    offset = 0.0 if cam == "L" else 0.5
+
+    def cb(frac: float, msg: str) -> None:
+        share = min(1.0, max(0.0, float(frac))) * 0.5 + offset
+        progress(share * _TRACK_PROGRESS_SHARE, f"{cam}: {msg}")
+
+    return cb
 
 
 def _derive_right_barrier(
@@ -335,6 +352,7 @@ class TrackBothStrategy:
                 para_L,
                 stop=stop,
                 gate_znssd=self.temporal_gate_znssd,
+                progress=_camera_band("L", progress),
                 **track_kwargs["L"],
             )
             _check_left_alignment(tf_L)
@@ -344,6 +362,7 @@ class TrackBothStrategy:
                 para_R,
                 stop=stop,
                 gate_znssd=self.temporal_gate_znssd,
+                progress=_camera_band("R", progress),
                 **track_kwargs["R"],
             )
 
@@ -391,11 +410,9 @@ class TrackBothStrategy:
             source[k][good] = TRACKED
 
             if progress is not None:
-                frac = (k + 1) / n_frames
-                if self.parallel_cameras:
-                    # The tracks already reported [0, _TRACK_PROGRESS_SHARE];
-                    # the assembly covers the remainder (monotonic overall).
-                    frac = _TRACK_PROGRESS_SHARE + (1.0 - _TRACK_PROGRESS_SHARE) * frac
+                # Both paths already reported [0, _TRACK_PROGRESS_SHARE] from the
+                # two tracks; the assembly covers the remainder (monotonic).
+                frac = _TRACK_PROGRESS_SHARE + (1.0 - _TRACK_PROGRESS_SHARE) * ((k + 1) / n_frames)
                 progress(frac, f"track_both frame {k + 1}/{n_frames}")
 
         # F3.1: per-stage failure accounting rides along with the result.

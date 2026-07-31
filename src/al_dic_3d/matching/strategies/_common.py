@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -223,6 +223,33 @@ def stereo_seed_u0(
         if _accept_seed_u0(res):
             return res.u0_2d
     return None
+
+
+#: Share of an S2/S3 run's progress owned by the single LEFT temporal track;
+#: the per-frame cross-match loop covers the remainder. Both stages are real
+#: per-frame work of comparable cost, so the band is split evenly (P4 — before
+#: that the track, INCLUDING its ZNSSD honesty gate, reported nothing at all
+#: and the bar sat still until the cross-match loop started).
+TEMPORAL_TRACK_SHARE = 0.5
+
+
+def track_band(
+    progress: Callable[[float, str], None] | None,
+    share: float = TEMPORAL_TRACK_SHARE,
+) -> Callable[[float, str], None] | None:
+    """Map the left temporal track's own ``0..1`` progress into ``[0, share]``."""
+    if progress is None:
+        return None
+
+    def cb(frac: float, msg: str) -> None:
+        progress(min(1.0, max(0.0, float(frac))) * share, f"L: {msg}")
+
+    return cb
+
+
+def loop_frac(k: int, n_frames: int, share: float = TEMPORAL_TRACK_SHARE) -> float:
+    """Map per-frame loop index ``k`` into ``(share, 1]`` — monotonic overall."""
+    return share + (1.0 - share) * ((k + 1) / max(1, n_frames))
 
 
 def mask_stream(seq: StereoSequence, cam: str) -> Sequence[NDArray[np.float64]] | None:

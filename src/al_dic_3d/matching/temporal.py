@@ -37,6 +37,27 @@ ZERO_FILL_ERROR = (
     "instead of trusting a frozen zero-displacement camera."
 )
 
+# Share of ONE camera's temporal-track progress owned by the 2D engine's solve
+# loop; the ZNSSD honesty gate reports over the remainder (perf batch P4).
+# The gate re-verifies every tracked frame AFTER run_aldic returns, so on long
+# sequences it is a large, previously INVISIBLE slice of the wall time — the
+# 400-frame Tier B run froze the bar at 100% for ~16 min per camera. Splitting
+# the band keeps one camera's reported fraction monotonic across both stages.
+_ENGINE_PROGRESS_SHARE = 0.6
+
+# Threads used to evaluate the gate's per-frame ZNSSD point chunks. Bounded
+# (not cpu_count) because the gate may overlap the sibling camera's engine
+# solve on the parallel track-both path, and because the kernel is memory-bound
+# well before it is core-bound. Chunks stay bit-identical at any worker count.
+_GATE_MAX_WORKERS = 4
+
+
+def _gate_workers() -> int:
+    """Thread count for the gate's ZNSSD chunks — leaves headroom for the OS."""
+    import os
+
+    return min(_GATE_MAX_WORKERS, max(1, (os.cpu_count() or 1) - 2))
+
 
 class _EngineFrames:
     """Engine-protocol ``FrameProvider`` over raw frames, normalizing on demand.
@@ -188,9 +209,13 @@ def temporal_track(
     """Track one camera's frames from a fixed reference mesh (accumulative).
 
     Args:
-        progress: optional ``(fraction, message)`` callback forwarded to the
-            engine's ``progress_fn`` (P3.6) — the parallel track-both path
-            scales and serializes the two cameras' reports through it.
+        progress: optional ``(fraction, message)`` callback covering the WHOLE
+            track: the engine's own ``progress_fn`` is rescaled into
+            ``[0, _ENGINE_PROGRESS_SHARE]`` and the ZNSSD honesty gate reports
+            over the remainder ("verifying frame k/N"), so the fraction rises
+            monotonically to 1.0 instead of freezing at 100% for the length of
+            the gate (P4). The parallel track-both path scales and serializes
+            the two cameras' reports through it (P3.6).
         capture_warnings: promote the engine's silent zero-fill warning to a
             hard error here (default). ``warnings.catch_warnings`` mutates
             process-global state and is NOT thread-safe, so the parallel
@@ -261,6 +286,13 @@ def temporal_track(
     import contextlib
     import warnings
 
+    report = _Ratchet(progress) if progress is not None else None
+    engine_progress = None
+    if report is not None:
+
+        def engine_progress(frac: float, msg: str) -> None:
+            report(_clamp01(frac) * _ENGINE_PROGRESS_SHARE, msg)
+
     try:
         # The 2D engine zero-fills an ALL-NaN ICGN field with only a UserWarning
         # ("All nodes are NaN, cannot interpolate. Returning zeros.") — silent
@@ -281,7 +313,7 @@ def temporal_track(
                 # stack (ListFrameProvider). Byte-identical, streaming instead.
                 _EngineFrames(frames, para.gridxy_roi_range),
                 masks,
-                progress_fn=progress,
+                progress_fn=engine_progress,
                 stop_fn=stop,
                 compute_strain=False,
                 mesh=mesh,
@@ -355,7 +387,39 @@ def temporal_track(
 
     n_gated = None
     if gate_znssd > 0:
-        n_gated = _gate_by_znssd(frames, mask0, ref_coords, u_accum, valid, para, gate_znssd)
+        gate_progress = None
+        if report is not None:
+
+            def gate_progress(frac: float, msg: str) -> None:
+                span = 1.0 - _ENGINE_PROGRESS_SHARE
+                report(_ENGINE_PROGRESS_SHARE + span * _clamp01(frac), msg)
+
+        n_gated, gate_stopped_at = _gate_by_znssd(
+            frames,
+            mask0,
+            ref_coords,
+            u_accum,
+            valid,
+            para,
+            gate_znssd,
+            progress=gate_progress,
+            stop=stop,
+        )
+        if gate_stopped_at is not None:
+            # A cancel cut the verification short. Frames the gate never reached
+            # were never verified, and shipping an UNVERIFIED frame as tracked is
+            # exactly the silent-failure shape this gate exists to stop (S3), so
+            # they are dropped like any other untracked frame (R2 partial-run
+            # contract). ``stopped_at`` only ever shrinks.
+            stopped_at = gate_stopped_at if stopped_at is None else min(stopped_at, gate_stopped_at)
+            u_accum[stopped_at:] = np.nan
+            valid[stopped_at:] = False
+            stopped_early = True
+            stop_reason = stop_reason or "Computation cancelled by user."
+    if report is not None:
+        # Always land on 1.0 — with the gate disabled the engine band alone
+        # would leave this camera's share stuck at _ENGINE_PROGRESS_SHARE.
+        report(1.0, "temporal track complete")
 
     return TemporalField(
         ref_coords=ref_coords,
@@ -368,6 +432,33 @@ def temporal_track(
     )
 
 
+def _clamp01(value: float) -> float:
+    """Clamp a reported progress fraction into ``[0, 1]``."""
+    return min(1.0, max(0.0, float(value)))
+
+
+class _Ratchet:
+    """Progress sink whose reported fraction never decreases.
+
+    The 2D engine's own ``progress_fn`` is NOT monotonic (al-dic 0.7 reports the
+    end-of-loop fraction and then a LOWER "Assembling results..." tick,
+    ``core/pipeline.py:1716,1832``), and the 2D repo is read-only. A bar that
+    jumps backwards reads as a stall or a restart, so the number is ratcheted
+    here — for the engine band, the gate band and their junction alike. Messages
+    always pass through unchanged; only the fraction is clamped upward.
+    """
+
+    __slots__ = ("_fn", "_high")
+
+    def __init__(self, fn: Callable[[float, str], None]) -> None:
+        self._fn = fn
+        self._high = 0.0
+
+    def __call__(self, frac: float, msg: str) -> None:
+        self._high = max(self._high, _clamp01(frac))
+        self._fn(self._high, msg)
+
+
 def _gate_by_znssd(
     frames: FrameSeq,
     mask0: NDArray[np.float64],
@@ -376,7 +467,11 @@ def _gate_by_znssd(
     valid: NDArray[np.bool_],
     para: DICPara,
     threshold: float,
-) -> NDArray[np.int64]:
+    *,
+    progress: Callable[[float, str], None] | None = None,
+    stop: Callable[[], bool] | None = None,
+    workers: int | None = None,
+) -> tuple[NDArray[np.int64], int | None]:
     """Invalidate (in place) tracked nodes whose frame-0 -> frame-k correlation fails.
 
     Independent verification of the shipped quantity itself: the frame-0 subset
@@ -385,35 +480,62 @@ def _gate_by_znssd(
     "converges" with a zero update on a decorrelated pattern) and incremental
     garbage increments faithfully composed into the cumulative field.
 
-    Returns the per-frame count of nodes the gate killed (F3.1: gate kills feed
-    the run diagnostics instead of vanishing as anonymous NaN).
+    ``progress`` receives ``(k / n_deformed, "verifying frame k/N")`` per frame
+    (P4) — the caller maps that into the gate's share of the overall band.
+    ``stop`` is polled AFTER each verified frame, so a cancel costs at most one
+    more frame and every frame reported as tracked was genuinely verified;
+    ``workers`` threads the per-frame point chunks (bit-identical, see
+    :func:`al_dic_3d.matching.primitives._znssd`).
+
+    Returns:
+        ``(n_gated, stopped_at)``. ``n_gated`` is the per-frame count of nodes
+        the gate killed (F3.1: gate kills feed the run diagnostics instead of
+        vanishing as anonymous NaN). ``stopped_at`` is the 0-based index of the
+        first frame the gate never verified (``None`` when it verified all of
+        them) — the caller drops those frames rather than shipping them
+        unverified.
     """
     from al_dic_3d.matching.primitives import _znssd
 
     ref = np.ascontiguousarray(frames[0], dtype=np.float64)
     n = ref_coords.shape[0]
     zeros_f = np.zeros((n, 4), dtype=np.float64)
-    n_gated = np.zeros(u_accum.shape[0], dtype=np.int64)
-    for k in range(1, u_accum.shape[0]):
+    n_frames = u_accum.shape[0]
+    n_deformed = max(1, n_frames - 1)
+    n_gated = np.zeros(n_frames, dtype=np.int64)
+    threads = _gate_workers() if workers is None else max(1, int(workers))
+    stopped_at: int | None = None
+    for k in range(1, n_frames):
         pre = valid[k].copy()
-        if not pre.any():
-            continue
-        z = _znssd(
-            ref,
-            np.ascontiguousarray(frames[k], dtype=np.float64),
-            ref_coords,
-            u_accum[k],
-            zeros_f,
-            para.winsize,
-            pre,
-            mask0,
-        )
-        bad = pre & ~(z <= threshold)  # NaN znssd (no support) also fails
-        if bad.any():
-            u_accum[k, bad] = np.nan
-            valid[k, bad] = False
-            n_gated[k] = int(bad.sum())
-    return n_gated
+        verified = pre.any()
+        if verified:
+            z = _znssd(
+                ref,
+                np.ascontiguousarray(frames[k], dtype=np.float64),
+                ref_coords,
+                u_accum[k],
+                zeros_f,
+                para.winsize,
+                pre,
+                mask0,
+                workers=threads,
+            )
+            bad = pre & ~(z <= threshold)  # NaN znssd (no support) also fails
+            if bad.any():
+                u_accum[k, bad] = np.nan
+                valid[k, bad] = False
+                n_gated[k] = int(bad.sum())
+        if progress is not None:
+            progress(k / n_deformed, f"verifying frame {k}/{n_deformed}")
+        # Polled AFTER the frame's work: the gate finishes the frame in flight
+        # (mirroring the GUI's "Cancelling — finishing current frame…"), so the
+        # kept prefix is exactly the verified prefix. Frames with no tracked
+        # nodes cost nothing, so they never trigger a truncation of their own.
+        if verified and stop is not None and stop():
+            if k + 1 < n_frames:  # a stop racing the LAST frame lost nothing
+                stopped_at = k + 1
+            break
+    return n_gated, stopped_at
 
 
 class _ResampleGeometryCache:
