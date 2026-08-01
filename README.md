@@ -291,10 +291,12 @@ pip install al-dic-3d
 ```
 
 **Windows, no Python:** a self-contained installer
-(`pyALDIC-3D-1.0.0-win64-setup.exe`, ~200 MB) is attached to the
-[v1.0.0 release](https://github.com/zachtong/pyALDIC-3D/releases/tag/v1.0.0). Later
-releases ship wheels only so far — if you want a refreshed installer,
-[say so in an issue](https://github.com/zachtong/pyALDIC-3D/issues/new/choose).
+(`pyALDIC-3D-1.1.0-win64-setup.exe`, ~197 MB — Python, Qt, VTK and all
+dependencies bundled) is attached to the
+[latest release](https://github.com/zachtong/pyALDIC-3D/releases/latest).
+It installs per-user (no admin prompt) and registers `.aldic3d` files.
+The installer is unsigned, so Windows SmartScreen shows a warning on first
+run — choose *More info → Run anyway*.
 
 **From source** (editable, with test dependencies):
 
