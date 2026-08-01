@@ -566,7 +566,18 @@ def test_export_view3d_turntable(result, tmp_path):
     assert seen == [1, 2, 3, 4]
     cap = cv2.VideoCapture(str(paths[0]))
     assert int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) == 4
+    # The orbit must actually ORBIT: pyvista's Azimuth() moves the camera but
+    # does not redraw, so without an explicit render() every frame came out
+    # pixel-identical and this "turntable" was a still image. Counting frames
+    # did not catch that; comparing them does.
+    frames = []
+    for _ in range(4):
+        ok, bgr = cap.read()
+        assert ok
+        frames.append(bgr.astype(np.int16))
     cap.release()
+    diffs = [float(np.abs(frames[i + 1] - frames[i]).mean()) for i in range(3)]
+    assert all(d > 0.5 for d in diffs), f"turntable frames are static: {diffs}"
 
 
 # ---------------------------------------------------------------------------

@@ -374,6 +374,12 @@ def export_view3d_turntable(
         for i in range(n_orbit):
             if stop_event is not None and stop_event.is_set():
                 break
+            # Azimuth() moves the camera but does NOT redraw: without this
+            # render() the offscreen framebuffer still holds the PREVIOUS
+            # view, so every orbit frame came out pixel-identical and the
+            # "turntable" was a still image (verified on pyvista 0.48;
+            # camera_position does change, the screenshot just lags).
+            pl.render()
             img = _screenshot_bgr(pl)
             if writer is None:
                 w = StreamingAnimWriter(
