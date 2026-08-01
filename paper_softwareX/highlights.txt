@@ -1,0 +1,12 @@
+Highlights
+pyALDIC-3D: An Open-Source, GUI-Based Stereo Digital Image Correlation
+Application with Built-In Calibration, Crack-Aware Surface Strain and
+Independent Result Verification
+
+(3-5 bullets, each <= 85 characters including spaces; SoftwareX/Elsevier format)
+
+- Open-source stereo-DIC app spanning calibration through 3D surface strain.
+- Crack-aware chain measures discontinuous fields instead of smoothing them.
+- Independent ZNSSD re-check of shipped displacements catches silent failures.
+- Built-in stereo calibration: 4 board families, 6 import formats, metric QC.
+- Matches the published MATLAB reference to 1.3/1.0/6.0 um in U/V/W.

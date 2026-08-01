@@ -1,0 +1,16 @@
+# LaTeX build artifacts. The .bbl IS tracked deliberately: the SoftwareX source
+# zip must contain it, and reviewers must be able to rebuild without bibtex.
+*.aux
+*.blg
+*.log
+*.out
+*.spl
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+
+# Submission build output (regenerate with submission/make_submission_build.py)
+submission/build/
+
+__pycache__/

@@ -1,0 +1,243 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{pyaldic3d_zenodo}
+Z.~Tong, J.~Yang, {pyALDIC-3D}: stereo / {3D} digital image correlation built
+  on the {pyALDIC} platform, Zenodo software archive, version v1.1.0,
+  \url{https://doi.org/10.5281/zenodo.21696564} (2026).
+\newblock \href {https://doi.org/10.5281/zenodo.21696564}
+  {\path{doi:10.5281/zenodo.21696564}}.
+
+\bibitem{sutton2009image}
+M.~A. Sutton, J.-J. Orteu, H.~W. Schreier, Image Correlation for Shape, Motion
+  and Deformation Measurements: Basic Concepts, Theory and Applications,
+  Springer, Boston, MA, 2009.
+\newblock \href {https://doi.org/10.1007/978-0-387-78747-3}
+  {\path{doi:10.1007/978-0-387-78747-3}}.
+
+\bibitem{pan2018review}
+B.~Pan, Digital image correlation for surface deformation measurement:
+  historical developments, recent advances and future goals, Measurement
+  Science and Technology 29~(8) (2018) 082001.
+\newblock \href {https://doi.org/10.1088/1361-6501/aac55b}
+  {\path{doi:10.1088/1361-6501/aac55b}}.
+
+\bibitem{pan2017review3d}
+B.~Pan, L.~Yu, Q.~Zhang, Review of single-camera stereo-digital image
+  correlation techniques for full-field {3D} shape and deformation measurement,
+  Science China Technological Sciences 61~(1) (2017) 2--20.
+\newblock \href {https://doi.org/10.1007/s11431-017-9090-x}
+  {\path{doi:10.1007/s11431-017-9090-x}}.
+
+\bibitem{idics2018gpg}
+E.~M.~C. Jones, M.~A. Iadicola (Eds.), A Good Practices Guide for Digital Image
+  Correlation, International Digital Image Correlation Society, 2018.
+\newblock \href {https://doi.org/10.32720/idics/gpg.ed1}
+  {\path{doi:10.32720/idics/gpg.ed1}}.
+
+\bibitem{reu2012stereorig1}
+P.~Reu, Stereo-rig design: creating the stereo-rig layout --- {Part} 1,
+  Experimental Techniques 36~(5) (2012) 3--4.
+\newblock \href {https://doi.org/10.1111/j.1747-1567.2012.00871.x}
+  {\path{doi:10.1111/j.1747-1567.2012.00871.x}}.
+
+\bibitem{reu2014calibration}
+P.~Reu, Calibration: care and feeding of a stereo-rig, Experimental Techniques
+  38~(3) (2014) 1--2.
+\newblock \href {https://doi.org/10.1111/ext.12083}
+  {\path{doi:10.1111/ext.12083}}.
+
+\bibitem{solav2018multidic}
+D.~Solav, K.~M. Moerman, A.~M. Jaeger, K.~Genovese, H.~M. Herr, {MultiDIC}: an
+  open-source toolbox for multi-view {3D} digital image correlation, IEEE
+  Access 6 (2018) 30520--30535.
+\newblock \href {https://doi.org/10.1109/ACCESS.2018.2843725}
+  {\path{doi:10.1109/ACCESS.2018.2843725}}.
+
+\bibitem{solav2022duodic}
+D.~Solav, A.~Silverstein, {DuoDIC}: {3D} digital image correlation in {MATLAB},
+  Journal of Open Source Software 7~(74) (2022) 4279.
+\newblock \href {https://doi.org/10.21105/joss.04279}
+  {\path{doi:10.21105/joss.04279}}.
+
+\bibitem{blaber2015ncorr}
+J.~Blaber, B.~Adair, A.~Antoniou, {Ncorr}: open-source {2D} digital image
+  correlation {MATLAB} software, Experimental Mechanics 55~(6) (2015)
+  1105--1122.
+\newblock \href {https://doi.org/10.1007/s11340-015-0009-1}
+  {\path{doi:10.1007/s11340-015-0009-1}}.
+
+\bibitem{atkinson2021adic3d}
+D.~Atkinson, T.~H. Becker, Stereo digital image correlation in {MATLAB},
+  Applied Sciences 11~(11) (2021) 4904.
+\newblock \href {https://doi.org/10.3390/app11114904}
+  {\path{doi:10.3390/app11114904}}.
+
+\bibitem{turner2015dice}
+D.~Z. Turner, Digital image correlation engine ({DICe}) reference manual, Tech.
+  Rep. SAND2015-10606 O, Sandia National Laboratories (2015).
+
+\bibitem{turner2017dicestereo}
+D.~Z. Turner, An overview of the stereo correlation and triangulation
+  formulations used in {DICe}, Tech. rep., Sandia National Laboratories (2017).
+\newblock \href {https://doi.org/10.2172/1367484} {\path{doi:10.2172/1367484}}.
+
+\bibitem{jiang2023opencorr}
+Z.~Jiang, {OpenCorr}: an open source library for research and development of
+  digital image correlation, Optics and Lasers in Engineering 165 (2023)
+  107566.
+\newblock \href {https://doi.org/10.1016/j.optlaseng.2023.107566}
+  {\path{doi:10.1016/j.optlaseng.2023.107566}}.
+
+\bibitem{filho2022icorrvision3d}
+J.~C.~A. de~Deus~Filho, L.~C. d.~S. Nunes, J.~M.~C. Xavier, {iCorrVision-3D}:
+  an integrated {Python}-based open-source digital image correlation software
+  for in-plane and out-of-plane measurements ({Part}~2), SoftwareX 19 (2022)
+  101132.
+\newblock \href {https://doi.org/10.1016/j.softx.2022.101132}
+  {\path{doi:10.1016/j.softx.2022.101132}}.
+
+\bibitem{vic3d_software}
+{Correlated Solutions, Inc.}, {VIC-3D} digital image correlation system,
+  \url{https://www.correlatedsolutions.com/vic-3d}, commercial software;
+  accessed 2026-07-31 (2026).
+
+\bibitem{matchid_software}
+{MatchID NV}, {MatchID} stereo digital image correlation,
+  \url{https://www.matchid.eu/}, commercial software; accessed 2026-07-31
+  (2026).
+
+\bibitem{gom_aramis_software}
+{ZEISS / GOM}, {ARAMIS} {3D} optical strain and displacement analysis,
+  \url{https://www.gom.com/en/products/zeiss-aramis}, commercial software;
+  accessed 2026-07-31 (2026).
+
+\bibitem{tong2026pyaldic}
+Z.~Tong, J.~Yang, {pyALDIC}: a {Python} implementation of augmented
+  {Lagrangian} digital image correlation with a {GUI}, adaptive meshing, and
+  mask-aware subset splitting, preprint, under review (2026).
+\newblock \href {http://arxiv.org/abs/2607.22755} {\path{arXiv:2607.22755}},
+  \href {https://doi.org/10.48550/arXiv.2607.22755}
+  {\path{doi:10.48550/arXiv.2607.22755}}.
+
+\bibitem{tong2025stereo}
+Z.~Tong, D.~Frolkin, H.~Shi, T.~LaRue, M.~K. Rausch, Y.~Zhang, V.~Knight,
+  J.~Yang, {3D} stereo adaptive mesh augmented {Lagrangian} digital image
+  correlation, Experimental Mechanics 65~(9) (2025) 1387--1411.
+\newblock \href {https://doi.org/10.1007/s11340-025-01225-7}
+  {\path{doi:10.1007/s11340-025-01225-7}}.
+
+\bibitem{yang2019augmented}
+J.~Yang, K.~Bhattacharya, Augmented {Lagrangian} digital image correlation,
+  Experimental Mechanics 59~(2) (2019) 187--205.
+\newblock \href {https://doi.org/10.1007/s11340-018-00457-0}
+  {\path{doi:10.1007/s11340-018-00457-0}}.
+
+\bibitem{yang2022staq}
+J.~Yang, V.~Rubino, Z.~Ma, J.~Tao, Y.~Yin, A.~McGhee, W.~Pan, C.~Franck,
+  {SpatioTemporally Adaptive Quadtree} mesh ({STAQ}) digital image correlation
+  for resolving large deformations around complex geometries and
+  discontinuities, Experimental Mechanics 62~(7) (2022) 1191--1215.
+\newblock \href {https://doi.org/10.1007/s11340-022-00872-4}
+  {\path{doi:10.1007/s11340-022-00872-4}}.
+
+\bibitem{zhang2000flexible}
+Z.~Zhang, A flexible new technique for camera calibration, IEEE Transactions on
+  Pattern Analysis and Machine Intelligence 22~(11) (2000) 1330--1334.
+\newblock \href {https://doi.org/10.1109/34.888718}
+  {\path{doi:10.1109/34.888718}}.
+
+\bibitem{bradski2000opencv}
+G.~Bradski, The {OpenCV} library, Dr. Dobb's Journal of Software Tools (2000).
+
+\bibitem{hartley2004multiple}
+R.~Hartley, A.~Zisserman, Multiple View Geometry in Computer Vision, 2nd
+  Edition, Cambridge University Press, 2004.
+\newblock \href {https://doi.org/10.1017/CBO9780511811685}
+  {\path{doi:10.1017/CBO9780511811685}}.
+
+\bibitem{abdelaziz2015dlt}
+Y.~I. Abdel-Aziz, H.~M. Karara, Direct linear transformation from comparator
+  coordinates into object space coordinates in close-range photogrammetry,
+  Photogrammetric Engineering \& Remote Sensing 81~(2) (2015) 103--107, reprint
+  of the 1971 ASP Symposium paper.
+\newblock \href {https://doi.org/10.14358/PERS.81.2.103}
+  {\path{doi:10.14358/PERS.81.2.103}}.
+
+\bibitem{ahmad2024stereochallenge}
+W.~Ahmad, J.~Helm, S.~Bossuyt, P.~Reu, D.~Turner, L.~K. Luan, P.~Lava,
+  T.~Siebert, M.~Simonsen, Stereo-{DIC} challenge 1.0 --- rigid body motion of
+  a complex shape, Experimental Mechanics 64~(7) (2024) 1073--1106.
+\newblock \href {https://doi.org/10.1007/s11340-024-01077-7}
+  {\path{doi:10.1007/s11340-024-01077-7}}.
+
+\bibitem{idics_challenge_site}
+{International Digital Image Correlation Society}, {DIC} {Challenge},
+  \url{https://idics.org/challenge/}, benchmark image sets and ground truth;
+  accessed 2026-07-31 (2026).
+
+\bibitem{reu2013stereorig4}
+P.~Reu, Stereo-rig design: stereo-angle selection --- {Part} 4, Experimental
+  Techniques 37~(2) (2013) 1--2.
+\newblock \href {https://doi.org/10.1111/ext.12006}
+  {\path{doi:10.1111/ext.12006}}.
+
+\bibitem{balcaen2017stereodic}
+R.~Balcaen, P.~L. Reu, P.~Lava, D.~Debruyne, Stereo-{DIC} uncertainty
+  quantification based on simulated images, Experimental Mechanics 57~(6)
+  (2017) 939--951.
+\newblock \href {https://doi.org/10.1007/s11340-017-0288-9}
+  {\path{doi:10.1007/s11340-017-0288-9}}.
+
+\bibitem{reu2022dicchallenge2}
+P.~L. Reu, B.~Blaysat, E.~And{\'o}, K.~Bhattacharya, C.~Couture, V.~Couty,
+  D.~Deb, S.~S. Fayad, M.~A. Iadicola, S.~Jaminion, M.~Klein, A.~K. Landauer,
+  P.~Lava, M.~Liu, L.~K. Luan, S.~N. Olufsen, J.~R{\'e}thor{\'e}, E.~Roubin,
+  D.~T. Seidl, T.~Siebert, O.~Stamati, E.~Toussaint, D.~Turner, C.~S.~R.
+  Vemulapati, T.~Weikert, J.~F. Witz, O.~Witzel, J.~Yang, {DIC} challenge 2.0:
+  developing images and guidelines for evaluating accuracy and resolution of
+  {2D} analyses: focus on the metrological efficiency indicator, Experimental
+  Mechanics 62~(4) (2022) 639--654.
+\newblock \href {https://doi.org/10.1007/s11340-021-00806-6}
+  {\path{doi:10.1007/s11340-021-00806-6}}.
+
+\bibitem{harris2020numpy}
+C.~R. Harris, K.~J. Millman, S.~J. van~der Walt, R.~Gommers, P.~Virtanen,
+  D.~Cournapeau, et~al., Array programming with {NumPy}, Nature 585~(7825)
+  (2020) 357--362.
+\newblock \href {https://doi.org/10.1038/s41586-020-2649-2}
+  {\path{doi:10.1038/s41586-020-2649-2}}.
+
+\bibitem{virtanen2020scipy}
+P.~Virtanen, R.~Gommers, T.~E. Oliphant, M.~Haberland, T.~Reddy, D.~Cournapeau,
+  et~al., {SciPy} 1.0: fundamental algorithms for scientific computing in
+  {Python}, Nature Methods 17~(3) (2020) 261--272.
+\newblock \href {https://doi.org/10.1038/s41592-019-0686-2}
+  {\path{doi:10.1038/s41592-019-0686-2}}.
+
+\bibitem{lam2015numba}
+S.~K. Lam, A.~Pitrou, S.~Seibert, {Numba}: a {LLVM}-based {Python} {JIT}
+  compiler, in: Proceedings of the Second Workshop on the {LLVM} Compiler
+  Infrastructure in {HPC}, ACM, 2015, pp. 1--6.
+\newblock \href {https://doi.org/10.1145/2833157.2833162}
+  {\path{doi:10.1145/2833157.2833162}}.
+
+\bibitem{idics2025gpg}
+E.~M.~C. Jones, M.~A. Iadicola (Eds.), A Good Practices Guide for Digital Image
+  Correlation, Edition 2, International Digital Image Correlation Society,
+  2025.
+\newblock \href {https://doi.org/10.32720/idics/gpg.ed2}
+  {\path{doi:10.32720/idics/gpg.ed2}}.
+
+\bibitem{yang2020augmented}
+J.~Yang, L.~Hazlett, A.~K. Landauer, C.~Franck, Augmented {Lagrangian} digital
+  volume correlation ({ALDVC}), Experimental Mechanics 60~(9) (2020)
+  1205--1223.
+\newblock \href {https://doi.org/10.1007/s11340-020-00607-3}
+  {\path{doi:10.1007/s11340-020-00607-3}}.
+
+\end{thebibliography}

@@ -1,0 +1,20 @@
+Declaration of interests
+
+The authors declare that they have no known competing financial interests or
+personal relationships that could have appeared to influence the work reported
+in this paper.
+
+Manuscript: pyALDIC-3D: An Open-Source, GUI-Based Stereo Digital Image
+Correlation Application with Built-In Calibration, Crack-Aware Surface Strain
+and Independent Result Verification.
+
+Authors: Zixiang Tong; Jin Yang (corresponding author).
+
+------------------------------------------------------------------------------
+Instructions (delete before uploading):
+- SoftwareX requires this declaration as a Word document (.doc/.docx).
+- Paste the text above into Word and save as
+  "declaration_of_competing_interest.docx".
+- Author signatures are NOT required.
+- If any competing interest ever applies, use the alternative Elsevier wording
+  that lists each interest instead of the "no competing interests" sentence.
