@@ -32,6 +32,28 @@ reports/
 datasets/
 test_data/
 
+# ---------------------------------------------------------------------------
+# examples/ — LOCAL EXPERIMENTAL DATA. NEVER COMMITTED. NO EXCEPTIONS.
+#
+# This directory holds the author's curated stereo-DIC datasets (~40 GB of raw
+# 16-bit TIFFs). Most of it is NOT publishable:
+#
+#   example1, example2  Stereo-DIC Challenge 1.0 — public benchmark data, but
+#                       redistribution is the challenge organizers' call, not
+#                       ours; they are ignored here alongside everything else.
+#   example3..example7  NOT PUBLIC. Challenge 2.0 / 2.1 data under the
+#                       organizers' terms, plus unpublished lab experiments
+#                       (pig heart valve, bulge test). Author's personal use
+#                       only.
+#
+# The rule is deliberately unconditional — there is NO negation/whitelist for
+# any subpath. A `git add -A` on this repo must never be able to stage a single
+# byte of it. If a small public sample dataset is wanted later, put it in a
+# NEW top-level directory and whitelist that directory explicitly; do not poke
+# a hole in this rule.
+# ---------------------------------------------------------------------------
+examples/
+
 # IDE / editor
 .vscode/
 .idea/

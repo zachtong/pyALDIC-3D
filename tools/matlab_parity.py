@@ -32,6 +32,14 @@ S3 = ML / "examples" / "Stereo_DIC_Challenge_1.0_S3"
 LEFT_IMGS = CODES / "3D_ALDIC_unused" / "Examples" / "Image_Stereo_Sample3"
 BASELINE = ML / "tests" / "baseline" / "baseline.mat"
 
+# The three parity frames are named 0000/0001/0002 but are NOT consecutive:
+# verified by checksum against the full 34-frame D-specimen sequence in
+# examples/example2_Ch1.0_S3_D_specimen_tensile/, they are frames 0, 7 and 14.
+# The real inter-frame spacing is therefore 7, and each "step" carries ~7x the
+# displacement a consecutive reading would imply — size search ranges
+# accordingly, and do not treat this as a small-increment test.
+PARITY_SOURCE_FRAMES = (0, 7, 14)
+
 sys.path.insert(0, str(REPO / "src"))
 
 

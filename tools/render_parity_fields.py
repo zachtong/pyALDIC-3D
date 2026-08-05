@@ -94,7 +94,11 @@ def main() -> None:
     # ---- tracked points over the left image ------------------------------------
     import cv2
 
-    img = cv2.imread(str(LEFT_IMGS / "Images_Stereo_Sample3_images" / "0000_0.tif"), 0)
+    # NOTE: the left frames live under an "L" subfolder — without it this path
+    # does not exist and imread returns None, which only fails later in imshow.
+    img = cv2.imread(str(LEFT_IMGS / "Images_Stereo_Sample3_images" / "L" / "0000_0.tif"), 0)
+    if img is None:  # fail loudly rather than rendering a blank panel
+        raise FileNotFoundError(LEFT_IMGS / "Images_Stereo_Sample3_images" / "L" / "0000_0.tif")
     fig, ax = plt.subplots(figsize=(12, 7.5))
     ax.imshow(img, cmap="gray")
     xl0 = x_left[0][fin]
