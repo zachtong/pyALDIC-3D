@@ -148,6 +148,13 @@ start from (`al-dic-3d demo`).
   MATLAB's size limit is reported, and a format that fails no longer stops the
   others.
 
+#### Calibration
+
+- **Bundle adjustment on dot targets dropped the eccentricity correction.** It
+  refitted the rig on the uncorrected dot centres, which brought back a scale
+  bias of about -5.6 µε on a ground-truth circle grid (-0.4 µε without bundle
+  adjustment). It now uses the corrected centres (-0.6 µε).
+
 #### Command line
 
 - **The first Ctrl+C** finishes the frame in flight and writes the frames

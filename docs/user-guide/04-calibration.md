@@ -55,7 +55,8 @@ A **SOLVER OPTIONS** group exposes the same switches the CLI has:
 - **Dot eccentricity correction** — corrects the projected-circle centroid bias
   for circle / coded targets; **on by default**.
 - **Joint bundle adjustment (robust, uses mono views)** — a final scipy bundle
-  adjustment.
+  adjustment, on the points the solve used (for dot targets, the
+  eccentricity-corrected centres).
 - **Optimize board shape (printed boards)** — enabled only when bundle
   adjustment is on.
 
