@@ -261,13 +261,16 @@ def _result_from_arrays(arrays: dict, ref_coords: np.ndarray, strategy: str, met
     strain = None
     if f"{_STRAIN_PREFIX}exx" in arrays:
         from al_dic_3d.strain3d import STRAIN_FIELDS, StrainResult3D
+        from al_dic_3d.strain3d.gradients import von_mises_strain
 
         # strain_valid is optional (absent in pre-Batch-C archives / no-trim runs).
         valid = arrays["strain_valid"] if "strain_valid" in arrays else None
-        strain = StrainResult3D(
-            **{n: arrays[f"{_STRAIN_PREFIX}{n}"] for n in STRAIN_FIELDS},
-            strain_valid=valid,
-        )
+        fields = {n: arrays[f"{_STRAIN_PREFIX}{n}"] for n in STRAIN_FIELDS}
+        # von Mises is re-derived from the stored components: sessions saved
+        # before fix batch V hold the old formula's values (shear counted
+        # twice); for newer ones this reproduces the stored bits exactly.
+        fields["von_mises"] = von_mises_strain(fields["exx"], fields["eyy"], fields["exy"])
+        strain = StrainResult3D(**fields, strain_valid=valid)
     return RunResult(
         strategy=strategy,
         ref_coords=ref_coords,

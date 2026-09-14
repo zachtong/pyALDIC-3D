@@ -451,6 +451,20 @@ def fit_gradients(
 STRAIN_TYPES = ("green_lagrange", "infinitesimal", "almansi")
 
 
+def von_mises_strain(
+    exx: NDArray[np.float64], eyy: NDArray[np.float64], exy: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Plane von Mises equivalent strain, the formula of pyALDIC (2D).
+
+    ``sqrt(exx² + eyy² − exx·eyy + 3·exy²)``, i.e. ``sqrt(m² + 3R²)`` with the
+    mean strain ``m`` and the Mohr radius ``R`` (= ``max_shear``); written in
+    the 2D engine's term order so both give the same bits. Fix batch V: this
+    code used ``sqrt(e1² + e2² − e1·e2 + 3·max_shear²)`` = ``sqrt(m² + 6R²)``,
+    which counted the shear twice (+32 % in uniaxial strain, +41 % in shear).
+    """
+    return np.sqrt(exx**2 + eyy**2 - exx * eyy + 3.0 * exy**2)
+
+
 def strain_tensor(
     coefficients: NDArray[np.float64], strain_type: str = "green_lagrange"
 ) -> dict[str, NDArray[np.float64]]:
@@ -499,7 +513,7 @@ def strain_tensor(
     mean = 0.5 * (exx + eyy)
     e1 = mean + max_shear
     e2 = mean - max_shear
-    von_mises = np.sqrt(e1**2 + e2**2 - e1 * e2 + 3 * max_shear**2)
+    von_mises = von_mises_strain(exx, eyy, exy)
     return {
         "exx": exx,
         "eyy": eyy,
