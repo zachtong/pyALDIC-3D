@@ -13,6 +13,11 @@ per camera:
   fits use the mono solver even when the final rig came from bundle
   adjustment: both see the same views, so the check still answers whether the
   data determine the corners.
+* **model adequacy**: whether the point residuals of the final calibration
+  have spatial structure the lens model leaves unexplained
+  (``LENS_MODEL_INADEQUATE``). Residuals are correlated within a view and the
+  per-view pose re-fit absorbs part of any field, so the check sees only the
+  part it cannot absorb.
 
 Findings carry a stable ``code``, a ``severity``, the camera, the numbers and
 an English default message. The GUI builds its translated text from the code
@@ -21,8 +26,8 @@ and the values; the English text is for the CLI and logs.
 Evidence for every threshold: the calibration diagnostics brief of 2026-09-14
 (``stereo_gt`` project, riley-raster fork), section 3.6, built on noise-free
 Riley renders of the Stereo-DIC Challenge 2.0 rig (16 evaluations). Pre-check
-A (free-k3 against fixed-k3 disagreement) is the normative definition the
-construction below follows.
+A (free-k3 against fixed-k3 disagreement) and pre-check B (residual structure)
+are the normative definitions the constructions below follow.
 """
 
 from __future__ import annotations
@@ -54,6 +59,13 @@ EXTRAPOLATION_THRESHOLD_PX = 0.3
 # protocol reached 0.62-0.72.
 LOW_COVERAGE_RATIO = 0.8
 
+# Residual-structure statistics above which the lens model does not describe
+# the data; both must exceed their threshold. Pre-check B: every camera whose
+# distortion the model can represent stayed at or below 1.10 (excess) and 0.8
+# (field ratio), the two mismatch cameras reached at least 22.9 and 7.6.
+RESIDUAL_EXCESS_THRESHOLD = 3.0
+RESIDUAL_FIELD_THRESHOLD = 3.0
+
 # ---- codes and severities -------------------------------------------------------------
 
 SEVERITY_INFO = "info"
@@ -61,6 +73,8 @@ SEVERITY_WARNING = "warning"
 EXTRAPOLATION_UNDETERMINED = "EXTRAPOLATION_UNDETERMINED"
 EXTRAPOLATION_CHECK_SKIPPED = "EXTRAPOLATION_CHECK_SKIPPED"
 LOW_COVERAGE = "LOW_COVERAGE"
+LENS_MODEL_INADEQUATE = "LENS_MODEL_INADEQUATE"
+MODEL_CHECK_SKIPPED = "MODEL_CHECK_SKIPPED"
 
 # ---- construction constants (pre-check A) ----------------------------------------------
 
@@ -70,6 +84,12 @@ _AFFINE_MIN_NODES = 3  # a 2D affine map needs three non-collinear nodes
 _MIN_VIEWS = 3  # calibrate_mono's own minimum
 _MIN_POINTS = 6
 
+# ---- construction constants (pre-check B) ----------------------------------------------
+
+RESIDUAL_GRID = (6, 5)  # image cells (columns, rows) the residuals are averaged in
+RESIDUAL_MIN_CELL_POINTS = 10  # cells with fewer points are skipped
+RESIDUAL_MIN_CELLS = 3  # fewer usable cells: the model check is skipped
+
 
 @dataclass(frozen=True)
 class DiagnosticThresholds:
@@ -77,6 +97,8 @@ class DiagnosticThresholds:
 
     extrapolation_px: float = EXTRAPOLATION_THRESHOLD_PX
     low_coverage_ratio: float = LOW_COVERAGE_RATIO
+    residual_excess: float = RESIDUAL_EXCESS_THRESHOLD
+    residual_field: float = RESIDUAL_FIELD_THRESHOLD
 
 
 @dataclass(frozen=True)
@@ -106,6 +128,10 @@ class CameraDiagnostics:
     disagreement_gradient_ue: float  # largest gradient of that field (1e-6 px/px); info only
     affine_fit: str  # "inside r_cover" | "whole sensor" | "not computed"
     chosen_model: str  # the k3 choice of the calibration: "k3 free" | "k3 fixed"
+    residual_rms_px: float = float("nan")  # final-calibration residuals of the used points
+    residual_excess: float = float("nan")  # binned excess, about 1 for pure noise
+    residual_field_ratio: float = float("nan")  # cubic-field rms over its pure-noise value
+    residual_cells: int = 0  # image cells the excess was computed over
 
 
 @dataclass(frozen=True)
@@ -261,6 +287,125 @@ def alternative_model_disagreement(
     )
 
 
+# ---- residual structure (pre-check B) ------------------------------------------------------
+
+
+def final_residuals(
+    intrinsics: CameraIntrinsics,
+    detections: Sequence[BoardDetection],
+    view_indices: Sequence[int] | None = None,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Reprojection residuals of the used points under the final calibration.
+
+    Each view's board pose is re-estimated by ``solvePnP`` with the final
+    intrinsics (as :func:`~al_dic_3d.calibration.report.point_residuals`), so
+    the residuals judge the lens model, not the solve's own poses. Returns
+    ``(uv, residual)``: the detected positions and ``projected - detected``.
+    """
+    import cv2
+
+    views = range(len(detections)) if view_indices is None else [int(i) for i in view_indices]
+    K, dist = intrinsics.K, intrinsics.dist_coeffs
+    uv_chunks, res_chunks = [], []
+    for i in views:
+        det = detections[i]
+        if not (det.ok and det.n_points >= _MIN_POINTS):
+            continue
+        ok, rvec, tvec = cv2.solvePnP(det.object_points, det.image_points, K, dist)
+        if not ok:
+            continue
+        proj, _ = cv2.projectPoints(det.object_points, rvec, tvec, K, dist)
+        uv_chunks.append(np.asarray(det.image_points, np.float64))
+        res_chunks.append(proj.reshape(-1, 2) - det.image_points)
+    if not uv_chunks:
+        return np.empty((0, 2)), np.empty((0, 2))
+    return np.vstack(uv_chunks), np.vstack(res_chunks)
+
+
+def binned_excess(
+    uv: NDArray[np.float64], residuals: NDArray[np.float64], image_size: tuple[int, int]
+) -> tuple[float, int]:
+    """``(excess, cells)``: residuals averaged in :data:`RESIDUAL_GRID` image cells.
+
+    ``excess = sum(n_c |mean_c|^2) / (2 C sigma^2)`` over the ``C`` cells with at
+    least :data:`RESIDUAL_MIN_CELL_POINTS` points, ``sigma^2`` the per-coordinate
+    residual variance: about 1 for pure noise, large when the residuals share a
+    direction within cells. nan when no cell qualifies.
+    """
+    cols, rows = RESIDUAL_GRID
+    sigma2 = float(np.mean(residuals**2)) if len(residuals) else 0.0
+    if not sigma2 > 0.0:
+        return float("nan"), 0
+    ix = np.clip((uv[:, 0] / float(image_size[0]) * cols).astype(int), 0, cols - 1)
+    iy = np.clip((uv[:, 1] / float(image_size[1]) * rows).astype(int), 0, rows - 1)
+    cell = ix * rows + iy
+    stat, cells = 0.0, 0
+    for c in np.unique(cell):
+        members = cell == c
+        n = int(members.sum())
+        if n < RESIDUAL_MIN_CELL_POINTS:
+            continue
+        stat += n * float((residuals[members].mean(axis=0) ** 2).sum()) / sigma2
+        cells += 1
+    return (stat / (2 * cells) if cells else float("nan")), cells
+
+
+def _cubic_basis(x: NDArray[np.float64], y: NDArray[np.float64]) -> NDArray[np.float64]:
+    one = np.ones_like(x)
+    return np.column_stack([one, x, y, x * x, x * y, y * y, x**3, x * x * y, x * y * y, y**3])
+
+
+def field_ratio(
+    uv: NDArray[np.float64], residuals: NDArray[np.float64], intrinsics: CameraIntrinsics
+) -> float:
+    """rms of a cubic vector field fitted to the residuals, over its pure-noise value.
+
+    The field has 10 terms per component in normalised image coordinates
+    ``((u - cx) / fx, (v - cy) / fy)``; a least-squares fit of ``p`` terms to
+    ``N`` points of pure noise has rms ``sqrt(2 p sigma^2 / N)``, which the fitted
+    rms is divided by. nan when there are too few points or no spread.
+    """
+    x = (uv[:, 0] - intrinsics.cx) / intrinsics.fx
+    y = (uv[:, 1] - intrinsics.cy) / intrinsics.fy
+    basis = _cubic_basis(x, y)
+    n_terms = basis.shape[1]
+    sigma2 = float(np.mean(residuals**2)) if len(residuals) else 0.0
+    if len(x) <= n_terms or not sigma2 > 0.0:
+        return float("nan")
+    coef, *_ = np.linalg.lstsq(basis, residuals, rcond=None)
+    fitted = basis @ coef
+    field_rms = float(np.sqrt(np.mean((fitted**2).sum(axis=1))))
+    return field_rms / float(np.sqrt(2.0 * n_terms * sigma2 / len(x)))
+
+
+@dataclass(frozen=True)
+class _ResidualStats:
+    rms_px: float
+    excess: float
+    field_ratio: float
+    cells: int
+
+    @property
+    def usable(self) -> bool:
+        return self.cells >= RESIDUAL_MIN_CELLS
+
+
+def _residual_statistics(
+    intrinsics: CameraIntrinsics,
+    detections: Sequence[BoardDetection],
+    view_indices: Sequence[int] | None,
+    image_size: tuple[int, int],
+) -> _ResidualStats:
+    uv, res = final_residuals(intrinsics, detections, view_indices)
+    if not len(res):
+        return _ResidualStats(float("nan"), float("nan"), float("nan"), 0)
+    rms = float(np.sqrt(np.mean((res**2).sum(axis=1))))
+    excess, cells = binned_excess(uv, res, image_size)
+    if cells < RESIDUAL_MIN_CELLS:
+        return _ResidualStats(rms, float("nan"), float("nan"), cells)
+    return _ResidualStats(rms, excess, field_ratio(uv, res, intrinsics), cells)
+
+
 # ---- per-camera diagnosis ------------------------------------------------------------------
 
 
@@ -297,6 +442,36 @@ def _low_coverage_finding(d: CameraDiagnostics, ratio: float) -> Finding:
         f"image-corner radius; the lens model is fitted only inside that radius."
     )
     return Finding(LOW_COVERAGE, SEVERITY_INFO, d.camera, values, message)
+
+
+def _model_finding(camera: str, stats: _ResidualStats, th: DiagnosticThresholds) -> Finding:
+    values = {
+        "residual_excess": stats.excess,
+        "residual_field_ratio": stats.field_ratio,
+        "residual_rms_px": stats.rms_px,
+        "cells": stats.cells,
+        "threshold_excess": th.residual_excess,
+        "threshold_field": th.residual_field,
+    }
+    message = (
+        f"camera {camera}: the residuals have a spatial pattern the lens model leaves "
+        f"unexplained (binned excess {stats.excess:.1f}, fitted field "
+        f"{stats.field_ratio:.1f} x noise; about 1 for a model that fits). Possible "
+        f"causes: a lens the model cannot describe, a board that is not flat (try the "
+        f"board-shape option of the bundle adjustment), or detector bias (very sharp "
+        f"chessboard images, uneven lighting)."
+    )
+    return Finding(LENS_MODEL_INADEQUATE, SEVERITY_WARNING, camera, values, message)
+
+
+def _model_skipped_finding(camera: str, stats: _ResidualStats) -> Finding:
+    message = (
+        f"camera {camera}: the lens-model check was skipped: the points fill only "
+        f"{stats.cells} image cells with at least {RESIDUAL_MIN_CELL_POINTS} points "
+        f"(it needs {RESIDUAL_MIN_CELLS})."
+    )
+    values = {"cells": stats.cells, "min_cells": RESIDUAL_MIN_CELLS}
+    return Finding(MODEL_CHECK_SKIPPED, SEVERITY_INFO, camera, values, message)
 
 
 def _skipped_finding(camera: str, reason: str) -> Finding:
@@ -349,6 +524,10 @@ def diagnose_camera(
     n_views = len(views) if views is not None else sum(
         1 for d in detections if d.ok and d.n_points >= _MIN_POINTS
     )
+    if chosen is not None:  # the model check judges the views of a solve
+        stats = _residual_statistics(intrinsics, detections, views, image_size)
+    else:
+        stats = _ResidualStats(float("nan"), float("nan"), float("nan"), 0)
     diag = CameraDiagnostics(
         camera=camera,
         n_views=int(n_views),
@@ -362,6 +541,10 @@ def diagnose_camera(
         disagreement_gradient_ue=dis.gradient_ue,
         affine_fit=dis.affine_fit,
         chosen_model=_model_name(fix_k3),
+        residual_rms_px=stats.rms_px,
+        residual_excess=stats.excess,
+        residual_field_ratio=stats.field_ratio,
+        residual_cells=stats.cells,
     )
     if not findings:
         if np.isfinite(diag.disagreement_outside_px) and (
@@ -370,6 +553,10 @@ def diagnose_camera(
             findings.append(_extrapolation_finding(diag, th.extrapolation_px))
         elif np.isfinite(diag.cover_ratio) and diag.cover_ratio < th.low_coverage_ratio:
             findings.append(_low_coverage_finding(diag, th.low_coverage_ratio))
+        if not stats.usable:
+            findings.append(_model_skipped_finding(camera, stats))
+        elif stats.excess > th.residual_excess and stats.field_ratio > th.residual_field:
+            findings.append(_model_finding(camera, stats, th))
     return CameraReport(diag, tuple(findings))
 
 
