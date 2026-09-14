@@ -43,15 +43,18 @@ class UnitsSection3D(QWidget):
 
         self._fps_spin = LocaleSafeDoubleSpinBox()
         self._fps_spin.setDecimals(3)
-        self._fps_spin.setRange(1e-6, 1e9)
+        # 0 = not given (fix batch V, M10): velocity is then shown per frame.
+        self._fps_spin.setRange(0.0, 1e9)
         self._fps_spin.setSingleStep(1.0)
-        self._fps_spin.setValue(float(signals.frame_rate))
+        self._fps_spin.setSpecialValueText(self.tr("not set (per frame)"))
+        self._fps_spin.setValue(float(signals.frame_rate) if signals.frame_rate_known else 0.0)
         self._fps_spin.setSuffix(" fps")
         self._fps_spin.setToolTip(
             self.tr(
                 "Acquisition frame rate. Used only by the Velocity field:\n"
                 "velocity = |D(k) − D(k−1)| × frame rate, shown in the\n"
-                "display unit per second."
+                "display unit per second. Leave it at 'not set' to see the\n"
+                "velocity per frame."
             )
         )
         layout.addRow(self.tr("Frame rate"), self._fps_spin)
@@ -63,7 +66,9 @@ class UnitsSection3D(QWidget):
 
     def _on_changed(self, *_args: object) -> None:
         self._signals.display_unit = self._unit_combo.currentText()
-        self._signals.frame_rate = float(self._fps_spin.value())
+        fps = float(self._fps_spin.value())
+        self._signals.frame_rate_known = fps > 0
+        self._signals.frame_rate = fps if fps > 0 else 1.0  # per frame when not set
         self._signals.display_changed.emit()
 
     def apply_view_state(self, vs: dict) -> None:
@@ -76,8 +81,12 @@ class UnitsSection3D(QWidget):
             self._unit_combo.setCurrentText(unit)
             self._unit_combo.blockSignals(False)
         fps = float(vs.get("frame_rate", s.frame_rate))
+        # Sessions before fix batch V always stored 1.0 (the silent default):
+        # without the explicit flag, 1.0 means "not given".
+        known = bool(vs.get("frame_rate_known", fps > 0 and fps != 1.0))
         if fps > 0:
-            s.frame_rate = fps
+            s.frame_rate = fps if known else 1.0
+            s.frame_rate_known = known
             self._fps_spin.blockSignals(True)
-            self._fps_spin.setValue(fps)
+            self._fps_spin.setValue(fps if known else 0.0)
             self._fps_spin.blockSignals(False)

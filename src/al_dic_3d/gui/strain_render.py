@@ -28,7 +28,7 @@ class StrainRenderData:
     pts: NDArray[np.float64]
     ref_pts: NDArray[np.float64]
     ref_uv: tuple[NDArray[np.float64], NDArray[np.float64]] | None
-    barrier_mask: NDArray[np.float64] | None
+    barrier_mask: NDArray | None  # the drawn ROI itself (never a copy)
     vmin: float
     vmax: float
 
@@ -81,11 +81,7 @@ def prepare_strain_render(
     if deformed:
         d = cs.xL[k] - cs.xL[0]  # 2D ref_uv contract: x_k - x_1 per node
         ref_uv = (d[:, 0], d[:, 1])
-    barrier_mask = (
-        roi_mask.astype(np.float64)
-        if (crack_aware and roi_mask is not None and not deformed)
-        else None
-    )
+    barrier_mask = roi_mask if (crack_aware and roi_mask is not None and not deformed) else None
     if auto_range_on:
         vmin, vmax = auto_range(visible_values(vals, ref_pts, roi_mask))
     else:

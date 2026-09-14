@@ -24,7 +24,7 @@ keywords = [
     "surface-strain",
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     # License metadata lives once in the SPDX `license` field above (PEP 639);
     # no `License ::` trove classifier, which PEP 639 discourages duplicating.
@@ -41,17 +41,23 @@ classifiers = [
 dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",
-    # Headless OpenCV: the 3D compute layer and CLI must run on machines with no
-    # display / Qt (CI, servers). NOTE: al-dic pulls the full `opencv-python`;
-    # both provide the `cv2` module and will coexist. Harmless in Phase 0 (we do
-    # not import cv2 yet); revisit if a conflict ever surfaces.
-    "opencv-python-headless>=4.7",
-    # pyALDIC-2D consumed as a PINNED, READ-ONLY library (decision D11). Resolves
-    # from PyPI in CI / for users. During development, satisfy the same `==0.7.*`
-    # constraint with an editable install of the sibling repo instead:
+    # OpenCV: the SAME distribution al-dic depends on. Declaring the headless
+    # variant as well installed two packages that both own the `cv2` module
+    # (OpenCV's docs: install exactly one). 4.x and 5.x are both supported —
+    # calibration/geometry.py picks undistortPointsIter on 4.x.
+    "opencv-python>=4.7",
+    # pyALDIC-2D consumed as a READ-ONLY library (decision D11), bounded to the
+    # minor versions the suite is verified against: 0.7.2 (first with partial
+    # results) through 0.8.x (engine modules we import are byte-identical to
+    # 0.7.2; 0.8 adds the numba-cache fallback). During development an editable
+    # install of the sibling repo satisfies the same range:
     #     pip install -e ../pyALDIC
     # docs/DEPENDS_ON_2D.md is the ledger of exactly which al_dic symbols we use.
-    "al-dic==0.7.*",
+    "al-dic>=0.7.2,<0.9",
+    # Imported directly by this package (not only through al-dic).
+    "matplotlib>=3.6",   # export/colorbar.py, viz3d/fieldmap.py, calibration/printout.py
+    "numba>=0.57",       # strain3d/kernels.py
+    "pillow>=9.1",       # export/gifstream.py (streamed GIF export, fix batch V)
     # TOML config parsing: stdlib tomllib exists only from Python 3.11; the
     # API-identical tomli backport covers 3.10 (see the conditional import in
     # runner.py). Without this, 1.0.0 was unimportable on py3.10.
@@ -83,11 +89,8 @@ dev = [
     "ruff>=0.6",
     "pre-commit>=3.5",
     "PySide6>=6.5",  # GUI smoke tests (offscreen)
-    # Report tooling: tools/phase0_report.py (and later phases' PdfPages reports)
-    # import matplotlib. Declared here (not in runtime deps, which stay exactly
-    # numpy/scipy/opencv-python-headless/al-dic) so the report workflow does not
-    # rely on al-dic transitively pulling matplotlib.
-    "matplotlib>=3.6",
+    "psutil>=5.9",   # tools/stress_test.py RSS sampling
+    "h5py>=3.0",     # tools/matlab_parity.py reads the v7.3 MATLAB baseline
 ]
 
 [project.urls]

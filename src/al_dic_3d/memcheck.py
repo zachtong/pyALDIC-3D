@@ -24,10 +24,24 @@ import sys
 # double — parallel camera tracking (P3.6) doubles it via ``parallel=True``.
 ENGINE_TRANSIENT_BYTES_PER_MPX = 150 * 1024**2
 
-# Frames resident under the lazy providers: per camera a raw decode LRU (4) +
-# the engine adapter's normalized LRU (4), x2 cameras, plus the engine's
-# reference bundles (~4 frame-sized arrays per cached ref, cache size 2).
-LAZY_RESIDENT_FRAMES = 24
+# Frames resident under the lazy providers, in float64-frame equivalents: per
+# camera the engine adapter's normalized LRU (4), x2 cameras, plus the engine's
+# reference bundles (~4 frame-sized arrays per cached ref, cache size 2) = 16.
+# The raw decode LRUs (4 per camera) hold the NATIVE dtype since fix batch V:
+# 16-bit frames cost a quarter of a float64 frame each, so 8 x 1/4 = 2 more.
+LAZY_RESIDENT_FRAMES = 18
+
+# Frame-sized float64 working arrays outside the engine and the LRUs: the
+# frame-1 stereo match (float32 template copies, image gradients), the honesty
+# gate (the deformed frame's spline coefficients, the reference, the mask), the
+# right-camera mask/barrier warp and the per-camera mask LRUs. Fix batch V fit:
+# measured peaks at 5 / 12 / 24 Mpx (200 / 40 / 8 frames) exceeded the older
+# projection by 24 / 23 / 23 %, i.e. by 12 to 13 frame-sized arrays at every
+# size, so the term scales with the image, not with the frame count. After the
+# native-dtype frame cache, with the left gate overlapping the right engine,
+# 12 Mpx x 6 frames peaked at 4.72 GiB above the process baseline; 16 keeps
+# the projection (4.83 GiB) above that with a little headroom.
+SETUP_AND_GATE_FRAMES = 16
 
 # float64 values stored per (frame, point) across the result payloads: per-cam
 # u_accum/valid (2 x ~3), correspondence xL/xR/quality/source (~6), points /
@@ -96,7 +110,8 @@ def estimate_peak_bytes(
     and a worst-case per-frame mask stack — and is kept for sizing comparisons.
     ``n_pts`` (mesh nodes) sizes the per-(frame, point) result arrays.
     ``parallel`` (P3.6) doubles the engine transient: with concurrent camera
-    tracking both engine working sets are live at once.
+    tracking both engine working sets are live at once. ``SETUP_AND_GATE_FRAMES``
+    covers the frame-sized arrays outside the engine (see its comment).
     """
     bytes_per_frame = int(img_h) * int(img_w) * 8
     transient = int(ENGINE_TRANSIENT_BYTES_PER_MPX * (img_h * img_w / 1e6))
@@ -106,6 +121,7 @@ def estimate_peak_bytes(
         resident = LAZY_RESIDENT_FRAMES * bytes_per_frame
     else:
         resident = n_frames * bytes_per_frame * (n_cameras + 2)
+    resident += SETUP_AND_GATE_FRAMES * bytes_per_frame
     results = n_frames * max(int(n_pts), 1) * 8 * RESULT_DOUBLES_PER_POINT_FRAME
     return transient + resident + results
 

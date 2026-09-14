@@ -28,6 +28,15 @@ from al_dic_3d.project.state import (
 
 ProgressFn = Callable[[float, str], None]
 
+
+class ProjectSwitchedDuringRun(RuntimeError):
+    """The project was replaced (New/Open) while its analysis was running.
+
+    The result belongs to the project that started the run; it is discarded
+    rather than attached to whichever project is current when the run ends.
+    """
+
+
 # English step titles (translated in the view via tr()).
 STEP_TITLES = {
     STEP_PROJECT: "Project",
@@ -119,11 +128,19 @@ class WorkflowController:
         headless path) is used as-is when the draft is untouched. ``stop`` polls
         for cooperative cancel.
         """
-        if self.state.draft.is_ready() or self.state.config is None:
+        # Bind the run to the project that started it (fix batch V): the GUI
+        # thread may replace self.state (New/Open Project) while the worker runs.
+        state = self.state
+        if state.draft.is_ready() or state.config is None:
             self.build_config()
         from al_dic_3d.runner import run_pipeline
 
-        self.state.result = run_pipeline(self.state.config, progress=progress, stop=stop)
-        self.state.mark_dirty()
-        self.state.workflow_step = STEP_RESULTS
-        return self.state.result
+        result = run_pipeline(state.config, progress=progress, stop=stop)
+        if self.state is not state:
+            raise ProjectSwitchedDuringRun(
+                "the project was replaced while its analysis was running; result discarded"
+            )
+        state.result = result
+        state.mark_dirty()
+        state.workflow_step = STEP_RESULTS
+        return state.result

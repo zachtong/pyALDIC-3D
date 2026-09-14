@@ -28,7 +28,17 @@ _SRC = Path(__file__).resolve().parents[1] / "src" / "al_dic_3d"
 
 _DOWNSTREAM = ["reconstruct", "strain3d", "viz3d", "export"]
 _COMPUTE = ["calibration", "sequence", "matching", "reconstruct", "strain3d", "export"]
-_QT_FREE = [*_COMPUTE, "viz3d"]
+# Single top-level compute modules are scanned too (fix batch V added the
+# synthetic-scene generator behind `al-dic-3d demo` / `self-test`).
+_QT_FREE = [
+    *_COMPUTE,
+    "viz3d",
+    "synthetic.py",
+    "runner.py",
+    "run_output.py",
+    "memcheck.py",
+    "pathsafe.py",
+]
 _LAZY_PYVISTA = ["export", "viz3d"]
 
 # Depending on a concrete strategy or the registry from downstream breaks the wall.
@@ -40,7 +50,8 @@ _FORBIDDEN_QT = re.compile(r"import\s+PySide6|from\s+PySide6|locale_format")
 
 
 def _py_files(pkg: str) -> list[Path]:
-    return list((_SRC / pkg).rglob("*.py"))
+    target = _SRC / pkg
+    return [target] if target.is_file() else list(target.rglob("*.py"))
 
 
 @pytest.mark.parametrize("pkg", _DOWNSTREAM)

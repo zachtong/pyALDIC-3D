@@ -81,7 +81,7 @@ def test_open_project_auto_relocates_moved_images(qapp, tmp_path):
     assert state.draft.left == [str(tmp_path / "left" / n) for n in NAMES]
     assert state.draft.right == [str(tmp_path / "right" / n) for n in NAMES]
     assert state.dirty  # the rewritten draft must reach the next save
-    relocation_logs = [m for m, lvl in logs if "relocated" in m and lvl == "info"]
+    relocation_logs = [m for m, lvl in logs if "relocated" in m.lower() and lvl == "info"]
     assert len(relocation_logs) == 2  # one info line per camera
     assert "camera-L" in relocation_logs[0]
     win.close()
@@ -100,7 +100,23 @@ def test_open_project_cancelled_locate_aborts(qapp, tmp_path):
 
     assert win.controller.state.project_path is None  # loaded state NOT adopted
     assert win.controller.state.draft.left == []
-    assert any("open cancelled" in m and lvl == "warn" for m, lvl in logs)
+    assert any("open cancelled" in m.lower() and lvl == "warn" for m, lvl in logs)
+    win.close()
+
+
+def test_open_project_without_its_images(qapp, tmp_path, monkeypatch):
+    # Fix batch V (M8): declining to locate the images no longer has to abort
+    # the open -- the results stay viewable; the images are reported missing.
+    draft = ProjectDraft(left=[str(Path("C:/gone/x") / n) for n in NAMES], right=[])
+    session = save_session(AppState3D(draft=draft), tmp_path / "lost.aldic3d")
+    monkeypatch.setattr(MainWindow3D, "_confirm_open_without_images", lambda self: True)
+    win = MainWindow3D()
+    logs: list[tuple[str, str]] = []
+    win.signals.log.connect(lambda m, lvl: logs.append((m, lvl)))
+    win._open_project_path(str(session))
+    assert win.controller.state.project_path == session  # the open went through
+    assert win.controller.state.draft.left == draft.left  # paths kept as stored
+    assert any("not found" in m and lvl == "warn" for m, lvl in logs)
     win.close()
 
 

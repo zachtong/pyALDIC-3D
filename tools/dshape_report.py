@@ -9,12 +9,31 @@ Covers BOTH pillars exercised on this real experimental dataset:
      ours-calib vs DICe-calib cross-run.
 
 Inputs are the artifacts produced under reports/dshape/ by the run scripts;
-this generator only draws. Output: reports/dshape_validation.pdf (gitignored).
+this generator only draws. It also reads a few raw files of the dataset, looked
+up under the data root (--data-root DIR, else $ALDIC3D_DATA_ROOT, else the
+repo's examples/ folder) in either layout, first match wins:
+
+    example2_Ch1.0_S3_D_specimen_tensile/            curated (examples/README.md)
+        images/left/*_0.tif
+        calibration/board_images/left/AMCalB-0000_0.tif   not in the curated copy:
+        GT4-0000_1_stereo_reconstruction.csv              add both from the original
+    StereoDIC_Challenge_1/StereoSample3_D_Specimen_Experimental/   original release
+        Images_All/*_0.tif
+        ExperimentalCal_14x10-7mm/AMCalB-0000_0.tif
+        GT4-0000_1_stereo_reconstruction.csv
+
+Usage: python tools/dshape_report.py [--data-root DIR]
+Output: reports/dshape_validation.pdf (gitignored).
 """
 
 from __future__ import annotations
 
+import argparse
 import json
+import os
+import sys
+from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 
 import cv2
@@ -27,19 +46,116 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 REPO = Path(__file__).resolve().parents[1]
 DSH = REPO / "reports" / "dshape"
-S3 = Path(
-    r"C:/Users/13014/OneDrive - The University of Texas at Austin/Documents"
-    r"/MATLABCodes/StereoDIC_Challenge_1/StereoSample3_D_Specimen_Experimental"
-)
 PDF = REPO / "reports" / "dshape_validation.pdf"
+DATA_ROOT_ENV = "ALDIC3D_DATA_ROOT"
 
-CMP = json.loads((DSH / "calib_compare.json").read_text())
-SCALE = json.loads((DSH / "scale_verify.json").read_text())
-GTD = json.loads((DSH / "gt_compare_dice.json").read_text())
-GTO = json.loads((DSH / "gt_compare_ours.json").read_text())
-DET = np.load(DSH / "calib_detections.npz")
-RUN_DICE = np.load(DSH / "reports" / "dshape" / "run_dice_inc" / "dshape.npz")
-RUN_OURS = np.load(DSH / "reports" / "dshape" / "run_ours_inc" / "dshape.npz")
+
+@dataclass(frozen=True)
+class DShapeLayout:
+    """Where the raw D-specimen files sit inside one dataset folder."""
+
+    folder: Path  # relative to the data root
+    left_images: str  # the 34 left frames, *_0.tif
+    board_image: str  # one left view of the 14x10 @ 7 mm coded target
+    gt4_csv: str  # DICe GT4 frame-0 stereo reconstruction export
+
+
+@dataclass(frozen=True)
+class DShapeData:
+    """Absolute paths of the raw dataset files the report draws."""
+
+    left_images: Path
+    board_image: Path
+    gt4_csv: Path
+
+
+LAYOUTS = (
+    DShapeLayout(
+        Path("example2_Ch1.0_S3_D_specimen_tensile"),
+        "images/left",
+        "calibration/board_images/left/AMCalB-0000_0.tif",
+        "GT4-0000_1_stereo_reconstruction.csv",
+    ),
+    DShapeLayout(
+        Path("StereoDIC_Challenge_1") / "StereoSample3_D_Specimen_Experimental",
+        "Images_All",
+        "ExperimentalCal_14x10-7mm/AMCalB-0000_0.tif",
+        "GT4-0000_1_stereo_reconstruction.csv",
+    ),
+)
+
+# Run artifacts, loaded by _load_artifacts() so that --help and a missing
+# dataset are reported before anything is read.
+CMP = SCALE = GTD = GTO = DET = RUN_DICE = RUN_OURS = None
+
+
+def find_dataset(
+    cli_root: str | None, layouts: Sequence[tuple[Path, Sequence[str]]], what: str
+) -> Path:
+    """First ``<root>/<rel>`` holding every listed entry; else exit 2 with a clear message.
+
+    The data root is ``cli_root`` (--data-root), else ``$ALDIC3D_DATA_ROOT``, else
+    the repo's examples/ folder (layout: examples/README.md).
+    """
+    if cli_root:
+        root, origin = Path(cli_root).expanduser(), "--data-root"
+    elif os.environ.get(DATA_ROOT_ENV):
+        root, origin = Path(os.environ[DATA_ROOT_ENV]).expanduser(), DATA_ROOT_ENV
+    else:
+        root, origin = REPO / "examples", "default: the repo's examples/ folder"
+    report = []
+    for rel, entries in layouts:
+        base = root / rel
+        missing = [e for e in entries if not (base / e).exists()]
+        if not missing:
+            return base
+        state = "missing " + ", ".join(missing) if base.is_dir() else "folder does not exist"
+        report.append(f"  {base}  ({state})")
+    print(
+        f"error: {what} not found under the data root {root} ({origin}). Looked for:\n"
+        + "\n".join(report)
+        + f"\nPoint --data-root (or {DATA_ROOT_ENV}) at the folder that holds it.",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
+
+
+def resolve_data(cli_root: str | None) -> DShapeData:
+    """Locate the raw D-specimen files in the first layout that has all of them."""
+    base = find_dataset(
+        cli_root,
+        [(lay.folder, (lay.left_images, lay.board_image, lay.gt4_csv)) for lay in LAYOUTS],
+        "Stereo-DIC Challenge 1.0 Sample 3 (D specimen) raw data",
+    )
+    # find_dataset returned <root>/<folder>; recover which layout that was.
+    layout = next(
+        lay for lay in LAYOUTS if base.parts[-len(lay.folder.parts) :] == lay.folder.parts
+    )
+    return DShapeData(
+        left_images=base / layout.left_images,
+        board_image=base / layout.board_image,
+        gt4_csv=base / layout.gt4_csv,
+    )
+
+
+def _load_artifacts() -> None:
+    """Load the run artifacts under reports/dshape/ into the module globals."""
+    global CMP, SCALE, GTD, GTO, DET, RUN_DICE, RUN_OURS
+    try:
+        CMP = json.loads((DSH / "calib_compare.json").read_text())
+        SCALE = json.loads((DSH / "scale_verify.json").read_text())
+        GTD = json.loads((DSH / "gt_compare_dice.json").read_text())
+        GTO = json.loads((DSH / "gt_compare_ours.json").read_text())
+        DET = np.load(DSH / "calib_detections.npz")
+        RUN_DICE = np.load(DSH / "reports" / "dshape" / "run_dice_inc" / "dshape.npz")
+        RUN_OURS = np.load(DSH / "reports" / "dshape" / "run_ours_inc" / "dshape.npz")
+    except OSError as exc:
+        print(
+            f"error: D-shape run artifact missing ({exc}).\n"
+            f"This report only draws: produce {DSH} with the D-shape validation runs first.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2) from None
 
 
 def _fig(title: str) -> plt.Figure:
@@ -89,9 +205,9 @@ def page_title(pdf: PdfPages) -> None:
     plt.close(fig)
 
 
-def page_detection(pdf: PdfPages) -> None:
+def page_detection(pdf: PdfPages, data: DShapeData) -> None:
     fig = _fig("Built-in calibration - detection on the real coded target")
-    img = cv2.imread(str(S3 / "ExperimentalCal_14x10-7mm" / "AMCalB-0000_0.tif"), 0)
+    img = cv2.imread(str(data.board_image), 0)
 
     ax = fig.add_subplot(2, 2, 1)
     ax.imshow(img, cmap="gray")
@@ -205,9 +321,9 @@ def _field_scatter(ax, xy, vals, img, title, unit="mm"):
     plt.colorbar(sc, ax=ax, fraction=0.04, pad=0.02, label=unit)
 
 
-def page_fields(pdf: PdfPages, run, tag: str) -> None:
+def page_fields(pdf: PdfPages, run, tag: str, data: DShapeData) -> None:
     k = int(run["n_frames"]) - 1
-    img = cv2.imread(str(sorted((S3 / "Images_All").glob("*_0.tif"))[k]), 0)
+    img = cv2.imread(str(sorted(data.left_images.glob("*_0.tif"))[k]), 0)
     xy = run["xL"][k]
     disp = run["displacement3D"][k]
     fig = _fig(f"3D displacement fields, frame {k} vs frame 0  [{tag}]")
@@ -255,10 +371,10 @@ def page_shape(pdf: PdfPages, run) -> None:
     plt.close(fig)
 
 
-def page_gt(pdf: PdfPages) -> None:
+def page_gt(pdf: PdfPages, data: DShapeData) -> None:
     fig = _fig("Frame-0 validation vs DICe GT4 export (4407 pts, common support n=154)")
-    gt = np.genfromtxt(S3 / "GT4-0000_1_stereo_reconstruction.csv", delimiter=",", names=True)
-    img = cv2.imread(str(S3 / "Images_All" / "0000_0.tif"), 0)
+    gt = np.genfromtxt(data.gt4_csv, delimiter=",", names=True)
+    img = cv2.imread(str(data.left_images / "0000_0.tif"), 0)
 
     ax = fig.add_subplot(2, 2, 1)
     ax.imshow(img, cmap="gray")
@@ -401,14 +517,24 @@ def page_limits(pdf: PdfPages) -> None:
     plt.close(fig)
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="D-shape (Stereo DIC Challenge 1.0, Sample 3) validation report."
+    )
+    parser.add_argument(
+        "--data-root", help=f"dataset root (default: ${DATA_ROOT_ENV}, else the repo's examples/)"
+    )
+    args = parser.parse_args(argv)
+    data = resolve_data(args.data_root)
+    _load_artifacts()
+
     with PdfPages(PDF) as pdf:
         page_title(pdf)
-        page_detection(pdf)
+        page_detection(pdf, data)
         page_calib_compare(pdf)
-        page_fields(pdf, RUN_DICE, "DICe calib, incremental")
+        page_fields(pdf, RUN_DICE, "DICe calib, incremental", data)
         page_shape(pdf, RUN_DICE)
-        page_gt(pdf)
+        page_gt(pdf, data)
         page_crossrun(pdf)
         page_limits(pdf)
     print(f"wrote {PDF}")

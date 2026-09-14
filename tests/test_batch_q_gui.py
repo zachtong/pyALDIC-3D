@@ -112,6 +112,7 @@ def test_view_state_round_trips_units_and_mesh_appearance(qapp):
     s = win.signals
     s.display_unit = "µm"
     s.frame_rate = 12.5
+    s.frame_rate_known = True  # a user-entered rate (fix batch V flag)
     s.mesh_line_color = "#3b82f6"
     s.mesh_line_width = 4
     vs = win._capture_view_state()
@@ -122,6 +123,7 @@ def test_view_state_round_trips_units_and_mesh_appearance(qapp):
     win2._right.apply_view_state(vs, n_frames=1)
     assert win2.signals.display_unit == "µm"
     assert win2.signals.frame_rate == pytest.approx(12.5)
+    assert win2.signals.frame_rate_known
     assert win2.signals.mesh_line_color == "#3b82f6"
     assert win2.signals.mesh_line_width == 4
     assert win2._right._units._unit_combo.currentText() == "µm"

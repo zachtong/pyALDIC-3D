@@ -17,6 +17,7 @@ the 3D displacement. Best for long / drift-sensitive sequences (02 §3).
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
@@ -30,7 +31,7 @@ from al_dic_3d.matching.contracts import (
 )
 from al_dic_3d.matching.diagnostics import frame_row, stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara, match_points
-from al_dic_3d.matching.stereo import stereo_match_pair
+from al_dic_3d.matching.stereo import accept_field, accept_links, stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
     effective_seed_points,
@@ -38,12 +39,15 @@ from al_dic_3d.matching.strategies._common import (
     loop_frac,
     mask_stream,
     resolve_init,
+    setup_note,
+    stereo_search_centre,
     stereo_seed_u0,
     temporal_camera_u0,
     track_band,
 )
 from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import temporal_track
+from al_dic_3d.sequence.lazy import as_binary_mask
 
 if TYPE_CHECKING:
     from al_dic import DICMesh  # type-only; ledgered in DEPENDS_ON_2D.md
@@ -125,6 +129,7 @@ class StereoEachFrameStrategy:
 
         # The ONLY temporal chain: the left camera. Batch S: F-aware propagated
         # U0 over the placed seeds (falls back to the single-seed uniform path).
+        setup_note(progress, "Setup: left-camera initial guess")
         u0_L = temporal_camera_u0(
             init_mode,
             left[0],
@@ -138,6 +143,7 @@ class StereoEachFrameStrategy:
             search_radius=self.fft_search,
         )
         # Per-node L->R disparity prior for the frame-0 stereo match (seed mode).
+        setup_note(progress, "Setup: frame-1 stereo disparity prior")
         stereo_prior = stereo_seed_u0(
             init_mode,
             left[0],
@@ -181,18 +187,35 @@ class StereoEachFrameStrategy:
 
             if k == 0:
                 # Establish the disparity with a full NCC-seeded stereo match.
+                stereo_prior, stereo_centre, stereo_note = stereo_search_centre(
+                    stereo_prior,
+                    stereo_offset,
+                    left[0],
+                    right[0],
+                    mesh_L,
+                    mask_L1,
+                    rig,
+                    para_L,
+                    search_radius=self.stereo_search,
+                )
                 field = stereo_match_pair(
                     left[0],
                     right[0],
                     coords_L,
                     para_L,
-                    disparity_offset=stereo_offset,
+                    disparity_offset=stereo_centre,
                     search_radius=self.stereo_search,
                     frame_idx=0,
                     seed_u0=stereo_prior,
                 )
+                field, n_rz, n_re = accept_field(
+                    field,
+                    rig=rig,
+                    znssd_max=cfg.stereo_znssd_max,
+                    epipolar_max_px=cfg.stereo_epipolar_max_px,
+                )
                 d_k, znssd_k, valid_s = field.d, field.znssd, field.valid
-                diag += stereo_rows(field)
+                diag += stereo_rows(field, note=stereo_note, rejected=(n_rz, n_re))
                 if not valid_s.any():
                     raise RuntimeError(
                         f"frame-1 stereo match found no valid correspondences "
@@ -203,16 +226,40 @@ class StereoEachFrameStrategy:
             else:
                 # Warm-start from the previous frame's disparity (slowly varying);
                 # scattered local IC-GN at x_L^k -> no NCC, no resampling.
+                # The reference image here is LEFT frame k, so its subsets must
+                # be gated by the LEFT mask of frame k (per-frame masks), not by
+                # the frame-0 mask. A constant broadcast ROI mask describes frame
+                # 0's geometry only, so it is not applied to later frames.
+                mask_k = seq.mask("L", k)
+                if mask_k is None or mask_k is seq.mask("L", 0):
+                    para_k = dataclasses.replace(para_L, img_ref_mask=None)
+                else:
+                    para_k = dataclasses.replace(para_L, img_ref_mask=as_binary_mask(mask_k))
                 d_k, znssd_k, valid_s = match_points(
-                    left[k], right[k], xl_k, np.nan_to_num(prev_d, nan=0.0), para_L, tol=1e-3
+                    left[k], right[k], xl_k, np.nan_to_num(prev_d, nan=0.0), para_k, tol=1e-3
                 )
+                # H4: the per-frame refresh is a stereo link like frame 1's.
+                valid_s, n_rz, n_re = accept_links(
+                    xl_k,
+                    xl_k + d_k,
+                    znssd_k,
+                    valid_s,
+                    rig=rig,
+                    znssd_max=cfg.stereo_znssd_max,
+                    epipolar_max_px=cfg.stereo_epipolar_max_px,
+                )
+                d_k = np.where(valid_s[:, None], d_k, np.nan)
+                note = "per-frame stereo refresh"
+                if n_rz or n_re:
+                    note += f"; rejected {n_rz} (ZNSSD) + {n_re} (epipolar)"
                 diag.append(
                     frame_row(
                         k,
                         "stereo",
                         n_pts,
                         int((valid_s & np.isfinite(d_k).all(axis=1)).sum()),
-                        note="per-frame stereo refresh",
+                        n_gated=n_rz + n_re,
+                        note=note,
                     )
                 )
 

@@ -1,4 +1,4 @@
-"""Scale stress-test driver for pyALDIC-3D (batch G4, REPORT-ONLY).
+r"""Scale stress-test driver for pyALDIC-3D (batch G4, REPORT-ONLY).
 
 Measures whether the software SURVIVES and how it SCALES on
 hundreds-of-frames x 12-25 Mpx stereo sequences, and audits the memory
@@ -16,11 +16,13 @@ Sub-commands
 
 All results land as JSON under --logs (plus an RSS timeline CSV per run).
 
-Usage examples (conda env `pyaldic3d`):
+Usage examples (any environment with ``pip install -e ".[dev]"``; the [dev]
+extra provides psutil for the RSS sampler):
     python tools/stress_test.py gen  --dir <scratch>/tierA --frames 150 --width 4000 --height 3000
     python tools/stress_test.py run  --config <scratch>/tierA/config.toml --tag tierA --gt
     python tools/stress_test.py spawn --config <scratch>/tierA/config.toml --tag tierA_cli
-    python tools/stress_test.py run  --config <scratch>/tierB/config.toml --tag tierB_cancel --cancel-frac 0.6
+    python tools/stress_test.py run  --config <scratch>/tierB/config.toml --tag tierB_cancel \
+        --cancel-frac 0.6
     python tools/stress_test.py session-load --path <scratch>/tierA/session.aldic3d
 """
 
@@ -90,7 +92,7 @@ class RssSampler:
                 self._live.write(f"{t:.1f},{rss},{avail}\n")
             self._stop.wait(self.interval)
 
-    def __enter__(self) -> "RssSampler":
+    def __enter__(self) -> RssSampler:
         self._thread.start()
         return self
 
@@ -160,7 +162,7 @@ def _stats(diffs: list[float]) -> dict:
 
 
 def _per_frame_stats(times: list[float]) -> dict:
-    return _stats([b - a for a, b in zip(times, times[1:])])
+    return _stats([b - a for a, b in zip(times, times[1:], strict=False)])
 
 
 def _frame_start_times(events: list[dict], ch: str) -> list[float]:
@@ -203,9 +205,13 @@ def cmd_gen(args) -> int:
 
 def _patch_track_progress(elog: EventLog):
     """Log-only monkeypatch: forward engine per-frame progress from BOTH
-    sequential temporal tracks into the event log (the sequential track_both
-    path passes no progress callback of its own — see report). Behavior of the
-    pipeline is unchanged; the injected callback only records timestamps."""
+    sequential temporal tracks into the event log. Behavior of the pipeline is
+    unchanged; the injected callback only records timestamps.
+
+    Since 1.1.0 (batch P4) track_both passes each camera its own progress
+    callback, so the patch CHAINS onto it (log, then forward) instead of only
+    injecting when none was given; the injection-only version left the "L" /
+    "R" channels and every stage timing derived from them empty (fix batch V)."""
     import al_dic_3d.matching.strategies.track_both as tb
 
     orig = tb.temporal_track
@@ -214,8 +220,14 @@ def _patch_track_progress(elog: EventLog):
     def wrapped(frames, mesh, para, **kw):
         tag = "L" if order["i"] % 2 == 0 else "R"
         order["i"] += 1
-        if kw.get("progress") is None:
-            kw["progress"] = lambda f, m, _tag=tag: elog.log(_tag, float(f), str(m))
+        inner = kw.get("progress")
+
+        def chained(f, m, _tag=tag, _inner=inner):
+            elog.log(_tag, float(f), str(m))
+            if _inner is not None:
+                _inner(f, m)
+
+        kw["progress"] = chained
         return orig(frames, mesh, para, **kw)
 
     tb.temporal_track = wrapped
@@ -225,7 +237,16 @@ def _patch_track_progress(elog: EventLog):
 def _memcheck_projection(cfg, n_frames: int, img_h: int, img_w: int) -> dict:
     from al_dic_3d import memcheck
 
-    xmin, xmax, ymin, ymax = cfg.roi
+    roi = cfg.roi
+    if cfg.roi_mask is not None:
+        # The runner replaces the rectangle with the ROI mask's bounding box
+        # before sizing the run; mirror it (a mask-only config used to size the
+        # results as ONE point).
+        from al_dic_3d.runner import _load_roi_mask, _mask_bbox
+
+        path = cfg.roi_mask if cfg.roi_mask.is_absolute() else cfg.base_dir / cfg.roi_mask
+        roi = _mask_bbox(_load_roi_mask(path, (img_h, img_w)))
+    xmin, xmax, ymin, ymax = roi
     step = max(1, cfg.winstepsize)
     n_pts_est = max(1, (max(0, xmax - xmin) // step + 1) * (max(0, ymax - ymin) // step + 1))
     projected = memcheck.estimate_peak_bytes(
@@ -459,7 +480,8 @@ def cmd_run(args) -> int:
     rss.write_csv(logs / f"{args.tag}_rss.csv")
     elog.dump_jsonl(logs / f"{args.tag}_events.jsonl")
     (logs / f"{args.tag}.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
-    print(json.dumps({k: v for k, v in report.items() if k not in ("coverage_curve", "traceback", "diagnostics")}, indent=2))
+    skip = ("coverage_curve", "traceback", "diagnostics")
+    print(json.dumps({k: v for k, v in report.items() if k not in skip}, indent=2))
     return 0 if error is None else 1
 
 
@@ -517,7 +539,7 @@ def _export_anim(cfg, result) -> dict:
         "sizes_mb": [round(p.stat().st_size / 1024**2, 1) for p in paths if p.exists()],
         "wall_s": round(dt, 1),
         "frames": len(ticks),
-        "s_per_frame": _stats([b - a for a, b in zip(ticks, ticks[1:])]),
+        "s_per_frame": _stats([b - a for a, b in zip(ticks, ticks[1:], strict=False)]),
     }
 
 
@@ -546,7 +568,9 @@ def cmd_spawn(args) -> int:
     th.join(timeout=10)
     total = time.perf_counter() - t0
 
-    gaps = [(round(b - a, 1), round(a, 1)) for (a, _), (b, _) in zip(lines, lines[1:])]
+    gaps = [
+        (round(b - a, 1), round(a, 1)) for (a, _), (b, _) in zip(lines, lines[1:], strict=False)
+    ]
     gaps.sort(reverse=True)
     report = {
         "tag": args.tag,

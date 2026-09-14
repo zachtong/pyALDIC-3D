@@ -8,6 +8,22 @@ overlay blends over the grayscale camera image with ``cv2.addWeighted`` at the
 field opacity, then an optional matplotlib colorbar strip is attached and the
 long edge is capped by the resolution preset.
 
+What "WYSIWYG" covers (fix batch V):
+
+* **values and labels** follow the canvas's display unit: the GUI passes a
+  ``value_scale`` (mm -> µm/cm/m, and frame rate for velocity) and the canvas's
+  own colorbar label in each :class:`FieldImageConfig`; a fixed range typed in
+  display units therefore applies to display-unit values (M1);
+* **the right camera** is bounded by the drawn left ROI warped through the
+  frame-1 correspondence, warped ONCE per export (:func:`camera_roi_masks`) —
+  the support the canvas uses — instead of the bare node hull (M3);
+* **backgrounds** keep their bit depth and get the canvas's min/max stretch
+  (:func:`al_dic_3d.viz3d.background.load_display_gray`, M6);
+* **honesty**: a frame with nothing to draw is reported in the returned
+  :class:`~al_dic_3d.export.outcome.ExportOutcome` (never silently dropped), a
+  (camera, field) pass that produced nothing is listed as ``unavailable``, and
+  a cancel sets ``cancelled`` only when frames were really left undone.
+
 Directory structure (2D naming idiom, one folder per camera x field)::
 
     dest_dir/
@@ -20,7 +36,7 @@ Directory structure (2D naming idiom, one folder per camera x field)::
 from __future__ import annotations
 
 import threading
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -35,10 +51,13 @@ from al_dic_3d.export.colorbar import (
     attach_colorbar,
     colorbar_label,
 )
+from al_dic_3d.export.outcome import WARN_RIGHT_ROI, ExportOutcome, stop_requested
 from al_dic_3d.export.tables import display_field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
-from al_dic_3d.pathsafe import imread_unicode, imwrite_unicode
+from al_dic_3d.pathsafe import imwrite_unicode
+from al_dic_3d.viz3d.background import image_shape, load_display_gray
 from al_dic_3d.viz3d.fieldmap import FieldmapRenderer, auto_range, visible_values
+from al_dic_3d.viz3d.maskwarp import right_camera_mask
 
 if TYPE_CHECKING:
     from al_dic_3d.runner import RunResult
@@ -47,6 +66,11 @@ ProgressCb = Callable[[int, int, str], None]
 
 # Long-edge resolution presets offered by the export dialog (0 = full).
 RESOLUTION_PRESETS = (1024, 768, 512, 1536, 2048, 0)
+
+# (position, focal_point, view_up) — a pyvista camera snapshot.
+CameraTuple = tuple[
+    tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]
+]
 
 
 @dataclass(frozen=True)
@@ -57,6 +81,11 @@ class VizExportHint:
     window) so the export dialog opens showing what the user is looking at —
     the Qt-free home for this type fixes the 2D wart where the hint lived
     inside the dialog module.
+
+    ``auto_range`` / ``vmin`` / ``vmax`` belong to ``current_field`` only, in
+    ``display_unit``. ``frame_rate`` scales the velocity field to unit/s when
+    ``frame_rate_known``; otherwise velocity stays per frame (the canvas rule).
+    ``view3d_camera`` is the interactive 3D view's camera when one exists.
     """
 
     colormap: str = "turbo"
@@ -67,11 +96,21 @@ class VizExportHint:
     vmin: float = 0.0
     vmax: float = 1.0
     current_frame: int = 0
+    display_unit: str = "mm"
+    frame_rate: float = 1.0
+    frame_rate_known: bool = True
+    view3d_camera: CameraTuple | None = None
 
 
 @dataclass(frozen=True)
 class FieldImageConfig:
-    """Per-field render settings for image/animation export (Qt-free)."""
+    """Per-field render settings for image/animation export (Qt-free).
+
+    ``value_scale`` multiplies the field's native values (mm, mm/frame,
+    dimensionless strain) into the display unit before the range and colormap
+    are applied, so ``vmin`` / ``vmax`` are in display units; ``label`` is the
+    colorbar text (``None`` = the native-unit :func:`colorbar_label`).
+    """
 
     field_id: str
     enabled: bool = True
@@ -80,6 +119,11 @@ class FieldImageConfig:
     vmin: float = 0.0
     vmax: float = 1.0
     opacity: float = 0.85
+    value_scale: float = 1.0
+    label: str | None = None
+
+    def colorbar_text(self) -> str:
+        return self.label if self.label else colorbar_label(self.field_id)
 
 
 def output_shape_for(image_shape: tuple[int, int], max_dim: int) -> tuple[int, int]:
@@ -108,11 +152,12 @@ def encode_params_for(ext: str, jpeg_quality: int) -> list[int]:
 
 
 def _load_gray_u8(path: str | Path) -> NDArray[np.uint8] | None:
-    """Load a background image as (H, W) uint8 grayscale; None on failure.
+    """Background as the canvas shows it: native bit depth, min/max stretched.
 
-    Unicode-safe (G3): ``cv2.imread`` returns None on non-ASCII Windows paths.
+    Unicode-safe; None on failure. (Was ``IMREAD_GRAYSCALE``, which turned
+    12-bit data in 16-bit files black — fix batch V, M6.)
     """
-    return imread_unicode(path, cv2.IMREAD_GRAYSCALE)
+    return load_display_gray(path)
 
 
 def _frame_geometry(
@@ -144,6 +189,7 @@ def field_color_range(
     roi_mask: NDArray[np.bool_] | None,
     *,
     deformed: bool = False,
+    value_scale: float = 1.0,
 ) -> tuple[float, float]:
     """Auto color range from the VISIBLE nodes of one frame (GUI contract).
 
@@ -155,14 +201,74 @@ def field_color_range(
     all three consumers through the one helper keeps them from drifting again.
     Uses the display-masked field so trimmed strain nodes never stretch the
     range (Batch C, C3): the ``deformed`` flag selects frame-k vs frame-0
-    validity to match the render.
+    validity to match the render. ``value_scale`` puts the range in display
+    units (``roi_mask`` must be the support of ``camera``).
     """
     vals = display_field_frame(result, field_id, frame_k, deformed=deformed)
     if vals is None:
         return 0.0, 1.0
+    if value_scale != 1.0:
+        vals = vals * float(value_scale)
     cs = result.correspondence
     ref_pts = (cs.xL if camera == "L" else cs.xR)[0]
     return auto_range(visible_values(vals, ref_pts, roi_mask))
+
+
+def crack_barrier(result: RunResult, roi_mask: NDArray[np.bool_] | None) -> NDArray | None:
+    """The drawn LEFT ROI as the crack barrier on a crack-aware run, else None.
+
+    The mask itself, not a float copy: the renderers read bool or float masks
+    (``>= 0.5`` = material) without copying (a 12 Mpx float copy was 96 MB).
+    """
+    if roi_mask is None or not bool((getattr(result, "meta", None) or {}).get("crack_aware")):
+        return None
+    return np.asarray(roi_mask)
+
+
+def right_image_shape(
+    image_files: Mapping[str, Sequence[str]] | None, fallback: tuple[int, int]
+) -> tuple[int, int]:
+    """(H, W) of the right camera's first image (header only), else *fallback*."""
+    files = list((image_files or {}).get("R") or [])
+    if files:
+        shape = image_shape(files[0])
+        if shape is not None:
+            return shape
+    return (int(fallback[0]), int(fallback[1]))
+
+
+def camera_roi_masks(
+    result: RunResult,
+    cameras: Sequence[str],
+    roi_mask: NDArray[np.bool_] | None,
+    image_files: Mapping[str, Sequence[str]] | None = None,
+    right_roi_mask: NDArray[np.bool_] | None = None,
+) -> tuple[dict[str, NDArray[np.bool_] | None], list[str]]:
+    """Per-camera display support, the right one warped ONCE (M3).
+
+    LEFT: the drawn reference ROI. RIGHT: ``right_roi_mask`` when the caller
+    already has it, else the left ROI warped through the frame-1
+    correspondence with :func:`al_dic_3d.viz3d.maskwarp.right_camera_mask` —
+    the support the canvas shows. Returns ``(masks, warning_codes)``; a failed
+    warp falls back to the node-hull support with :data:`WARN_RIGHT_ROI`.
+    """
+    masks: dict[str, NDArray[np.bool_] | None] = {}
+    warnings: list[str] = []
+    for cam in cameras:
+        if cam == "L":
+            masks[cam] = roi_mask
+            continue
+        if roi_mask is None:
+            masks[cam] = None
+            continue
+        if right_roi_mask is None:
+            cs = result.correspondence
+            shape = right_image_shape(image_files, roi_mask.shape)
+            right_roi_mask = right_camera_mask(roi_mask, cs.xL[0], cs.xR[0], shape)
+            if right_roi_mask is None:
+                warnings.append(WARN_RIGHT_ROI)
+        masks[cam] = right_roi_mask
+    return masks, warnings
 
 
 def render_field_frame(
@@ -178,7 +284,7 @@ def render_field_frame(
     show_deformed: bool = True,
     output_max_dim: int = 0,
     renderer: FieldmapRenderer | None = None,
-    barrier_mask: NDArray[np.float64] | None = None,
+    barrier_mask: NDArray | None = None,
 ) -> tuple[NDArray[np.uint8], float, float] | None:
     """Render one field frame composited over the camera image -> BGR uint8.
 
@@ -189,10 +295,11 @@ def render_field_frame(
         frame_k: 0-based frame index (0 = reference frame).
         bg_image: (H, W) uint8 grayscale background, or None for black at the
             run's recorded image size.
-        cfg: colormap / range / opacity for this field.
+        cfg: colormap / range / opacity / display scale for this field.
         mesh_step: node spacing in px (``winstepsize``) — grid density.
-        roi_mask: drawn reference ROI mask (LEFT camera only, pass None for
-            the RIGHT camera — the renderer falls back to the hull support).
+        roi_mask: the display support of THIS camera — the drawn ROI for the
+            left camera, the warped ROI (:func:`camera_roi_masks`) for the
+            right one; None falls back to the node-hull support.
         show_deformed: plot geometry at frame-k node positions (True) or the
             frame-1 reference positions (False); values stay frame k's.
         output_max_dim: cap the long edge of the output (0 = native).
@@ -201,8 +308,8 @@ def render_field_frame(
 
     Returns:
         ``(bgr, vmin, vmax)`` — the composited frame and the color range used
-        (for the colorbar) — or None when the field is unavailable or the node
-        set is degenerate.
+        (for the colorbar, in display units) — or None when the field is
+        unavailable or the node set is degenerate.
     """
     pts, ref_pts, ref_uv, deformed = _frame_geometry(result, camera, frame_k, show_deformed)
     # WYSIWYG (Batch C, C3): the exported field hides ~strain_valid nodes exactly
@@ -211,6 +318,9 @@ def render_field_frame(
     vals = display_field_frame(result, field_id, frame_k, deformed=deformed)
     if vals is None:
         return None
+    scale = float(cfg.value_scale)
+    if scale != 1.0:
+        vals = vals * scale  # display units (M1): range + colormap apply to these
 
     if bg_image is not None:
         img_shape = tuple(int(v) for v in bg_image.shape[:2])
@@ -220,17 +330,16 @@ def render_field_frame(
             return None
 
     if cfg.auto_range:
-        vmin, vmax = field_color_range(
-            result, camera, field_id, frame_k, roi_mask, deformed=deformed
-        )
+        vmin, vmax = auto_range(visible_values(vals, ref_pts, roi_mask))
     else:
         vmin, vmax = float(cfg.vmin), float(cfg.vmax)
 
     if renderer is None:
         renderer = FieldmapRenderer()
+    cache_name = f"{camera}:{field_id}" if scale == 1.0 else f"{camera}:{field_id}@{scale:g}"
     rgba, xg, yg, out_step = renderer.render_field_rgba(
         frame_k,
-        f"{camera}:{field_id}",
+        cache_name,
         pts,
         vals,
         img_shape=img_shape,
@@ -263,6 +372,29 @@ def render_field_frame(
     return composed, vmin, vmax
 
 
+def background_only_frame(
+    bg_image: NDArray[np.uint8] | None,
+    img_shape: tuple[int, int],
+    output_max_dim: int,
+) -> NDArray[np.uint8] | None:
+    """The frame the canvas shows when there is no field to draw: the image alone.
+
+    Used as an animation placeholder so a frame without data keeps its time
+    slot. None when neither a background nor a recorded image size exists.
+    """
+    if bg_image is not None:
+        bgr = cv2.cvtColor(bg_image, cv2.COLOR_GRAY2BGR)
+    else:
+        h, w = (int(v) for v in img_shape)
+        if h <= 0 or w <= 0:
+            return None
+        bgr = np.zeros((h, w, 3), dtype=np.uint8)
+    out_h, out_w = output_shape_for(bgr.shape[:2], output_max_dim)
+    if (out_h, out_w) != bgr.shape[:2]:
+        bgr = cv2.resize(bgr, (out_w, out_h), interpolation=cv2.INTER_AREA)
+    return bgr
+
+
 def _composite_overlay(
     bg_bgr: NDArray[np.uint8],
     rgba: NDArray[np.uint8],
@@ -273,35 +405,47 @@ def _composite_overlay(
 ) -> NDArray[np.uint8]:
     """Blend the grid-resolution RGBA overlay onto the full-size background.
 
-    Mirrors the GUI geometry contract: the overlay pixmap sits at
-    ``(xg.min(), yg.min())`` scaled by ``out_step``. The colormap alpha is
-    binary (opaque inside the support, 0 outside), so one SIMD ``addWeighted``
-    blend plus a restore-background select reproduces the GUI's
+    Same geometry as the canvas (:func:`~al_dic_3d.viz3d.raster.overlay_origin`):
+    grid sample (i, j) belongs to image pixel ``(xg[j], yg[i])`` and covers an
+    ``out_step``-pixel block centred there, so the grid is resampled with its
+    samples on those pixels (one affine warp of the covered box). The colormap
+    alpha is binary (opaque inside the support, 0 outside), so one SIMD
+    ``addWeighted`` blend plus a restore-background select reproduces the GUI's
     ``setOpacity(overlay_alpha)`` compositing.
     """
     H, W = bg_bgr.shape[:2]
     gh, gw = rgba.shape[:2]
-    ov_w, ov_h = max(1, int(round(gw * out_step))), max(1, int(round(gh * out_step)))
-    overlay_bgr = cv2.resize(
-        np.ascontiguousarray(rgba[:, :, [2, 1, 0]]),
-        (ov_w, ov_h),
-        interpolation=cv2.INTER_LINEAR,
-    )
-    alpha = cv2.resize(rgba[:, :, 3], (ov_w, ov_h), interpolation=cv2.INTER_LINEAR)
-
-    # Clip the overlay rectangle to the image bounds.
-    x0, y0 = int(round(float(xg.min()))), int(round(float(yg.min())))
-    bx0, by0 = max(0, x0), max(0, y0)
-    bx1, by1 = min(W, x0 + ov_w), min(H, y0 + ov_h)
+    s = float(out_step)
+    x0, y0 = float(np.min(xg)), float(np.min(yg))
+    # The blocks span half a step beyond the outer samples; clip to the image.
+    bx0, by0 = max(0, int(np.ceil(x0 - s / 2))), max(0, int(np.ceil(y0 - s / 2)))
+    bx1 = min(W, int(np.floor(x0 + (gw - 0.5) * s)) + 1)
+    by1 = min(H, int(np.floor(y0 + (gh - 0.5) * s)) + 1)
     if bx1 <= bx0 or by1 <= by0:
         return bg_bgr.copy()
-    ox0, oy0 = bx0 - x0, by0 - y0
-    ox1, oy1 = ox0 + (bx1 - bx0), oy0 + (by1 - by0)
+    # Box pixel (u, v) samples grid coordinate ((bx0 + u - x0) / s, (by0 + v - y0) / s).
+    warp = np.array([[1.0 / s, 0.0, (bx0 - x0) / s], [0.0, 1.0 / s, (by0 - y0) / s]])
+    size = (bx1 - bx0, by1 - by0)
+    flags = cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP
+    roi_ov = cv2.warpAffine(
+        np.ascontiguousarray(rgba[:, :, [2, 1, 0]]),
+        warp,
+        size,
+        flags=flags,
+        borderMode=cv2.BORDER_REPLICATE,
+    )
+    alpha = cv2.warpAffine(
+        np.ascontiguousarray(rgba[:, :, 3]),
+        warp,
+        size,
+        flags=flags,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=0,
+    )
 
     result = bg_bgr.copy()
     roi_bg = result[by0:by1, bx0:bx1]
-    roi_ov = overlay_bgr[oy0:oy1, ox0:ox1]
-    inside = alpha[oy0:oy1, ox0:ox1] >= 128
+    inside = alpha >= 128
     op = float(np.clip(opacity, 0.0, 1.0))
     blended = cv2.addWeighted(roi_bg, 1.0 - op, roi_ov, op, 0.0)
     result[by0:by1, bx0:bx1] = np.where(inside[:, :, None], blended, roi_bg)
@@ -319,6 +463,7 @@ def export_image_frames(
     cameras: Sequence[str] = ("L",),
     mesh_step: int = 16,
     roi_mask: NDArray[np.bool_] | None = None,
+    right_roi_mask: NDArray[np.bool_] | None = None,
     show_deformed: bool = True,
     frame_start: int = 0,
     frame_end: int = -1,
@@ -331,7 +476,7 @@ def export_image_frames(
     margin_color: str = "white",
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
-) -> list[Path]:
+) -> ExportOutcome:
     """Render and save images for each camera, enabled field, and frame.
 
     Layout: ``{prefix}_images_{timestamp}/{camera}_{field}/frame_XX.{ext}``.
@@ -341,8 +486,9 @@ def export_image_frames(
             index k in deformed mode and index 0 (reference) otherwise.
         configs: per-field settings; disabled fields are skipped.
         cameras: subset of ``("L", "R")`` to render.
-        roi_mask: drawn LEFT reference ROI mask; applied to the L camera only
-            (the R camera falls back to the hull support, GUI contract).
+        roi_mask: drawn LEFT reference ROI mask. The right camera uses it
+            warped through the frame-1 correspondence (``right_roi_mask`` when
+            the caller already warped it) — the canvas's support (M3).
         frame_start / frame_end: inclusive 0-based range; ``frame_end < 0``
             means the last frame.
         margin_ratio / margin_color: blank border around the final frame
@@ -352,14 +498,18 @@ def export_image_frames(
         progress_cb: called with ``(frames_done, total_frames, label)``.
 
     Returns:
-        Paths of the written image files (partial list when cancelled).
+        The written image files as an :class:`ExportOutcome`: frames with
+        nothing to draw are listed in ``skipped`` (no file), passes that drew
+        nothing at all in ``unavailable``, and ``cancelled`` is set only when
+        frames were left undone.
     """
+    outcome = ExportOutcome()
     n_frames = int(result.reconstruction.n_frames)
     if frame_end < 0 or frame_end >= n_frames:
         frame_end = n_frames - 1
     enabled = [c for c in configs if c.enabled]
     if not enabled or frame_end < frame_start:
-        return []
+        return outcome
 
     ext = {"png": ".png", "jpeg": ".jpg", "jpg": ".jpg", "tiff": ".tif", "tif": ".tif"}.get(
         image_format.lower(), ".png"
@@ -367,6 +517,8 @@ def export_image_frames(
     enc_params = encode_params_for(ext, jpeg_quality)
     cb_style = colorbar_style if colorbar_style is not None else ColorbarStyle()
     images_dir = dest_dir / f"{prefix}_images_{timestamp}"
+    masks, warnings = camera_roi_masks(result, cameras, roi_mask, image_files, right_roi_mask)
+    outcome.warnings += warnings
 
     # Pre-decode reference backgrounds (frame 0 reused for every frame when
     # plotting on the reference configuration).
@@ -379,27 +531,26 @@ def export_image_frames(
     renderer = FieldmapRenderer()  # shared: reference Delaunay reused across frames
     # Item 4 WYSIWYG: when the run was crack-aware, the drawn L ROI mask doubles
     # as the crack barrier (0-band = crack) for the dense render's cell blanking.
-    barrier = (
-        np.asarray(roi_mask, dtype=np.float64)
-        if (roi_mask is not None and bool(result.meta.get("crack_aware", False)))
-        else None
-    )
+    barrier = crack_barrier(result, roi_mask)
     frames = list(range(frame_start, frame_end + 1))
     total = len(frames)
     done = 0
-    paths: list[Path] = []
+    drew: dict[str, bool] = {}  # "{cam}_{field}" -> rendered at least one frame
+    missing: dict[str, list[str]] = {}
 
     for k in frames:
-        if stop_event is not None and stop_event.is_set():
+        if stop_requested(stop_event):
+            outcome.cancelled = True
             break
+        tag = frame_tag(k, n_frames)
         for cam in cameras:
             files = list(image_files.get(cam) or [])
             if show_deformed:
                 bg = _load_gray_u8(files[min(k, len(files) - 1)]) if files else None
             else:
                 bg = ref_bg.get(cam)
-            cam_mask = roi_mask if cam == "L" else None
             for cfg in enabled:
+                label = f"{cam}_{cfg.field_id}"
                 rendered = render_field_frame(
                     result,
                     cam,
@@ -408,28 +559,36 @@ def export_image_frames(
                     bg,
                     cfg,
                     mesh_step=mesh_step,
-                    roi_mask=cam_mask,
+                    roi_mask=masks.get(cam),
                     show_deformed=show_deformed,
                     output_max_dim=output_max_dim,
                     renderer=renderer,
                     barrier_mask=barrier if cam == "L" else None,
                 )
                 if rendered is None:
+                    drew.setdefault(label, False)
+                    missing.setdefault(label, []).append(f"{label} {tag}")
                     continue
+                drew[label] = True
                 img, vmin, vmax = rendered
                 if include_colorbar:
                     img = attach_colorbar(
-                        img, cb_style, cfg.colormap, vmin, vmax, colorbar_label(cfg.field_id)
+                        img, cb_style, cfg.colormap, vmin, vmax, cfg.colorbar_text()
                     )
                 img = add_margin(img, margin_ratio, margin_color)
                 field_dir = ensure_dir(images_dir / f"{cam}_{cfg.field_id}")
-                out = field_dir / f"{frame_tag(k, n_frames)}{ext}"
+                out = field_dir / f"{tag}{ext}"
                 # G3: raises on failure instead of cv2.imwrite's silent False.
                 imwrite_unicode(out, img, enc_params)
-                paths.append(out)
+                outcome.append(out)
         renderer.clear_frame_caches()  # bound memory; keep the ref Delaunay
         done += 1
         if progress_cb is not None:
-            progress_cb(done, total, frame_tag(k, n_frames))
+            progress_cb(done, total, tag)
 
-    return paths
+    for label, ok in drew.items():
+        if ok:
+            outcome.skipped += missing.get(label, [])
+        else:
+            outcome.unavailable.append(label)
+    return outcome

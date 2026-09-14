@@ -28,6 +28,7 @@ from __future__ import annotations
 import dataclasses
 import io
 import json
+import os
 import time
 import zipfile
 from dataclasses import dataclass, field
@@ -51,6 +52,10 @@ _MASK_MEMBERS = {
     "roi_mask_array": "roi_mask.png",
     "refinement_mask_array": "refinement_mask.png",
 }
+# Fix batch V (M8): the calibration file travels inside the bundle, so a
+# project opened on another machine (or after the file moved) still has it.
+_CALIB_PREFIX = "calibration/"
+_CALIB_EMBED_MAX_BYTES = 50 * 2**20
 _PATH_FIELDS = ("calibration_file", "output_dir", "base_dir")
 _OPT_PATH_FIELDS = ("refinement_mask", "roi_mask")  # Path | None on RunConfig
 
@@ -70,6 +75,7 @@ class Session3DData:
     workflow_step: int = 0
     meta: dict = field(default_factory=dict)
     result_arrays: dict[str, Any] | None = None  # raw npz arrays if results were saved
+    calibration_blob: tuple[str, bytes] | None = None  # (file name, bytes) if embedded
 
 
 def _new_draft() -> ProjectDraft:
@@ -302,9 +308,66 @@ def save_session(state: AppState3D, path: str | Path, *, include_results: bool =
         "meta": state.result.meta if save_results else {},
         "has_results": save_results,
     }
+    calib = _calibration_member(state.draft)
+    if calib is not None:
+        session["calibration_member"] = calib[0]
     path.parent.mkdir(parents=True, exist_ok=True)
+    # Atomic save (fix batch V): write a temporary bundle NEXT TO the target and
+    # replace it only once complete. Writing straight onto ``path`` meant any
+    # failure part-way (disk full, crash, a sync client holding the file)
+    # destroyed the previous save along with the new one.
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        _write_bundle(tmp, session, state, save_results)
+        with open(tmp, "rb+") as fh:
+            os.fsync(fh.fileno())
+        _replace_with_retry(tmp, path)
+    except BaseException:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+    return path
+
+
+def _replace_with_retry(src: Path, dst: Path, attempts: int = 5) -> None:
+    """``os.replace`` that rides out a transient Windows sharing violation.
+
+    Antivirus scanners and sync clients (OneDrive) briefly open freshly written
+    files; ``os.replace`` then raises ``PermissionError`` for a moment.
+    """
+    for i in range(attempts):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError:
+            if i == attempts - 1:
+                raise
+            time.sleep(0.1 * (i + 1))
+
+
+def _calibration_member(draft: ProjectDraft) -> tuple[str, bytes] | None:
+    """``(member, bytes)`` of the draft's calibration file, if it can travel."""
+    path = draft.calibration_file
+    if path is None:
+        return None
+    try:
+        p = Path(path)
+        if not p.is_file() or p.stat().st_size > _CALIB_EMBED_MAX_BYTES:
+            return None
+        return (_CALIB_PREFIX + p.name, p.read_bytes())
+    except OSError:
+        return None
+
+
+def _write_bundle(path: Path, session: dict, state: AppState3D, save_results: bool) -> None:
+    """Write the ``.aldic3d`` zip members to ``path``."""
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr(_CONFIG_NAME, json.dumps(session, indent=2))
+        calib = _calibration_member(state.draft)
+        if calib is not None:
+            zf.writestr(calib[0], calib[1])
         # The canvas-painted masks (binary, image-sized): DEFLATEd PNGs, tiny.
         for member, blob in _mask_members(state.draft).items():
             zf.writestr(member, blob)
@@ -317,7 +380,6 @@ def save_session(state: AppState3D, path: str | Path, *, include_results: bool =
             info.compress_type = zipfile.ZIP_STORED
             with zf.open(info, "w", force_zip64=True) as member:
                 np.savez_compressed(member, **_result_arrays(state.result))
-    return path
 
 
 def parse_session(path: str | Path) -> Session3DData:
@@ -335,6 +397,10 @@ def parse_session(path: str | Path) -> Session3DData:
             raise SessionError(f"unsupported session schema {version} (expected {SCHEMA_VERSION})")
         draft = _draft_from_json(session.get("draft"))
         _apply_mask_members(draft, zf, names)
+        calibration_blob = None
+        member = session.get("calibration_member")
+        if member and member in names and member.startswith(_CALIB_PREFIX):
+            calibration_blob = (Path(member).name, zf.read(member))
         result_arrays = None
         if session.get("has_results") and _RESULTS_NAME in names:
             with np.load(io.BytesIO(zf.read(_RESULTS_NAME)), allow_pickle=False) as npz:
@@ -347,7 +413,34 @@ def parse_session(path: str | Path) -> Session3DData:
         workflow_step=int(session.get("workflow_step", 0)),
         meta={**session.get("meta", {}), "_strategy": session.get("strategy")},
         result_arrays=result_arrays,
+        calibration_blob=calibration_blob,
     )
+
+
+def embedded_calibration_dir() -> Path:
+    """Per-user folder where embedded calibrations are restored."""
+    base = os.environ.get("LOCALAPPDATA") or str(Path.home())
+    return Path(base) / "pyALDIC-3D" / "embedded_calibrations"
+
+
+def _restore_calibration(draft: ProjectDraft, blob: tuple[str, bytes]) -> Path | None:
+    """Write the embedded calibration to the per-user folder; its path, or None.
+
+    The folder is keyed by the file's content, so reopening a project reuses
+    the same copy instead of piling up new ones.
+    """
+    import hashlib
+
+    name, data = blob
+    target = embedded_calibration_dir() / hashlib.sha256(data).hexdigest()[:16] / name
+    try:
+        if not (target.is_file() and target.read_bytes() == data):
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+    except OSError:
+        return None
+    draft.calibration_file = target
+    return target
 
 
 def load_session(path: str | Path) -> AppState3D:
@@ -360,6 +453,13 @@ def load_session(path: str | Path) -> AppState3D:
         result = _result_from_arrays(
             data.result_arrays, data.result_arrays["ref_coords"], strategy, meta
         )
+    notes: list[str] = []
+    calib = data.draft.calibration_file
+    missing = calib is None or not Path(calib).is_file()
+    if data.calibration_blob is not None and missing:
+        restored = _restore_calibration(data.draft, data.calibration_blob)
+        if restored is not None:
+            notes.append(f"calibration restored from the project file: {restored}")
     return AppState3D(
         draft=data.draft,
         config=data.config,
@@ -368,4 +468,5 @@ def load_session(path: str | Path) -> AppState3D:
         workflow_step=data.workflow_step,
         project_path=Path(path),
         dirty=False,
+        open_notes=notes,
     )

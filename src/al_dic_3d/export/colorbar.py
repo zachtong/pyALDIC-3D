@@ -7,15 +7,18 @@ thickness and background are configurable.
 
 3D adaptation: displacement labels carry the METRIC unit ``(mm)`` — 3D
 displacements come straight from the calibrated triangulation, so there is no
-pixel-size machinery — and strain labels are dimensionless.
+pixel-size machinery — and strain labels are dimensionless. The GUI passes the
+canvas's own label (display unit, velocity rate) through
+``FieldImageConfig.label`` so exports read exactly like the canvas.
 
-matplotlib renders with the Agg backend only inside the bar renderer, so this
-module stays importable in headless / worker-thread contexts.
+The bar is drawn with matplotlib's object-oriented API (``Figure`` +
+``FigureCanvasAgg``): no pyplot, no global backend switch — safe in export
+worker threads (fix batch V, low). A rendering failure RAISES (it used to be
+swallowed, exporting an image without its colorbar and without a word).
 """
 
 from __future__ import annotations
 
-import io
 from dataclasses import dataclass
 
 import cv2
@@ -28,6 +31,7 @@ _COLORBAR_FIELD_LABELS: dict[str, str] = {
     "V": "V",
     "W": "W",
     "mag": "|D|",
+    "velocity": "|V|",
     "exx": "εxx",
     "eyy": "εyy",
     "exy": "εxy",
@@ -44,12 +48,16 @@ def colorbar_label(field_id: str, unit: str = "mm") -> str:
     """Build a colorbar label with the appropriate unit suffix.
 
     Displacement fields (``U``/``V``/``W``/``mag``) are metric world-frame
-    quantities from the calibrated reconstruction -> ``(mm)``. Strain fields
-    are dimensionless — no unit suffix.
+    quantities from the calibrated reconstruction -> ``(mm)``. The velocity
+    field's raw values are per FRAME (``(mm/frame)``) unless the caller scales
+    them and supplies its own label. Strain fields are dimensionless — no
+    unit suffix.
     """
     base = _COLORBAR_FIELD_LABELS.get(field_id, field_id)
     if field_id in _DISPLACEMENT_FIELDS:
         return f"{base} ({unit})"
+    if field_id == "velocity":
+        return f"{base} ({unit}/frame)"
     return base
 
 
@@ -95,16 +103,18 @@ def _render_bar(
     dpi: int,
     font_family: str = "sans-serif",
 ) -> NDArray:
-    """Render a colorbar as a BGR uint8 image via matplotlib (Agg).
+    """Render a colorbar as a BGR uint8 image via matplotlib (Agg, OO API).
 
     ``orientation`` is ``"vertical"`` (output ``(length, thickness, 3)``) or
-    ``"horizontal"`` (output ``(thickness, length, 3)``).
+    ``"horizontal"`` (output ``(thickness, length, 3)``). Uses a private
+    ``Figure`` + ``FigureCanvasAgg`` pair — never pyplot's global figure
+    manager — so concurrent export workers cannot interfere.
     """
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
+    from matplotlib import colormaps
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.cm import ScalarMappable
     from matplotlib.colors import Normalize
+    from matplotlib.figure import Figure
 
     fg = "white" if background == "black" else "black"
     face = "black" if background == "black" else "white"
@@ -115,13 +125,15 @@ def _render_bar(
         fig_w, fig_h = length_px / dpi, thickness_px / dpi
         adjust = dict(left=0.03, right=0.97, top=0.60, bottom=0.40)
 
-    fig, ax = plt.subplots(figsize=(max(0.3, fig_w), max(0.3, fig_h)), dpi=dpi)
+    fig = Figure(figsize=(max(0.3, fig_w), max(0.3, fig_h)), dpi=dpi)
+    canvas = FigureCanvasAgg(fig)
+    ax = fig.add_subplot(1, 1, 1)
     fig.patch.set_facecolor(face)
     try:
-        cmap = plt.get_cmap(cmap_name)
-    except ValueError:
-        cmap = plt.get_cmap("turbo")
-    sm = plt.cm.ScalarMappable(norm=Normalize(vmin=vmin, vmax=vmax), cmap=cmap)
+        cmap = colormaps[cmap_name]
+    except KeyError:
+        cmap = colormaps["turbo"]
+    sm = ScalarMappable(norm=Normalize(vmin=vmin, vmax=vmax), cmap=cmap)
     sm.set_array([])
     cb = fig.colorbar(sm, cax=ax, orientation=orientation)
     fam = font_family if font_family in ColorbarStyle.FONT_FAMILIES else "sans-serif"
@@ -134,15 +146,11 @@ def _render_bar(
     cb.outline.set_linewidth(0.5)
     fig.subplots_adjust(**adjust)
 
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=dpi, facecolor=face)
-    plt.close(fig)
-    buf.seek(0)
-    bgr = cv2.imdecode(np.frombuffer(buf.read(), np.uint8), cv2.IMREAD_COLOR)
+    canvas.draw()
+    rgba = np.asarray(canvas.buffer_rgba())
+    bgr = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGR)
     # cv2.resize takes (W, H)
     target = (thickness_px, length_px) if orientation == "vertical" else (length_px, thickness_px)
-    if bgr is None:
-        return np.zeros((target[1], target[0], 3), np.uint8)
     return cv2.resize(bgr, target)
 
 
@@ -207,8 +215,10 @@ def attach_colorbar(
 ) -> NDArray:
     """Render a colorbar per *style* and composite it onto *image* (BGR).
 
-    Returns a new image with the colorbar appended on the styled side. On any
-    rendering failure the original image is returned unchanged.
+    Returns a new image with the colorbar appended on the styled side. A
+    rendering failure raises ``RuntimeError`` (it used to return the image
+    without its colorbar and without a word, fix batch V) so the export worker
+    reports it to the user.
     """
     H, W = image.shape[:2]
     pos = style.position if style.position in ColorbarStyle.POSITIONS else "right"
@@ -251,5 +261,5 @@ def attach_colorbar(
         if cb.shape[1] != W:
             cb = cv2.resize(cb, (W, cb.shape[0]))
         return np.vstack([cb, image] if pos == "top" else [image, cb])
-    except Exception:
-        return image
+    except Exception as exc:
+        raise RuntimeError(f"colorbar rendering failed ({type(exc).__name__}: {exc})") from exc

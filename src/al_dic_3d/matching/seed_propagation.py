@@ -105,6 +105,7 @@ def resolve_seeds_to_nodes(
     coordinates_fem: NDArray[np.float64],
     region_map,
     seed_points,
+    hints=None,
 ) -> tuple[Seed, ...]:
     """Snap each ``(x, y)`` seed pixel to the nearest mesh node in its region.
 
@@ -114,7 +115,9 @@ def resolve_seeds_to_nodes(
     consistent). Seeds whose nearest node lies outside every tracked region
     (mask hole / the gap between disconnected ROI blobs) are dropped. Duplicate
     snapped nodes collapse to one (first wins), so the returned seeds have
-    unique ``node_idx``.
+    unique ``node_idx``. ``hints`` (optional, parallel to ``seed_points``)
+    gives each seed a ``(u, v)`` centre for its bootstrap NCC search -- the
+    engine's ``Seed.user_hint_uv`` -- e.g. a known large stereo disparity.
     """
     coords = np.asarray(coordinates_fem, dtype=np.float64).reshape(-1, 2)
     n = coords.shape[0]
@@ -124,14 +127,17 @@ def resolve_seeds_to_nodes(
 
     seeds: list[Seed] = []
     seen: set[int] = set()
-    for xy in seed_points:
+    seed_points = list(seed_points)  # may be a one-shot iterable
+    hint_list = list(hints) if hints is not None else [None] * len(seed_points)
+    for xy, hint in zip(seed_points, hint_list, strict=False):
         p = np.asarray(xy, dtype=np.float64).reshape(2)
         node = int(np.argmin(np.sum((coords - p) ** 2, axis=1)))
         region = int(node_to_region[node])
         if region < 0 or node in seen:
             continue
         seen.add(node)
-        seeds.append(Seed(node_idx=node, region_id=region, user_hint_uv=None))
+        uv = None if hint is None else (float(hint[0]), float(hint[1]))
+        seeds.append(Seed(node_idx=node, region_id=region, user_hint_uv=uv))
     return tuple(seeds)
 
 
@@ -204,8 +210,9 @@ def seed_region_readiness_mesh(
     """
     from al_dic_3d.matching.primitives import make_dicpara
     from al_dic_3d.matching.temporal import build_grid_mesh
+    from al_dic_3d.sequence.lazy import as_binary_mask
 
-    m = np.asarray(mask, dtype=np.float64)
+    m = as_binary_mask(mask)
     mask_bool = m > 0.5
     if m.ndim != 2 or not mask_bool.any():
         return (0, 0)
@@ -242,6 +249,7 @@ def build_seed_u0(
     tol: float = 1e-3,
     ncc_threshold: float = SEED_PROP_NCC,
     auto_fill: bool = True,
+    seed_hints=None,
 ) -> SeedU0Result | None:
     """Build a full per-node ``U0`` field from sparse seeds via F-aware propagation.
 
@@ -285,7 +293,9 @@ def build_seed_u0(
     if mask is None:
         mask = np.ones(f_img.shape, dtype=np.float64)
     else:
-        mask = np.ascontiguousarray(mask, dtype=np.float64)
+        from al_dic_3d.sequence.lazy import as_binary_mask
+
+        mask = as_binary_mask(mask)
         if mask.shape != f_img.shape:
             mask = np.ones(f_img.shape, dtype=np.float64)
 
@@ -298,7 +308,8 @@ def build_seed_u0(
         )
         return None
 
-    seeds = resolve_seeds_to_nodes(coords, region_map, seed_points)
+    seed_points = [tuple(map(float, p)) for p in seed_points]
+    seeds = resolve_seeds_to_nodes(coords, region_map, seed_points, hints=seed_hints)
     if not seeds:
         warnings.warn(
             "seed propagation: no placed seed lies inside a trackable region — "

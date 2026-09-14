@@ -100,7 +100,10 @@ def _undistorted_rays(intr: CameraIntrinsics) -> NDArray[np.float64]:
     uu, vv = np.meshgrid(np.arange(IMG_W, dtype=np.float64), np.arange(IMG_H, dtype=np.float64))
     pts = np.column_stack([uu.ravel(), vv.ravel()]).reshape(-1, 1, 2)
     crit = (cv2.TERM_CRITERIA_COUNT | cv2.TERM_CRITERIA_EPS, 40, 1e-12)
-    xn = cv2.undistortPoints(pts, intr.K, intr.dist_coeffs, R=None, P=None, criteria=crit)
+    # OpenCV 4.x/5.x-portable criteria call (fix batch V).
+    from al_dic_3d.calibration.geometry import _undistort_cv
+
+    xn = _undistort_cv(pts, intr.K, intr.dist_coeffs, crit)
     xn = xn.reshape(-1, 2)
     return np.column_stack([xn, np.ones(len(xn))])
 

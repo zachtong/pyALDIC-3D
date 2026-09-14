@@ -87,6 +87,7 @@ def match_seed_patch(
     *,
     half: int = SEED_PATCH_HALF,
     min_ncc: float = SEED_MIN_NCC,
+    warn: bool = True,
 ) -> tuple[float, float] | None:
     """Template-match the seed's neighborhood from ``src`` into ``dst``.
 
@@ -97,8 +98,12 @@ def match_seed_patch(
     integer displacement of that patch — usable directly as a stereo disparity
     offset (src=L1, dst=R1) or a first-pair motion seed (src=f0, dst=f1).
 
-    Returns ``None`` (with a warning) when the peak NCC is below ``min_ncc``
-    or the images are too small to hold a meaningful template.
+    Returns ``None`` (with a warning unless ``warn`` is False) when the peak
+    NCC is below ``min_ncc`` or the images are too small to hold a meaningful
+    template. Callers on worker threads pass ``warn=False``: silencing a
+    warning with ``warnings.catch_warnings`` there is not thread-safe (it
+    swaps process-global state, and concurrent restores can leave every later
+    warning ignored).
     """
     import cv2
 
@@ -109,11 +114,12 @@ def match_seed_patch(
     # Shrink the template if either image cannot hold it (dst must be >= template).
     half = int(min(half, (min(hs, ws) - 1) // 2, (min(hd, wd) - 1) // 2))
     if half < 8:
-        warnings.warn(
-            "seed patch match skipped: images too small for a meaningful template.",
-            UserWarning,
-            stacklevel=2,
-        )
+        if warn:
+            warnings.warn(
+                "seed patch match skipped: images too small for a meaningful template.",
+                UserWarning,
+                stacklevel=2,
+            )
         return None
 
     x, y = float(seed_xy[0]), float(seed_xy[1])
@@ -125,12 +131,13 @@ def match_seed_patch(
     ncc = cv2.matchTemplate(dst, tmpl, cv2.TM_CCOEFF_NORMED)
     _, max_val, _, max_loc = cv2.minMaxLoc(ncc)
     if not np.isfinite(max_val) or max_val < min_ncc:
-        warnings.warn(
-            f"seed patch NCC peak {max_val:.2f} < {min_ncc:.2f} — "
-            "falling back to FFT seeding for this piece.",
-            UserWarning,
-            stacklevel=2,
-        )
+        if warn:
+            warnings.warn(
+                f"seed patch NCC peak {max_val:.2f} < {min_ncc:.2f} — "
+                "falling back to FFT seeding for this piece.",
+                UserWarning,
+                stacklevel=2,
+            )
         return None
     # Displacement of the template window == displacement of the seed patch.
     return (float(max_loc[0] - x0), float(max_loc[1] - y0))
@@ -145,3 +152,30 @@ def uniform_u0(n_nodes: int, shift: tuple[float, float]) -> NDArray[np.float64]:
     if n_nodes <= 0:
         raise ValueError(f"n_nodes must be positive, got {n_nodes}")
     return np.tile(np.asarray(shift, dtype=np.float64), int(n_nodes))
+
+
+def central_seed_point(
+    roi: tuple[int, int, int, int] | None,
+    mask: NDArray | None = None,
+) -> tuple[float, float] | None:
+    """A default Starting Point: the ROI pixel deepest inside the (largest) region.
+
+    Used by the GUI's Auto-place (fix batch V, finding H2). With a drawn ROI
+    mask, the point furthest from any mask edge (a distance transform on a copy
+    reduced to about 1000 px, so a 12 Mpx mask costs milliseconds); with only a
+    rectangle, its centre. ``None`` when there is no ROI yet.
+    """
+    if mask is not None:
+        from scipy.ndimage import distance_transform_edt
+
+        m = np.asarray(mask) > 0
+        if m.ndim != 2 or not m.any():
+            return None
+        f = max(1, max(m.shape) // 1000)
+        depth = distance_transform_edt(m[::f, ::f])
+        iy, ix = np.unravel_index(int(np.argmax(depth)), depth.shape)
+        return (float(ix * f), float(iy * f))
+    if roi is None:
+        return None
+    xmin, xmax, ymin, ymax = roi
+    return (0.5 * (float(xmin) + float(xmax)), 0.5 * (float(ymin) + float(ymax)))

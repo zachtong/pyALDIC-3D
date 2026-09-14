@@ -78,6 +78,16 @@ class CorrespondenceConfig:
     seed_points: tuple[tuple[float, float], ...] = ()
     refresh_interval: int | None = None  # adaptive: periodic re-anchor
     quality: QualityGate = field(default_factory=QualityGate)
+    # Fix batch V (H4): IC-GN convergence alone is not a correspondence. Stereo
+    # links scoring above this ZNSSD, or further than this from their epipolar
+    # line (right-image px), are rejected. <= 0 disables either check.
+    stereo_znssd_max: float = 0.6
+    stereo_epipolar_max_px: float = 2.0
+    # Fix batch V: when a stop lands while the FIRST camera is still tracking,
+    # finish the second camera over the frames the first one kept (ignoring the
+    # stop) so a partial result survives. The CLI's Ctrl+C sets this; the GUI's
+    # Cancel keeps its fast "stop now" behaviour.
+    complete_partial_prefix: bool = False
 
 
 @dataclass(frozen=True)

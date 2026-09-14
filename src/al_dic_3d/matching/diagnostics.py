@@ -41,6 +41,11 @@ LOW_VALIDITY_FRAC = 0.7
 GATE_NOTE = "validity gate: correlation vs frame 1 failed"
 
 
+# Frames on which the 2D engine solved no node (fix batch V): the frame is
+# invalidated, the rest of the track is kept.
+ZERO_FILL_NOTE = "engine solved no node on this frame (frame invalidated)"
+
+
 def frame_row(
     frame: int, cam: str, n_pts: int, n_valid: int, n_gated: int = 0, note: str = ""
 ) -> dict:
@@ -59,25 +64,35 @@ def temporal_rows(cam: str, tf: TemporalField) -> list[dict]:
     """Per-frame rows for one camera's temporal track (validity + gate kills)."""
     n_pts = int(tf.valid.shape[1])
     rows: list[dict] = []
+    zero_filled = set(getattr(tf, "zero_filled", ()) or ())
     for k in range(tf.n_frames):
         n_gated = 0 if tf.n_gated is None else int(tf.n_gated[k])
-        rows.append(
-            frame_row(
-                k,
-                cam,
-                n_pts,
-                int(tf.valid[k].sum()),
-                n_gated=n_gated,
-                note=GATE_NOTE if n_gated else "",
-            )
-        )
+        if k in zero_filled:
+            note = ZERO_FILL_NOTE
+        else:
+            note = GATE_NOTE if n_gated else ""
+        rows.append(frame_row(k, cam, n_pts, int(tf.valid[k].sum()), n_gated=n_gated, note=note))
     return rows
 
 
-def stereo_rows(disp: DisparityField, note: str = "frame-1 stereo match") -> list[dict]:
-    """The cross-camera stereo match row (NCC seed + IC-GN reject count)."""
+def stereo_rows(
+    disp: DisparityField,
+    note: str = "frame-1 stereo match",
+    rejected: tuple[int, int] = (0, 0),
+) -> list[dict]:
+    """The cross-camera stereo match row (NCC seed + IC-GN reject count).
+
+    ``rejected`` = ``(n_znssd, n_epipolar)`` links the acceptance check removed
+    after IC-GN converged (fix batch V); they count as the row's ``n_gated`` and
+    are named in the note so the log can say why the links were dropped.
+    """
     n = int(disp.valid.shape[0])
-    return [frame_row(disp.frame_idx, "stereo", n, int(disp.valid.sum()), note=note)]
+    n_z, n_e = int(rejected[0]), int(rejected[1])
+    if n_z or n_e:
+        note = f"{note}; rejected {n_z} (ZNSSD) + {n_e} (epipolar)"
+    return [
+        frame_row(disp.frame_idx, "stereo", n, int(disp.valid.sum()), n_gated=n_z + n_e, note=note)
+    ]
 
 
 # --- post-run summary ---------------------------------------------------------
@@ -116,19 +131,26 @@ def summarize_run(
     cs: CorrespondenceSet,
     points_3d: NDArray[np.float64] | None = None,
     low: float = LOW_VALIDITY_FRAC,
+    n_eligible: int | None = None,
 ) -> RunSummary:
     """Derive the post-run summary from the FINAL correspondence (+ optional 3D).
 
     Validity counts the positions the user actually gets: finite reconstructed
     points when ``points_3d`` is given (post quality gates / outlier removal),
     else finite positions in both cameras.
+
+    ``n_eligible``: the number of mesh nodes that CAN be valid — those inside
+    the ROI (``RunResult.meta["n_pts_in_roi"]``). The mesh covers the ROI's
+    bounding box, so without it a shaped ROI's out-of-mask nodes deflated every
+    percentage (fix batch V). ``None`` falls back to all nodes.
     """
     if points_3d is not None:
         valid = np.isfinite(np.asarray(points_3d, dtype=np.float64)).all(axis=2)
     else:
         valid = np.isfinite(cs.xL).all(axis=2) & np.isfinite(cs.xR).all(axis=2)
     n_frames, n_pts = valid.shape
-    frac = valid.mean(axis=1) if n_pts else np.zeros(n_frames)
+    denom = n_pts if not n_eligible else max(1, min(int(n_eligible), n_pts))
+    frac = valid.sum(axis=1) / denom if n_pts else np.zeros(n_frames)
 
     rows = tuple(getattr(cs, "diagnostics", ()) or ())
     stereo = next((r for r in rows if r.get("cam") == "stereo" and r.get("frame") == 0), None)
@@ -145,10 +167,32 @@ def summarize_run(
         median_valid_frac=float(np.median(frac)) if n_frames else 0.0,
         low_frames=tuple(int(k) for k in range(n_frames) if frac[k] < low),
         all_empty=not bool(valid.any()),
-        stereo_n_pts=None if stereo is None else int(stereo["n_pts"]),
+        stereo_n_pts=(
+            None
+            if stereo is None
+            else int(stereo["n_pts"])
+            if not n_eligible
+            else min(int(stereo["n_pts"]), denom)
+        ),
         stereo_n_valid=None if stereo is None else int(stereo["n_valid"]),
         gated_by_cam=gated,
     )
+
+
+def collapse_advice(summary: RunSummary, reference_mode: str | None) -> str | None:
+    """``"incremental"`` / ``"masks"`` when validity collapses over the sequence.
+
+    Fix batch V: on a specimen pulled to failure the GUI defaults (every frame
+    tracked against frame 1) keep ~70 % of the nodes in frame 1 and ~2 % from
+    frame 10 on, and nothing told the user why. A collapse is the first
+    deformed frame reasonably valid (>= 30 %) and some later frame below a
+    quarter of it. In accumulative mode the advice is the incremental mode;
+    otherwise per-frame masks (a valid region that changes, e.g. a crack).
+    """
+    vf = summary.valid_frac
+    if len(vf) < 3 or vf[1] < 0.3 or min(vf[2:]) >= 0.25 * vf[1]:
+        return None
+    return "incremental" if reference_mode == "accumulative" else "masks"
 
 
 def summary_lines(
@@ -207,6 +251,23 @@ def summary_lines(
             n = int(gates.get(key, 0))
             if n:
                 lines.append(("info", f"{label} removed {n} positions"))
+    mode = ((stopped or {}).get("run_params") or {}).get("reference_mode")
+    advice = collapse_advice(summary, mode)
+    if advice is not None:
+        worst = min(summary.valid_frac[2:]) * 100
+        start = summary.valid_frac[1] * 100
+        if advice == "incremental":
+            text = (
+                f"validity falls from {start:.0f}% (frame 1) to {worst:.0f}%: tracking every "
+                "frame against frame 1 cannot follow large deformation; try "
+                'reference_mode = "incremental" (GUI: WORKFLOW TYPE > Incremental)'
+            )
+        else:
+            text = (
+                f"validity falls from {start:.0f}% (frame 1) to {worst:.0f}%: if the valid "
+                "region changes during the test (cracks, failure), give per-frame masks"
+            )
+        lines.append(("warning", text))
     if summary.all_empty:
         lines.append(
             (

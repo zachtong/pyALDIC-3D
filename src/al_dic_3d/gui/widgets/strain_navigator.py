@@ -5,6 +5,10 @@ a bold FRAME label, and a timeline slider — but driven ENTIRELY via
 :meth:`set_state` and the :attr:`frame_changed` signal. It never touches
 ``GuiSignals.current_frame``, so scrubbing strain frames cannot move the main
 window (the decoupling contract the tests enforce).
+
+V-view: handle drags are coalesced like the main navigator (the leading value
+at once, then at most one :attr:`frame_changed` per ``SLIDER_COALESCE_MS``,
+the final value on release); steps, keys and playback stay immediate.
 """
 
 from __future__ import annotations
@@ -13,6 +17,8 @@ from al_dic.gui.icons import icon_chevron_left, icon_chevron_right, icon_pause, 
 from al_dic.gui.theme import COLORS
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QPushButton, QSlider, QWidget
+
+from al_dic_3d.gui.widgets.frame_navigator import SLIDER_COALESCE_MS
 
 _SPEED_PRESETS = [("1 fps", 1000), ("2 fps", 500), ("5 fps", 200), ("10 fps", 100), ("30 fps", 33)]
 
@@ -82,7 +88,14 @@ class StrainNavigator3D(QWidget):
         self._slider = QSlider(Qt.Orientation.Horizontal)
         self._slider.setRange(0, 0)
         self._slider.valueChanged.connect(self._on_slider)
+        self._slider.sliderReleased.connect(self._flush_drag)
         layout.addWidget(self._slider, stretch=1)
+        self._drag_timer = QTimer(self)
+        self._drag_timer.setSingleShot(True)
+        self._drag_timer.setInterval(SLIDER_COALESCE_MS)
+        self._drag_timer.timeout.connect(self._flush_drag)
+        self._emitted = 0  # last frame announced through frame_changed
+        self._drag_pending = False
 
         self._timer = QTimer(self)
         self._timer.setInterval(_SPEED_PRESETS[1][1])
@@ -97,6 +110,9 @@ class StrainNavigator3D(QWidget):
         self._n_frames = max(0, n_frames)
         clamped = max(0, min(current, max(0, self._n_frames - 1)))
         self._current = clamped
+        self._emitted = clamped
+        self._drag_pending = False
+        self._drag_timer.stop()
         self._slider.blockSignals(True)
         self._slider.setRange(0, max(0, self._n_frames - 1))
         self._slider.setValue(clamped)
@@ -129,7 +145,24 @@ class StrainNavigator3D(QWidget):
     def _on_slider(self, value: int) -> None:
         self._current = value
         self._update_label()
-        self.frame_changed.emit(value)
+        if self._slider.isSliderDown() and self._drag_timer.isActive():
+            self._drag_pending = True  # coalesced into the window's last value
+            return
+        self._emit_current()
+        if self._slider.isSliderDown():
+            self._drag_timer.start()  # leading edge applied; open the window
+
+    def _flush_drag(self) -> None:
+        """Announce the newest dragged value (window end or handle release)."""
+        if self._drag_pending or self._current != self._emitted:
+            self._drag_pending = False
+            self._emit_current()
+            if self._slider.isSliderDown():
+                self._drag_timer.start()
+
+    def _emit_current(self) -> None:
+        self._emitted = self._current
+        self.frame_changed.emit(self._current)
 
     def _on_prev(self) -> None:
         if self._n_frames >= 1:

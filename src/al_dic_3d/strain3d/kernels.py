@@ -37,12 +37,10 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
-try:  # numba ships transitively with al-dic, but stay import-safe without it
-    from numba import njit, prange
-
-    HAS_NUMBA = True
-except ImportError:  # pragma: no cover - exercised via monkeypatched dispatch
-    HAS_NUMBA = False
+# numba is a core dependency, but stay import-safe without it; JIT_CACHE is
+# False when numba's on-disk cache cannot be established (frozen build on a
+# locked-down profile) — see al_dic_3d._numba_compat.
+from al_dic_3d._numba_compat import HAS_NUMBA, JIT_CACHE, njit, prange
 
 MODE_LOCAL = 0  # per-node tangent frame from a local plane fit
 MODE_CAMERA0 = 1  # world frame, keeps the z-derivative row
@@ -55,7 +53,7 @@ _DEGENERATE_DET = 1e-4
 
 if HAS_NUMBA:
 
-    @njit(cache=True)
+    @njit(cache=JIT_CACHE)
     def _solve_scaled(m, b, d):  # pragma: no cover - compiled
         """Solve ``m x = b`` (``d x d`` normal matrix, ``d <= 4``, 3 RHS).
 
@@ -122,7 +120,7 @@ if HAS_NUMBA:
             x[i, 2] /= si
         return x, det, True
 
-    @njit(parallel=True, cache=True)
+    @njit(parallel=True, cache=JIT_CACHE)
     def _fit_kernel(pts, dsp, nbr, counts, min_nbr, mode, rmat, degen_tol):  # pragma: no cover
         """Per-node displacement-gradient fit over the padded neighbour table.
 

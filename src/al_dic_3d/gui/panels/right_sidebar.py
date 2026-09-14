@@ -16,21 +16,23 @@ from typing import TYPE_CHECKING
 from al_dic.gui.icons import icon_download, icon_play, icon_stop
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.collapsible_section import CollapsibleSection
-from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from PySide6.QtCore import Qt, QTime, QTimer, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QSlider,
     QVBoxLayout,
     QWidget,
 )
 
 from al_dic_3d.gui.issue_text import issues_text
+from al_dic_3d.gui.panels.run_summary import RunSummaryMixin
 from al_dic_3d.gui.run_worker import RunWorker
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.console_log3d import ConsoleLog3D
@@ -53,7 +55,7 @@ _LOG_FILTERS: dict[str, frozenset[str] | None] = {
 }
 
 
-class RightSidebar3D(QWidget):
+class RightSidebar3D(RunSummaryMixin, QWidget):
     """Run controls + progress + field + visualization + log."""
 
     open_strain_window_requested = Signal()
@@ -73,8 +75,23 @@ class RightSidebar3D(QWidget):
         self._log_entries: deque[tuple[str, str, str]] = deque(maxlen=_LOG_CAPACITY)
         self.setObjectName("rightSidebar")
         self.setFixedWidth(280)
+        self._pending_hash = None  # draft signature of the run in flight (G2.7)
 
-        layout = QVBoxLayout(self)
+        # H5 (fix batch V): the sidebar needs ~900 px of height. On a 1366x768
+        # laptop or 1080p at 150 % the window is shorter, and the FIELD buttons
+        # used to collapse to a sliver; the content now scrolls instead.
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget()
+        scroll.setWidget(content)
+        outer.addWidget(scroll)
+        self._scroll = scroll
+        layout = QVBoxLayout(content)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(8)
 
@@ -243,15 +260,16 @@ class RightSidebar3D(QWidget):
         range_row = QHBoxLayout()
         range_row.setSpacing(4)
         range_row.addWidget(QLabel(self.tr("Min")))
-        self._vmin_spin = LocaleSafeDoubleSpinBox()
-        self._vmax_spin = LocaleSafeDoubleSpinBox()
+        # Fix batch V: the export dialog's RangeSpinBox keeps strain-sized
+        # values exact (4 decimals snapped a 1.2e-5 range to 0).
+        from al_dic_3d.gui.dialogs.export_tabs.common import RangeSpinBox
+
+        self._vmin_spin = RangeSpinBox()
+        self._vmax_spin = RangeSpinBox()
         for spin, tip in (
             (self._vmin_spin, self.tr("Lower color-range bound (only with Auto range off)")),
             (self._vmax_spin, self.tr("Upper color-range bound (only with Auto range off)")),
         ):
-            spin.setDecimals(4)
-            spin.setRange(-1e9, 1e9)
-            spin.setSingleStep(0.01)
             spin.setEnabled(False)  # disabled while Auto range is on
             spin.setToolTip(tip)
             spin.valueChanged.connect(self._on_manual_range)
@@ -341,11 +359,19 @@ class RightSidebar3D(QWidget):
         # project-open path (results appear without any input signal firing).
         self.signals.results_changed.connect(self._refresh_result_buttons)
         self.signals.results_changed.connect(self._refresh_stale)
+        self.signals.results_changed.connect(self._close_stale_export_dialog)
+        self._view3d_camera_provider = None
         self.signals.run_state_changed.connect(lambda _s: self._refresh_result_buttons())
 
         self._timer = QTimer(self)
         self._timer.setInterval(1000)
         self._timer.timeout.connect(self._update_elapsed)
+        # While Auto range is on, the (disabled) Min/Max boxes show the range
+        # the canvas is actually using instead of 0.0000 (fix batch V).
+        self._range_timer = QTimer(self)
+        self._range_timer.setInterval(300)
+        self._range_timer.timeout.connect(self._mirror_auto_range)
+        self._range_timer.start()
         self.refresh_readiness()
 
     # ---- log console (G3.5: retained entries + filter + save) -----------------
@@ -388,8 +414,7 @@ class RightSidebar3D(QWidget):
 
         from al_dic_3d.gui import persistence
 
-        start = persistence.last_dir("log")
-        suggested = str(Path(start) / "pyaldic3d_log.txt") if start else "pyaldic3d_log.txt"
+        suggested = persistence.suggested_save_path("pyaldic3d_log.txt", "log")
         path, _ = QFileDialog.getSaveFileName(
             self, self.tr("Save log"), suggested, self.tr("Text files (*.txt)")
         )
@@ -402,7 +427,7 @@ class RightSidebar3D(QWidget):
             self._append_log(self.tr("Failed: {0}").format(exc), "error")
             return
         persistence.set_last_dir("log", path)
-        self._append_log(f"log saved to {path}", "success")
+        self._append_log(self.tr("Log saved to {0}").format(path), "success")
 
     # ---- helpers -------------------------------------------------------------
 
@@ -416,9 +441,12 @@ class RightSidebar3D(QWidget):
 
     def refresh_readiness(self) -> None:
         # G3.8: draft.issues() codes are English-by-contract — translate here.
-        issues = issues_text(self.controller.state.draft.issues())
+        draft = self.controller.state.draft
+        issues = issues_text(draft.readiness_issues())
         running = self.signals.run_state == "running"
-        self._run_btn.setEnabled(not running)
+        # M9 (fix batch V): Run is enabled only when the project is ready; the
+        # tooltip and the label below it say what is missing.
+        self._run_btn.setEnabled(not running and not issues)
         # Stateful tooltip (2D idiom): a disabled/blocked Run explains itself.
         if issues and not running:
             self._run_btn.setToolTip(self.tr("Not ready — {0}").format(issues))
@@ -429,10 +457,22 @@ class RightSidebar3D(QWidget):
                     "on the loaded image pairs (F5)."
                 )
             )
+        from al_dic_3d.gui.fft_activity import effective_init_guess
+
+        no_point = draft.init_guess == "seed" and effective_init_guess(draft) == "fft"
+        colour = COLORS.WARNING if (issues or no_point) and not running else COLORS.TEXT_MUTED
+        self._ready_lbl.setStyleSheet(f"color: {colour}; font-size: 10px;")
         if running:
             self._ready_lbl.setText("")
         elif issues:
             self._ready_lbl.setText(self.tr("Not ready — {0}").format(issues))
+        elif no_point:
+            self._ready_lbl.setText(
+                self.tr(
+                    "Ready to run. No starting point: the stereo offset is found "
+                    "automatically and frame 1 is seeded by FFT."
+                )
+            )
         else:
             self._ready_lbl.setText(self.tr("Ready to run."))
         self._refresh_result_buttons()
@@ -497,13 +537,15 @@ class RightSidebar3D(QWidget):
     def _on_run(self) -> None:
         if self._worker is not None and self._worker.isRunning():
             return
-        issues = self.controller.state.draft.issues()
+        issues = self.controller.state.draft.readiness_issues()
         if issues:
             self._append_log(self.tr("Not ready: {0}").format(issues_text(issues)), "warn")
             return
-        # G2.7: baseline the draft signature; the stale hint clears now and
-        # only reappears if the user edits parameters after this run.
-        self._run_hash = self.controller.state.draft.result_signature()
+        # G2.7: remember the signature of THIS run; it becomes the baseline of
+        # the stale hint only when the run delivers results (fix batch V: a
+        # failed or cancelled run used to hide the hint while the OLD results
+        # stayed on screen).
+        self._pending_hash = self.controller.state.draft.result_signature()
         self._stale_lbl.setVisible(False)
         self.signals.set_run_state("running")
         self._run_btn.setEnabled(False)
@@ -537,15 +579,22 @@ class RightSidebar3D(QWidget):
             self._append_log(self.tr("Cancelling…"), "warn")
 
     def _on_progress(self, fraction: float, message: str) -> None:
+        from al_dic_3d.gui.progress_text import progress_text
+
         self._progress_bar.setValue(int(fraction * 1000))
-        self._progress_lbl.setText(f"{fraction * 100:.0f}%  —  {message}")
+        # M10 (fix batch V): plain-language, translated text, not the raw
+        # compute strings ("track_both frame 3/40", engine section codes).
+        self._progress_lbl.setText(f"{fraction * 100:.0f}%  —  {progress_text(message)}")
         self.signals.progress.emit(fraction, message)
 
     def _on_done(self) -> None:
+        self._update_elapsed()  # the final elapsed time, even for a sub-second run
         self._timer.stop()
+        self._run_hash = self._pending_hash
         self._progress_bar.setRange(0, 1000)  # restore after a G2.6 cancel race
         self._progress_bar.setValue(1000)
         self._remaining_lbl.setText(self.tr("REMAINING  {0}").format("00:00"))
+        self._progress_lbl.setText(self.tr("Analysis complete"))
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
         result = self.controller.state.result
@@ -558,98 +607,27 @@ class RightSidebar3D(QWidget):
         self.signals.results_changed.emit()
         self.refresh_readiness()
 
-    def _log_run_summary(self) -> None:
-        """F3.1: the post-run failure accounting, written into the log console.
-
-        Mirrors :func:`al_dic_3d.matching.diagnostics.summary_lines` (the CLI
-        wording) with tr()-wrapped templates: frame-1 stereo stats, honesty-gate
-        kills with the reason, low-validity frames, quality-gate demotions, and
-        a one-line verdict. An all-empty run logs an ERROR, never a quiet
-        'complete'.
-        """
-        result = self.controller.state.result
-        if result is None:
-            self._append_log(self.tr("Analysis complete"), "success")
-            return
-        from al_dic_3d.matching.diagnostics import LOW_VALIDITY_FRAC, summarize_run
-
-        s = summarize_run(result.correspondence, result.reconstruction.points)
-        # R2 (engine 0.7 partial results): a cancelled-but-kept run announces
-        # itself FIRST — one honest line saying how many frames survived.
-        meta = result.meta or {}
-        if meta.get("stopped_early"):
-            k = int(meta.get("stopped_at_frame") or 0)
-            self._append_log(
-                self.tr(
-                    "Stopped early at frame {0}/{1} — kept {2} computed frames "
-                    "(later frames are empty)"
-                ).format(k, s.n_frames, k),
-                "warn",
-            )
-        elif meta.get("stop_reason"):
-            self._append_log(self.tr("Run interrupted: {0}").format(meta["stop_reason"]), "warn")
-        if s.stereo_n_pts:
-            frac = s.stereo_n_valid / s.stereo_n_pts
-            self._append_log(
-                self.tr("Frame-1 stereo match: {0}/{1} points matched ({2}%)").format(
-                    s.stereo_n_valid, s.stereo_n_pts, f"{frac * 100:.0f}"
-                ),
-                "warn" if frac < LOW_VALIDITY_FRAC else "info",
-            )
-        for cam, n in sorted(s.gated_by_cam.items()):
-            self._append_log(
-                self.tr(
-                    "Camera {0}: validity gate removed {1} node-frames "
-                    "(correlation vs frame 1 failed)"
-                ).format(cam, n),
-                "warn",
-            )
-        for k in s.low_frames:
-            self._append_log(
-                self.tr("Frame {0}: only {1}% of points valid").format(
-                    k, f"{s.valid_frac[k] * 100:.0f}"
-                ),
-                "warn",
-            )
-        gates = result.meta.get("gates") or {}
-        for key, template in (
-            ("znssd_demoted", self.tr("Quality gate (ZNSSD) removed {0} positions")),
-            ("reproj_demoted", self.tr("Reprojection gate removed {0} positions")),
-            ("outliers_removed", self.tr("3D outlier filter removed {0} positions")),
-        ):
-            n = int(gates.get(key, 0))
-            if n:
-                self._append_log(template.format(n), "info")
-        if s.all_empty:
-            self._append_log(
-                self.tr(
-                    "No valid points in ANY frame — the run produced an empty "
-                    "result. Check ROI, masks and seeding (details above)."
-                ),
-                "error",
-            )
-        else:
-            self._append_log(
-                self.tr(
-                    "Analysis complete — {0} frames, median validity {1}%, "
-                    "{2} frame(s) below {3}% (see above)"
-                ).format(
-                    s.n_frames,
-                    f"{s.median_valid_frac * 100:.0f}",
-                    len(s.low_frames),
-                    f"{LOW_VALIDITY_FRAC * 100:.0f}",
-                ),
-                "success",
-            )
-
     def _on_fail(self, message: str) -> None:
         self._timer.stop()
         self._progress_bar.setRange(0, 1000)  # restore after a G2.6 cancel race
         self._run_btn.setEnabled(True)
         self._cancel_btn.setEnabled(False)
+        self._progress_lbl.setText(self.tr("Analysis failed"))
         self._append_log(self.tr("Failed: {0}").format(message), "error")
         self.signals.set_run_state("failed")
         self.refresh_readiness()
+        self._show_error(
+            self.tr("Analysis Failed"),
+            self.tr(
+                "The analysis stopped with an error:\n\n{0}\n\nThe log has the details."
+            ).format(message),
+        )
+
+    def _show_error(self, title: str, message: str) -> None:
+        """Modal error box (fix batch V: run failures were log-only). Stubbed in tests."""
+        from PySide6.QtWidgets import QMessageBox
+
+        QMessageBox.critical(self, title, message)
 
     def _on_cancelled(self) -> None:
         self._timer.stop()
@@ -705,6 +683,18 @@ class RightSidebar3D(QWidget):
                 spin.blockSignals(False)
         self.signals.display_changed.emit()
 
+    def _mirror_auto_range(self) -> None:
+        if not self.signals.color_auto:
+            return
+        for spin, val in (
+            (self._vmin_spin, self.signals.color_min),
+            (self._vmax_spin, self.signals.color_max),
+        ):
+            if val is not None and abs(spin.value() - float(val)) > 1e-12:
+                spin.blockSignals(True)
+                spin.setValue(float(val))
+                spin.blockSignals(False)
+
     def _on_manual_range(self) -> None:
         """G2.2: push the typed Min/Max to the shared display state."""
         if self.signals.color_auto:
@@ -723,11 +713,17 @@ class RightSidebar3D(QWidget):
         state = self.controller.state
         if state.result is None:
             return
-        if self._export_dialog is not None:  # reuse the open dialog
-            self._export_dialog.show()
-            self._export_dialog.raise_()
-            self._export_dialog.activateWindow()
-            return
+        dlg = self._export_dialog
+        if dlg is not None:
+            # Reuse the open dialog only while it exports THIS result (fix batch
+            # V: a rerun, a strain recompute or a project switch used to leave
+            # it exporting the old one); a busy stale dialog stays up.
+            if dlg.matches(state.result) or not dlg.close():
+                dlg.show()
+                dlg.raise_()
+                dlg.activateWindow()
+                return
+            self._export_dialog = None
         from al_dic_3d.export import VizExportHint
         from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
 
@@ -742,20 +738,41 @@ class RightSidebar3D(QWidget):
             vmin=self.signals.color_min,
             vmax=self.signals.color_max,
             current_frame=self.signals.current_frame,
+            display_unit=self.signals.display_unit,
+            frame_rate=self.signals.frame_rate,
+            frame_rate_known=self.signals.frame_rate_known,
         )
         extra = draft_export_params(state.draft)
         dialog = ExportDialog(
-            state.result, extra_params=extra, parent=self, draft=state.draft, hint=hint
+            state.result,
+            extra_params=extra,
+            parent=self,
+            draft=state.draft,
+            hint=hint,
+            camera_provider=self._view3d_camera_provider,
         )
         # DeleteOnClose + destroyed-hook keeps the singleton reuse safe: the
-        # reference is dropped the moment Qt tears the dialog down.
+        # reference is dropped the moment Qt tears the dialog down -- but only
+        # if it still names THAT dialog (a late destroy of a replaced one must
+        # not drop its successor).
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
-        dialog.destroyed.connect(self._on_export_dialog_gone)
+        dialog.destroyed.connect(lambda *_a, d=dialog: self._on_export_dialog_gone(d))
         self._export_dialog = dialog
         dialog.show()
 
-    def _on_export_dialog_gone(self, *_a) -> None:
-        self._export_dialog = None
+    def _on_export_dialog_gone(self, dialog=None) -> None:
+        if dialog is None or self._export_dialog is dialog:
+            self._export_dialog = None
+
+    def _close_stale_export_dialog(self) -> None:
+        """New results: an idle dialog still showing the old ones is closed."""
+        dlg = self._export_dialog
+        if dlg is not None and not dlg.matches(self.controller.state.result) and not dlg.is_busy():
+            dlg.close()
+
+    def set_view3d_camera_provider(self, provider) -> None:
+        """``provider() -> camera | None``: the 3D view's camera for 3D exports."""
+        self._view3d_camera_provider = provider
 
     def close_export_dialog(self) -> bool:
         """Close the non-modal export dialog if open (main-window close cascade).

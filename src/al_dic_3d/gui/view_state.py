@@ -32,6 +32,7 @@ VIEW_STATE_KEYS = (
     "current_frame",
     "display_unit",  # Q1
     "frame_rate",  # Q1/Q2
+    "frame_rate_known",  # fix batch V: per-frame velocity until a rate is given
     "mesh_line_color",  # Q8
     "mesh_line_width",  # Q8
     *CANVAS_VIEW_KEYS,  # Z2
@@ -82,6 +83,7 @@ def capture(signals, canvas) -> dict:
         "current_frame": int(s.current_frame),
         "display_unit": str(s.display_unit),
         "frame_rate": float(s.frame_rate),
+        "frame_rate_known": bool(getattr(s, "frame_rate_known", True)),
         "mesh_line_color": str(s.mesh_line_color),
         "mesh_line_width": int(s.mesh_line_width),
     }

@@ -269,9 +269,9 @@ def mask_stream(seq: StereoSequence, cam: str) -> Sequence[NDArray[np.float64]] 
     stream = seq.masks.get(cam)
     if stream is None:
         return None
-    if isinstance(stream, (list, tuple)):
-        return [np.asarray(m, dtype=np.float64) for m in stream]
-    return stream
+    from al_dic_3d.sequence.lazy import binary_mask_sequence
+
+    return binary_mask_sequence(stream)
 
 
 def bbox_roi(
@@ -290,3 +290,63 @@ def bbox_roi(
     ymin = max(0, int(math.floor(p[:, 1].min())) - margin)
     ymax = min(img_h - 1, int(math.ceil(p[:, 1].max())) + margin)
     return xmin, xmax, ymin, ymax
+
+
+def setup_note(progress: Callable[[float, str], None] | None, message: str) -> None:
+    """Report a setup step at 0 % so a long pre-tracking phase is never silent.
+
+    Fix batch V: at 12 Mpx the frame-1 stereo match, the initial guesses and
+    the right mesh took ~20 s before the first engine frame reported anything.
+    The fraction stays 0 so the reported progress remains monotonic.
+    """
+    if progress is not None:
+        progress(0.0, message)
+
+
+def stereo_search_centre(
+    stereo_prior: NDArray[np.float64] | None,
+    stereo_offset: tuple[float, float] | None,
+    left0: NDArray[np.float64],
+    right0: NDArray[np.float64],
+    mesh_left: DICMesh,
+    mask: NDArray[np.float64] | None,
+    rig,
+    para_left: DICPara,
+    *,
+    search_radius: int,
+) -> tuple[NDArray[np.float64] | None, tuple[float, float] | NDArray[np.float64] | None, str]:
+    """``(seed_u0, disparity_offset, note)`` for the frame-1 stereo match.
+
+    A placed starting point (its propagated per-node prior or its whole-image
+    patch match) or an explicit ``disparity_offset`` wins, unchanged. Without
+    either, the search used to be centred on ZERO disparity (fix batch V,
+    finding H2: a 12 Mpx convergent rig matched 75 % of its nodes that way and
+    100 % with one clicked point). Now probe patches spread over the ROI are
+    matched over the whole right image (:mod:`al_dic_3d.matching.disparity_prior`)
+    and act like placed points: they seed the same node-to-node propagation a
+    click does, with their matches as the bootstrap hints, and their fitted
+    disparity centres the per-node search wherever the propagation left a gap.
+    """
+    note = "frame-1 stereo match"
+    if stereo_prior is not None or stereo_offset is not None:
+        return stereo_prior, stereo_offset, note
+    from al_dic_3d.matching.disparity_prior import estimate_disparity_prior
+
+    coords = np.asarray(mesh_left.coordinates_fem, dtype=np.float64)
+    auto = estimate_disparity_prior(left0, right0, coords, mask, rig)
+    if auto is None:
+        return None, None, f"{note}; no automatic disparity prior (no probe patch matched)"
+    note = f"{note}; {auto.describe()}"
+    res = build_seed_u0(
+        left0,
+        right0,
+        mesh_left,
+        mask,
+        [tuple(p) for p in auto.probes],
+        para_left,
+        search_radius=search_radius,
+        seed_hints=[tuple(d) for d in auto.shifts],
+    )
+    if _accept_seed_u0(res):
+        return res.u0_2d, auto.offsets, f"{note}, propagated from the probes"
+    return None, auto.offsets, note

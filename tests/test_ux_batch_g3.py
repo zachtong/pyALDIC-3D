@@ -17,7 +17,6 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QT_QPA_FONTDIR", "C:/Windows/Fonts")
 
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -210,7 +209,12 @@ def test_empty_state_hint_shows_then_disappears(qapp):
 # ---------------------------------------------------------------------------
 
 
-def test_next_step_hint_transitions(qapp):
+def test_next_step_hint_transitions(qapp, tmp_path):
+    from tests import synth_stereo
+
+    scene = synth_stereo.build_scene(tmp_path, n_frames=2)
+    left = sorted(str(p) for p in tmp_path.glob("L_*.png"))
+    right = sorted(str(p) for p in tmp_path.glob("R_*.png"))
     win = MainWindow3D()
     win.show()
     hint = win._left._next_hint
@@ -219,21 +223,26 @@ def test_next_step_hint_transitions(qapp):
     assert hint.isVisible()
     assert hint.text() == hint.tr("Load the left and right camera folders")
 
-    draft.left = ["a.png", "b.png"]
-    draft.right = ["x.png", "y.png"]
+    draft.left = left
+    draft.right = right
     win.signals.images_changed.emit()
     assert hint.text() == hint.tr("Calibrate from images or import a calibration")
 
-    draft.calibration_file = Path("calib.yml")
+    draft.calibration_file = tmp_path / "missing.yml"
     win.signals.calibration_changed.emit()
     assert hint.text() == hint.tr("Draw the ROI on the left camera, frame 1")
 
-    draft.roi = (0, 10, 0, 10)
+    draft.roi = (40, 160, 40, 160)
     win.signals.roi_changed.emit()
+    # Fix batch V (M8): a calibration that cannot be read is named, not "ready".
+    assert hint.isVisible() and "calibration file cannot be read" in hint.text()
+
+    draft.calibration_file = scene["dir"] / scene["calib"]
+    win.signals.calibration_changed.emit()
     assert not hint.isVisible()  # ready -> hidden
 
     # Mismatch surfaces the translated issue detail (still the images stage).
-    draft.right = ["x.png"]
+    draft.right = right[:1]
     win.signals.images_changed.emit()
     assert hint.isVisible()
     assert hint.text() == issue_text("sequence length mismatch: 2 vs 1")
@@ -461,9 +470,18 @@ def test_export_dialog_is_nonmodal_singleton(qapp, monkeypatch):
     class _StubDialog(QDialog):
         created = 0
 
-        def __init__(self, result, extra_params=None, parent=None, *, draft=None, hint=None):
+        def __init__(
+            self, result, extra_params=None, parent=None, *, draft=None, hint=None, **_kw
+        ):
             super().__init__(parent)
+            self._result = result
             type(self).created += 1
+
+        def matches(self, result):  # fix batch V: stale dialogs are rebuilt
+            return result is self._result
+
+        def is_busy(self):
+            return False
 
     monkeypatch.setattr(ed, "ExportDialog", _StubDialog)
     win = MainWindow3D()
@@ -487,6 +505,12 @@ def test_export_dialog_is_nonmodal_singleton(qapp, monkeypatch):
 
     right._on_export()  # a fresh dialog can be created afterwards
     assert _StubDialog.created == 2
+
+    # A NEW result (rerun / strain recompute / project switch) replaces the
+    # stale dialog instead of reusing it (fix batch V).
+    win.controller.state.result = object()
+    right._on_export()
+    assert _StubDialog.created == 3
     right.close_export_dialog()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     win.controller.state.result = None

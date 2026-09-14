@@ -1,10 +1,11 @@
 """Images tab — per-camera rendered field frames (PNG/JPEG/TIFF batch).
 
-Per-field rows (enable + colormap + auto/fixed range + opacity), a camera
-selector (L / R / both), format + JPEG quality, a long-edge resolution preset,
-the include-colorbar toggle, reference/deformed background radios, and a frame
-range — driving the Qt-free :func:`al_dic_3d.export.export_image_frames` on
-the shared worker thread.
+Per-field rows (enable + colormap + auto/fixed range + opacity, in the canvas's
+display unit), a camera selector (L / R / both), format + JPEG quality, a
+long-edge resolution preset, the include-colorbar toggle, reference/deformed
+background radios, and a frame range — driving the Qt-free
+:func:`al_dic_3d.export.export_image_frames` on the shared worker thread with
+the RESULT's node step and the drawn ROI (warped for the right camera).
 """
 
 from __future__ import annotations
@@ -24,8 +25,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS
 from al_dic_3d.gui.dialogs.export_tabs.common import (
+    MEDIA_FIELD_IDS,
     BackgroundRow,
     CameraRow,
     ExportTabBase,
@@ -55,9 +56,12 @@ class ImagesTab(ExportTabBase):
         fg_layout = QVBoxLayout(fields_group)
         fg_layout.setContentsMargins(8, 4, 8, 4)
         self._rows = FieldRowsPanel(
-            [*DISPLACEMENT_IDS, *STRAIN_IDS],
+            MEDIA_FIELD_IDS,
             hint,
             strain_available=result.strain is not None,
+            velocity_available=n_frames > 1,
+            display=dialog.field_display,
+            seed_range=dialog.seed_range,
         )
         fg_layout.addWidget(self._rows)
         layout.addWidget(fields_group)
@@ -162,6 +166,9 @@ class ImagesTab(ExportTabBase):
             cameras=self._camera_row.cameras(),
             mesh_step=self._dialog.mesh_step,
             roi_mask=self._dialog.roi_mask,
+            # Reuse the Preview's warp when it exists; otherwise the job warps
+            # once in its worker thread (never on the GUI thread).
+            right_roi_mask=self._dialog.right_roi_mask(compute=False),
             show_deformed=self._background_row.show_deformed(),
             image_format=str(self._format_combo.currentData()),
             jpeg_quality=self._quality_spin.value(),

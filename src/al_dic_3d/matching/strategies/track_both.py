@@ -35,7 +35,7 @@ from al_dic_3d.matching.contracts import (
 )
 from al_dic_3d.matching.diagnostics import stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara
-from al_dic_3d.matching.stereo import stereo_match_pair
+from al_dic_3d.matching.stereo import accept_field, stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
     effective_seed_points,
@@ -43,6 +43,8 @@ from al_dic_3d.matching.strategies._common import (
     map_seeds_left_to_right,
     mask_stream,
     resolve_init,
+    setup_note,
+    stereo_search_centre,
     stereo_seed_u0,
     temporal_camera_u0,
 )
@@ -50,8 +52,12 @@ from al_dic_3d.matching.strategy import register_strategy
 from al_dic_3d.matching.temporal import (
     ZERO_FILL_ERROR,
     build_grid_mesh,
+    finish_track,
+    node_spacing,
+    note_zero_fill,
     resample_to_points,
     temporal_track,
+    track_engine,
 )
 
 if TYPE_CHECKING:
@@ -62,25 +68,95 @@ if TYPE_CHECKING:
 
 # Fraction of the overall progress covered by the two temporal tracks (P3.6);
 # the assembly loop maps into the remainder so the reported fraction stays
-# monotonic. Parallel: the two cameras share the band as equal halves, each
-# reporting 0..1 of its own track. Sequential: the band is split into two
-# consecutive halves, L then R (P4 — before that the sequential path forwarded
-# no track progress at all, so the DEFAULT configuration showed nothing at all
-# while both cameras tracked, then jumped during assembly).
+# monotonic. The two cameras share the band as equal halves, each reporting
+# 0..1 of its own track (engine, then honesty gate); the halves are combined
+# under a lock because phases of the two cameras run concurrently -- both whole
+# tracks on the parallel path, the left gate beside the right engine on the
+# default path (fix batch V).
 _TRACK_PROGRESS_SHARE = 0.9
 
 
-def _camera_band(cam: str, progress: Callable[[float, str], None] | None):
-    """Map one camera's own 0..1 track progress into its half of the band."""
+def _combined_progress(
+    progress: Callable[[float, str], None] | None,
+) -> dict[str, Callable[[float, str], None] | None]:
+    """Per-camera callbacks whose reports combine into one monotonic fraction."""
     if progress is None:
-        return None
-    offset = 0.0 if cam == "L" else 0.5
+        return {"L": None, "R": None}
+    lock = threading.Lock()
+    fractions = {"L": 0.0, "R": 0.0}
 
-    def cb(frac: float, msg: str) -> None:
-        share = min(1.0, max(0.0, float(frac))) * 0.5 + offset
-        progress(share * _TRACK_PROGRESS_SHARE, f"{cam}: {msg}")
+    def make(cam: str) -> Callable[[float, str], None]:
+        def cb(frac: float, msg: str) -> None:
+            with lock:  # serialize the two threads' reports
+                fractions[cam] = max(fractions[cam], min(1.0, max(0.0, float(frac))))
+                overall = 0.5 * (fractions["L"] + fractions["R"]) * _TRACK_PROGRESS_SHARE
+                progress(overall, f"{cam}: {msg}")
 
-    return cb
+        return cb
+
+    return {"L": make("L"), "R": make("R")}
+
+
+class _PrefixView:
+    """The first ``n`` items of an indexed frame / mask sequence (lazy)."""
+
+    def __init__(self, base, n: int) -> None:
+        self._base = base
+        self._n = int(n)
+
+    def __len__(self) -> int:
+        return self._n
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return [self[i] for i in range(*idx.indices(self._n))]
+        if idx < 0:
+            idx += self._n
+        if not 0 <= idx < self._n:
+            raise IndexError(idx)
+        return self._base[idx]
+
+    @property
+    def shape(self):
+        return getattr(self._base, "shape", None)
+
+
+def _track_prefix(frames, mesh, para, n_keep, n_frames, *, masks=None, u0=None, reason="", **kw):
+    """Track ``frames[:n_keep]`` with the stop ignored; pad to ``n_frames`` as a partial run."""
+    import dataclasses
+
+    schedule = getattr(para, "frame_schedule", None)
+    if schedule is not None:
+        from al_dic.core.data_structures import FrameSchedule  # DEPENDS_ON_2D.md
+
+        para = dataclasses.replace(
+            para, frame_schedule=FrameSchedule(tuple(schedule.ref_indices[: n_keep - 1]))
+        )
+    masks_p = None if masks is None else _PrefixView(masks, n_keep)
+    tf = temporal_track(_PrefixView(frames, n_keep), mesh, para, masks=masks_p, u0=u0, **kw)
+    n = tf.u_accum.shape[1]
+    u = np.full((n_frames, n, 2), np.nan, dtype=np.float64)
+    v = np.zeros((n_frames, n), dtype=bool)
+    u[:n_keep] = tf.u_accum
+    v[:n_keep] = tf.valid
+    z = None
+    if tf.znssd is not None:
+        z = np.full((n_frames, n), np.nan, dtype=np.float64)
+        z[:n_keep] = tf.znssd
+    gated = None
+    if tf.n_gated is not None:
+        gated = np.zeros(n_frames, dtype=np.int64)
+        gated[:n_keep] = tf.n_gated
+    return dataclasses.replace(
+        tf,
+        u_accum=u,
+        valid=v,
+        n_gated=gated,
+        znssd=z,
+        stopped_early=True,
+        stopped_at_frame=int(n_keep),
+        stop_reason=reason or "Computation cancelled by user.",
+    )
 
 
 def _derive_right_barrier(
@@ -208,6 +284,7 @@ class TrackBothStrategy:
         # in seed mode the placed seeds propagate a per-node L->R disparity prior
         # (strong under wide-baseline disparity gradients); else the scalar
         # offset + per-point NCC search exactly as before.
+        setup_note(progress, f"Setup: frame-1 stereo match at {n_pts} nodes")
         stereo_prior = stereo_seed_u0(
             init_mode,
             left[0],
@@ -218,14 +295,33 @@ class TrackBothStrategy:
             para_L,
             search_radius=self.stereo_search,
         )
+        stereo_prior, stereo_centre, stereo_note = stereo_search_centre(
+            stereo_prior,
+            stereo_offset,
+            left[0],
+            right[0],
+            mesh_L,
+            mask_L1,
+            rig,
+            para_L,
+            search_radius=self.stereo_search,
+        )
         disp = stereo_match_pair(
             left[0],
             right[0],
             coords_L,
             para_L,
-            disparity_offset=stereo_offset,
+            disparity_offset=stereo_centre,
             search_radius=self.stereo_search,
             seed_u0=stereo_prior,
+        )
+        # H4 (fix batch V): converged is not accepted — drop false locks by
+        # correlation quality and epipolar consistency before anything is tracked.
+        disp, n_rej_z, n_rej_e = accept_field(
+            disp,
+            rig=rig,
+            znssd_max=cfg.stereo_znssd_max,
+            epipolar_max_px=cfg.stereo_epipolar_max_px,
         )
         right_pts = disp.right_pts  # (n_pts, 2); NaN where the stereo link failed
         base_valid = disp.valid  # (n_pts,)
@@ -242,6 +338,7 @@ class TrackBothStrategy:
         # hoisted BEFORE tracking so both tracks can launch together (P3.6).
         # Batch S: the left track's U0 is the F-aware propagated field over the
         # placed seeds (falls back to the single-seed uniform / FFT path).
+        setup_note(progress, "Setup: left-camera initial guess")
         u0_L = temporal_camera_u0(
             init_mode,
             left[0],
@@ -255,6 +352,7 @@ class TrackBothStrategy:
             search_radius=self.fft_search,
         )
 
+        setup_note(progress, "Setup: right-camera mesh and initial guess")
         valid_rp = np.isfinite(right_pts).all(axis=1)
         roi_R = bbox_roi(right_pts[valid_rp], img_h, img_w, margin=self.winsize)
         mask_R1 = seq.mask("R", 0)
@@ -346,24 +444,16 @@ class TrackBothStrategy:
             )
             _check_left_alignment(tf_L)
         else:
-            tf_L = temporal_track(
+            tf_L, tf_R = self._track_sequential(
                 left,
-                mesh_L,
-                para_L,
-                stop=stop,
-                gate_znssd=self.temporal_gate_znssd,
-                progress=_camera_band("L", progress),
-                **track_kwargs["L"],
-            )
-            _check_left_alignment(tf_L)
-            tf_R = temporal_track(
                 right,
-                mesh_R,
-                para_R,
-                stop=stop,
-                gate_znssd=self.temporal_gate_znssd,
-                progress=_camera_band("R", progress),
-                **track_kwargs["R"],
+                (mesh_L, mesh_R),
+                (para_L, para_R),
+                track_kwargs,
+                cfg,
+                progress,
+                stop,
+                check_left=_check_left_alignment,
             )
 
         # Partial-run bookkeeping (R2, engine 0.7): either camera may have
@@ -386,13 +476,27 @@ class TrackBothStrategy:
         quality = np.full((n_frames, n_pts), np.nan, dtype=np.float64)
         source = np.full((n_frames, n_pts), INVALID, dtype=np.uint8)
 
+        # Right-camera validity must survive the resampling (fix batch V): nodes
+        # the honesty gate rejected are NaN in tf_R.u_accum and drop out of the
+        # triangulation, so a triangle bridging a gated region has long edges —
+        # reject those, and never nearest-fill from further than one node step.
+        # Otherwise a failed right-camera region was re-filled from distant
+        # nodes and shipped as TRACKED.
+        step_R = node_spacing(tf_R.ref_coords)
+        cap_edge = 1.5 * step_R if np.isfinite(step_R) else None
+        cap_fill = step_R if np.isfinite(step_R) else None
+
         for k in range(n_frames):
             xl_k = coords_L + tf_L.u_accum[k]
 
             motion_r = np.full((n_pts, 2), np.nan, dtype=np.float64)
             if valid_rp.any():
                 motion_r[valid_rp] = resample_to_points(
-                    tf_R.ref_coords, tf_R.u_accum[k], right_pts[valid_rp]
+                    tf_R.ref_coords,
+                    tf_R.u_accum[k],
+                    right_pts[valid_rp],
+                    max_edge=cap_edge,
+                    max_fill_dist=cap_fill,
                 )
             xr_k = right_pts + motion_r
 
@@ -404,9 +508,25 @@ class TrackBothStrategy:
             )
             xL[k][good] = xl_k[good]
             xR[k][good] = xr_k[good]
-            # For S1 the correspondence quality is set by the frame-1 stereo link
-            # (the weakest point); per-frame temporal ZNSSD is a Phase-2 refinement.
-            quality[k][good] = disp.znssd[good]
+            # Per-frame quality (fix batch V): the WORST of the frame-1 stereo
+            # link and both cameras' honesty-gate ZNSSD at this frame, so the
+            # optional quality gate can see temporal failures too (it used to
+            # read the frame-1 stereo score copied into every frame).
+            q = disp.znssd.copy()
+            if tf_L.znssd is not None:
+                q = np.fmax(q, tf_L.znssd[k])
+            if tf_R.znssd is not None and valid_rp.any():
+                zr = np.full(n_pts, np.nan, dtype=np.float64)
+                zr_col = np.column_stack([tf_R.znssd[k], tf_R.znssd[k]])
+                zr[valid_rp] = resample_to_points(
+                    tf_R.ref_coords,
+                    zr_col,
+                    right_pts[valid_rp],
+                    max_edge=cap_edge,
+                    max_fill_dist=cap_fill,
+                )[:, 0]
+                q = np.fmax(q, zr)
+            quality[k][good] = q[good]
             source[k][good] = TRACKED
 
             if progress is not None:
@@ -417,7 +537,7 @@ class TrackBothStrategy:
 
         # F3.1: per-stage failure accounting rides along with the result.
         diagnostics = (
-            *stereo_rows(disp),
+            *stereo_rows(disp, note=stereo_note, rejected=(n_rej_z, n_rej_e)),
             *temporal_rows("L", tf_L),
             *temporal_rows("R", tf_R),
         )
@@ -432,6 +552,101 @@ class TrackBothStrategy:
             stopped_at_frame=stopped_at,
             stop_reason=stop_reason,
         )
+
+    def _track_sequential(
+        self,
+        left,
+        right,
+        meshes: tuple,
+        paras: tuple,
+        track_kwargs: dict,
+        cfg: CorrespondenceConfig,
+        progress: Callable[[float, str], None] | None,
+        stop: Callable[[], bool] | None,
+        *,
+        check_left: Callable[[object], None],
+    ):
+        """Default path: the left track, then the right one beside the left gate.
+
+        Fix batch V: the honesty gate is ~25 % of a camera's time at 12 Mpx and
+        used to run strictly after that camera's engine. The left camera's gate
+        now runs on a worker thread while the right camera's engine runs, so it
+        hides behind the right track instead of adding to it. The gate thread
+        polls the shared stop, and a failure on either side trips an abort the
+        other side sees at its next checkpoint.
+        """
+        from concurrent.futures import ThreadPoolExecutor
+
+        (mesh_L, mesh_R), (para_L, para_R) = meshes, paras
+        cbs = _combined_progress(progress)
+        gate = self.temporal_gate_znssd
+        et_L = track_engine(
+            left,
+            mesh_L,
+            para_L,
+            stop=stop,
+            gate_znssd=gate,
+            progress=cbs["L"],
+            # A stop during the LEFT track leaves the right camera untracked
+            # (the run cancels) unless the prefix is completed below, so only
+            # then is the left partial track worth verifying.
+            verify_partial=cfg.complete_partial_prefix,
+            **track_kwargs["L"],
+        )
+        check_left(et_L)
+        if et_L.stopped_early:
+            tf_L = finish_track(et_L)
+            if cfg.complete_partial_prefix and tf_L.n_tracked >= 2:
+                # The stop landed during the LEFT track. Track the right camera
+                # over exactly the frames the left one kept (stop ignored), so
+                # those frames become a usable partial result instead of nothing.
+                tf_R = _track_prefix(
+                    right,
+                    mesh_R,
+                    para_R,
+                    tf_L.n_tracked,
+                    int(et_L.u_accum.shape[0]),
+                    gate_znssd=gate,
+                    progress=cbs["R"],
+                    reason=tf_L.stop_reason,
+                    **track_kwargs["R"],
+                )
+            else:
+                tf_R = temporal_track(
+                    right,
+                    mesh_R,
+                    para_R,
+                    stop=stop,
+                    gate_znssd=gate,
+                    progress=cbs["R"],
+                    **track_kwargs["R"],
+                )
+            return tf_L, tf_R
+
+        abort = threading.Event()
+
+        def stop_fn() -> bool:
+            return abort.is_set() or bool(stop is not None and stop())
+
+        et_L.stop = stop_fn
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="gate_L") as pool:
+            fut = pool.submit(finish_track, et_L)
+            fut.add_done_callback(lambda f: abort.set() if f.exception() is not None else None)
+            try:
+                tf_R = temporal_track(
+                    right,
+                    mesh_R,
+                    para_R,
+                    stop=stop_fn,
+                    gate_znssd=gate,
+                    progress=cbs["R"],
+                    **track_kwargs["R"],
+                )
+            except BaseException:
+                abort.set()  # the left gate exits after its current frame
+                raise
+            tf_L = fut.result()  # re-raises a left-gate failure
+        return tf_L, tf_R
 
     def _track_parallel(
         self,
@@ -468,20 +683,7 @@ class TrackBothStrategy:
         def stop_fn() -> bool:
             return abort.is_set() or bool(stop is not None and stop())
 
-        lock = threading.Lock()
-        fractions = {"L": 0.0, "R": 0.0}
-
-        def cam_progress(cam: str) -> Callable[[float, str], None] | None:
-            if progress is None:
-                return None
-
-            def cb(frac: float, msg: str) -> None:
-                with lock:  # serialize the two threads' reports
-                    fractions[cam] = min(1.0, max(0.0, float(frac)))
-                    overall = 0.5 * (fractions["L"] + fractions["R"]) * _TRACK_PROGRESS_SHARE
-                    progress(overall, f"{cam}: {msg}")
-
-            return cb
+        cbs = _combined_progress(progress)
 
         def run(cam: str, frames, mesh, para):
             return temporal_track(
@@ -490,7 +692,7 @@ class TrackBothStrategy:
                 para,
                 stop=stop_fn,
                 gate_znssd=self.temporal_gate_znssd,
-                progress=cam_progress(cam),
+                progress=cbs[cam],
                 capture_warnings=False,  # ONE recorder below (thread safety)
                 **track_kwargs[cam],
             )
@@ -499,6 +701,10 @@ class TrackBothStrategy:
         rec_lock = threading.Lock()
 
         def _record(message, category, filename, lineno, file=None, line=None):  # noqa: ARG001
+            # Runs in the EMITTING thread: an engine zero-fill is pinned to that
+            # camera's frame and invalidates just that frame (fix batch V).
+            if "All nodes are NaN" in str(message) and note_zero_fill():
+                return
             with rec_lock:
                 records.append((message, category, filename, lineno))
 

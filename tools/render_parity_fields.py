@@ -1,9 +1,17 @@
-"""Render the S3 parity-run displacement fields + 3D reconstruction to PNGs."""
+"""Render the S3 parity-run displacement fields + 3D reconstruction to PNGs.
+
+Reads the run written by tools/matlab_parity.py (reports/parity_s3/) plus the
+left frame 0, located under the data root exactly as matlab_parity.py does
+(--data-root DIR, else $ALDIC3D_DATA_ROOT, else the repo's examples/ folder).
+
+Usage: python tools/render_parity_fields.py [--data-root DIR]
+"""
 
 # ruff: noqa: E402
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -17,13 +25,23 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 sys.path.insert(0, str(REPO / "tools"))
 
-from matlab_parity import LEFT_IMGS, load_baseline
+from matlab_parity import DATA_ROOT_ENV, left_frame_paths, load_baseline
 
 WORK = REPO / "reports" / "parity_s3"
 FIELDS = ("U", "V", "W")
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="Render the S3 parity-run fields and 3D reconstruction to PNGs."
+    )
+    parser.add_argument(
+        "--data-root",
+        help=f"dataset root for the left frames (default: ${DATA_ROOT_ENV}, else examples/)",
+    )
+    args = parser.parse_args(argv)
+    left0 = left_frame_paths(args.data_root)[0]
+
     ours = np.load(WORK / "s3_ours.npz")
     pts, disp, x_left = ours["points"], ours["displacement"], ours["xL"]
     base = load_baseline()
@@ -94,11 +112,11 @@ def main() -> None:
     # ---- tracked points over the left image ------------------------------------
     import cv2
 
-    # NOTE: the left frames live under an "L" subfolder — without it this path
-    # does not exist and imread returns None, which only fails later in imshow.
-    img = cv2.imread(str(LEFT_IMGS / "Images_Stereo_Sample3_images" / "L" / "0000_0.tif"), 0)
+    # left_frame_paths() has already verified the file; imread still returns
+    # None rather than raising on an unreadable image, so keep the loud check.
+    img = cv2.imread(str(left0), 0)
     if img is None:  # fail loudly rather than rendering a blank panel
-        raise FileNotFoundError(LEFT_IMGS / "Images_Stereo_Sample3_images" / "L" / "0000_0.tif")
+        raise FileNotFoundError(left0)
     fig, ax = plt.subplots(figsize=(12, 7.5))
     ax.imshow(img, cmap="gray")
     xl0 = x_left[0][fin]

@@ -28,6 +28,10 @@ def _headless_close_guards(monkeypatch):
     if mw is not None:
         monkeypatch.setattr(mw.MainWindow3D, "_prompt_unsaved", lambda self: "discard")
         monkeypatch.setattr(mw.MainWindow3D, "_confirm_cancel_run", lambda self: True)
+        monkeypatch.setattr(mw.MainWindow3D, "_confirm_cancel_run_for_switch", lambda self: True)
+        monkeypatch.setattr(mw.MainWindow3D, "_show_error", lambda self, title, message: None)
+        monkeypatch.setattr(mw.MainWindow3D, "_notify_language_change", lambda self, msg: None)
+        monkeypatch.setattr(mw.MainWindow3D, "_confirm_open_without_images", lambda self: False)
         # Q7 include-results save prompt: default to "yes" (full save) so
         # existing save-path tests keep their pre-Q7 behavior.
         monkeypatch.setattr(mw.MainWindow3D, "_prompt_include_results", lambda self, est: "yes")
@@ -42,6 +46,9 @@ def _headless_close_guards(monkeypatch):
     ed = sys.modules.get("al_dic_3d.gui.dialogs.export_dialog")
     if ed is not None:  # G3.12 running-export close guard
         monkeypatch.setattr(ed.ExportDialog, "_confirm_close_during_export", lambda self: True)
+    rs = sys.modules.get("al_dic_3d.gui.panels.right_sidebar")
+    if rs is not None:  # fix batch V run-failure dialog
+        monkeypatch.setattr(rs.RightSidebar3D, "_show_error", lambda self, title, message: None)
     ls = sys.modules.get("al_dic_3d.gui.panels.left_sidebar")
     if ls is not None:  # G3.1a pair-removal results-invalidation confirm
         monkeypatch.setattr(

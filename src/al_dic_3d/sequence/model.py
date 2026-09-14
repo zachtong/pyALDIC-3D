@@ -130,7 +130,16 @@ class StereoSequence:
                 continue
             if len(stream) != len(provider):
                 problems.append(f"camera {cam!r}: {len(stream)} masks for {len(provider)} frames")
-            for i, m in enumerate(stream):
+            # Eager arrays are free to check; a LAZY stream would decode every
+            # mask file here (twice per run: runner + strategy) before the first
+            # progress message. Check the first and last; the lazy stream itself
+            # enforces one shape across all masks as they decode (fix batch V).
+            if isinstance(stream, (list, tuple)):
+                candidates = list(enumerate(stream))
+            else:
+                last = len(stream) - 1
+                candidates = [(i, stream[i]) for i in sorted({0, max(0, last)}) if len(stream)]
+            for i, m in candidates:
                 if tuple(m.shape) != tuple(provider.shape):
                     problems.append(
                         f"camera {cam!r} frame {i}: mask {m.shape} != image {provider.shape}"

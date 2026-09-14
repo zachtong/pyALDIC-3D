@@ -74,8 +74,9 @@ class ConfigOverlay3D(QFrame):
         self._mode_lbl.setText(
             self.tr("Accumulative") if mode == "accumulative" else self.tr("Incremental")
         )
+        # Same name as the Solver box ("AL-DIC"), not the internal "ADMM".
         self._solver_lbl.setText(
-            self.tr("ADMM ({0} iter)").format(draft.admm_max_iter)
+            self.tr("AL-DIC ({0} iter)").format(draft.admm_max_iter)
             if draft.use_global_step
             else self.tr("Local DIC")
         )
@@ -84,7 +85,15 @@ class ConfigOverlay3D(QFrame):
             "previous": self.tr("Previous frame"),
             "fft": self.tr("FFT"),
         }
-        self._init_lbl.setText(init_names.get(getattr(draft, "init_guess", "fft"), self.tr("FFT")))
+        # The mode the run will USE: Starting Points with none placed is FFT
+        # (fix batch V: the card used to claim "Starting Point" regardless).
+        from al_dic_3d.gui.fft_activity import effective_init_guess
+
+        effective = effective_init_guess(draft)
+        if getattr(draft, "init_guess", "fft") == "seed" and effective == "fft":
+            self._init_lbl.setText(self.tr("FFT (no starting point)"))
+        else:
+            self._init_lbl.setText(init_names.get(effective, self.tr("FFT")))
         # Match the sidebar's ODD display convention (engine winsize + 1).
         self._subset_lbl.setText(f"{int(draft.winsize) + 1} / {draft.winstepsize} px")
         self.adjustSize()

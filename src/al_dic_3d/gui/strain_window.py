@@ -50,13 +50,9 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.controllers.strain_controller import StrainController3D
-from al_dic_3d.gui.controllers.viz_controller import VizController3D
 from al_dic_3d.gui.state import GuiSignals
-from al_dic_3d.gui.strain_render import prepare_strain_render, trim_count
-from al_dic_3d.gui.widgets.strain_field_selector import (
-    STRAIN_FIELD_LABELS,
-    StrainFieldSelector3D,
-)
+from al_dic_3d.gui.strain_canvas import StrainRenderMixin
+from al_dic_3d.gui.widgets.strain_field_selector import StrainFieldSelector3D
 from al_dic_3d.gui.widgets.strain_navigator import StrainNavigator3D
 from al_dic_3d.gui.widgets.strain_param_panel import StrainParamPanel3D
 from al_dic_3d.gui.widgets.strain_support import PickCanvas, StrainWorker, ZoomBar
@@ -83,8 +79,12 @@ def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
     )
 
 
-class StrainWindow3D(QMainWindow):
-    """Independent strain post-processing window (full 2D clone, 3D data)."""
+class StrainWindow3D(StrainRenderMixin, QMainWindow):
+    """Independent strain post-processing window (full 2D clone, 3D data).
+
+    Rendering (frames + dense overlay, off the GUI thread when heavy — V-view)
+    lives in :class:`~al_dic_3d.gui.strain_canvas.StrainRenderMixin`.
+    """
 
     def __init__(
         self,
@@ -101,7 +101,6 @@ class StrainWindow3D(QMainWindow):
 
         # PRIVATE display state — never mirrored to GuiSignals.
         self._frame = 0
-        self._viz_ctrl = VizController3D()  # private dense renderer + caches
         self._last_rendered: tuple[float, float] = (0.0, 1.0)
         self._recon_id: int | None = None  # detects a NEW run vs a strain writeback
 
@@ -128,6 +127,7 @@ class StrainWindow3D(QMainWindow):
         left.setSpacing(0)
 
         self._canvas = PickCanvas()
+        self._init_strain_render()  # private renderer, prefetcher, presenters (V-view)
         zoom_bar = ZoomBar(self._canvas)  # extracted toolbar (P3.5 file-size)
         self._zoom_btn = zoom_bar.zoom_btn  # historical alias
         left.addWidget(zoom_bar)
@@ -149,7 +149,8 @@ class StrainWindow3D(QMainWindow):
         right.setSpacing(6)
 
         self._params_section = CollapsibleSection(self.tr("STRAIN PARAMETERS"), expanded=True)
-        self._param_panel = StrainParamPanel3D(winstepsize=controller.state.draft.winstepsize)
+        # H3: the VSG readout converts with the RUN's node step, not the draft's.
+        self._param_panel = StrainParamPanel3D(winstepsize=self._run_step())
         self._param_panel.params_dirty.connect(self._on_params_dirty)
         self._param_panel.pick_requested.connect(self._start_pick)
         self._params_section.add_widget(self._param_panel)
@@ -260,6 +261,7 @@ class StrainWindow3D(QMainWindow):
     def _connect_signals(self) -> None:
         if not getattr(self, "_signals_connected", False):
             self.signals.results_changed.connect(self._on_results_changed)
+            self.signals.roi_changed.connect(self._on_roi_changed)  # display mask follows
             self._signals_connected = True
 
     def showEvent(self, event) -> None:  # noqa: N802 (Qt override)
@@ -267,8 +269,9 @@ class StrainWindow3D(QMainWindow):
         self._connect_signals()
         # 2D idiom: clear the viz cache on show so a previous session's
         # overlay never bleeds through after the data changed while hidden.
+        self._cancel_render_work()
         self._viz_ctrl.clear_all()
-        self._param_panel.set_winstepsize(self.controller.state.draft.winstepsize)
+        self._param_panel.set_winstepsize(self._run_step())
         self._refresh_from_result()
         self._render()
 
@@ -292,7 +295,9 @@ class StrainWindow3D(QMainWindow):
             return
         if getattr(self, "_signals_connected", False):
             self.signals.results_changed.disconnect(self._on_results_changed)
+            self.signals.roi_changed.disconnect(self._on_roi_changed)
             self._signals_connected = False
+        self._cancel_render_work()  # no late overlay deliveries into a closed window
         self._cancel_pick()
         from al_dic_3d.gui import persistence
 
@@ -485,11 +490,16 @@ class StrainWindow3D(QMainWindow):
         result = self.controller.state.result
         if result is None:
             return
-        if self._export_dialog is not None:  # G3.12: reuse the open dialog
-            self._export_dialog.show()
-            self._export_dialog.raise_()
-            self._export_dialog.activateWindow()
-            return
+        dlg = self._export_dialog
+        if dlg is not None:
+            # G3.12 reuse, but only while it exports THIS result (fix batch V);
+            # a stale dialog still exporting stays up.
+            if dlg.matches(result) or not dlg.close():
+                dlg.show()
+                dlg.raise_()
+                dlg.activateWindow()
+                return
+            self._export_dialog = None
         from al_dic_3d.export import VizExportHint
         from al_dic_3d.gui.dialogs.export_dialog import ExportDialog, draft_export_params
 
@@ -515,9 +525,14 @@ class StrainWindow3D(QMainWindow):
         )
         # G3.12: non-modal — keep scrubbing frames while exports run.
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
-        dialog.destroyed.connect(lambda *_a: setattr(self, "_export_dialog", None))
+        # A replaced dialog's late destroy must not drop its successor.
+        dialog.destroyed.connect(lambda *_a, d=dialog: self._on_export_dialog_gone(d))
         self._export_dialog = dialog
         dialog.show()
+
+    def _on_export_dialog_gone(self, dialog) -> None:
+        if self._export_dialog is dialog:
+            self._export_dialog = None
 
     # ------------------------------------------------------------------
     # 3-point specimen pick flow
@@ -547,7 +562,8 @@ class StrainWindow3D(QMainWindow):
     def _on_point_picked(self, x: float, y: float) -> None:
         idx = self._strain_ctrl.nearest_valid_node(x, y)
         if idx is None:
-            self._log("no valid node near the click — run/inspect the result first", "warning")
+            message = self.tr("No valid point near the click — pick on the result field")
+            self._log(message, "warning")
             return
         self._pick_nodes.append(idx)
         n = len(self._pick_nodes)
@@ -579,7 +595,7 @@ class StrainWindow3D(QMainWindow):
 
     def _add_pick_marker(self, x: float, y: float, order: int) -> None:
         scene = self._canvas.scene()
-        r = max(3.0, self.controller.state.draft.winstepsize * 0.35)
+        r = max(3.0, self._run_step() * 0.35)
         pen = QPen(_PICK_COLORS[order], 2)
         pen.setCosmetic(True)
         dot = scene.addEllipse(x - r, y - r, 2 * r, 2 * r, pen)
@@ -603,7 +619,12 @@ class StrainWindow3D(QMainWindow):
 
     def _on_results_changed(self) -> None:
         result = self.controller.state.result
+        self._cancel_render_work()  # in-flight overlays belong to the old result
+        dlg = self._export_dialog
+        if dlg is not None and not dlg.matches(result) and not dlg.is_busy():
+            dlg.close()  # an idle export dialog still showing the old result
         self._viz_ctrl.clear_all()
+        self._param_panel.set_winstepsize(self._run_step())
         recon_id = None if result is None else id(result.reconstruction)
         if recon_id != self._recon_id:
             # A genuinely new run (not our strain writeback): picked nodes and
@@ -684,109 +705,8 @@ class StrainWindow3D(QMainWindow):
         self._render()
 
     # ------------------------------------------------------------------
-    # Rendering
+    # Rendering: see StrainRenderMixin (strain_canvas.py)
     # ------------------------------------------------------------------
-
-    def _try_load_background(self, img_idx: int) -> None:
-        """Best-effort LEFT-camera background fetch — silent on failure."""
-        files = self.controller.state.draft.left
-        if not files:
-            return
-        try:
-            self._canvas.set_image_file(files[min(img_idx, len(files) - 1)])
-        except Exception:  # noqa: BLE001 - a bad frame must not crash the canvas
-            pass
-
-    def _clear_overlay(self) -> None:
-        self._canvas.set_overlay_pixmap(None)
-        self._colorbar.setVisible(False)
-
-    def _render(self) -> None:
-        result = self.controller.state.result
-        show_deformed = self._deformed_cb.isChecked()
-        if result is None:
-            self._clear_overlay()
-            self._try_load_background(0)
-            return
-
-        k = max(0, min(self._frame, result.reconstruction.n_frames - 1))
-        self._try_load_background(k if show_deformed else 0)
-
-        strain = result.strain
-        if strain is None:
-            self._clear_overlay()
-            return
-
-        field = self._field_selector.current_field()
-        # Q4: live 'Trimmed: N nodes' readout — derived from strain_valid after a
-        # reload where n_trimmed did not persist (C3-3), so it never blanks.
-        self._param_panel.set_trim_readout(trim_count(strain, k), int(strain.n_pts))
-        crack_aware = bool(result.meta.get("crack_aware", False))  # item 5 indicator
-        self._param_panel.set_crack_aware(crack_aware)
-        # Geometry follows the deformed toggle; values stay those of frame k.
-        deformed = bool(show_deformed) and k > 0
-
-        # The drawn LEFT reference mask (if any) bounds the field; else the
-        # renderer falls back to the valid-node hull support.
-        roi_mask = None
-        drawn = self.controller.state.draft.roi_mask_array
-        if drawn is not None:
-            roi_mask = np.asarray(drawn) > 0
-
-        # Display mask + geometry + range prep (Qt-free helper): shares the WYSIWYG
-        # display mask and the crack-barrier blank with the export paths (C3/C4).
-        rd = prepare_strain_render(
-            result,
-            field,
-            k,
-            deformed=deformed,
-            roi_mask=roi_mask,
-            crack_aware=crack_aware,
-            auto_range_on=self._auto_range_cb.isChecked(),
-            manual_vmin=self._vmin_spin.value(),
-            manual_vmax=self._vmax_spin.value(),
-        )
-        self._last_rendered = (rd.vmin, rd.vmax)
-
-        rect = self._canvas.scene().sceneRect()
-        w, h = int(rect.width()), int(rect.height())
-        if w <= 0 or h <= 0:
-            self._clear_overlay()
-            return
-
-        try:
-            pixmap, xg, yg, out_step = self._viz_ctrl.render_field(
-                k,
-                f"strain_window:{field}",
-                rd.pts,
-                rd.vals,
-                img_shape=(h, w),
-                mesh_step=int(self.controller.state.draft.winstepsize),
-                cmap=self._cmap_combo.currentText(),
-                vmin=rd.vmin,
-                vmax=rd.vmax,
-                roi_mask=roi_mask,
-                deformed=deformed,
-                ref_uv=rd.ref_uv,
-                ref_pts=rd.ref_pts,
-                barrier_mask=rd.barrier_mask,
-            )
-        except Exception as exc:  # noqa: BLE001 - a render bug must not kill the window
-            self._log(f"render failed: {type(exc).__name__}: {exc}", "error")
-            self._clear_overlay()
-            return
-        if pixmap is None:
-            self._clear_overlay()
-            return
-        self._canvas.set_overlay_pixmap(pixmap)
-        self._canvas.set_overlay_geometry(float(out_step), float(xg.min()), float(yg.min()))
-        self._canvas.set_overlay_opacity(self._opacity_slider.value() / 100.0)
-        vp = self._canvas.viewport()
-        self._colorbar.setGeometry(0, 0, vp.width(), vp.height())
-        self._colorbar.update_params(
-            self._cmap_combo.currentText(), rd.vmin, rd.vmax, STRAIN_FIELD_LABELS.get(field, field)
-        )
-        self._colorbar.setVisible(True)
 
     # ------------------------------------------------------------------
     # Logging

@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.fft_activity import fft_controls_active
+from al_dic_3d.gui.panels.pair_actions import PairActionsMixin
 from al_dic_3d.gui.panels.sidebar_images import list_images
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.advanced_section import AdvancedSection3D
@@ -50,7 +51,7 @@ if TYPE_CHECKING:
 _STEP_OPTIONS = (2, 4, 8, 16, 32, 64, 128)
 
 
-class LeftSidebar3D(QWidget):
+class LeftSidebar3D(PairActionsMixin, QWidget):
     """Fixed-width sidebar: IMAGES (L/R) + CALIBRATION + WORKFLOW + ROI + PARAMETERS + ADVANCED."""
 
     def __init__(
@@ -63,6 +64,7 @@ class LeftSidebar3D(QWidget):
         self.controller = controller
         self.signals = signals
         self._shape_cache: tuple[str, int | None] | None = None  # (path, min(H, W))
+        self._row_labels: list[QLabel] = []  # H5: sized from their text at the end
         self.setObjectName("leftSidebar")
         self.setFixedWidth(320)
 
@@ -187,78 +189,13 @@ class LeftSidebar3D(QWidget):
         # selection (both funnel a params_changed emit through the sidebar).
         self.signals.params_changed.connect(self._refresh_fft_enable)
         self._refresh_fft_enable()
+        # H5 (fix batch V): one label column, as wide as its longest text.
+        from al_dic_3d.gui.widgets.label_fit import fit_labels
+
+        fit_labels(self._row_labels)
 
     def _refresh_next_hint(self) -> None:
         self._next_hint.refresh(self.controller.state.draft)
-
-    # ---- pair-list context actions (G3.1a) --------------------------------------
-
-    def _remove_pairs(self, rows: list[int]) -> None:
-        """Remove the selected pairs from BOTH streams; invalidate results.
-
-        Ported 2D idiom (image_list Q6): a frame-count/index mutation makes any
-        computed result meaningless, so results are dropped — after an explicit
-        confirm when they exist.
-        """
-        draft = self.controller.state.draft
-        rows = sorted({r for r in rows if 0 <= r < max(len(draft.left), len(draft.right))})
-        if not rows:
-            return
-        had_results = self.controller.state.has_results
-        if had_results and not self._confirm_invalidate_results(len(rows)):
-            return
-        for r in reversed(rows):  # high indices first to preserve ordering
-            if r < len(draft.left):
-                del draft.left[r]
-            if r < len(draft.right):
-                del draft.right[r]
-        if had_results:
-            self.controller.state.result = None
-            self.signals.set_run_state("idle")
-        self.controller.state.mark_dirty()
-        n = max(len(draft.left), len(draft.right))
-        self.signals.set_current_frame(min(self.signals.current_frame, n - 1), max(1, n))
-        self.signals.log.emit(f"removed {len(rows)} image pair(s)", "info")
-        self.signals.images_changed.emit()
-        if had_results:
-            self.signals.results_changed.emit()
-
-    def _confirm_invalidate_results(self, n_pairs: int) -> bool:
-        """Yes/No prompt: removing pairs drops the computed results (2D idiom)."""
-        from PySide6.QtWidgets import QMessageBox
-
-        box = QMessageBox(self)
-        box.setIcon(QMessageBox.Icon.Warning)
-        box.setWindowTitle(self.tr("Remove Image Pairs"))
-        box.setText(
-            self.tr(
-                "Removing {0} pair(s) changes the sequence — the current "
-                "results will be discarded. Continue?"
-            ).format(n_pairs)
-        )
-        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        box.setDefaultButton(QMessageBox.StandardButton.No)
-        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
-        box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
-        return box.exec() == QMessageBox.StandardButton.Yes
-
-    def _reveal_pair(self, row: int) -> None:
-        """Open the row's image folder in the system file explorer."""
-        import os
-
-        draft = self.controller.state.draft
-        path = None
-        if 0 <= row < len(draft.left):
-            path = draft.left[row]
-        elif 0 <= row < len(draft.right):
-            path = draft.right[row]
-        if path is None:
-            return
-        folder = Path(path).parent
-        if not folder.is_dir():
-            self.signals.log.emit(f"folder does not exist: {folder}", "warning")
-            return
-        os.startfile(str(folder))  # noqa: S606 - open the user's own folder
 
     # ---- CALIBRATION ---------------------------------------------------------
 
@@ -326,14 +263,15 @@ class LeftSidebar3D(QWidget):
 
         # NOTE: surface strain is post-processing now (Batch C) — computed on
         # demand in the Strain window, never during the pipeline run.
-        self._quality_cb = QCheckBox(self.tr("Quality gates (ZNSSD / outliers)"))
+        # M10 (fix batch V): plain words in the label, the metric in the tooltip.
+        self._quality_cb = QCheckBox(self.tr("Extra filters (correlation, outliers)"))
         self._quality_cb.setToolTip(
             self.tr(
-                "Post-run filters: demote points whose ZNSSD correlation,\n"
-                "reprojection error or 3D-outlier distance fails the gate to\n"
-                "NaN. Default off (keep every tracked point); enable for noisy\n"
+                "Post-run filters: drop points whose correlation (ZNSSD),\n"
+                "reprojection error or 3D-outlier distance is too poor.\n"
+                "Default off (keep every tracked point); enable for noisy\n"
                 "data when a few bad points pollute the fields. The log\n"
-                "reports how many points each gate removed."
+                "reports how many points each filter removed."
             )
         )
         layout.addWidget(self._quality_cb)
@@ -347,7 +285,7 @@ class LeftSidebar3D(QWidget):
         row = QHBoxLayout()
         row.setSpacing(4)
         lbl = QLabel(text)
-        lbl.setFixedWidth(88)
+        self._row_labels.append(lbl)
         lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
         row.addWidget(lbl)
         row.addWidget(combo, stretch=1)
@@ -397,6 +335,12 @@ class LeftSidebar3D(QWidget):
         self._roi_bbox_lbl = QLabel(self.tr("bbox: not set"))
         self._roi_bbox_lbl.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
         layout.addWidget(self._roi_bbox_lbl)
+
+        # H10 (fix batch V): per-frame masks per camera had no GUI entry.
+        from al_dic_3d.gui.widgets.frame_masks_section import FrameMasksSection3D
+
+        self._frame_masks = FrameMasksSection3D(self.controller, self.signals)
+        layout.addWidget(self._frame_masks)
         return host
 
     @property
@@ -536,6 +480,12 @@ class LeftSidebar3D(QWidget):
         # Extracted widget (file-size discipline, batch Q); aliases keep the
         # historical attribute names refresh_all / _apply_* rely on.
         widget = AdvancedSection3D()
+        self._row_labels += widget.row_labels
+        self._gate_spin = widget.gate_spin
+        self._stereo_znssd_spin = widget.stereo_znssd_spin
+        self._epipolar_spin = widget.epipolar_spin
+        for spin in (self._gate_spin, self._stereo_znssd_spin, self._epipolar_spin):
+            spin.valueChanged.connect(self._apply_params)
         self._strategy_combo = widget.strategy_combo
         self._admm_spin = widget.admm_spin
         self._parallel_cb = widget.parallel_cb
@@ -551,7 +501,7 @@ class LeftSidebar3D(QWidget):
         row = QHBoxLayout()
         row.setSpacing(4)
         lbl = QLabel(text)
-        lbl.setFixedWidth(96)
+        self._row_labels.append(lbl)
         lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY};")
         row.addWidget(lbl)
         row.addWidget(widget, stretch=1)
@@ -583,6 +533,9 @@ class LeftSidebar3D(QWidget):
         draft.refine_inner = self._refine_inner_cb.isChecked()
         draft.refine_outer = self._refine_outer_cb.isChecked()
         draft.refinement_level = int(self._refine_level_spin.value())
+        draft.temporal_gate_znssd = float(self._gate_spin.value())
+        draft.stereo_znssd_max = float(self._stereo_znssd_spin.value())
+        draft.stereo_epipolar_max_px = float(self._epipolar_spin.value())
         self.controller.state.mark_dirty()
         self._update_search_tooltips()  # winsize feeds the search-cap formulas
         self.signals.params_changed.emit()
@@ -674,17 +627,34 @@ class LeftSidebar3D(QWidget):
     # ---- IMAGES --------------------------------------------------------------------
 
     def _load_camera(self, cam: str, folder: str) -> None:
+        from al_dic_3d.gui.panels.sidebar_images import split_stereo_names
+
         files = list_images(folder, self._natural_sort.isChecked())
         if not files:
-            self.signals.log.emit(f"no images found in {folder}", "warning")
+            self.signals.log.emit(self.tr("No images found in {0}").format(folder), "warning")
             return
+        # H10 (fix batch V): a folder holding BOTH cameras (L_/R_, left/right,
+        # cam0/cam1, DICe _0/_1, ...) contributes only this camera's images;
+        # it used to be loaded whole into each camera.
+        split = split_stereo_names(files)
+        if split is not None:
+            files = split[0] if cam == "L" else split[1]
+            side = self.tr("left camera") if cam == "L" else self.tr("right camera")
+            self.signals.log.emit(
+                self.tr(
+                    "This folder holds both cameras ({0}): using its {1} images for the {2}"
+                ).format(split[2], len(files), side),
+                "info",
+            )
         draft = self.controller.state.draft
         if cam == "L":
             draft.left = files
         else:
             draft.right = files
         self.controller.state.mark_dirty()
-        self.signals.log.emit(f"{cam}: {len(files)} images from {folder}", "info")
+        self.signals.log.emit(
+            self.tr("{0}: {1} images from {2}").format(cam, len(files), folder), "info"
+        )
         self.signals.images_changed.emit()
 
     def refresh_images(self) -> None:
@@ -759,6 +729,9 @@ class LeftSidebar3D(QWidget):
             self._refine_inner_cb,
             self._refine_outer_cb,
             self._refine_level_spin,
+            self._gate_spin,
+            self._stereo_znssd_spin,
+            self._epipolar_spin,
             self._calib_format,
         )
         for w in widgets:
@@ -784,6 +757,9 @@ class LeftSidebar3D(QWidget):
         self._refine_inner_cb.setChecked(draft.refine_inner)
         self._refine_outer_cb.setChecked(draft.refine_outer)
         self._refine_level_spin.setValue(draft.refinement_level)
+        self._gate_spin.setValue(float(draft.temporal_gate_znssd))
+        self._stereo_znssd_spin.setValue(float(draft.stereo_znssd_max))
+        self._epipolar_spin.setValue(float(draft.stereo_epipolar_max_px))
         self._calib_format.setCurrentText(draft.calibration_format)
         for w in widgets:
             w.blockSignals(False)

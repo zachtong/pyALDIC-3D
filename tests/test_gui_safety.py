@@ -294,14 +294,16 @@ def test_left_frame1_view_arms_without_jump_or_log(qapp, images):
 
 def test_minimum_size_fits_1366x768_laptops(qapp):
     win = MainWindow3D()
-    assert (win.minimumWidth(), win.minimumHeight()) == (1100, 700)
+    # Fix batch V (H5): 960x600 also fits 1920x1080 at 150 % (672 px usable).
+    assert (win.minimumWidth(), win.minimumHeight()) == (960, 600)
     win.close()
 
 
 def test_initial_size_clamps_to_available_screen():
     assert initial_window_size(2560, 1440) == (1420, 860)  # big display: preferred
-    assert initial_window_size(1366, 768) == (1326, 700)  # laptop: fits on screen
-    assert initial_window_size(800, 600) == (1100, 700)  # floor = the minimum size
+    assert initial_window_size(1366, 768) == (1326, 688)  # laptop: fits on screen
+    assert initial_window_size(1280, 672) == (1240, 600)  # 1080p at 150 %
+    assert initial_window_size(800, 600) == (960, 600)  # floor = the minimum size
 
 
 def test_three_columns_usable_at_minimum_size(qapp, images):

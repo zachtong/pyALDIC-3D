@@ -484,3 +484,34 @@ def test_file_association_constants_and_command():
     import sys
 
     assert fa.is_supported() == (sys.platform == "win32")
+
+
+def test_frozen_association_runs_the_app_itself(monkeypatch):
+    # Fix batch V (2D 0.8.0 port): a frozen build has no interpreter for -m.
+    from al_dic_3d.gui import file_association as fa
+
+    monkeypatch.setattr(fa.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(fa.sys, "executable", r"C:\Apps\pyALDIC-3D\pyaldic3d.exe")
+    assert fa.open_command() == r'"C:\Apps\pyALDIC-3D\pyaldic3d.exe" "%1"'
+
+
+def test_an_association_to_another_copy_is_not_current(monkeypatch):
+    from al_dic_3d.gui import file_association as fa
+
+    if not fa.is_supported():
+        pytest.skip("Windows registry only")
+    import winreg
+
+    class _Key:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(winreg, "OpenKey", lambda *a, **k: _Key())
+    monkeypatch.setattr(winreg, "QueryValueEx", lambda key, name: (fa.PROGID, 1))
+    monkeypatch.setattr(fa, "_registered_command", lambda: r'"D:\old\pythonw.exe" -m x "%1"')
+    assert not fa.is_associated()
+    monkeypatch.setattr(fa, "_registered_command", fa.open_command)
+    assert fa.is_associated()

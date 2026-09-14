@@ -52,7 +52,7 @@ class CanvasToolsMixin:
         draft.seed_point = None
         self._canvas.set_seed_markers([])
         self.controller.state.mark_dirty()
-        self.signals.log.emit("starting points cleared", "info")
+        self.signals.log.emit(self.tr("Starting points cleared"), "info")
         self.signals.params_changed.emit()
 
     def _is_left_reference_view(self) -> bool:
@@ -88,7 +88,10 @@ class CanvasToolsMixin:
         draft.seed_point = draft.seed_points[0]  # primary stays seed_points[0]
         self.controller.state.mark_dirty()
         n = len(draft.seed_points)
-        self.signals.log.emit(f"starting point {n} placed at ({x:.1f}, {y:.1f})", "info")
+        self.signals.log.emit(
+            self.tr("Starting point {0} placed at ({1}, {2})").format(n, f"{x:.1f}", f"{y:.1f}"),
+            "info",
+        )
         self._sync_seed_marker()
         self.signals.params_changed.emit()
 
@@ -106,7 +109,10 @@ class CanvasToolsMixin:
         draft.seed_point = draft.seed_points[0] if draft.seed_points else None
         self.controller.state.mark_dirty()
         self.signals.log.emit(
-            f"starting point removed at ({removed[0]:.1f}, {removed[1]:.1f})", "info"
+            self.tr("Starting point removed at ({0}, {1})").format(
+                f"{removed[0]:.1f}", f"{removed[1]:.1f}"
+            ),
+            "info",
         )
         self._sync_seed_marker()
         self.signals.params_changed.emit()
@@ -181,7 +187,7 @@ class CanvasToolsMixin:
         from PySide6.QtGui import QGuiApplication
 
         QGuiApplication.clipboard().setPixmap(self._canvas.viewport().grab())
-        self.signals.log.emit("canvas image copied to clipboard", "info")
+        self.signals.log.emit(self.tr("Canvas image copied to the clipboard"), "info")
 
     # ---- empty-state quick-start hint (G3.3) ---------------------------------------
 
@@ -219,7 +225,15 @@ class CanvasToolsMixin:
 
     # ---- per-frame field values (moved here for the 800-line cap) -------------
 
-    def _field_values(self, result, k: int) -> np.ndarray | None:
+    def _field_values(self, result, k: int, *, deformed: bool = False) -> np.ndarray | None:
+        """Frame-k values of the displayed field (mm-native; display scaling later).
+
+        Strain goes through :func:`al_dic_3d.export.display_field_frame` (M2):
+        ``~strain_valid`` (trimmed) nodes are NaN — frame-k validity on the
+        deformed geometry, frame-0 on the reference geometry — exactly like
+        the strain window and every export, so they are neither drawn nor
+        allowed to stretch the auto range.
+        """
         field = self.signals.display_field
         rec = result.reconstruction
         if field in ("U", "V", "W"):
@@ -242,7 +256,9 @@ class CanvasToolsMixin:
                 self._vel_cache[k] = vel
             return vel * float(self.signals.frame_rate)
         if field in STRAIN_LABELS and result.strain is not None:
-            return getattr(result.strain, field)[k]
+            from al_dic_3d.export import display_field_frame
+
+            return display_field_frame(result, field, k, deformed=deformed)
         return None
 
     def _drawn_roi_bool(self) -> np.ndarray | None:

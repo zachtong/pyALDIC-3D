@@ -74,7 +74,7 @@ def test_export_dialog_offscreen(result, tmp_path):
     # Timestamped names (fresh per export, never overwriting) + params always.
     assert len(list(tmp_path.glob("*.npz"))) == 1
     assert len(list(tmp_path.glob("*.mat"))) == 1
-    assert len(list(tmp_path.glob("*_frame000.csv"))) == 1
+    assert len(list(tmp_path.glob("*_csv_*/*_frame_1.csv"))) == 1  # own sub-folder
     params = list(tmp_path.glob("*_parameters_*.json"))
     assert len(params) == 1
     assert '"winsize": 32' in params[0].read_text(encoding="utf-8")

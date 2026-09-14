@@ -15,9 +15,11 @@ spec live.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 from al_dic.gui.theme import COLORS
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QApplication,
@@ -73,6 +75,12 @@ class _ClickableLabel(QLabel):
         super().mouseReleaseEvent(event)
 
 
+class _PreviewRelay(QObject):
+    """Carries a background detection result back to the GUI thread."""
+
+    done = Signal(int, int, object)  # generation, pair index, (det_l, det_r)
+
+
 class CalibrationDialog(QDialog):
     """Image pairs -> board spec -> QC'd stereo solve -> opencv_yaml."""
 
@@ -92,6 +100,13 @@ class CalibrationDialog(QDialog):
         self._preview_idx: int | None = None  # pair shown in the preview strip
         self._preview_dets = None  # (det_l, det_r) behind the shown preview
 
+        # Fix batch V: the live re-detect runs on one background thread (it
+        # used to block the GUI for a full two-image board detection); only the
+        # newest request is shown.
+        self._preview_gen = 0
+        self._preview_pool = None
+        self._preview_relay = _PreviewRelay(self)
+        self._preview_relay.done.connect(self._on_live_preview_done)
         # G3.7c: debounced re-detect of the selected pair on board-spec edits.
         self._preview_timer = QTimer(self)
         self._preview_timer.setSingleShot(True)
@@ -389,8 +404,6 @@ class CalibrationDialog(QDialog):
         self._refresh_table()
 
     def _refresh_table(self) -> None:
-        from pathlib import Path
-
         self._table.clear()
         n = max(len(self._files_l), len(self._files_r))
         for k in range(n):
@@ -545,7 +558,10 @@ class CalibrationDialog(QDialog):
         if self._detections is None:
             return
         path, _ = QFileDialog.getSaveFileName(
-            self, self.tr("Save detections"), "detections.npz", self.tr("NumPy detections (*.npz)")
+            self,
+            self.tr("Save detections"),
+            str(self._default_dir() / "detections.npz"),
+            self.tr("NumPy detections (*.npz)"),
         )
         if not path:
             return
@@ -563,7 +579,10 @@ class CalibrationDialog(QDialog):
 
     def _on_load_detections(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
-            self, self.tr("Load detections"), "", self.tr("NumPy detections (*.npz)")
+            self,
+            self.tr("Load detections"),
+            str(self._default_dir()),
+            self.tr("NumPy detections (*.npz)"),
         )
         if not path:
             return
@@ -640,8 +659,20 @@ class CalibrationDialog(QDialog):
         if self._preview_idx is not None:
             self._preview_timer.start()
 
+    def _default_dir(self) -> Path:
+        """Where file dialogs start: the board images' folder, else the last one.
+
+        Fix batch V: they proposed a bare file name, i.e. the process's working
+        directory (the same fix 2D made in 0.8.0).
+        """
+        from al_dic_3d.gui import persistence
+
+        if self._files_l:
+            return Path(self._files_l[0]).parent
+        return Path(persistence.last_dir("calibration") or Path.home())
+
     def _refresh_live_preview(self) -> None:
-        """Re-detect the SELECTED pair with the current board spec (preview only)."""
+        """Re-detect the SELECTED pair with the current board spec, off the GUI thread."""
         from al_dic_3d.pathsafe import imread_unicode
 
         k = self._preview_idx
@@ -651,17 +682,32 @@ class CalibrationDialog(QDialog):
             spec = self._board_spec()
         except ValueError:
             return  # incomplete spec — keep the last preview
-        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self._preview_gen += 1
+        gen, paths = self._preview_gen, (self._files_l[k], self._files_r[k])
+        if self._preview_pool is None:
+            from concurrent.futures import ThreadPoolExecutor
+
+            self._preview_pool = ThreadPoolExecutor(max_workers=1)
+
+        def job() -> None:
+            try:
+                dets = []
+                for path in paths:
+                    img = imread_unicode(path)
+                    dets.append(detect_board(img, spec) if img is not None else None)
+                self._preview_relay.done.emit(gen, k, tuple(dets))
+            except Exception:  # noqa: BLE001 - a live preview must never break the dialog
+                return
+
+        self._preview_pool.submit(job)
+
+    def _on_live_preview_done(self, gen: int, k: int, dets: object) -> None:
+        if gen != self._preview_gen or k != self._preview_idx:
+            return  # superseded by a newer edit or another selected pair
         try:
-            dets = []
-            for path in (self._files_l[k], self._files_r[k]):
-                img = imread_unicode(path)
-                dets.append(detect_board(img, spec) if img is not None else None)
-            self._render_preview(k, dets_override=tuple(dets))
+            self._render_preview(k, dets_override=dets)
         except Exception:  # noqa: BLE001 - a live preview must never break the dialog
             pass
-        finally:
-            QApplication.restoreOverrideCursor()
 
     # ---- print / verify ----------------------------------------------------------
 
@@ -672,7 +718,10 @@ class CalibrationDialog(QDialog):
             self._set_status(str(exc), warn=True)
             return
         path, _ = QFileDialog.getSaveFileName(
-            self, self.tr("Save board PDF"), "board.pdf", self.tr("PDF (*.pdf)")
+            self,
+            self.tr("Save board PDF"),
+            str(self._default_dir() / "board.pdf"),
+            self.tr("PDF (*.pdf)"),
         )
         if not path:
             return
@@ -699,12 +748,12 @@ class CalibrationDialog(QDialog):
             return
         filt = self.tr("Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)")
         path_l, _ = QFileDialog.getOpenFileName(
-            self, self.tr("Choose LEFT verification image"), "", filt
+            self, self.tr("Choose LEFT verification image"), str(self._default_dir()), filt
         )
         if not path_l:
             return
         path_r, _ = QFileDialog.getOpenFileName(
-            self, self.tr("Choose RIGHT verification image"), "", filt
+            self, self.tr("Choose RIGHT verification image"), str(Path(path_l).parent), filt
         )
         if not path_r:
             return
@@ -734,7 +783,7 @@ class CalibrationDialog(QDialog):
         path, _ = QFileDialog.getSaveFileName(
             self,
             self.tr("Save calibration as"),
-            "calibration.yml",
+            str(self._default_dir() / "calibration.yml"),
             self.tr("OpenCV YAML (*.yml *.yaml *.xml)"),
         )
         if not path:

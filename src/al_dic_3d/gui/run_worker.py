@@ -6,12 +6,15 @@ there for the existing import sites.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QThread, Signal
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
+
+logger = logging.getLogger(__name__)
 
 
 class RunWorker(QThread):
@@ -33,14 +36,16 @@ class RunWorker(QThread):
         self._stop_requested = True
 
     def run(self) -> None:  # QThread entry point (worker thread)
-        import traceback
         import warnings
 
         def _forward(message, category, filename, lineno, file=None, line=None):  # noqa: ARG001
             # Engine run-time warnings (e.g. "Auto-scaled FFT search region:
             # 48 -> 26 (image 200x200)" from run_aldic's search clamp) would
-            # otherwise die on stderr; surface them in the GUI console log.
-            self.log.emit(str(message), "warning")
+            # otherwise die on stderr; surface them in the GUI console log,
+            # the common ones in user terms (fix batch V).
+            from al_dic_3d.gui.warning_text import warning_text
+
+            self.log.emit(warning_text(str(message)), "warning")
 
         try:
             # catch_warnings snapshots + restores the global filter/hook on
@@ -58,7 +63,9 @@ class RunWorker(QThread):
             if self._stop_requested:
                 self.cancelled.emit()
             else:
-                # F3.1: the user gets the exception TYPE + message in the log;
-                # the full traceback goes to stderr for bug reports.
-                traceback.print_exc()
+                # F3.1: the user gets the exception TYPE + message in the GUI
+                # console. H2: the full traceback goes through logging -- the
+                # per-user log file in the frozen build (whose stderr is None,
+                # so traceback.print_exc() lost it) and the terminal otherwise.
+                logger.error("Pipeline run failed", exc_info=True)
                 self.failed.emit(f"{type(exc).__name__}: {exc}")

@@ -12,6 +12,8 @@ Every ``al_dic`` symbol imported here is recorded in ``docs/DEPENDS_ON_2D.md``.
 
 from __future__ import annotations
 
+import re
+import threading
 from collections import OrderedDict
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -24,6 +26,16 @@ from al_dic.mesh.mesh_setup import mesh_setup
 from al_dic.solver.seed_prop_pipeline import build_grid_for_roi
 from numpy.typing import NDArray
 
+from al_dic_3d.matching.gate import _GATE_MAX_WORKERS, _gate_workers, gate_by_znssd  # noqa: F401
+from al_dic_3d.matching.resample import (  # noqa: F401 - re-exported (moved, fix batch V)
+    _RESAMPLE_CACHE,
+    _long_simplices,
+    _ResampleGeometryCache,
+    node_spacing,
+    resample_to_points,
+)
+from al_dic_3d.sequence.lazy import as_binary_mask, binary_mask_sequence
+
 # Raw frames indexed like a list: a real ``list`` of arrays (tests, GUI small
 # runs) or any lazy view exposing ``__len__``/``__getitem__`` (perf batch P1.2).
 FrameSeq = Sequence[NDArray[np.float64]]
@@ -31,6 +43,8 @@ FrameSeq = Sequence[NDArray[np.float64]]
 # Hard error raised when the engine silently zero-filled an all-NaN field —
 # shared with the parallel track-both path, which enforces the same guard from
 # its own thread-safe warning recorder (P3.6).
+_FRAME_RE = re.compile(r"Frame (\d+)/\d+")
+
 ZERO_FILL_ERROR = (
     "2D engine solved NO nodes (all-NaN field silently zero-filled): "
     "the temporal track failed outright — check masks/ROI/texture "
@@ -45,18 +59,25 @@ ZERO_FILL_ERROR = (
 # the band keeps one camera's reported fraction monotonic across both stages.
 _ENGINE_PROGRESS_SHARE = 0.6
 
-# Threads used to evaluate the gate's per-frame ZNSSD point chunks. Bounded
-# (not cpu_count) because the gate may overlap the sibling camera's engine
-# solve on the parallel track-both path, and because the kernel is memory-bound
-# well before it is core-bound. Chunks stay bit-identical at any worker count.
-_GATE_MAX_WORKERS = 4
+# Per-thread zero-fill bookkeeping for tracks that do not capture warnings
+# themselves (the parallel track-both path holds ONE process-wide recorder).
+# The recorder runs in the thread that emitted the warning, so it can pin the
+# warning to that thread's camera and frame (fix batch V: in parallel mode one
+# unsolvable frame used to fail the whole run instead of that frame).
+_ZERO_FILL_LOCAL = threading.local()
 
 
-def _gate_workers() -> int:
-    """Thread count for the gate's ZNSSD chunks — leaves headroom for the OS."""
-    import os
+def note_zero_fill() -> bool:
+    """Record an engine zero-fill for the calling thread's track, if one is running.
 
-    return min(_GATE_MAX_WORKERS, max(1, (os.cpu_count() or 1) - 2))
+    Called by an external warning recorder. Returns True when the warning was
+    attributed (the caller should then drop it), False when the calling thread
+    is not inside a non-capturing :func:`track_engine`.
+    """
+    if not getattr(_ZERO_FILL_LOCAL, "active", False):
+        return False
+    _ZERO_FILL_LOCAL.frames.add(int(_ZERO_FILL_LOCAL.frame))
+    return True
 
 
 class _EngineFrames:
@@ -127,6 +148,12 @@ class TemporalField:
     u_accum: NDArray[np.float64]  # (n_frames, n, 2) [u, v]; [0] == 0
     valid: NDArray[np.bool_]  # (n_frames, n)
     n_gated: NDArray[np.int64] | None = None  # (n_frames,) honesty-gate kills
+    # (n_frames, n) final honesty-gate ZNSSD per verified node (NaN elsewhere);
+    # None when the gate was disabled. Feeds the per-frame correspondence quality.
+    znssd: NDArray[np.float64] | None = None
+    # Frames on which the 2D engine solved NO node and silently zero-filled the
+    # field (fix batch V): invalidated here instead of failing the whole track.
+    zero_filled: tuple[int, ...] = ()
     stopped_early: bool = False  # a cooperative stop cut the track short
     stopped_at_frame: int | None = None  # 0-based first UNTRACKED frame
     stop_reason: str = ""  # engine's reason string (English)
@@ -205,10 +232,20 @@ def temporal_track(
     gate_znssd: float = 1.0,
     progress: Callable[[float, str], None] | None = None,
     capture_warnings: bool = True,
+    verify_partial: bool = True,
 ) -> TemporalField:
     """Track one camera's frames from a fixed reference mesh (accumulative).
 
     Args:
+        verify_partial: what to do when a cooperative stop ended the ENGINE
+            early. ``True`` (default) verifies every frame the engine finished
+            with the honesty gate, ignoring the stop, so the kept partial result
+            is the whole tracked prefix (fix batch V: the gate used to see the
+            already-tripped stop after its first frame and drop every later
+            tracked frame, so a cancel kept one frame at most). ``False`` skips
+            the verification and drops the unverified frames -- for a caller
+            that will discard this track anyway (track-both's left camera when
+            the right camera will not be tracked).
         progress: optional ``(fraction, message)`` callback covering the WHOLE
             track: the engine's own ``progress_fn`` is rescaled into
             ``[0, _ENGINE_PROGRESS_SHARE]`` and the ZNSSD honesty gate reports
@@ -264,6 +301,66 @@ def temporal_track(
         failures, breaking positional alignment — surfaced rather than silently
         misaligned).
     """
+    return finish_track(
+        track_engine(
+            frames,
+            mesh,
+            para,
+            masks=masks,
+            u0=u0,
+            stop=stop,
+            gate_znssd=gate_znssd,
+            progress=progress,
+            capture_warnings=capture_warnings,
+            verify_partial=verify_partial,
+        )
+    )
+
+
+@dataclass
+class EngineTrack:
+    """One camera's engine output awaiting the honesty gate (:func:`finish_track`).
+
+    Fix batch V split :func:`temporal_track` into its engine phase and its
+    verification phase so track-both can verify the left camera while the
+    right camera's engine runs. Arrays are filled in place by the gate.
+    """
+
+    frames: object
+    mask0: NDArray[np.float64]
+    ref_coords: NDArray[np.float64]
+    u_accum: NDArray[np.float64]
+    valid: NDArray[np.bool_]
+    para: DICPara
+    gate_znssd: float
+    stop: Callable[[], bool] | None
+    report: Callable[[float, str], None] | None
+    stopped_early: bool
+    stopped_at: int | None
+    stop_reason: str
+    zero_filled: tuple[int, ...]
+    verify_partial: bool
+
+    @property
+    def n_tracked(self) -> int:
+        """Leading frames the engine tracked (before any verification)."""
+        n = int(self.u_accum.shape[0])
+        return n if self.stopped_at is None else int(self.stopped_at)
+
+
+def track_engine(
+    frames: FrameSeq,
+    mesh: DICMesh,
+    para: DICPara,
+    masks: Sequence[NDArray[np.float64]] | None = None,
+    u0: NDArray[np.float64] | None = None,
+    stop: Callable[[], bool] | None = None,
+    gate_znssd: float = 1.0,
+    progress: Callable[[float, str], None] | None = None,
+    capture_warnings: bool = True,
+    verify_partial: bool = True,
+) -> EngineTrack:
+    """Engine phase of :func:`temporal_track` (everything before the honesty gate)."""
     n_frames = len(frames)
     if n_frames < 2:
         raise ValueError(f"need >=2 frames, got {n_frames}")
@@ -276,21 +373,23 @@ def temporal_track(
         masks = [ones] * n_frames
     if len(masks) != n_frames:
         raise ValueError(f"masks ({len(masks)}) must match frames ({n_frames})")
-    if isinstance(masks, (list, tuple)):
-        # Coerce eager mask lists once (no-copy for contiguous float64 — the
-        # shared-ones and shared-roi_mask paths keep sharing one array). Lazy
-        # mask sequences already serve contiguous float64 and pass through.
-        masks = [np.ascontiguousarray(m, dtype=np.float64) for m in masks]
-    mask0 = np.ascontiguousarray(masks[0], dtype=np.float64)  # engine mutates para
+    masks = binary_mask_sequence(masks)  # {0,1} float64 — see as_binary_mask
+    mask0 = as_binary_mask(masks[0])  # engine mutates para
 
     import contextlib
     import warnings
 
     report = _Ratchet(progress) if progress is not None else None
-    engine_progress = None
-    if report is not None:
+    # The engine's own "Frame k/N" progress messages say which deformed frame is
+    # in flight, so a zero-fill warning can be pinned to its frame (fix batch V).
+    engine_frame = [0]
 
-        def engine_progress(frac: float, msg: str) -> None:
+    def engine_progress(frac: float, msg: str) -> None:
+        m = _FRAME_RE.search(str(msg))
+        if m:
+            engine_frame[0] = int(m.group(1))
+            _ZERO_FILL_LOCAL.frame = engine_frame[0]
+        if report is not None:
             report(_clamp01(frac) * _ENGINE_PROGRESS_SHARE, msg)
 
     try:
@@ -300,12 +399,25 @@ def temporal_track(
         # S3 real-data failure). Promote that warning to a hard error below.
         # ``capture_warnings=False`` (parallel tracks, P3.6): the caller holds
         # ONE thread-safe recorder instead — catch_warnings is process-global.
-        capture = (
-            warnings.catch_warnings(record=True) if capture_warnings else contextlib.nullcontext([])
-        )
-        with capture as caught:
+        caught: list[tuple[int, warnings.WarningMessage]] = []
+        if not capture_warnings:
+            _ZERO_FILL_LOCAL.active = True
+            _ZERO_FILL_LOCAL.frames = set()
+            _ZERO_FILL_LOCAL.frame = 0
+        capture = warnings.catch_warnings() if capture_warnings else contextlib.nullcontext()
+        with capture:
             if capture_warnings:
                 warnings.simplefilter("always")
+
+                def _record(message, category, filename, lineno, file=None, line=None):  # noqa: ARG001
+                    caught.append(
+                        (
+                            engine_frame[0],
+                            warnings.WarningMessage(message, category, filename, lineno),
+                        )
+                    )
+
+                warnings.showwarning = _record
             result = run_aldic(
                 para,
                 # Normalize-on-demand provider (P1.2): the engine otherwise
@@ -327,9 +439,15 @@ def temporal_track(
         if stop is not None and stop():
             raise RuntimeError("cancelled") from None
         raise
-    for w in caught:
+    finally:
+        external = set(getattr(_ZERO_FILL_LOCAL, "frames", ()) or ())
+        _ZERO_FILL_LOCAL.active = False
+        _ZERO_FILL_LOCAL.frames = set()
+    zero_filled: set[int] = set() if capture_warnings else external
+    for frame_k, w in caught:
         if "All nodes are NaN" in str(w.message):
-            raise RuntimeError(ZERO_FILL_ERROR)
+            zero_filled.add(int(frame_k))
+            continue
         warnings.warn_explicit(w.message, w.category, w.filename, w.lineno)
 
     ref_coords = np.asarray(result.dic_mesh.coordinates_fem, dtype=np.float64)
@@ -385,13 +503,65 @@ def temporal_track(
         u_accum[k, :, 1] = vv
         valid[k] = np.isfinite(uu) & np.isfinite(vv)
 
+    # A frame the engine zero-filled carries NO information — invalidate it
+    # (never ship a frozen camera as valid), keep every other frame: each one is
+    # verified independently against frame 0 by the honesty gate below. Only
+    # when NO deformed frame survives is the track a failure.
+    zero_filled_frames = tuple(sorted(k for k in zero_filled if 0 < k < n_frames))
+    for k in zero_filled_frames:
+        u_accum[k] = np.nan
+        valid[k] = False
+    if zero_filled_frames and not valid[1:].any():
+        raise RuntimeError(ZERO_FILL_ERROR)
+
+    return EngineTrack(
+        frames=frames,
+        mask0=mask0,
+        ref_coords=ref_coords,
+        u_accum=u_accum,
+        valid=valid,
+        para=para,
+        gate_znssd=gate_znssd,
+        stop=stop,
+        report=report,
+        stopped_early=stopped_early,
+        stopped_at=stopped_at,
+        stop_reason=stop_reason,
+        zero_filled=zero_filled_frames,
+        verify_partial=verify_partial,
+    )
+
+
+def finish_track(et: EngineTrack) -> TemporalField:
+    """Verification phase of :func:`temporal_track`: honesty gate, then the field."""
+    frames, mask0, ref_coords, para = et.frames, et.mask0, et.ref_coords, et.para
+    u_accum, valid, gate_znssd, stop, report = (
+        et.u_accum,
+        et.valid,
+        et.gate_znssd,
+        et.stop,
+        et.report,
+    )
+    stopped_early, stopped_at, stop_reason = et.stopped_early, et.stopped_at, et.stop_reason
+    zero_filled_frames, verify_partial = et.zero_filled, et.verify_partial
     n_gated = None
-    if gate_znssd > 0:
+    gate_z = None
+    engine_stopped = stopped_early
+    if engine_stopped and gate_znssd > 0 and not verify_partial:
+        # The caller discards this partial track: skip verifying it and drop
+        # the frames rather than ship them unverified.
+        u_accum[1:] = np.nan
+        valid[1:] = False
+        stopped_at = 1
+    elif gate_znssd > 0:
+        gate_z = np.full(u_accum.shape[:2], np.nan, dtype=np.float64)
         gate_progress = None
         if report is not None:
 
             def gate_progress(frac: float, msg: str) -> None:
                 span = 1.0 - _ENGINE_PROGRESS_SHARE
+                if engine_stopped:
+                    msg = f"{msg} (keeping the frames tracked before the stop)"
                 report(_ENGINE_PROGRESS_SHARE + span * _clamp01(frac), msg)
 
         n_gated, gate_stopped_at = _gate_by_znssd(
@@ -403,7 +573,12 @@ def temporal_track(
             para,
             gate_znssd,
             progress=gate_progress,
-            stop=stop,
+            # A stop that already ended the engine has done its job; the frames
+            # it left are the partial result and must all be verified. A stop
+            # that trips DURING verification of a complete run still cuts the
+            # pass short (P4) and drops the unverified frames.
+            stop=None if engine_stopped else stop,
+            znssd_out=gate_z,
         )
         if gate_stopped_at is not None:
             # A cancel cut the verification short. Frames the gate never reached
@@ -414,6 +589,7 @@ def temporal_track(
             stopped_at = gate_stopped_at if stopped_at is None else min(stopped_at, gate_stopped_at)
             u_accum[stopped_at:] = np.nan
             valid[stopped_at:] = False
+            gate_z[stopped_at:] = np.nan
             stopped_early = True
             stop_reason = stop_reason or "Computation cancelled by user."
     if report is not None:
@@ -429,6 +605,8 @@ def temporal_track(
         stopped_early=stopped_early,
         stopped_at_frame=stopped_at,
         stop_reason=stop_reason,
+        znssd=gate_z,
+        zero_filled=zero_filled_frames,
     )
 
 
@@ -471,211 +649,21 @@ def _gate_by_znssd(
     progress: Callable[[float, str], None] | None = None,
     stop: Callable[[], bool] | None = None,
     workers: int | None = None,
+    affine: bool = True,
+    znssd_out: NDArray[np.float64] | None = None,
 ) -> tuple[NDArray[np.int64], int | None]:
-    """Invalidate (in place) tracked nodes whose frame-0 -> frame-k correlation fails.
-
-    Independent verification of the shipped quantity itself: the frame-0 subset
-    at X must still correlate with frame k at X + U^k. Catches BOTH silent
-    failure shapes seen on S3: accumulative sibling-warm-start freeze (IC-GN
-    "converges" with a zero update on a decorrelated pattern) and incremental
-    garbage increments faithfully composed into the cumulative field.
-
-    ``progress`` receives ``(k / n_deformed, "verifying frame k/N")`` per frame
-    (P4) — the caller maps that into the gate's share of the overall band.
-    ``stop`` is polled AFTER each verified frame, so a cancel costs at most one
-    more frame and every frame reported as tracked was genuinely verified;
-    ``workers`` threads the per-frame point chunks (bit-identical, see
-    :func:`al_dic_3d.matching.primitives._znssd`).
-
-    Returns:
-        ``(n_gated, stopped_at)``. ``n_gated`` is the per-frame count of nodes
-        the gate killed (F3.1: gate kills feed the run diagnostics instead of
-        vanishing as anonymous NaN). ``stopped_at`` is the 0-based index of the
-        first frame the gate never verified (``None`` when it verified all of
-        them) — the caller drops those frames rather than shipping them
-        unverified.
-    """
-    from al_dic_3d.matching.primitives import _znssd
-
-    ref = np.ascontiguousarray(frames[0], dtype=np.float64)
-    n = ref_coords.shape[0]
-    zeros_f = np.zeros((n, 4), dtype=np.float64)
-    n_frames = u_accum.shape[0]
-    n_deformed = max(1, n_frames - 1)
-    n_gated = np.zeros(n_frames, dtype=np.int64)
-    threads = _gate_workers() if workers is None else max(1, int(workers))
-    stopped_at: int | None = None
-    for k in range(1, n_frames):
-        pre = valid[k].copy()
-        verified = pre.any()
-        if verified:
-            z = _znssd(
-                ref,
-                np.ascontiguousarray(frames[k], dtype=np.float64),
-                ref_coords,
-                u_accum[k],
-                zeros_f,
-                para.winsize,
-                pre,
-                mask0,
-                workers=threads,
-            )
-            bad = pre & ~(z <= threshold)  # NaN znssd (no support) also fails
-            if bad.any():
-                u_accum[k, bad] = np.nan
-                valid[k, bad] = False
-                n_gated[k] = int(bad.sum())
-        if progress is not None:
-            progress(k / n_deformed, f"verifying frame {k}/{n_deformed}")
-        # Polled AFTER the frame's work: the gate finishes the frame in flight
-        # (mirroring the GUI's "Cancelling — finishing current frame…"), so the
-        # kept prefix is exactly the verified prefix. Frames with no tracked
-        # nodes cost nothing, so they never trigger a truncation of their own.
-        if verified and stop is not None and stop():
-            if k + 1 < n_frames:  # a stop racing the LAST frame lost nothing
-                stopped_at = k + 1
-            break
-    return n_gated, stopped_at
-
-
-class _ResampleGeometryCache:
-    """Bounded, thread-safe cache of resampling geometry (P3.4).
-
-    :func:`resample_to_points` is called once per frame from the strategy
-    assembly loops, but the FINITE source-node set (and therefore the Delaunay
-    triangulation and the nearest-fill KD-tree) rarely changes between frames.
-    Entries are keyed by the exact source-point bytes — the coordinates fully
-    determine both structures — so a hit is always geometrically identical to
-    a rebuild. ``LinearNDInterpolator(tri, values)`` then reuses the cached
-    triangulation with the per-frame values.
-
-    ``delaunay_builds`` / ``kdtree_builds`` count actual constructions
-    (observability + tests). The lock only guards the map; a rare concurrent
-    double-build is idempotent.
-    """
-
-    def __init__(self, capacity: int = 4) -> None:
-        import threading
-
-        self._capacity = max(1, int(capacity))
-        self._lock = threading.Lock()
-        self._entries: OrderedDict[bytes, list] = OrderedDict()  # key -> [tri, tree]
-        self.delaunay_builds = 0
-        self.kdtree_builds = 0
-
-    def _slot(self, key: bytes, idx: int):
-        with self._lock:
-            entry = self._entries.get(key)
-            if entry is not None:
-                self._entries.move_to_end(key)
-                return entry[idx]
-        return None
-
-    def _store(self, key: bytes, idx: int, obj) -> None:
-        with self._lock:
-            entry = self._entries.setdefault(key, [None, None])
-            entry[idx] = obj
-            self._entries.move_to_end(key)
-            while len(self._entries) > self._capacity:
-                self._entries.popitem(last=False)
-
-    def triangulation(self, src: NDArray[np.float64]):
-        """Delaunay of ``src`` — cached by the exact point bytes."""
-        key = src.tobytes()
-        tri = self._slot(key, 0)
-        if tri is None:
-            from scipy.spatial import Delaunay
-
-            tri = Delaunay(src)
-            self.delaunay_builds += 1
-            self._store(key, 0, tri)
-        return tri
-
-    def kdtree(self, src: NDArray[np.float64]):
-        """cKDTree of ``src`` — cached by the exact point bytes (nearest fill)."""
-        key = src.tobytes()
-        tree = self._slot(key, 1)
-        if tree is None:
-            from scipy.spatial import cKDTree
-
-            tree = cKDTree(src)
-            self.kdtree_builds += 1
-            self._store(key, 1, tree)
-        return tree
-
-    def clear(self) -> None:
-        with self._lock:
-            self._entries.clear()
-            self.delaunay_builds = 0
-            self.kdtree_builds = 0
-
-
-#: Module-level cache shared by every strategy's per-frame resampling calls.
-_RESAMPLE_CACHE = _ResampleGeometryCache()
-
-
-def resample_to_points(
-    ref_coords: NDArray[np.float64],
-    values: NDArray[np.float64],
-    query: NDArray[np.float64],
-    *,
-    fill_nearest: bool = True,
-    reuse_geometry: bool = True,
-) -> NDArray[np.float64]:
-    """Interpolate a scattered vector field onto arbitrary query points (NaN-aware).
-
-    Builds a Delaunay-based linear interpolant from the FINITE rows of ``values``
-    (so NaN/invalid nodes never contaminate a neighborhood) and evaluates it at
-    ``query``. Points outside the convex hull are ``NaN`` from the linear pass; if
-    ``fill_nearest`` they are back-filled with the nearest finite node (a mild,
-    clearly-bounded extrapolation for corr points that drift just past the hull).
-
-    Args:
-        ref_coords: ``(n, 2)`` field node coordinates ``[x, y]``.
-        values: ``(n, 2)`` field values ``[u, v]`` (rows may be ``NaN``).
-        query: ``(m, 2)`` points to sample at.
-        fill_nearest: back-fill finite out-of-hull queries from the nearest node.
-        reuse_geometry: serve the Delaunay/KD-tree from the module cache when
-            the finite source-point set repeats across frames (P3.4). The cache
-            key is the exact source bytes, so results are identical either way;
-            disable only to benchmark or to avoid retaining the geometry.
-
-    Returns:
-        ``(m, 2)`` interpolated values; ``NaN`` rows where no estimate exists.
-    """
-    from scipy.interpolate import LinearNDInterpolator, NearestNDInterpolator
-
-    ref = np.asarray(ref_coords, dtype=np.float64).reshape(-1, 2)
-    val = np.asarray(values, dtype=np.float64).reshape(-1, 2)
-    q = np.asarray(query, dtype=np.float64).reshape(-1, 2)
-
-    finite = np.isfinite(val).all(axis=1) & np.isfinite(ref).all(axis=1)
-    out = np.full((q.shape[0], 2), np.nan, dtype=np.float64)
-    if finite.sum() < 3:
-        return out  # Delaunay needs >=3 non-collinear points
-
-    src = np.ascontiguousarray(ref[finite])
-    dst = val[finite]
-    if reuse_geometry:
-        # LinearNDInterpolator(points, ...) builds Delaunay(points) internally;
-        # passing the cached triangulation is the documented equivalent path.
-        lin = LinearNDInterpolator(_RESAMPLE_CACHE.triangulation(src), dst)
-    else:
-        lin = LinearNDInterpolator(src, dst)
-    out[:] = lin(q)
-
-    if fill_nearest:
-        # Only fill FINITE queries that fell outside the hull; a non-finite query
-        # row has no estimate and must stay NaN (documented contract) — never
-        # feed it to the KD-tree (scipy raises on non-finite query points).
-        missing = (~np.isfinite(out).all(axis=1)) & np.isfinite(q).all(axis=1)
-        if missing.any():
-            if reuse_geometry:
-                # NearestNDInterpolator == cKDTree.query + row gather; reuse
-                # the cached tree instead of rebuilding it per frame.
-                _, nearest_idx = _RESAMPLE_CACHE.kdtree(src).query(q[missing])
-                out[missing] = dst[nearest_idx]
-            else:
-                nearest = NearestNDInterpolator(src, dst)
-                out[missing] = nearest(q[missing])
-    return out
+    """Honesty gate for one camera track — see :func:`al_dic_3d.matching.gate.gate_by_znssd`."""
+    return gate_by_znssd(
+        frames,
+        mask0,
+        ref_coords,
+        u_accum,
+        valid,
+        int(para.winsize),
+        threshold,
+        progress=progress,
+        stop=stop,
+        workers=workers,
+        affine=affine,
+        znssd_out=znssd_out,
+    )

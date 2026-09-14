@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import re
+import warnings
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -68,14 +69,19 @@ def _K_matrix_to_intrinsics(
 ) -> CameraIntrinsics:
     """Build ``CameraIntrinsics`` from a standard ``K`` and OpenCV distCoeffs.
 
-    ``dist_ovcv`` is ``[k1, k2, p1, p2, k3(, ...)]``; extra coefficients are dropped.
-    Guards against a transposed ``K`` (principal point in the bottom row).
+    ``dist_ovcv`` is any OpenCV-length vector (4, 5, 8, 12 or 14 terms, order
+    ``[k1, k2, p1, p2, k3, k4, k5, k6, s1, s2, s3, s4, tau_x, tau_y]``); every
+    coefficient is kept — truncating to five terms silently changed calibrations
+    that use the rational / thin-prism / tilt model. Guards against a transposed
+    ``K`` (principal point in the bottom row).
     """
     K = np.asarray(K, np.float64).reshape(3, 3)
     if abs(K[2, 0]) > 1e-6 or abs(K[2, 1]) > 1e-6:  # cx,cy leaked into bottom row
         K = K.T
     d = np.asarray(dist_ovcv, np.float64).ravel()
-    d = np.concatenate([d, np.zeros(5)])[:5]  # pad/truncate to [k1,k2,p1,p2,k3]
+    if d.size > 14:
+        raise ValueError(f"distortion vector has {d.size} terms; OpenCV defines at most 14")
+    d = np.concatenate([d, np.zeros(14)])[:14]
     return CameraIntrinsics(
         fx=float(K[0, 0]),
         fy=float(K[1, 1]),
@@ -89,6 +95,15 @@ def _K_matrix_to_intrinsics(
         k3=float(d[4]),
         width=size[0],
         height=size[1],
+        k4=float(d[5]),
+        k5=float(d[6]),
+        k6=float(d[7]),
+        s1=float(d[8]),
+        s2=float(d[9]),
+        s3=float(d[10]),
+        s4=float(d[11]),
+        tau_x=float(d[12]),
+        tau_y=float(d[13]),
     )
 
 
@@ -99,8 +114,8 @@ def _K_matrix_to_intrinsics(
 
 def _dice_camera_dict(
     cam_list: ET.Element,
-) -> tuple[dict[str, float], NDArray[np.float64] | None, NDArray[np.float64] | None]:
-    scalars: dict[str, float] = {}
+) -> tuple[dict[str, float | str], NDArray[np.float64] | None, NDArray[np.float64] | None]:
+    scalars: dict[str, float | str] = {}
     for p in cam_list.iter("Parameter"):
         name = p.get("name", "")
         if name.startswith("ROW"):
@@ -108,7 +123,8 @@ def _dice_camera_dict(
         try:
             scalars[name] = float(p.get("value", ""))
         except ValueError:
-            pass  # non-numeric (e.g. LENS_DISTORTION_MODEL) — ignore
+            if name in ("LENS_DISTORTION_MODEL", "IMAGE_HEIGHT_WIDTH"):
+                scalars[name] = p.get("value", "").strip()
     R = None
     for sub in cam_list.iter("ParameterList"):
         if sub.get("name") == "rotation_3x3_matrix":
@@ -131,23 +147,65 @@ def _parse_brace_vec(s: str) -> list[float]:
     return [float(x) for x in s.replace("{", "").replace("}", "").split(",") if x.strip()]
 
 
-def _dice_intrinsics(s: dict[str, float]) -> CameraIntrinsics:
-    K = np.array(
-        [
-            [s.get("FX", 0.0), s.get("FS", 0.0), s.get("CX", 0.0)],
-            [0.0, s.get("FY", 0.0), s.get("CY", 0.0)],
-            [0.0, 0.0, 1.0],
-        ]
-    )
-    dist = [
-        s.get("K1", 0.0),
-        s.get("K2", 0.0),
-        s.get("P1", 0.0),
-        s.get("P2", 0.0),
-        s.get("K3", 0.0),
-    ]
-    w, h = None, None
-    return _K_matrix_to_intrinsics(K, np.array(dist), (w, h))
+# DICe LENS_DISTORTION_MODEL values that mean "OpenCV's model" / "no distortion".
+# DICe also defines VIC3D and three radial-only power-series models
+# (K1R1_K2R2_K3R3, K1R2_K2R4_K3R6, K1R3_K2R5_K3R7) whose conventions cannot be
+# mapped onto OpenCV's without ambiguity — importing them as OpenCV terms would
+# silently produce a wrong calibration, so they are refused with a clear message.
+_DICE_OPENCV_MODELS = {"OPENCV_LENS_DISTORTION", "OPENCV_DIS", "OPENCV"}
+_DICE_NO_DISTORTION = {"NONE", "NO_LENS_DISTORTION", "NO_DISTORTION"}
+
+
+def _dice_intrinsics(s: dict[str, float | str], camera: str = "") -> CameraIntrinsics:
+    model = str(s.get("LENS_DISTORTION_MODEL", "OPENCV_LENS_DISTORTION")).upper()
+    if model not in _DICE_OPENCV_MODELS | _DICE_NO_DISTORTION:
+        raise ValueError(
+            f"DICe {camera or 'camera'}: LENS_DISTORTION_MODEL {model!r} is not supported "
+            "(supported: OPENCV_LENS_DISTORTION, NONE). Re-export the calibration with "
+            "OpenCV's distortion model."
+        )
+
+    def g(name: str) -> float:
+        value = s.get(name, 0.0)
+        return float(value) if not isinstance(value, str) else 0.0
+
+    fs = g("FS")
+    if fs != 0.0:
+        # DICe's own template documents FS as "skew (deg)", but its projection uses
+        # it as the K[0, 1] pixel coefficient. We import it as K[0, 1] (pixels);
+        # say so, because a file written with the documented unit would be wrong.
+        warnings.warn(
+            f"DICe {camera or 'camera'}: skew FS={fs:g} imported as the pixel "
+            "coefficient K[0,1]; verify the unit against the calibration source "
+            "(DICe documents FS in degrees).",
+            stacklevel=3,
+        )
+    K = np.array([[g("FX"), fs, g("CX")], [0.0, g("FY"), g("CY")], [0.0, 0.0, 1.0]])
+    if model in _DICE_NO_DISTORTION:
+        dist = np.zeros(5)
+    else:
+        dist = np.array(
+            [
+                g("K1"), g("K2"), g("P1"), g("P2"), g("K3"),
+                g("K4"), g("K5"), g("K6"),
+                g("S1"), g("S2"), g("S3"), g("S4"),
+                g("T1"), g("T2"),
+            ]
+        )  # fmt: skip
+    size = _dice_image_size(s)
+    return _K_matrix_to_intrinsics(K, dist, size)
+
+
+def _dice_image_size(s: dict[str, float | str]) -> tuple[int | None, int | None]:
+    """``(width, height)`` from DICe's ``IMAGE_HEIGHT_WIDTH "{ h, w }"``, if present."""
+    raw = s.get("IMAGE_HEIGHT_WIDTH")
+    if not isinstance(raw, str):
+        return (None, None)
+    try:
+        h, w = _parse_brace_vec(raw)[:2]
+    except ValueError:
+        return (None, None)
+    return (int(w), int(h))
 
 
 def from_dice_xml(path: str | Path) -> StereoRig:
@@ -164,7 +222,7 @@ def from_dice_xml(path: str | Path) -> StereoRig:
     sR, R, T = _dice_camera_dict(cams["CAMERA 1"])
     if R is None or T is None:
         raise ValueError("DICe 'CAMERA 1' is missing rotation_3x3_matrix or TX/TY/TZ")
-    return _rig(_dice_intrinsics(sL), _dice_intrinsics(sR), R, T)
+    return _rig(_dice_intrinsics(sL, "CAMERA 0"), _dice_intrinsics(sR, "CAMERA 1"), R, T)
 
 
 # --------------------------------------------------------------------------- #

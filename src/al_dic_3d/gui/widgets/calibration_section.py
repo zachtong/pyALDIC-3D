@@ -136,8 +136,11 @@ class CalibrationSection3D(QWidget):
         self.signals.calibration_changed.emit()
 
     def _on_calib_format(self, fmt: str) -> None:
-        self.controller.state.draft.calibration_format = fmt
+        draft = self.controller.state.draft
+        draft.calibration_format = fmt
         self.controller.state.mark_dirty()
+        if draft.calibration_file is not None:
+            self.preview()  # re-check the file under the new format (fix batch V)
         self.signals.calibration_changed.emit()
 
     def _on_calib_browse(self) -> None:
@@ -178,4 +181,6 @@ class CalibrationSection3D(QWidget):
             )
         )
         self.status_label.setStyleSheet(f"color: {COLORS.SUCCESS}; font-size: 11px;")
-        self.signals.log.emit(f"calibration loaded: baseline {baseline:.1f} mm", "success")
+        self.signals.log.emit(
+            self.tr("calibration loaded: baseline {0:.1f} mm").format(baseline), "success"
+        )

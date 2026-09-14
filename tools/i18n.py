@@ -45,7 +45,9 @@ def extract() -> int:
     ts_files: list[str] = []
     for loc in TARGET_LOCALES:
         ts_files += ["-ts", str(SRC_DIR / f"al_dic_3d_{loc}.ts")]
-    subprocess.run([lupdate, *_gui_sources(), *ts_files], check=True)
+    # -no-obsolete: a string that left the sources leaves the catalogs too
+    # (lupdate otherwise keeps it as a "vanished" entry forever).
+    subprocess.run([lupdate, "-no-obsolete", *_gui_sources(), *ts_files], check=True)
     print(f"extracted {len(TARGET_LOCALES)} locale catalogs into {SRC_DIR}")
     return 0
 

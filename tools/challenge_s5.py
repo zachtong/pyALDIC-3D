@@ -10,31 +10,78 @@ B) 54-frame INCREMENTAL 3D-DIC (10 static noise-floor frames + 44 loading
    the translation-only ZNSSD check inflates under legitimate 10% strain.
 C) Median exx vs the synchronized load cell (Smp62.csv) — physics check.
 
+Data: the Stereo-DIC Challenge 1.0 distribution. Sample 5 is NOT part of the
+curated examples/ collection (examples/README.md), so it is looked up in its
+original layout under the data root:
+
+    <data root>/StereoDIC_Challenge_1/StereoSample5 - Experimental Tension/
+        Cal12x9-3.5mm/*_0.tif, *_1.tif     calibration board views
+        StereoTensile/*_0.tif, *_1.tif     the 54-frame test
+        Smp62.csv                          synchronized load cell
+
+The data root is --data-root DIR, else $ALDIC3D_DATA_ROOT, else the repo's
+examples/ folder.
+
+Usage: python tools/challenge_s5.py [--data-root DIR]
 Writes reports/challenge/s5.json.
 """
 
 from __future__ import annotations
 
+import argparse
 import glob
 import json
+import os
 import pickle
+import sys
 import time
+from collections.abc import Sequence
 from pathlib import Path
 
 import cv2
 import numpy as np
 
-S5 = Path(
-    r"C:/Users/13014/OneDrive - The University of Texas at Austin/Documents"
-    r"/MATLABCodes/StereoDIC_Challenge_1/StereoSample5 - Experimental Tension"
-)
-OUT = Path(__file__).resolve().parents[1] / "reports" / "challenge"
+REPO = Path(__file__).resolve().parents[1]
+DATA_ROOT_ENV = "ALDIC3D_DATA_ROOT"
+S5_REL = Path("StereoDIC_Challenge_1") / "StereoSample5 - Experimental Tension"
+OUT = REPO / "reports" / "challenge"
 
 # Vendor solution (Sample1CalibrationInfo.xlsx, recon 2026-07-07).
 VENDOR = {"fx0": 12577.405, "fx1": 12584.015, "angle_y_deg": 27.622, "tx_mm": -86.494}
 
 
-def calibrate() -> tuple[Path, dict]:
+def find_dataset(
+    cli_root: str | None, layouts: Sequence[tuple[Path, Sequence[str]]], what: str
+) -> Path:
+    """First ``<root>/<rel>`` holding every listed entry; else exit 2 with a clear message.
+
+    The data root is ``cli_root`` (--data-root), else ``$ALDIC3D_DATA_ROOT``, else
+    the repo's examples/ folder (layout: examples/README.md).
+    """
+    if cli_root:
+        root, origin = Path(cli_root).expanduser(), "--data-root"
+    elif os.environ.get(DATA_ROOT_ENV):
+        root, origin = Path(os.environ[DATA_ROOT_ENV]).expanduser(), DATA_ROOT_ENV
+    else:
+        root, origin = REPO / "examples", "default: the repo's examples/ folder"
+    report = []
+    for rel, entries in layouts:
+        base = root / rel
+        missing = [e for e in entries if not (base / e).exists()]
+        if not missing:
+            return base
+        state = "missing " + ", ".join(missing) if base.is_dir() else "folder does not exist"
+        report.append(f"  {base}  ({state})")
+    print(
+        f"error: {what} not found under the data root {root} ({origin}). Looked for:\n"
+        + "\n".join(report)
+        + f"\nPoint --data-root (or {DATA_ROOT_ENV}) at the folder that holds it.",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
+
+
+def calibrate(s5: Path) -> tuple[Path, dict]:
     from al_dic_3d.calibration.boards import CodedCircleGridSpec
     from al_dic_3d.calibration.detect import detect_board
     from al_dic_3d.calibration.report import to_opencv_yaml
@@ -43,8 +90,8 @@ def calibrate() -> tuple[Path, dict]:
     spec = CodedCircleGridSpec(
         cols=16, rows=13, spacing=3.5, fiducials=((4, 4), (7, 4), (7, 9))
     )
-    lefts = sorted(glob.glob(str(S5 / "Cal12x9-3.5mm" / "*_0.tif")))
-    rights = sorted(glob.glob(str(S5 / "Cal12x9-3.5mm" / "*_1.tif")))
+    lefts = sorted(glob.glob(str(s5 / "Cal12x9-3.5mm" / "*_0.tif")))
+    rights = sorted(glob.glob(str(s5 / "Cal12x9-3.5mm" / "*_1.tif")))
     cache = OUT / "s5_detcache.pkl"
     if cache.exists():
         det_l, det_r = pickle.loads(cache.read_bytes())
@@ -99,14 +146,27 @@ def estimate_disparity(l0: np.ndarray, r0: np.ndarray) -> tuple[float, float]:
     return float(np.median(arr[:, 0])), float(np.median(arr[:, 1]))
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="Challenge 1.0 Sample 5 (experimental tension, system 2) validation."
+    )
+    parser.add_argument(
+        "--data-root", help=f"dataset root (default: ${DATA_ROOT_ENV}, else the repo's examples/)"
+    )
+    args = parser.parse_args(argv)
+    s5 = find_dataset(
+        args.data_root,
+        [(S5_REL, ("Cal12x9-3.5mm", "StereoTensile", "Smp62.csv"))],
+        "Stereo-DIC Challenge 1.0 Sample 5 (experimental tension)",
+    )
+
     from al_dic_3d.runner import RunConfig, run_pipeline
 
     OUT.mkdir(parents=True, exist_ok=True)
-    yaml_path, calib_stats = calibrate()
+    yaml_path, calib_stats = calibrate(s5)
 
-    lefts = sorted(glob.glob(str(S5 / "StereoTensile" / "*_0.tif")))
-    rights = sorted(glob.glob(str(S5 / "StereoTensile" / "*_1.tif")))
+    lefts = sorted(glob.glob(str(s5 / "StereoTensile" / "*_0.tif")))
+    rights = sorted(glob.glob(str(s5 / "StereoTensile" / "*_1.tif")))
     l0 = cv2.imread(lefts[0], 0)
     r0 = cv2.imread(rights[0], 0)
     offset = estimate_disparity(l0, r0)
@@ -143,7 +203,7 @@ def main() -> None:
     # exx per frame vs load (Smp62.csv count == image number).
     frames = [int(Path(f).stem.split("-")[-1].split("_")[0]) for f in lefts]
     loads = {}
-    for line in (S5 / "Smp62.csv").read_text().splitlines()[1:]:
+    for line in (s5 / "Smp62.csv").read_text().splitlines()[1:]:
         parts = line.split(",")
         try:
             loads[int(parts[0])] = float(parts[-1])

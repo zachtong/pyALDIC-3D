@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from al_dic.gui.window_chrome import enable_dark_title_bar
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QGuiApplication, QKeySequence, QShortcut
+from PySide6.QtGui import QGuiApplication, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -23,13 +23,23 @@ from PySide6.QtWidgets import (
 
 from al_dic_3d.gui import persistence
 from al_dic_3d.gui.controller import WorkflowController
+from al_dic_3d.gui.main_menu import MainMenuMixin
 from al_dic_3d.gui.panels.canvas_area import CanvasArea3D
 from al_dic_3d.gui.panels.left_sidebar import LeftSidebar3D
 from al_dic_3d.gui.panels.right_sidebar import RightSidebar3D
 from al_dic_3d.gui.state import GuiSignals
 
-# G1.2: bound on joining a cancelled pipeline worker at window close.
-_WORKER_JOIN_TIMEOUT_MS = 10_000
+# G1.2: bound on joining a cancelled pipeline worker at window close. The
+# stop is honoured at the next frame head, so the wait is the rest of the
+# frame in flight -- seconds, or tens of seconds at 24 Mpx or during the first
+# run's JIT compile. The wait keeps the GUI painting (fix batch V: it used to
+# give up after 10 s and let Qt destroy the still-running QThread).
+_WORKER_JOIN_TIMEOUT_MS = 180_000
+
+# Smallest window (H5, fix batch V): fits 1366x768 laptops and 1920x1080 at
+# 150 % (1280x672 logical px usable); the sidebars scroll below their natural
+# height instead of squeezing their buttons.
+MIN_WINDOW_SIZE = (960, 600)
 
 
 def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
@@ -41,12 +51,12 @@ def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
     size. The margins keep the whole frame, title bar included, on screen.
     """
     return (
-        max(1100, min(1420, avail_width - 40)),
-        max(700, min(860, avail_height - 80)),
+        max(MIN_WINDOW_SIZE[0], min(1420, avail_width - 40)),
+        max(MIN_WINDOW_SIZE[1], min(860, avail_height - 80)),
     )
 
 
-class MainWindow3D(QMainWindow):
+class MainWindow3D(MainMenuMixin, QMainWindow):
     """Left sidebar | canvas | right sidebar."""
 
     def __init__(
@@ -58,9 +68,9 @@ class MainWindow3D(QMainWindow):
         self._strain_window = None  # lazy singleton (Batch C post-processing)
         self._strain_auto_opened = False  # G3.6: auto-open only once per session
         self._update_window_title()  # G2.8: '<project>[*] — pyALDIC-3D' + dirty star
-        # G1.4: 1100x700 minimum fits 1366x768 laptops (sidebars 320+280 still
-        # leave the canvas ~500 px); the initial size is clamped to the screen.
-        self.setMinimumSize(1100, 700)
+        # G1.4 / H5: the minimum fits small laptop screens (sidebars 320+280
+        # leave the canvas ~360 px); the initial size is clamped to the screen.
+        self.setMinimumSize(*MIN_WINDOW_SIZE)
         screen = self.screen() or QGuiApplication.primaryScreen()
         if screen is not None:
             avail = screen.availableGeometry()
@@ -81,6 +91,8 @@ class MainWindow3D(QMainWindow):
 
         self._right = RightSidebar3D(self.controller, self.signals)
         layout.addWidget(self._right, stretch=0)
+        # The 3D export frames the surface the way the 3D view shows it.
+        self._right.set_view3d_camera_provider(self._canvas_area.view3d_camera)
 
         # ROI toolbox <-> canvas drawing tools (2D toolbar idiom): a shape
         # selection arms a one-shot canvas tool; the commit/cancel resets the
@@ -103,6 +115,7 @@ class MainWindow3D(QMainWindow):
         init_w = self._left.init_guess_widget
         init_w.place_seed_toggled.connect(self._on_place_seed_toggled)
         init_w.clear_seed_requested.connect(self._canvas_area.clear_seed)
+        init_w.auto_place_requested.connect(self._on_auto_place_seed)
         self._canvas_area.canvas.drawing_finished.connect(
             lambda: init_w.set_seed_mode_active(False, emit=False)
         )
@@ -127,7 +140,7 @@ class MainWindow3D(QMainWindow):
         self._build_shortcuts()
         # G3.2: the saved geometry (if any) overrides the screen-clamp default.
         persistence.restore_window_state(self, "main_window")
-        self.signals.log.emit("pyALDIC-3D ready", "info")
+        self.signals.log.emit(self.tr("pyALDIC-3D ready"), "info")
 
     # ---- keyboard shortcuts (G2.5) ------------------------------------------------
 
@@ -167,7 +180,9 @@ class MainWindow3D(QMainWindow):
     def _open_strain_window(self) -> None:
         """Show the strain post-processing window; refuse (and log) without results."""
         if not self.controller.state.has_results:
-            self.signals.log.emit("run an analysis first — no results to post-process", "warning")
+            self.signals.log.emit(
+                self.tr("Run an analysis first — there are no results to post-process"), "warning"
+            )
             return
         if self._strain_window is None:
             from al_dic_3d.gui.strain_window import StrainWindow3D
@@ -183,6 +198,14 @@ class MainWindow3D(QMainWindow):
         The 2D auto-open idiom, once per app session: later runs would steal
         focus mid-iteration, so they just log where to find the window.
         """
+        # Fix batch V: switching projects mid-run is disabled (and guarded in the
+        # handlers) — a run's result belongs to the project that started it.
+        running = new_state == "running"
+        for action in (getattr(self, "_new_action", None), getattr(self, "_open_action", None)):
+            if action is not None:
+                action.setEnabled(not running)
+        if getattr(self, "_recent_menu", None) is not None:
+            self._recent_menu.setEnabled(not running)
         if new_state != "done" or not self.controller.state.has_results:
             return
         if not self._strain_auto_opened:
@@ -197,13 +220,13 @@ class MainWindow3D(QMainWindow):
         # G1.2: never let Qt destroy a live pipeline QThread ("QThread:
         # Destroyed while thread is still running") — ask first, then cancel
         # and join under a busy cursor before the window may go.
+        if getattr(self, "_closing", False):
+            event.ignore()  # a second close request while the run is stopping
+            return
         worker = self._right.active_worker()
-        if worker is not None:
-            if not self._confirm_cancel_run():
-                event.ignore()
-                return
-            worker.request_stop()
-            self._join_worker(worker)
+        if worker is not None and not self._confirm_cancel_run():
+            event.ignore()
+            return
         # G3.12: a non-modal export dialog may hold live export workers — close
         # it through its own guard (prompts if an export is still running).
         if not self._right.close_export_dialog():
@@ -213,6 +236,16 @@ class MainWindow3D(QMainWindow):
         if not self._confirm_unsaved():
             event.ignore()
             return
+        # Only now is the close certain (fix batch V, M7): cancelling the
+        # unsaved-changes prompt used to leave the app open with the run
+        # already stopped.
+        if worker is not None:
+            worker.request_stop()
+            self._closing = True
+            try:
+                self._join_worker(worker)
+            finally:
+                self._closing = False
         # Cascade close: the strain window is a parentless top-level we own, so
         # it must close with the main window to keep lifecycle parity. Join its
         # compute worker first so its own closeEvent never re-prompts (G1.2).
@@ -225,10 +258,14 @@ class MainWindow3D(QMainWindow):
 
     @staticmethod
     def _join_worker(worker) -> None:
-        """Wait (bounded) for a stopping worker under a busy cursor (G1.2)."""
+        """Wait for a stopping worker under a busy cursor, GUI still painting (G1.2)."""
+        import time
+
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        deadline = time.monotonic() + _WORKER_JOIN_TIMEOUT_MS / 1000.0
         try:
-            worker.wait(_WORKER_JOIN_TIMEOUT_MS)
+            while not worker.wait(100) and time.monotonic() < deadline:
+                QApplication.processEvents()
         finally:
             QApplication.restoreOverrideCursor()
 
@@ -247,6 +284,34 @@ class MainWindow3D(QMainWindow):
         box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
         box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
         return box.exec() == QMessageBox.StandardButton.Yes
+
+    def _show_error(self, title: str, message: str) -> None:
+        """Modal error box (fix batch V: failures were log-only). Stubbed in tests."""
+        QMessageBox.critical(self, title, message)
+
+    def _confirm_cancel_run_for_switch(self) -> bool:
+        """Yes/No prompt before cancelling a run to switch projects (fix batch V)."""
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(self.tr("Analysis Running"))
+        box.setText(self.tr("An analysis is running — cancel it and switch projects?"))
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.No)
+        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Yes"))
+        box.button(QMessageBox.StandardButton.No).setText(self.tr("No"))
+        return box.exec() == QMessageBox.StandardButton.Yes
+
+    def _stop_run_before_switch(self) -> bool:
+        """True when no run is active, or the user agreed and it was stopped."""
+        worker = self._right.active_worker()
+        if worker is None:
+            return True
+        if not self._confirm_cancel_run_for_switch():
+            return False
+        worker.request_stop()
+        self._join_worker(worker)
+        QApplication.processEvents()  # deliver the worker's cancelled/done slots
+        return self._right.active_worker() is None
 
     def _confirm_unsaved(self) -> bool:
         """True = proceed (clean, saved, or discarded); False = abort (G1.1)."""
@@ -299,7 +364,7 @@ class MainWindow3D(QMainWindow):
     def _on_roi_draw_requested(self, shape: str, mode: str) -> None:
         if not self._canvas_area.canvas.has_image:
             self.signals.log.emit(
-                "load images first before drawing a Region of Interest", "warning"
+                self.tr("Load images first, then draw the region of interest"), "warning"
             )
             self._left.roi_toolbar.deactivate()
             return
@@ -311,7 +376,9 @@ class MainWindow3D(QMainWindow):
             self._canvas_area.cancel_seed_tool()
             return
         if not self._canvas_area.canvas.has_image:
-            self.signals.log.emit("load images first before placing a starting point", "warning")
+            self.signals.log.emit(
+                self.tr("Load images first, then place a starting point"), "warning"
+            )
             self._left.init_guess_widget.set_seed_mode_active(False, emit=False)
             return
         # The seed lives on the LEFT camera, frame 1 — jump there so the click
@@ -321,173 +388,41 @@ class MainWindow3D(QMainWindow):
         self.signals.set_current_frame(0, max(len(draft.left), 1))
         self._canvas_area.start_seed_tool()
 
+    def _on_auto_place_seed(self) -> None:
+        """Place one Starting Point deep inside the ROI (fix batch V, H2)."""
+        from al_dic_3d.matching.seed import central_seed_point
+
+        draft = self.controller.state.draft
+        if draft.seed_points:
+            self.signals.log.emit(
+                self.tr("Starting points are already placed; clear them to auto-place"), "info"
+            )
+            return
+        point = central_seed_point(draft.roi, getattr(draft, "roi_mask_array", None))
+        if point is None:
+            self.signals.log.emit(
+                self.tr("Draw the ROI first: the point is placed inside it"), "warning"
+            )
+            return
+        draft.seed_points = [point]
+        draft.seed_point = point
+        self.controller.state.mark_dirty()
+        self.signals.log.emit(
+            self.tr("Starting point placed automatically at ({0:.0f}, {1:.0f})").format(*point),
+            "info",
+        )
+        self._canvas_area._sync_seed_marker()
+        self.signals.params_changed.emit()
+
     def _on_brush_requested(self, mode: str, radius: int) -> None:
         if not self._canvas_area.canvas.has_image:
-            self.signals.log.emit("load images first before using the brush", "warning")
+            self.signals.log.emit(self.tr("Load images first, then use the brush"), "warning")
             self._left.roi_toolbar.deactivate()
             return
         self._ensure_roi_reference_view()
         self._canvas_area.set_refine_brush(mode, radius)
 
     # ---- menu ----------------------------------------------------------------
-
-    def _build_menu(self) -> None:
-        file_menu = self.menuBar().addMenu(self.tr("&File"))
-
-        new_action = QAction(self.tr("New Project"), self)
-        new_action.setShortcut(QKeySequence.StandardKey.New)
-        new_action.triggered.connect(self._new_project)
-        file_menu.addAction(new_action)
-
-        open_action = QAction(self.tr("Open Project…"), self)
-        open_action.setShortcut(QKeySequence.StandardKey.Open)
-        open_action.triggered.connect(self._open_project)
-        file_menu.addAction(open_action)
-
-        # G3.2: last-8 recent .aldic3d files, rebuilt (and pruned) on show.
-        self._recent_menu = file_menu.addMenu(self.tr("Recent Projects"))
-        self._recent_menu.aboutToShow.connect(self._populate_recent_menu)
-        self._populate_recent_menu()
-
-        # G2.8: Save writes straight to the bound .aldic3d (no dialog); Save As
-        # is the explicit re-target with its own shortcut.
-        save_action = QAction(self.tr("Save Project"), self)
-        save_action.setShortcut(QKeySequence.StandardKey.Save)  # Ctrl+S
-        save_action.triggered.connect(self._save_project)
-        file_menu.addAction(save_action)
-
-        save_as_action = QAction(self.tr("Save Project As…"), self)
-        save_as_action.setShortcut(QKeySequence("Ctrl+Shift+S"))
-        save_as_action.triggered.connect(self._save_project_as)
-        file_menu.addAction(save_as_action)
-
-        # Q6: Windows per-user .aldic3d file association (2D port; HKCU only).
-        from al_dic_3d.gui import file_association
-
-        if file_association.is_supported():
-            file_menu.addSeparator()
-            assoc_action = QAction(self.tr("Associate .aldic3d files with pyALDIC-3D…"), self)
-            assoc_action.setToolTip(
-                self.tr(
-                    "Register .aldic3d so double-clicking a project file opens "
-                    "pyALDIC-3D (current user only, no admin rights needed)."
-                )
-            )
-            assoc_action.triggered.connect(self._on_register_association)
-            file_menu.addAction(assoc_action)
-
-        file_menu.addSeparator()
-        quit_action = QAction(self.tr("Quit"), self)
-        quit_action.setShortcut(QKeySequence.StandardKey.Quit)
-        quit_action.triggered.connect(self.close)
-        file_menu.addAction(quit_action)
-
-        # Settings > Language (8-locale contract; catalogs compile via tools/i18n.py).
-        settings_menu = self.menuBar().addMenu(self.tr("&Settings"))
-        language_menu = settings_menu.addMenu(self.tr("Language"))
-        from al_dic_3d.i18n import LOCALES
-
-        names = {
-            "en": "English",
-            "zh_CN": "简体中文",
-            "zh_TW": "繁體中文",
-            "ja": "日本語",
-            "ko": "한국어",
-            "de": "Deutsch",
-            "fr": "Français",
-            "es": "Español",
-        }
-        from PySide6.QtGui import QActionGroup
-
-        # G3.11: exclusive QActionGroup — radio look, and the check state moves
-        # to the clicked locale immediately (the restart note still applies).
-        self._language_group = QActionGroup(self)
-        self._language_group.setExclusive(True)
-        current = str(persistence.settings().value("language", "en"))
-        for code in LOCALES:
-            act = QAction(names.get(code, code), self)
-            act.setCheckable(True)
-            act.setChecked(code == current)
-            act.triggered.connect(lambda _c=False, code=code: self._on_language(code))
-            self._language_group.addAction(act)
-            language_menu.addAction(act)
-
-        # G3.9: Help menu — About + the G2 keyboard-shortcut reference.
-        help_menu = self.menuBar().addMenu(self.tr("&Help"))
-        shortcuts_action = QAction(self.tr("Keyboard Shortcuts"), self)
-        shortcuts_action.triggered.connect(self._show_shortcuts)
-        help_menu.addAction(shortcuts_action)
-        about_action = QAction(self.tr("About pyALDIC-3D"), self)
-        about_action.triggered.connect(self._show_about)
-        help_menu.addAction(about_action)
-
-    def _on_register_association(self) -> None:
-        """Q6: register the per-user .aldic3d association; report the outcome."""
-        from al_dic_3d.gui import file_association
-
-        try:
-            file_association.register_association()
-        except (OSError, RuntimeError) as exc:
-            QMessageBox.warning(
-                self,
-                self.tr("File Association"),
-                self.tr("Could not register the .aldic3d association: {0}").format(exc),
-            )
-            return
-        QMessageBox.information(
-            self,
-            self.tr("File Association"),
-            self.tr(
-                "Done — double-clicking a .aldic3d file now opens it in "
-                "pyALDIC-3D (registered for the current user)."
-            ),
-        )
-
-    def _on_language(self, code: str) -> None:
-        """Persist the language preference; applied on next launch (2D phase-1 strategy)."""
-        persistence.settings().setValue("language", code)
-        self.signals.log.emit(f"language preference: {code} (applies on restart)", "info")
-
-    def _show_about(self) -> None:
-        from al_dic_3d.gui.dialogs.about_dialog import AboutDialog
-
-        AboutDialog(self).exec()
-
-    def _show_shortcuts(self) -> None:
-        from al_dic_3d.gui.dialogs.about_dialog import ShortcutsDialog
-
-        ShortcutsDialog(self).exec()
-
-    # ---- recent projects (G3.2) --------------------------------------------------
-
-    def _populate_recent_menu(self) -> None:
-        """Rebuild the Recent Projects submenu (missing files pruned on read)."""
-        self._recent_menu.clear()
-        paths = persistence.recent_projects()
-        for i, path in enumerate(paths):
-            act = QAction(f"&{i + 1}  {path}", self)
-            act.triggered.connect(lambda _c=False, p=path: self._open_recent(p))
-            self._recent_menu.addAction(act)
-        if not paths:
-            empty = QAction(self.tr("No recent projects"), self)
-            empty.setEnabled(False)
-            self._recent_menu.addAction(empty)
-        self._recent_menu.addSeparator()
-        clear = QAction(self.tr("Clear list"), self)
-        clear.setEnabled(bool(paths))
-        clear.triggered.connect(persistence.clear_recent_projects)
-        self._recent_menu.addAction(clear)
-
-    def _open_recent(self, path: str) -> None:
-        from pathlib import Path
-
-        if not Path(path).exists():  # deleted since the menu was built
-            persistence.remove_recent_project(path)
-            self.signals.log.emit(f"recent project is gone: {path}", "warning")
-            return
-        if not self._confirm_unsaved():
-            return
-        self._open_project_path(path)
 
     # ---- project lifecycle -------------------------------------------------------
 
@@ -536,15 +471,19 @@ class MainWindow3D(QMainWindow):
         return capture(self.signals, self._canvas_area)
 
     def _new_project(self) -> None:
+        if not self._stop_run_before_switch():
+            return
         if not self._confirm_unsaved():  # G1.1: dirty work is never silently dropped
             return
         self.controller.new_project()  # fresh AppState3D: dirty is False again
         self.signals.set_run_state("idle")
         self._resync_all()
         self._update_window_title()
-        self.signals.log.emit("new project", "info")
+        self.signals.log.emit(self.tr("New project"), "info")
 
     def _open_project(self) -> None:
+        if not self._stop_run_before_switch():
+            return
         if not self._confirm_unsaved():  # G1.1: dirty work is never silently dropped
             return
         path, _ = QFileDialog.getOpenFileName(
@@ -566,7 +505,11 @@ class MainWindow3D(QMainWindow):
 
         ok, out = run_with_progress(self, self.tr("Loading project…"), lambda: load_session(path))
         if not ok:
-            self.signals.log.emit(f"open failed: {out}", "error")
+            self.signals.log.emit(self.tr("Could not open the project: {0}").format(out), "error")
+            self._show_error(
+                self.tr("Open Project"),
+                self.tr("Could not open the project:\n{0}\n\n{1}").format(path, out),
+            )
             return
         # R1.1: relocate moved image sequences BEFORE adopting the state so a
         # cancelled locate-prompt leaves the current project untouched.
@@ -577,7 +520,7 @@ class MainWindow3D(QMainWindow):
         persistence.set_last_dir("project", path)
         self._resync_all()
         self._update_window_title()
-        self.signals.log.emit(f"opened {path}", "success")
+        self.signals.log.emit(self.tr("Opened {0}").format(path), "success")
 
     def _relocate_session_images(self, state, path: str) -> bool:
         """R1.1: auto-relocate moved images (prompting as last resort).
@@ -586,23 +529,69 @@ class MainWindow3D(QMainWindow):
         save persists the corrected paths. False = the user cancelled the
         locate prompt — the caller must abort the open.
         """
-        from al_dic_3d.project.relocate import RelocationCancelled, relocate_draft_images
+        from al_dic_3d.project.relocate import (
+            RelocationCancelled,
+            relocate_calibration,
+            relocate_draft_images,
+        )
 
         try:
             moves = relocate_draft_images(
                 state.draft, path, locate_dir_cb=self._prompt_locate_images
             )
         except RelocationCancelled as exc:
-            self.signals.log.emit(f"open cancelled: {exc}", "warn")
-            return False
+            # Fix batch V (M8): results stay viewable and exportable without
+            # the images, so offer to open anyway instead of refusing outright.
+            if not self._confirm_open_without_images():
+                self.signals.log.emit(self.tr("Open cancelled: {0}").format(exc), "warn")
+                return False
+            moves = relocate_draft_images(state.draft, path, None, allow_missing=True)
         for m in moves:
-            self.signals.log.emit(
-                f"relocated {m.n_files} camera-{m.camera} images: {m.old_dir} -> {m.new_dir}",
-                "info",
-            )
-        if moves:
+            if m.new_dir is None:
+                self.signals.log.emit(
+                    self.tr(
+                        "Camera {0}: {1} image(s) not found (was {2}). Results stay "
+                        "viewable and exportable; running again needs the images."
+                    ).format(m.camera, m.n_files, m.old_dir),
+                    "warn",
+                )
+            else:
+                self.signals.log.emit(
+                    self.tr("Relocated {0} camera-{1} images: {2} -> {3}").format(
+                        m.n_files, m.camera, m.old_dir, m.new_dir
+                    ),
+                    "info",
+                )
+        calib = relocate_calibration(state.draft, path)
+        if calib is not None:
+            self.signals.log.emit(self.tr("Calibration file found at {0}").format(calib), "info")
+        for note in getattr(state, "open_notes", []):
+            prefix = "calibration restored from the project file: "
+            if note.startswith(prefix):
+                note = self.tr(
+                    "The calibration file was not found; using the copy saved in the project: {0}"
+                ).format(note[len(prefix) :])
+            self.signals.log.emit(note, "info")
+        if any(m.new_dir is not None for m in moves) or calib is not None:
             state.mark_dirty()  # the rewritten draft should reach the next save
         return True
+
+    def _confirm_open_without_images(self) -> bool:
+        """Yes/No: open a project whose images cannot be found (stubbed in tests)."""
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle(self.tr("Images Not Found"))
+        box.setText(
+            self.tr(
+                "Some of this project's images cannot be found. Open it anyway? "
+                "Results stay viewable and exportable; running again needs the images."
+            )
+        )
+        box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        box.setDefaultButton(QMessageBox.StandardButton.Yes)
+        box.button(QMessageBox.StandardButton.Yes).setText(self.tr("Open anyway"))
+        box.button(QMessageBox.StandardButton.No).setText(self.tr("Cancel"))
+        return box.exec() == QMessageBox.StandardButton.Yes
 
     def _prompt_locate_images(self, camera: str, old_dir: str, is_retry: bool) -> str | None:
         """Directory picker for images that could not be auto-relocated (R1.1)."""
@@ -726,10 +715,17 @@ class MainWindow3D(QMainWindow):
             lambda: self.controller.save_project(path, include_results=include_results),
         )
         if not ok:
-            self.signals.log.emit(f"save failed: {out}", "error")
+            self.signals.log.emit(self.tr("Could not save the project: {0}").format(out), "error")
+            self._show_error(
+                self.tr("Save Project"),
+                self.tr(
+                    "Could not save the project:\n{0}\n\n{1}\n\n"
+                    "The previous version of the file, if any, is unchanged."
+                ).format(path, out),
+            )
             return False
         persistence.add_recent_project(path)  # G3.2
         persistence.set_last_dir("project", path)
         self._update_window_title()  # clean now; star disappears
-        self.signals.log.emit(f"saved {path}", "success")
+        self.signals.log.emit(self.tr("Saved {0}").format(path), "success")
         return True

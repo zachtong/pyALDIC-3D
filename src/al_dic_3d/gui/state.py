@@ -52,6 +52,10 @@ class GuiSignals(QObject):
         # mm. frame_rate feeds the Q2 velocity field (unit/s).
         self.display_unit: str = "mm"
         self.frame_rate: float = 1.0
+        # Fix batch V (M10): whether the user GAVE a frame rate. Until then the
+        # velocity field is per frame (frame_rate stays 1.0 as the multiplier)
+        # and is labelled "/frame", not "/s" as if 1 fps had been measured.
+        self.frame_rate_known: bool = False
         # Q8 mesh-overlay appearance (persisted through view_state).
         self.mesh_line_color: str = "#ffffff"
         self.mesh_line_width: int = 1

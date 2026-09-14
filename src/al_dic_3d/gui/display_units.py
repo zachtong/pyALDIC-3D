@@ -46,12 +46,16 @@ def field_display_factor(field: str, unit: str) -> float:
     return 1.0  # strain and anything else: dimensionless / untouched
 
 
-def field_label(field: str, unit: str) -> str:
-    """Colorbar / scalar-bar label for ``field`` in the current display unit."""
+def field_label(field: str, unit: str, per_frame: bool = False) -> str:
+    """Colorbar / scalar-bar label for ``field`` in the current display unit.
+
+    ``per_frame`` labels velocity per frame, for when no frame rate was given
+    (fix batch V: it used to read "/s" with a silent 1 fps).
+    """
     if field == "mag":
         return f"|D| ({unit})"
     if field == VELOCITY_FIELD:
-        return f"|V| ({unit}/s)"
+        return f"|V| ({unit}/frame)" if per_frame else f"|V| ({unit}/s)"
     if field in DISPLACEMENT_UNIT_FIELDS:
         return f"{field} ({unit})"
     return STRAIN_LABELS.get(field, field)

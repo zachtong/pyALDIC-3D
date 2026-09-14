@@ -15,6 +15,17 @@ from PySide6.QtCore import QCoreApplication
 
 # The parametric issue: "sequence length mismatch: {n} vs {m}".
 _MISMATCH_RE = re.compile(r"^sequence length mismatch: (\d+) vs (\d+)$")
+# Fix batch V (M8) content checks, see ProjectDraft.validity_issues().
+_CALIB_RE = re.compile(r"^calibration file cannot be read: (.*)$", re.S)
+_UNREADABLE_RE = re.compile(r"^(left|right) image not readable: (.*)$")
+_SIZES_RE = re.compile(r"^(left|right) frame sizes differ: (\S+) vs (\S+)$")
+_MASK_RE = re.compile(r"^ROI mask is (\S+) but the images are (\S+)$")
+
+
+def _camera(cam: str) -> str:
+    if cam == "left":
+        return QCoreApplication.translate("Issues", "left camera")
+    return QCoreApplication.translate("Issues", "right camera")
 
 
 def _table() -> dict[str, str]:
@@ -33,6 +44,9 @@ def _table() -> dict[str, str]:
         "ROI is empty (xmin<xmax, ymin<ymax required)": QCoreApplication.translate(
             "Issues", "ROI is empty (xmin<xmax, ymin<ymax required)"
         ),
+        "left and right sequences use the same image files": QCoreApplication.translate(
+            "Issues", "left and right sequences use the same image files"
+        ),
     }
 
 
@@ -47,6 +61,24 @@ def issue_text(issue: str) -> str:
     m = _MISMATCH_RE.match(issue)
     if m:
         template = QCoreApplication.translate("Issues", "sequence length mismatch: {0} vs {1}")
+        return template.format(m.group(1), m.group(2))
+    m = _CALIB_RE.match(issue)
+    if m:
+        template = QCoreApplication.translate("Issues", "calibration file cannot be read: {0}")
+        return template.format(m.group(1))
+    m = _UNREADABLE_RE.match(issue)
+    if m:
+        template = QCoreApplication.translate("Issues", "{0}: image not readable: {1}")
+        return template.format(_camera(m.group(1)), m.group(2))
+    m = _SIZES_RE.match(issue)
+    if m:
+        template = QCoreApplication.translate("Issues", "{0}: frame sizes differ ({1} vs {2})")
+        return template.format(_camera(m.group(1)), m.group(2), m.group(3))
+    m = _MASK_RE.match(issue)
+    if m:
+        template = QCoreApplication.translate(
+            "Issues", "ROI mask is {0} but the images are {1}: redraw or import it again"
+        )
         return template.format(m.group(1), m.group(2))
     return issue
 

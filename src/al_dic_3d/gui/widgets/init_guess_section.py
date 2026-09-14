@@ -15,7 +15,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from al_dic.gui.theme import COLORS
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -31,6 +31,12 @@ if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
 
 
+class _ReadinessRelay(QObject):
+    """Carries a background region-readiness result back to the GUI thread."""
+
+    done = Signal(int, int, int)  # generation, seeded regions, total regions
+
+
 class InitGuessSection3D(QWidget):
     """Starting Point / FFT / Previous frame radios + the seed placement tools."""
 
@@ -39,6 +45,9 @@ class InitGuessSection3D(QWidget):
     place_seed_toggled = Signal(bool)
     # Emitted when the user clicks "Clear" to drop the seed point.
     clear_seed_requested = Signal()
+    # Emitted by "Auto-place": the main window places one point at the centre of
+    # the ROI (fix batch V, finding H2).
+    auto_place_requested = Signal()
 
     def __init__(
         self,
@@ -50,6 +59,12 @@ class InitGuessSection3D(QWidget):
         self.controller = controller
         self.signals = signals
         self._building = False
+        # Region readiness builds a reference mesh (~0.2 s at 12 Mpx): it runs on
+        # one background thread and only the newest request is shown.
+        self._readiness_gen = 0
+        self._readiness_pool = None
+        self._relay = _ReadinessRelay(self)
+        self._relay.done.connect(self._on_readiness)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 4, 12, 8)
@@ -85,6 +100,15 @@ class InitGuessSection3D(QWidget):
             )
         )
         btn_row.addWidget(self._btn_place, stretch=2)
+        self._btn_auto = QPushButton(self.tr("Auto-place"))
+        self._btn_auto.setToolTip(
+            self.tr(
+                "Place one Starting Point automatically, deep inside the ROI on\n"
+                "the LEFT camera, frame 1. Add more by hand for disconnected\n"
+                "regions or strongly varying motion."
+            )
+        )
+        btn_row.addWidget(self._btn_auto, stretch=1)
         self._btn_clear = QPushButton(self.tr("Clear"))
         self._btn_clear.setToolTip(self.tr("Remove all Starting Points"))
         btn_row.addWidget(self._btn_clear, stretch=1)
@@ -124,6 +148,7 @@ class InitGuessSection3D(QWidget):
         self._rb_prev.toggled.connect(self._apply_mode)
         self._btn_place.toggled.connect(self._on_place_toggled)
         self._btn_clear.clicked.connect(self.clear_seed_requested.emit)
+        self._btn_auto.clicked.connect(self.auto_place_requested.emit)
         self.signals.params_changed.connect(self._refresh_seed_status)
         # Region readiness depends on the ROI mask too (drawing disconnected
         # blobs changes the region count), so refresh on ROI edits as well.
@@ -197,10 +222,53 @@ class InitGuessSection3D(QWidget):
     def _refresh_seed_status(self) -> None:
         draft = self.controller.state.draft
         n = len(draft.seed_points)
+        self._readiness_gen += 1  # any pending background result is now stale
         if n == 0:
-            self._seed_status.setText(self.tr("No points placed — FFT fallback at run"))
+            # Not a silent degrade (fix batch V, finding H2): say what the run
+            # will do instead, in the warning colour rather than muted grey.
+            self._seed_status.setStyleSheet(f"color: {COLORS.WARNING}; font-size: 11px;")
+            self._seed_status.setWordWrap(True)
+            self._seed_status.setText(
+                self.tr(
+                    "No point placed: the run finds the stereo offset from probe "
+                    "patches and seeds frame 1 by FFT. Place a point (or Auto-place) "
+                    "for large first-frame motion."
+                )
+            )
             return
-        seeded, total = self._region_readiness(draft)
+        self._seed_status.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 10px;")
+        self._seed_status.setText(self.tr("{0} point(s) placed").format(n))
+        gen = self._readiness_gen
+        snapshot = {
+            "roi_mask_array": getattr(draft, "roi_mask_array", None),
+            "roi": draft.roi,
+            "seed_points": list(draft.seed_points),
+            "winsize": draft.winsize,
+            "winstepsize": draft.winstepsize,
+            "winsize_min": draft.winsize_min,
+        }
+        if self._readiness_pool is None:
+            from concurrent.futures import ThreadPoolExecutor
+
+            self._readiness_pool = ThreadPoolExecutor(max_workers=1)
+
+        def job() -> None:
+            import types
+
+            try:
+                seeded, total = self._region_readiness(types.SimpleNamespace(**snapshot))
+                self._relay.done.emit(gen, int(seeded), int(total))
+            except Exception:  # noqa: BLE001 - a readout must never break the UI
+                return  # (also: the widget was deleted while the job ran)
+
+        self._readiness_pool.submit(job)
+
+    def _on_readiness(self, gen: int, seeded: int, total: int) -> None:
+        if gen != self._readiness_gen:
+            return  # superseded by a newer edit
+        n = len(self.controller.state.draft.seed_points)
+        if n == 0:
+            return
         if total <= 0:
             self._seed_status.setText(self.tr("{0} point(s) placed").format(n))
         elif seeded >= total:

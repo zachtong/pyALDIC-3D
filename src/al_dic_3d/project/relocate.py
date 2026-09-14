@@ -52,11 +52,15 @@ class RelocationCancelled(Exception):
 
 @dataclass(frozen=True)
 class CameraRelocation:
-    """One relocated sequence, for the caller's log line."""
+    """One relocated sequence, for the caller's log line.
+
+    ``new_dir`` is ``None`` when the sequence could not be located and the
+    caller asked to open the project anyway (``allow_missing``).
+    """
 
     camera: str  # "L" or "R"
     old_dir: str
-    new_dir: str
+    new_dir: str | None
     n_files: int
 
 
@@ -146,10 +150,40 @@ def _relocate_sequence(
     raise RelocationCancelled(f"images for camera {camera} not located (was {old_dir})")
 
 
+def relocate_calibration(draft: ProjectDraft, session_path: str | Path) -> Path | None:
+    """Find a moved calibration file by name (fix batch V); its new path, or None.
+
+    Looked for next to the session file, in a ``calibration`` folder beside it,
+    and next to (or one level above) the relocated image folders. Rewrites
+    ``draft.calibration_file`` in place when found.
+    """
+    calib = draft.calibration_file
+    if calib is None or Path(calib).is_file():
+        return None
+    name = Path(calib).name
+    session_dir = Path(session_path).parent
+    dirs = [session_dir, session_dir / "calibration"]
+    for seq in (draft.left, draft.right):
+        if seq:
+            image_dir = Path(seq[0]).parent
+            dirs += [image_dir, image_dir.parent]
+    for d in dirs:
+        cand = d / name
+        try:
+            if cand.is_file():
+                draft.calibration_file = cand
+                return cand
+        except OSError:
+            continue
+    return None
+
+
 def relocate_draft_images(
     draft: ProjectDraft,
     session_path: str | Path,
     locate_dir_cb: LocateDirCb | None = None,
+    *,
+    allow_missing: bool = False,
 ) -> list[CameraRelocation]:
     """Relocate ``draft.left`` / ``draft.right`` (in place) if their files moved.
 
@@ -166,13 +200,29 @@ def relocate_draft_images(
 
     Raises:
         RelocationCancelled: a sequence could not be located; the caller
-            should abort the open and log the exception message.
+            should abort the open and log the exception message. With
+            ``allow_missing`` the sequence keeps its stored paths instead and
+            is reported with ``new_dir=None`` (fix batch V: one missing frame
+            used to make the results impossible to open, view or export).
     """
     session_dir = Path(session_path).parent
     moves: list[CameraRelocation] = []
     for camera, attr in (("L", "left"), ("R", "right")):
         paths = list(getattr(draft, attr))
-        new_paths = _relocate_sequence(camera, paths, session_dir, locate_dir_cb)
+        try:
+            new_paths = _relocate_sequence(camera, paths, session_dir, locate_dir_cb)
+        except RelocationCancelled:
+            if not allow_missing:
+                raise
+            moves.append(
+                CameraRelocation(
+                    camera=camera,
+                    old_dir=str(Path(paths[0]).parent),
+                    new_dir=None,
+                    n_files=sum(not Path(p).exists() for p in paths),
+                )
+            )
+            continue
         if new_paths is None:
             continue
         setattr(draft, attr, new_paths)

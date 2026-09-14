@@ -147,10 +147,12 @@ class ManualParamsDialog(QDialog):
             self._preview.setText(self.tr("Baseline is zero — enter the translation T first."))
             self._preview.setStyleSheet(f"color: {COLORS.WARNING}; font-size: 11px;")
             return
+        from al_dic_3d.gui import persistence
+
         path, _ = QFileDialog.getSaveFileName(
             self,
             self.tr("Save calibration as"),
-            "calibration.yml",
+            persistence.suggested_save_path("calibration.yml", "calibration"),
             self.tr("OpenCV YAML (*.yml *.yaml *.xml)"),
         )
         if not path:

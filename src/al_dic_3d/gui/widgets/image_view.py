@@ -114,6 +114,40 @@ def gray_to_qpixmap(arr: np.ndarray) -> QPixmap:
     return QPixmap.fromImage(gray_to_qimage(arr))
 
 
+def decode_gray_qimage(path) -> QImage:
+    """File -> min/max-normalized 8-bit grayscale ``QImage`` (thread-safe).
+
+    Pixel-identical to ``gray_to_qimage(load_gray_image(path))`` but ~7x
+    faster at 12 Mpx (V-view): 8/16-bit images are normalized through a
+    lookup table built with the SAME float64 formula per gray level, instead
+    of converting the whole frame to float64 (four 96 MB temporaries). Other
+    dtypes (float / signed) take the float path.
+    """
+    import cv2
+
+    from al_dic_3d.pathsafe import imread_unicode
+
+    img = imread_unicode(path)
+    if img is None:
+        raise ValueError(f"cannot read image: {path}")
+    if img.ndim == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.shape[2] == 3 else img[..., 0]
+    if img.dtype not in (np.uint8, np.uint16):
+        return gray_to_qimage(img.astype(np.float64))
+    lo, hi = int(img.min()), int(img.max())
+    if hi > lo:
+        levels = np.arange(hi + 1, dtype=np.float64)
+        lut = np.clip((levels - float(lo)) / (float(hi) - float(lo)) * 255.0, 0, 255).astype(
+            np.uint8
+        )
+        buf = np.ascontiguousarray(lut[img])
+    else:
+        buf = np.zeros(img.shape, dtype=np.uint8)
+    h, w = buf.shape
+    image = QImage(buf.data, w, h, w, QImage.Format.Format_Grayscale8)
+    return image.copy()  # deep copy: the QImage owns its pixels past `buf`
+
+
 class ImageCanvas3D(BrushToolMixin, QGraphicsView):
     """Layered, zoomable canvas: image + overlays + ROI toolbox drawing tools."""
 
@@ -191,13 +225,23 @@ class ImageCanvas3D(BrushToolMixin, QGraphicsView):
     def has_image(self) -> bool:
         return not self._bg_item.pixmap().isNull()
 
-    def set_image_file(self, path) -> None:
-        """Load + show an image file; a no-op if the same path is already shown."""
+    def set_image_file(self, path) -> QImage | None:
+        """Load + show an image file; a no-op if the same path is already shown.
+
+        Returns the decoded grayscale ``QImage`` (so callers can hand it to the
+        frame prefetcher without a re-decode), or None on the no-op path.
+        """
         key = str(path)
         if key == self._loaded_path:
-            return
+            return None
+        image = decode_gray_qimage(path)  # raises before any state changes
         self._loaded_path = key
-        self.set_image_gray(load_gray_image(path))
+        self._set_background(QPixmap.fromImage(image))
+        return image
+
+    def shown_path(self) -> str | None:
+        """Path of the background frame currently on screen (None = none/raw)."""
+        return self._loaded_path
 
     def set_image_pixmap(self, path, pixmap: QPixmap) -> None:
         """Show a pre-decoded frame (the prefetcher hot path, P2.2).
@@ -289,13 +333,18 @@ class ImageCanvas3D(BrushToolMixin, QGraphicsView):
         the common case); the ``QImage.copy()`` is still required so the
         pixmap owns its pixels independently of the buffer's next reuse.
         """
-        m = np.asarray(mask) > 0
+        m = np.asarray(mask)
+        if m.dtype != np.bool_:
+            m = m > 0
         h, w = m.shape
         if self._roi_rgba_buf is None or self._roi_rgba_buf.shape[:2] != (h, w):
             self._roi_rgba_buf = np.zeros((h, w, 4), dtype=np.uint8)
         buf = self._roi_rgba_buf
-        buf[:] = 0
-        buf[m, :] = rgba
+        # V-view: one vectorised pass instead of a per-pixel masked RGBA
+        # assignment (~150 ms at 12 Mpx): the 4 colour bytes packed in memory
+        # order (endian-safe) times the 0/1 mask, into the buffer's uint32 view.
+        color = np.asarray(rgba, dtype=np.uint8).view(np.uint32)[0]
+        np.multiply(m.view(np.uint8), color, out=buf.view(np.uint32).reshape(h, w))
         img = QImage(buf.data, w, h, 4 * w, QImage.Format.Format_RGBA8888)
         return QPixmap.fromImage(img.copy())  # deep copy: pixmap owns the pixels
 
@@ -710,8 +759,7 @@ class ImageCanvas3D(BrushToolMixin, QGraphicsView):
         max_r = 5.0 * math.hypot(sr.width(), sr.height())
         if res is None or not (0 < res[2] <= max_r):
             self.notice.emit(
-                "the three points are nearly collinear — pick points spread "
-                "around the circle's edge",
+                self.tr("The three points are nearly in a line — spread them around the edge"),
                 "warning",
             )
             self._cancel_drawing(emit=True)

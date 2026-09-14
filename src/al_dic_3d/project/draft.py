@@ -112,6 +112,11 @@ class ProjectDraft:
     admm_max_iter: int = 3
     fft_search: int = 20  # temporal FFT integer-search half-width (px)
     fft_auto_expand: bool = True  # Q8: expand FFT search on boundary-clipped peaks
+    # Fix batch V: result-quality thresholds exposed in the GUI's ADVANCED
+    # section (they were TOML-only). Defaults match RunConfig.
+    temporal_gate_znssd: float = 1.0  # honesty gate; <= 0 disables
+    stereo_znssd_max: float = 0.6  # stereo-link correlation ceiling
+    stereo_epipolar_max_px: float = 2.0  # stereo-link epipolar ceiling (px)
     # P3.6 opt-in: run the two temporal tracks concurrently (track_both).
     # Deliberately NOT in _RESULT_FIELDS — results are identical either way,
     # so toggling it must not raise the 'parameters changed' staleness hint.
@@ -155,6 +160,9 @@ class ProjectDraft:
         "admm_max_iter",
         "fft_search",
         "fft_auto_expand",
+        "temporal_gate_znssd",
+        "stereo_znssd_max",
+        "stereo_epipolar_max_px",
         "refine_inner",
         "refine_outer",
         "refinement_level",
@@ -202,6 +210,55 @@ class ProjectDraft:
         elif not (self.roi[0] < self.roi[1] and self.roi[2] < self.roi[3]):
             problems.append("ROI is empty (xmin<xmax, ymin<ymax required)")
         return problems
+
+    def validity_issues(self) -> list[str]:
+        """Problems with the inputs' CONTENT, as English codes (fix batch V, M8).
+
+        :meth:`issues` checks that every input is SET; this checks that the
+        inputs are usable: the calibration loads, the two cameras are not the
+        same image files, each camera's first and last frames have one size,
+        and a drawn ROI mask matches the images. Header reads and the parsed
+        calibration are cached by path, size and modification time
+        (:mod:`al_dic_3d.project.image_info`), so this runs on every readiness
+        refresh without slowing the interface.
+        """
+        import numpy as np
+
+        from al_dic_3d.project.image_info import calibration_problem, image_size
+
+        problems: list[str] = []
+        if self.calibration_file is not None:
+            why = calibration_problem(self.calibration_file, self.calibration_format)
+            if why:
+                problems.append(f"calibration file cannot be read: {why}")
+        if self.left and self.right and set(map(str, self.left)) & set(map(str, self.right)):
+            problems.append("left and right sequences use the same image files")
+        sizes: dict[str, tuple[int, int]] = {}
+        for cam, files in (("left", self.left), ("right", self.right)):
+            if not files:
+                continue
+            first = image_size(files[0])
+            if first is None:
+                problems.append(f"{cam} image not readable: {Path(str(files[0])).name}")
+                continue
+            sizes[cam] = first
+            last = image_size(files[-1]) if len(files) > 1 else first
+            if last is None:
+                problems.append(f"{cam} image not readable: {Path(str(files[-1])).name}")
+            elif last != first:
+                problems.append(
+                    f"{cam} frame sizes differ: {first[0]}x{first[1]} vs {last[0]}x{last[1]}"
+                )
+        if self.roi_mask_array is not None and "left" in sizes:
+            h, w = np.asarray(self.roi_mask_array).shape[:2]
+            iw, ih = sizes["left"]
+            if (w, h) != (iw, ih):
+                problems.append(f"ROI mask is {w}x{h} but the images are {iw}x{ih}")
+        return problems
+
+    def readiness_issues(self) -> list[str]:
+        """:meth:`issues`, then :meth:`validity_issues` -- what the GUI's Run gates on."""
+        return self.issues() + self.validity_issues()
 
     def is_ready(self) -> bool:
         return not self.issues()
@@ -280,6 +337,9 @@ class ProjectDraft:
             admm_max_iter=self.admm_max_iter,
             fft_search=self.fft_search,
             fft_auto_expand=self.fft_auto_expand,
+            temporal_gate_znssd=float(self.temporal_gate_znssd),
+            stereo_znssd_max=float(self.stereo_znssd_max),
+            stereo_epipolar_max_px=float(self.stereo_epipolar_max_px),
             parallel_cameras=self.parallel_cameras,
             refine_inner=self.refine_inner,
             refine_outer=self.refine_outer,

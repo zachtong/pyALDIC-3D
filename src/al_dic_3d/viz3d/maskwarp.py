@@ -14,6 +14,17 @@ upsampled with ``cv2.resize``, then one full-resolution ``cv2.remap`` (nearest)
 of the boolean mask. Pixels outside the correspondence hull have no mapping
 (NaN) and become False — the warped support is naturally clipped to the tracked
 region, mirroring the F1.5 edge-capped fallback's behavior at the rim.
+
+Rim erosion (fix batch V, low): in the legacy mode the NaN coarse samples
+outside the hull are pushed off-image BEFORE the bilinear upsampling, so every
+fine pixel within one coarse step of the hull boundary blends in an off-image
+coordinate and turns False — the support loses up to ``grid_step`` px at the
+rim, and on a real rig ~12 % of the right nodes (the boundary ones) fell
+outside it, dropping them from the right camera's auto colour range.
+``fill_to_hull=True`` fills those samples with their nearest valid neighbour
+before upsampling and clips to the exact hull instead. The display paths use it
+through :func:`right_camera_mask`; the compute default is unchanged so the
+track-both crack-barrier derivation stays byte-identical.
 """
 
 from __future__ import annotations
@@ -25,6 +36,28 @@ from numpy.typing import NDArray
 _GRID_STEP = 8
 
 
+def _fill_nan_nearest(a: NDArray[np.float64], invalid: NDArray[np.bool_]) -> NDArray[np.float64]:
+    """Replace ``invalid`` samples of a 2D array by their nearest valid sample."""
+    if not invalid.any():
+        return a
+    from scipy.ndimage import distance_transform_edt
+
+    idx = distance_transform_edt(invalid, return_distances=False, return_indices=True)
+    return a[tuple(idx)]
+
+
+def _hull_mask(pts: NDArray[np.float64], out_shape: tuple[int, int]) -> NDArray[np.bool_]:
+    """Convex hull of *pts* rasterized at full resolution (boundary included)."""
+    import cv2
+
+    h, w = int(out_shape[0]), int(out_shape[1])
+    hull = cv2.convexHull(np.round(pts).astype(np.int32))
+    mask = np.zeros((h, w), np.uint8)
+    cv2.fillConvexPoly(mask, hull, 1)
+    cv2.polylines(mask, [hull], True, 1, thickness=2)  # rounding never trims the rim
+    return mask.astype(bool)
+
+
 def warp_mask_left_to_right(
     mask_left: NDArray[np.bool_],
     xl0: NDArray[np.float64],
@@ -32,6 +65,7 @@ def warp_mask_left_to_right(
     out_shape: tuple[int, int],
     *,
     grid_step: int = _GRID_STEP,
+    fill_to_hull: bool = False,
 ) -> NDArray[np.bool_] | None:
     """Warp a left-frame-1 boolean mask into right-frame-1 pixel space.
 
@@ -41,6 +75,9 @@ def warp_mask_left_to_right(
             (rows may be NaN for invalid correspondences).
         out_shape: ``(H, W)`` of the right image.
         grid_step: coarse-grid spacing for the scattered interpolation.
+        fill_to_hull: keep the support up to the exact correspondence hull
+            instead of losing up to ``grid_step`` px at the rim (see the module
+            docstring). Default False = the legacy compute behaviour.
 
     Returns:
         ``(H, W)`` boolean right mask, or ``None`` when the correspondence is
@@ -82,10 +119,17 @@ def warp_mask_left_to_right(
     if not np.isfinite(dx).any():
         return None
 
-    # Left source coordinates per coarse right pixel; NaN (outside the hull)
-    # becomes an out-of-image coordinate so remap's border fills False.
-    src_x = np.nan_to_num(gxx + dx, nan=-1e4).astype(np.float32)
-    src_y = np.nan_to_num(gyy + dy, nan=-1e4).astype(np.float32)
+    if fill_to_hull:
+        # Nearest-valid fill keeps the bilinear upsampling finite right up to
+        # the hull; the exact hull below then decides the support boundary.
+        invalid = ~(np.isfinite(dx) & np.isfinite(dy))
+        src_x = (gxx + _fill_nan_nearest(dx, invalid)).astype(np.float32)
+        src_y = (gyy + _fill_nan_nearest(dy, invalid)).astype(np.float32)
+    else:
+        # Left source coordinates per coarse right pixel; NaN (outside the hull)
+        # becomes an out-of-image coordinate so remap's border fills False.
+        src_x = np.nan_to_num(gxx + dx, nan=-1e4).astype(np.float32)
+        src_y = np.nan_to_num(gyy + dy, nan=-1e4).astype(np.float32)
     map_x = cv2.resize(src_x, (w, h), interpolation=cv2.INTER_LINEAR)
     map_y = cv2.resize(src_y, (w, h), interpolation=cv2.INTER_LINEAR)
 
@@ -96,5 +140,29 @@ def warp_mask_left_to_right(
         interpolation=cv2.INTER_NEAREST,
         borderMode=cv2.BORDER_CONSTANT,
         borderValue=0,
-    )
-    return warped.astype(bool)
+    ).astype(bool)
+    if fill_to_hull:
+        warped &= _hull_mask(xr[finite], (h, w))
+    return warped
+
+
+def right_camera_mask(
+    mask_left: NDArray[np.bool_] | None,
+    xl0: NDArray[np.float64],
+    xr0: NDArray[np.float64],
+    out_shape: tuple[int, int],
+) -> NDArray[np.bool_] | None:
+    """The drawn LEFT ROI as the RIGHT camera's display support (never raises).
+
+    The one helper every right-camera DISPLAY path should call — canvas,
+    image / animation export and the export Preview — so they all show the same
+    support. Uses the rim-preserving warp (``fill_to_hull=True``). Returns None
+    (callers fall back to the valid-node hull support) when there is no mask,
+    the correspondence is degenerate, or the warp fails.
+    """
+    if mask_left is None:
+        return None
+    try:
+        return warp_mask_left_to_right(mask_left, xl0, xr0, out_shape, fill_to_hull=True)
+    except Exception:  # noqa: BLE001 - display support only; the caller falls back
+        return None

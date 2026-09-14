@@ -6,22 +6,40 @@ winsize=32, winstepsize=32, INCREMENTAL mode, per-frame masks) with OUR
 pipeline, then compares the 3D reconstruction against the stored MATLAB
 baseline (``tests/baseline/baseline.mat``, v7.3).
 
-Data is consumed READ-ONLY in place: the right camera + masks + calibration
-live in the 3D-Stereo-ALDIC repo; the left images (missing there) were located
-in the sibling ``3D_ALDIC_unused`` copy (right frames byte-identical).
+Data is consumed READ-ONLY in place. The baseline, the right camera, the masks
+and the calibration live in the MATLAB reference repo (the documented sibling
+``../3D-Stereo-ALDIC``). The left frames are not in its working tree; they are
+read from the D-specimen dataset under the data root (--data-root DIR, else
+$ALDIC3D_DATA_ROOT, else the repo's examples/ folder), first layout that has
+them wins:
+
+    example2_Ch1.0_S3_D_specimen_tensile/images/left/          curated examples/
+    StereoDIC_Challenge_1/StereoSample3_D_Specimen_Experimental/Images_All/
+
+Each left frame is checked against the SHA-256 of the copy the baseline was
+produced from, so a different D-specimen copy fails loudly instead of
+producing a wrong gate.
 
 Comparison: both meshes sample the same physical surface, so fields are
 compared as functions of the frame-1 world (X, Y): the MATLAB per-frame
 U/V/W and Z are interpolated (Delaunay-linear) at OUR frame-1 (X, Y) and
-differenced on the common support. Run:  python tools/matlab_parity.py
+differenced on the common support.
+
+Run:  python tools/matlab_parity.py [--data-root DIR]
+      (PARITY_MODE=accumulative|incremental, PARITY_GLOBAL=0|1 as before)
+Exit: 0 gates passed, 1 a gate failed, 2 input data missing.
 """
 
 from __future__ import annotations
 
+import argparse
+import hashlib
 import os
+import shutil
 import sys
 import time
 from pathlib import Path
+from typing import NoReturn
 
 import numpy as np
 
@@ -29,8 +47,8 @@ REPO = Path(__file__).resolve().parents[1]
 CODES = REPO.parent
 ML = CODES / "3D-Stereo-ALDIC"
 S3 = ML / "examples" / "Stereo_DIC_Challenge_1.0_S3"
-LEFT_IMGS = CODES / "3D_ALDIC_unused" / "Examples" / "Image_Stereo_Sample3"
 BASELINE = ML / "tests" / "baseline" / "baseline.mat"
+DATA_ROOT_ENV = "ALDIC3D_DATA_ROOT"
 
 # The three parity frames are named 0000/0001/0002 but are NOT consecutive:
 # verified by checksum against the full 34-frame D-specimen sequence in
@@ -40,7 +58,89 @@ BASELINE = ML / "tests" / "baseline" / "baseline.mat"
 # accordingly, and do not treat this as a small-increment test.
 PARITY_SOURCE_FRAMES = (0, 7, 14)
 
+# Where the D-specimen left frames sit under the data root: the curated
+# examples/ layout first, then the original Challenge 1.0 distribution.
+LEFT_LAYOUTS = (
+    Path("example2_Ch1.0_S3_D_specimen_tensile") / "images" / "left",
+    Path("StereoDIC_Challenge_1") / "StereoSample3_D_Specimen_Experimental" / "Images_All",
+)
+
+# SHA-256 of the left frames the MATLAB baseline was produced from (the former
+# 3D_ALDIC_unused L/0000..0002_0.tif), keyed by source frame. Both layouts
+# above hold byte-identical copies (verified 2026-09-13).
+PARITY_LEFT_SHA256 = {
+    0: "c541a096b7f587f45e70ab0076aa9f4bffd1e2d12c2db6c3f0b224263b37f75f",
+    7: "13b190da8512fdff476aad48471370464a861514c51f7df0491a62077b85f6fd",
+    14: "f31649384410d1eed98dbbb0e7d1e5da390e9dac027881829b99b46364bd81c3",
+}
+
 sys.path.insert(0, str(REPO / "src"))
+
+
+def _data_error(message: str) -> NoReturn:
+    print(f"error: {message}", file=sys.stderr)
+    raise SystemExit(2)
+
+
+def resolve_data_root(cli_root: str | None = None) -> tuple[Path, str]:
+    """``--data-root`` wins over ``$ALDIC3D_DATA_ROOT``, which wins over examples/."""
+    if cli_root:
+        return Path(cli_root).expanduser(), "--data-root"
+    if os.environ.get(DATA_ROOT_ENV):
+        return Path(os.environ[DATA_ROOT_ENV]).expanduser(), DATA_ROOT_ENV
+    return REPO / "examples", "default: the repo's examples/ folder"
+
+
+def left_frame_paths(cli_root: str | None = None) -> list[Path]:
+    """The three LEFT parity frames (source frames 0, 7, 14), checksum-verified.
+
+    Exits with status 2 and a clear message when they are missing or differ
+    from the frames the MATLAB baseline was produced from.
+    """
+    root, origin = resolve_data_root(cli_root)
+    names = [f"{k:04d}_0.tif" for k in PARITY_SOURCE_FRAMES]
+    looked = []
+    for rel in LEFT_LAYOUTS:
+        folder = root / rel
+        paths = [folder / name for name in names]
+        missing = [p.name for p in paths if not p.is_file()]
+        if missing:
+            state = "missing " + ", ".join(missing) if folder.is_dir() else "folder does not exist"
+            looked.append(f"  {folder}  ({state})")
+            continue
+        for k, p in zip(PARITY_SOURCE_FRAMES, paths, strict=True):
+            digest = hashlib.sha256(p.read_bytes()).hexdigest()
+            if digest != PARITY_LEFT_SHA256[k]:
+                _data_error(
+                    f"{p} is not the parity frame {k} the MATLAB baseline was made from "
+                    f"(sha256 {digest[:12]}..., expected {PARITY_LEFT_SHA256[k][:12]}...)"
+                )
+        return paths
+    _data_error(
+        f"the D-specimen left frames {', '.join(names)} were not found under the data root "
+        f"{root} ({origin}). Looked in:\n" + "\n".join(looked) + "\n"
+        f"Point --data-root (or {DATA_ROOT_ENV}) at the folder that holds them "
+        "(examples/README.md, example2)."
+    )
+
+
+def stage_left_frames(left_files: list[Path], work: Path) -> list[Path]:
+    """Copy the parity frames into ``work`` under the numbers the baseline used.
+
+    The sources are frames 0, 7 and 14 of the D-specimen sequence, but the
+    MATLAB reference's right frames and masks are numbered 0000..0002, and the
+    stereo sequence check pairs the cameras by that number (a left 0007_0 next
+    to a right 0001_1 is refused as a name-pattern mismatch). The copies take
+    the reference's numbers; the dataset itself is only read.
+    """
+    folder = work / "left"
+    folder.mkdir(parents=True, exist_ok=True)
+    staged = []
+    for i, src in enumerate(left_files):
+        dst = folder / f"{i:04d}_0.tif"
+        shutil.copyfile(src, dst)
+        staged.append(dst)
+    return staged
 
 
 def load_baseline() -> dict:
@@ -48,7 +148,13 @@ def load_baseline() -> dict:
 
     v7.3/h5py note: MATLAB cell {frame, axis} appears transposed as [axis, frame].
     """
-    import h5py
+    try:
+        import h5py
+    except ImportError:
+        _data_error(
+            "reading the MATLAB baseline (a v7.3 MAT file) needs h5py: "
+            'pip install h5py (it is part of the "dev" extra)'
+        )
 
     out: dict = {"coords": [], "disp": []}
     with h5py.File(BASELINE, "r") as f:
@@ -61,7 +167,7 @@ def load_baseline() -> dict:
     return out
 
 
-def build_config(work: Path, mode: str = "incremental") -> Path:
+def build_config(work: Path, left_files: list[Path], mode: str = "incremental") -> Path:
     """Write the parity config.toml replicating run_pipeline_test.m parameters."""
     import cv2
 
@@ -72,13 +178,17 @@ def build_config(work: Path, mode: str = "incremental") -> Path:
     def q(p: Path) -> str:
         return str(p).replace("\\", "/")
 
+    # An explicit list in frame order (source frames 0, 7, 14, staged as
+    # 0000..0002 by stage_left_frames), paired with the Right/*_1.tif and
+    # mask globs below.
+    left = ", ".join(f'"{q(p)}"' for p in left_files)
     cfg = f"""
 [calibration]
 file = "{q(S3 / "calibration_DICe.xml")}"
 format = "dice"
 
 [sequence]
-left = "{q(LEFT_IMGS / "Images_Stereo_Sample3_images" / "L")}/*_0.tif"
+left = [{left}]
 right = "{q(S3 / "Images_Stereo_Sample3_images" / "Right")}/*_1.tif"
 left_mask = "{q(S3 / "Images_Stereo_Sample3_maskfiles" / "Left")}/*_0.tif"
 right_mask = "{q(S3 / "Images_Stereo_Sample3_maskfiles" / "Right")}/*_1.tif"
@@ -108,10 +218,10 @@ prefix = "s3_parity"
     return path
 
 
-def run_ours(work: Path, mode: str = "incremental"):
+def run_ours(work: Path, left_files: list[Path], mode: str = "incremental"):
     from al_dic_3d.runner import load_config, run_pipeline
 
-    cfg = load_config(build_config(work, mode))
+    cfg = load_config(build_config(work, left_files, mode))
 
     def progress(frac: float, msg: str) -> None:
         print(f"  [{frac * 100:5.1f}%] {msg}", flush=True)
@@ -190,22 +300,42 @@ def compare(result, base: dict, work: Path) -> dict:
     return metrics
 
 
-def main() -> int:
-    for p, what in ((BASELINE, "baseline.mat"), (LEFT_IMGS, "left image set")):
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="P1/P2 real-data MATLAB parity gate: Stereo DIC Challenge 1.0 Sample 3."
+    )
+    parser.add_argument(
+        "--data-root",
+        help=f"dataset root for the left frames (default: ${DATA_ROOT_ENV}, else examples/)",
+    )
+    args = parser.parse_args(argv)
+    needed = (
+        (BASELINE, "baseline.mat"),
+        (S3 / "calibration_DICe.xml", "DICe calibration"),
+        (S3 / "Images_Stereo_Sample3_images" / "Right", "right image set"),
+        (S3 / "Images_Stereo_Sample3_maskfiles", "mask set"),
+    )
+    for p, what in needed:
         if not p.exists():
-            print(f"missing {what}: {p}", file=sys.stderr)
+            print(
+                f"missing {what}: {p}\n"
+                f"The MATLAB reference repo is expected at {ML} (a sibling of this repo; "
+                "clone github.com/zachtong/3D-Stereo-ALDIC there, see CLAUDE.md).",
+                file=sys.stderr,
+            )
             return 2
+    left_files = left_frame_paths(args.data_root)
     work = REPO / "reports" / "parity_s3"
     work.mkdir(parents=True, exist_ok=True)
+    left_files = stage_left_frames(left_files, work)
 
     print("running our pipeline on Challenge 1.0 S3 (3 frames, incremental, masks)...")
-    import os
-
+    print("left frames: " + ", ".join(str(p) for p in left_files))
     mode = os.environ.get("PARITY_MODE", "incremental")
     global_on = os.environ.get("PARITY_GLOBAL", "1") != "0"
     print(f"reference_mode = {mode}  |  AL global step = {'ON' if global_on else 'OFF'}")
     t0 = time.perf_counter()
-    result = run_ours(work, mode)
+    result = run_ours(work, left_files, mode)
     print(f"pipeline wall time: {time.perf_counter() - t0:.1f} s")
     base = load_baseline()
     m = compare(result, base, work)
@@ -260,11 +390,11 @@ def main() -> int:
     print("P1 GATE " + ("PASSED" if ok else "FAILED"))
 
     if mode == "incremental":
-        ok = _p2_template_gate(result) and ok
+        ok = _p2_template_gate(result, left_files) and ok
     return 0 if ok else 1
 
 
-def _p2_template_gate(result) -> bool:
+def _p2_template_gate(result, left_files: list[Path]) -> bool:
     """P2 gate (inc mode): frame-3 cumulative track vs template-matching truth.
 
     The MATLAB baseline for this frame is arbitrated invalid, so arbitration is
@@ -277,9 +407,8 @@ def _p2_template_gate(result) -> bool:
     import cv2
     from scipy.spatial import cKDTree
 
-    lefts = sorted((LEFT_IMGS / "Images_Stereo_Sample3_images" / "L").glob("*_0.tif"))
-    L0 = cv2.imread(str(lefts[0]), 0).astype(np.float32)
-    L2 = cv2.imread(str(lefts[2]), 0).astype(np.float32)
+    L0 = cv2.imread(str(left_files[0]), 0).astype(np.float32)
+    L2 = cv2.imread(str(left_files[2]), 0).astype(np.float32)
     h, w = L0.shape
     anchors = []
     for y in range(150, h - 150, 80):

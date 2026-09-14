@@ -309,14 +309,20 @@ def _run_track_both_capturing_masks(seq, rig, mesh_L, monkeypatch):
     from al_dic_3d.matching import get_strategy
     from al_dic_3d.matching.contracts import CorrespondenceConfig
 
-    real = tb.temporal_track
     captured: list = []
 
-    def spy(frames, mesh, para, **kw):
-        captured.append(kw.get("masks"))
-        return real(frames, mesh, para, **kw)
+    def spying(real):
+        def spy(frames, mesh, para, **kw):
+            captured.append(kw.get("masks"))
+            return real(frames, mesh, para, **kw)
 
-    monkeypatch.setattr(tb, "temporal_track", spy)
+        return spy
+
+    # The default path runs the LEFT engine through track_engine (its gate then
+    # overlaps the right track, fix batch V) and the RIGHT camera through
+    # temporal_track; capture both, in call order.
+    monkeypatch.setattr(tb, "track_engine", spying(tb.track_engine))
+    monkeypatch.setattr(tb, "temporal_track", spying(tb.temporal_track))
     cs = get_strategy("track_both")().compute(
         seq, rig, mesh_L, CorrespondenceConfig(strategy="track_both")
     )

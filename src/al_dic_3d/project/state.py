@@ -41,6 +41,9 @@ class AppState3D:
     workflow_step: int = STEP_PROJECT
     project_path: Path | None = None  # the .aldic3d file this state is bound to
     dirty: bool = False  # unsaved changes since the last save/load
+    # Messages from opening the project (e.g. the calibration was restored from
+    # the copy embedded in the file); not persisted.
+    open_notes: list[str] = field(default_factory=list)
 
     @property
     def has_results(self) -> bool:

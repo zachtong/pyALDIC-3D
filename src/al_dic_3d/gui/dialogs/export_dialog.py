@@ -11,14 +11,23 @@ so repeats never overwrite.
 
 The :class:`~al_dic_3d.export.render.VizExportHint` snapshot (constructed at
 BOTH call sites: the main right sidebar and the strain window) prefills
-colormap / opacity / deformed mode / current field so the export opens showing
-what the user was looking at.
+colormap / opacity / deformed mode / current field / range so the export opens
+showing what the user was looking at, and carries the canvas's display unit and
+frame rate so rendered exports scale and label values like the canvas (M1).
+
+The dialog describes the RESULT it was built for (fix batch V, H1/H3/H6): the
+node step comes from the run (:func:`~al_dic_3d.export.run_mesh_step`), the
+parameters JSON prefers what the run recorded, and :meth:`ExportDialog.matches`
+lets the singleton owners detect a stale dialog after a rerun, a strain
+recompute or a project switch and rebuild it.
 """
 
 from __future__ import annotations
 
+import threading
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from PySide6.QtCore import QCoreApplication
@@ -33,7 +42,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.export import VizExportHint, make_prefix, make_timestamp
+from al_dic_3d.export import (
+    VELOCITY_ID,
+    VizExportHint,
+    camera_roi_masks,
+    field_color_range,
+    make_prefix,
+    make_timestamp,
+    run_mesh_step,
+)
 from al_dic_3d.gui.dialogs.export_tabs import (
     AnimationTab,
     DataTab,
@@ -43,7 +60,7 @@ from al_dic_3d.gui.dialogs.export_tabs import (
 )
 
 if TYPE_CHECKING:
-    from al_dic_3d.export import ColorbarStyle
+    from al_dic_3d.export import CameraTuple, ColorbarStyle
     from al_dic_3d.project.draft import ProjectDraft
     from al_dic_3d.runner import RunResult
 
@@ -70,12 +87,35 @@ _DRAFT_PARAM_FIELDS = (
 
 
 def draft_export_params(draft: ProjectDraft) -> dict:
-    """The GUI draft's matching parameters, for :func:`export_params` extra."""
+    """The GUI draft's matching parameters, for :func:`export_params` extra.
+
+    The draft is LIVE (it may have been edited after the run): the parameters
+    JSON keeps every value the run itself recorded (``result.meta`` /
+    ``run_params``) and uses these only for keys the run did not record.
+    """
     return {name: getattr(draft, name) for name in _DRAFT_PARAM_FIELDS}
 
 
+def _camera_tuple(cam: Any) -> CameraTuple | None:
+    """A pyvista camera position (or any 3x3 sequence) as plain float tuples."""
+    try:
+        parts = tuple(tuple(float(v) for v in part) for part in cam)
+    except (TypeError, ValueError):
+        return None
+    if len(parts) != 3 or any(len(p) != 3 for p in parts):
+        return None
+    return parts  # type: ignore[return-value]
+
+
 class ExportDialog(QDialog):
-    """Field-selective data + rendered-media export of a completed run."""
+    """Field-selective data + rendered-media export of a completed run.
+
+    Public surface for the singleton owners (right sidebar, strain window):
+    :attr:`result` (read-only) and :meth:`matches` — rebuild the dialog when
+    ``not dialog.matches(state.result)``; :meth:`is_busy` tells whether an
+    export is still running. ``camera_provider`` (optional) returns the
+    interactive 3D view's current camera, read at export time.
+    """
 
     def __init__(
         self,
@@ -85,12 +125,17 @@ class ExportDialog(QDialog):
         *,
         draft: ProjectDraft | None = None,
         hint: VizExportHint | None = None,
+        camera_provider: Callable[[], Any] | None = None,
     ) -> None:
         super().__init__(parent)
-        self.result = result
+        self._result = result
         self.extra_params = extra_params or {}
         self.draft = draft
         self.hint = hint if hint is not None else VizExportHint()
+        self._camera_provider = camera_provider
+        self._mask_lock = threading.Lock()
+        self._roi_cache: tuple[object, np.ndarray] | None = None  # (source array, bool)
+        self._right_cache: tuple[object, np.ndarray | None] | None = None
         self.setWindowTitle(self.tr("Export Results"))
         self.setMinimumWidth(640)
 
@@ -144,8 +189,8 @@ class ExportDialog(QDialog):
                     "here are used by every Images / Animation export."
                 ),
                 self.tr(
-                    "Offscreen renders of the 3D surface view (camera frusta "
-                    "included) as images or turntable animations."
+                    "Offscreen renders of the 3D surface as images, a deforming "
+                    "animation or a turntable, from your current 3D view."
                 ),
             )
         ):
@@ -164,6 +209,26 @@ class ExportDialog(QDialog):
         buttons.addWidget(close_btn)
         layout.addLayout(buttons)
 
+    # ---- the result this dialog exports (owners rebuild it when stale) --------------
+
+    @property
+    def result(self) -> RunResult:
+        """The result this dialog was built for (read-only)."""
+        return self._result
+
+    def matches(self, result: object) -> bool:
+        """True when this dialog exports exactly *result* (identity).
+
+        A rerun, a strain recompute (``dataclasses.replace``) and a project
+        switch all produce a NEW result object, so ``not matches(state.result)``
+        means the dialog is stale and must be rebuilt.
+        """
+        return result is not None and result is self._result
+
+    def is_busy(self) -> bool:
+        """True while any tab's export worker is running."""
+        return any(tab.is_busy() for tab in self._all_tabs())
+
     # ---- shared context consumed by the tabs -------------------------------------
 
     @property
@@ -175,14 +240,104 @@ class ExportDialog(QDialog):
 
     @property
     def mesh_step(self) -> int:
-        return int(self.draft.winstepsize) if self.draft is not None else 16
+        """The node step the RESULT was computed with — never the edited draft (H3)."""
+        fallback = int(self.draft.winstepsize) if self.draft is not None else 16
+        return run_mesh_step(self._result, default=fallback)
 
     @property
     def roi_mask(self) -> np.ndarray | None:
-        """Drawn LEFT reference ROI mask as bool, or None."""
-        if self.draft is None or self.draft.roi_mask_array is None:
+        """Drawn LEFT reference ROI mask as bool, or None (cached per mask edit).
+
+        Every ROI edit stores a fresh array on the draft, so the source array's
+        identity keys the cache (a reference is held, so the id cannot be
+        recycled). Thread-safe: the Preview worker reads it too.
+        """
+        drawn = None if self.draft is None else self.draft.roi_mask_array
+        if drawn is None:
             return None
-        return np.asarray(self.draft.roi_mask_array) > 0
+        with self._mask_lock:
+            if self._roi_cache is None or self._roi_cache[0] is not drawn:
+                self._roi_cache = (drawn, np.asarray(drawn) > 0)
+            return self._roi_cache[1]
+
+    def right_roi_mask(self, *, compute: bool = True) -> np.ndarray | None:
+        """The left ROI warped into the RIGHT camera (the canvas's support, M3).
+
+        Cached per (ROI edit, result); ``compute=False`` only returns an
+        already-warped mask (the export jobs then warp in their worker thread
+        instead of on the GUI thread). Thread-safe.
+        """
+        roi = self.roi_mask
+        if roi is None:
+            return None
+        with self._mask_lock:
+            cached = self._right_cache
+            if cached is not None and cached[0] is roi:
+                return cached[1]
+            if not compute:
+                return None
+        masks, _warnings = camera_roi_masks(self._result, ("R",), roi, self.image_files)
+        with self._mask_lock:
+            self._right_cache = (roi, masks["R"])
+        return masks["R"]
+
+    # ---- display units (M1): what the canvas shows --------------------------------
+
+    def field_display(self, field_id: str) -> tuple[float, str | None]:
+        """(value scale, colorbar label) of a field in the canvas's display unit.
+
+        Velocity follows the canvas: mm/frame x frame rate -> unit/s once a
+        frame rate was given, per frame (labelled so) until then.
+        """
+        from al_dic_3d.gui.display_units import field_display_factor, field_label
+
+        unit = self.hint.display_unit or "mm"
+        scale = float(field_display_factor(field_id, unit))
+        if field_id != VELOCITY_ID:
+            return scale, field_label(field_id, unit)
+        if self.hint.frame_rate_known:
+            return scale * float(self.hint.frame_rate), field_label(field_id, unit)
+        try:
+            return scale, field_label(field_id, unit, per_frame=True)
+        except TypeError:  # a display_units without the per-frame label
+            return scale, f"|V| ({unit}/frame)"
+
+    def seed_range(self, field_id: str) -> tuple[float, float]:
+        """A starting fixed range for *field_id* (display units).
+
+        The canvas's auto range at the hint frame; when that is empty (the
+        reference frame has zero displacement) the last frame's range instead.
+        """
+        n_frames = int(self._result.reconstruction.n_frames)
+        scale, _label = self.field_display(field_id)
+        k_hint = max(0, min(int(self.hint.current_frame), n_frames - 1))
+        lo, hi = 0.0, 1.0
+        for k in dict.fromkeys((k_hint, n_frames - 1)):
+            lo, hi = field_color_range(
+                self._result,
+                "L",
+                field_id,
+                k,
+                self.roi_mask,
+                deformed=bool(self.hint.show_deformed) and k > 0,
+                value_scale=scale,
+            )
+            if hi > lo:
+                break
+        return lo, hi
+
+    def view3d_camera(self) -> CameraTuple | None:
+        """The interactive 3D view's camera now (provider), else the hint's snapshot."""
+        if self._camera_provider is not None:
+            try:
+                live = self._camera_provider()
+            except Exception:  # noqa: BLE001 - no 3D view: isometric default
+                live = None
+            cam = _camera_tuple(live) if live is not None else None
+            if cam is not None:
+                return cam
+        snap = self.hint.view3d_camera
+        return _camera_tuple(snap) if snap is not None else None
 
     def export_target(self) -> tuple[Path, str, str] | None:
         """(folder, prefix, FRESH timestamp) for one export click, or None."""
@@ -284,13 +439,18 @@ class ExportDialog(QDialog):
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt override)
         # G3.12 close guard (G1 idiom): never silently kill a running export.
-        if any(tab.is_busy() for tab in self._all_tabs()):
+        if self.is_busy():
             if not self._confirm_close_during_export():
                 event.ignore()
                 return
         for tab in self._all_tabs():
             tab.shutdown()
-        super().closeEvent(event)
+        # Accept directly. QDialog.closeEvent calls reject() — overridden above
+        # to call close() — and that nested close is refused while this one is
+        # in flight, so the base handler IGNORED the event: Close, Esc and the
+        # window X all did nothing, and the main window could not quit either
+        # (fix batch V; every public release through 1.1.0 was affected).
+        event.accept()
 
     def _confirm_close_during_export(self) -> bool:
         """Yes/No prompt when closing while an export runs (stubbed in tests)."""

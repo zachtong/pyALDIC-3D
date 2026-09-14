@@ -237,6 +237,7 @@ VIEW_DISTINCTIVE: dict[str, object] = {
     "current_frame": 2,
     "display_unit": "µm",
     "frame_rate": 12.5,
+    "frame_rate_known": True,  # fix batch V: velocity per s only once a rate is given
     "mesh_line_color": "#3b82f6",
     "mesh_line_width": 4,
     "show_grid": True,
@@ -258,6 +259,7 @@ def _apply_distinctive(win: MainWindow3D, view: dict) -> None:
     s.current_frame = int(view["current_frame"])
     s.display_unit = str(view["display_unit"])
     s.frame_rate = float(view["frame_rate"])
+    s.frame_rate_known = bool(view["frame_rate_known"])
     s.mesh_line_color = str(view["mesh_line_color"])
     s.mesh_line_width = int(view["mesh_line_width"])
     area = win._canvas_area

@@ -9,15 +9,26 @@ uses — the dialog exposes them via ``colorbar_style()`` / ``margin_ratio()``
 / ``margin_color()`` and the tabs pass them to their Qt-free workers. The
 FIELD APPEARANCE panel two-way syncs with the previewed field's row on the
 Images tab, which stays the single source of truth that export reads.
+
+Off the GUI thread (fix batch V, low): the dense field is computed at the
+camera's FULL resolution (it is the export path), ~1.1 s at 12 Mpx — which
+froze the dialog on every edit. The debounced render now runs on the global
+thread pool (one job at a time; edits made meanwhile coalesce into one
+follow-up render, stale results are dropped by a generation tag). A persistent
+renderer + decoded-background cache make colormap / range / opacity / style
+edits recolour-only. The right camera uses the warped left ROI (M3) and the
+backgrounds the canvas stretch (M6), exactly like the exports.
+``_render_preview()`` stays a synchronous "render now" (tests, API).
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import threading
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from al_dic.gui.theme import COLORS
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QThreadPool, QTimer
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -34,23 +45,71 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.export import ColorbarStyle
-from al_dic_3d.gui.dialogs.export_tabs.common import COLORMAPS, FIELD_LABELS, FieldRow
+from al_dic_3d.gui.dialogs.export_tabs.common import (
+    COLORMAPS,
+    FIELD_LABELS,
+    FieldRow,
+    RangeSpinBox,
+)
+from al_dic_3d.gui.workers import PoolTask
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
 
-# Long edge of the in-dialog preview render (small = fast, in-thread is fine).
+# Long edge of the in-dialog preview render.
 _PREVIEW_MAX_DIM = 512
+# Decoded backgrounds kept for the preview (current + one neighbour).
+_BG_CACHE_SIZE = 2
+
+
+class _PreviewEngine:
+    """Thread-safe preview compute state: one renderer + a small background cache.
+
+    One lock serializes every render (the FieldmapRenderer caches are not
+    thread-safe); the dense grids stay cached across colormap / range / style
+    edits. The renderer is reset when the ROI (the render support) changes.
+    """
+
+    def __init__(self) -> None:
+        from al_dic_3d.viz3d.fieldmap import FieldmapRenderer
+
+        self.lock = threading.Lock()
+        self.renderer = FieldmapRenderer()
+        self.view_key: tuple | None = None  # (camera, frame, field, deformed) cached
+        self._mask_key: tuple[Any, Any] | None = None
+        self._bg: dict[str, np.ndarray | None] = {}
+
+    def use_masks(self, left: Any, right: Any) -> None:
+        """Drop cached support/crack products when a mask changed (caller holds lock)."""
+        key = (left, right)
+        old = self._mask_key
+        if old is None or any(a is not b for a, b in zip(key, old, strict=True)):
+            self.renderer.clear_all()
+            self._mask_key = key
+
+    def background(self, path: str) -> np.ndarray | None:
+        """Canvas-identical background, decoded once (caller holds lock)."""
+        if path not in self._bg:
+            from al_dic_3d.viz3d.background import load_display_gray
+
+            if len(self._bg) >= _BG_CACHE_SIZE:
+                self._bg.pop(next(iter(self._bg)))
+            self._bg[path] = load_display_gray(path)
+        return self._bg[path]
 
 
 class PreviewTab(QWidget):
     """WYSIWYG preview of one exported frame + the shared colorbar style."""
 
-    _worker = None  # duck-types the ExportTabBase surface (no worker here)
+    _worker = None  # duck-types the ExportTabBase surface (no export worker here)
 
     def __init__(self, dialog: ExportDialog, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._dialog = dialog
+        self._engine = _PreviewEngine()
+        self._generation = 0  # bumped per request; stale results are dropped
+        self._inflight = False
+        self._pending = False
         n_frames = int(dialog.result.reconstruction.n_frames)
 
         layout = QHBoxLayout(self)
@@ -100,11 +159,12 @@ class PreviewTab(QWidget):
         right.addStretch()
         layout.addLayout(right)
 
-        # Debounced re-render so rapid setting changes coalesce (2D idiom).
+        # Debounced re-render so rapid setting changes coalesce (2D idiom); the
+        # render itself runs on the thread pool.
         self._preview_timer = QTimer(self)
         self._preview_timer.setSingleShot(True)
         self._preview_timer.setInterval(220)
-        self._preview_timer.timeout.connect(self._render_preview)
+        self._preview_timer.timeout.connect(self._request_preview)
 
         # Live sync FROM the Images tab rows (the source of truth) into the
         # appearance panel whenever the previewed field's row is edited.
@@ -130,11 +190,9 @@ class PreviewTab(QWidget):
         self._auto_check.toggled.connect(self._on_appearance_changed)
         form.addRow(self.tr("Range"), self._auto_check)
 
-        self._vmin_spin = QDoubleSpinBox()
-        self._vmax_spin = QDoubleSpinBox()
+        self._vmin_spin = RangeSpinBox()
+        self._vmax_spin = RangeSpinBox()
         for spin in (self._vmin_spin, self._vmax_spin):
-            spin.setRange(-1e9, 1e9)
-            spin.setDecimals(4)
             spin.valueChanged.connect(self._on_appearance_changed)
         form.addRow(self.tr("Min"), self._vmin_spin)
         form.addRow(self.tr("Max"), self._vmax_spin)
@@ -219,7 +277,7 @@ class PreviewTab(QWidget):
         form.addRow(self.tr("Margin color"), self._margin_color_combo)
 
         refresh_btn = QPushButton(self.tr("Refresh preview"))
-        refresh_btn.clicked.connect(self._render_preview)
+        refresh_btn.clicked.connect(self._request_preview)
         form.addRow(refresh_btn)
         return group
 
@@ -250,10 +308,12 @@ class PreviewTab(QWidget):
         self._schedule_preview()
 
     def is_busy(self) -> bool:
-        return False
+        return False  # a preview never blocks closing the dialog
 
     def shutdown(self, timeout_ms: int = 0) -> None:
         self._preview_timer.stop()
+        self._generation += 1  # a render still in flight is dropped on arrival
+        self._pending = False
 
     # ---- field list + two-way appearance sync ------------------------------------
 
@@ -320,6 +380,13 @@ class PreviewTab(QWidget):
         if row is None:
             return
         auto = self._auto_check.isChecked()
+        if not auto and row.seed_range_if_needed():
+            # First manual range for this field: start from its data range.
+            seeded = row.get_appearance()
+            for spin, key in ((self._vmin_spin, "vmin"), (self._vmax_spin, "vmax")):
+                spin.blockSignals(True)
+                spin.setValue(seeded[key])
+                spin.blockSignals(False)
         row.set_appearance(
             colormap=self._cmap_combo.currentText(),
             auto=auto,
@@ -355,73 +422,133 @@ class PreviewTab(QWidget):
     def _schedule_preview(self) -> None:
         self._preview_timer.start()
 
-    def _render_preview(self) -> None:
-        """Render one frame with the exact export path, at a small size."""
-        try:
-            self._render_preview_impl()
-        except Exception as exc:  # never let a preview error break the dialog
-            self._preview_label.setText(self.tr("Preview failed: ") + str(exc))
-
-    def _render_preview_impl(self) -> None:
-        import cv2
-
-        from al_dic_3d.export import add_margin, attach_colorbar, colorbar_label
-        from al_dic_3d.export import render_field_frame as render_frame
-
+    def _preview_request(self) -> dict | str:
+        """Everything one render needs, read on the GUI thread (or a message)."""
         field = self._field_combo.currentData()
         row = self._selected_row()
         if field is None or row is None:
-            self._preview_label.setText(self.tr("Enable a field on the Images tab to preview."))
-            return
-        cfg = row.config()
-
+            return self.tr("Enable a field on the Images tab to preview.")
         dialog = self._dialog
         result = dialog.result
         n_frames = int(result.reconstruction.n_frames)
         frame_k = max(0, min(self._frame_spin.value() - 1, n_frames - 1))
         cam = str(self._camera_combo.currentData())
         show_deformed = dialog._images_tab.show_deformed()
-
         files = list(dialog.image_files.get(cam) or [])
-        bg = None
+        bg_path = None
         if files:
-            from al_dic_3d.pathsafe import imread_unicode
-
-            idx = min(frame_k, len(files) - 1) if show_deformed else 0
-            bg = imread_unicode(files[idx], cv2.IMREAD_GRAYSCALE)
-
-        # Item 4 WYSIWYG: the preview blanks crack-bridging cells exactly like the
-        # image export it previews (drawn L ROI doubles as the barrier when crack-aware).
-        barrier = (
-            np.asarray(dialog.roi_mask, dtype=np.float64)
-            if (cam == "L" and dialog.roi_mask is not None and result.meta.get("crack_aware"))
-            else None
-        )
-        rendered = render_frame(
-            result,
-            cam,
-            field,
-            frame_k,
-            bg,
-            cfg,
-            mesh_step=dialog.mesh_step,
-            roi_mask=dialog.roi_mask if cam == "L" else None,
+            bg_path = files[min(frame_k, len(files) - 1) if show_deformed else 0]
+        return dict(
+            result=result,
+            field=field,
+            cfg=row.config(),
+            frame_k=frame_k,
+            cam=cam,
             show_deformed=show_deformed,
-            output_max_dim=_PREVIEW_MAX_DIM,
-            barrier_mask=barrier,
+            bg_path=bg_path,
+            mesh_step=dialog.mesh_step,
+            roi=dialog.roi_mask,
+            right_mask=dialog.right_roi_mask,  # warps (once) on the worker thread
+            include_colorbar=dialog._images_tab.include_colorbar(),
+            style=self.colorbar_style(),
+            margin=(self.margin_ratio(), self.margin_color()),
         )
+
+    def _compose(self, req: dict) -> np.ndarray | None:
+        """Render one preview frame (any thread); None = no data to draw.
+
+        The export functions are looked up on the package at call time, so the
+        preview always runs exactly what the exports run.
+        """
+        import al_dic_3d.export as export_api
+        from al_dic_3d.export.render import crack_barrier
+
+        result, cam, roi = req["result"], req["cam"], req["roi"]
+        right = req["right_mask"]() if (cam == "R" and roi is not None) else None
+        cfg = req["cfg"]
+        engine = self._engine
+        with engine.lock:
+            engine.use_masks(roi, right)
+            view_key = (cam, req["frame_k"], req["field"], req["show_deformed"])
+            if engine.view_key != view_key:
+                engine.renderer.clear_frame_caches()  # keep one frame's grids only
+                engine.view_key = view_key
+            bg = engine.background(req["bg_path"]) if req["bg_path"] else None
+            # Item 4 WYSIWYG: crack-bridging cells are blanked exactly like the
+            # image export (the drawn L ROI doubles as the barrier when crack-aware).
+            rendered = export_api.render_field_frame(
+                result,
+                cam,
+                req["field"],
+                req["frame_k"],
+                bg,
+                cfg,
+                mesh_step=req["mesh_step"],
+                roi_mask=roi if cam == "L" else right,
+                show_deformed=req["show_deformed"],
+                output_max_dim=_PREVIEW_MAX_DIM,
+                renderer=engine.renderer,
+                barrier_mask=crack_barrier(result, roi) if cam == "L" else None,
+            )
         if rendered is None:
+            return None
+        img, vmin, vmax = rendered
+        if req["include_colorbar"]:
+            img = export_api.attach_colorbar(
+                img, req["style"], cfg.colormap, vmin, vmax, cfg.colorbar_text()
+            )
+        return export_api.add_margin(img, *req["margin"])
+
+    def _request_preview(self) -> None:
+        """Debounced entry: render on the thread pool, newest settings win."""
+        if self._dialog._tabs.currentWidget() is not self:
+            return  # an Images-tab edit while hidden: activate() renders on show
+        req = self._preview_request()
+        if isinstance(req, str):
+            self._preview_label.setText(req)
+            return
+        self._generation += 1
+        if self._inflight:
+            self._pending = True  # re-render with the latest settings afterwards
+            return
+        self._inflight = True
+        task = PoolTask(self._compose, req, tag=self._generation)
+        task.signals.done.connect(self._on_preview_done)
+        task.signals.failed.connect(self._on_preview_failed)
+        QThreadPool.globalInstance().start(task)
+
+    def _on_preview_done(self, generation: int, img: object) -> None:
+        self._inflight = False
+        if generation == self._generation or self._pending:
+            self._show_preview(img)
+        if self._pending:
+            self._pending = False
+            self._request_preview()
+
+    def _on_preview_failed(self, generation: int, message: str) -> None:
+        self._inflight = False
+        if generation == self._generation or self._pending:
+            self._preview_label.setText(self.tr("Preview failed: ") + message)
+        if self._pending:
+            self._pending = False
+            self._request_preview()
+
+    def _render_preview(self) -> None:
+        """Render NOW on the calling thread (tests / API); errors show in the canvas."""
+        try:
+            req = self._preview_request()
+            if isinstance(req, str):
+                self._preview_label.setText(req)
+                return
+            self._show_preview(self._compose(req))
+        except Exception as exc:  # never let a preview error break the dialog
+            self._preview_label.setText(self.tr("Preview failed: ") + str(exc))
+
+    def _show_preview(self, img: object) -> None:
+        if img is None:
             self._preview_label.setText(self.tr("No data for this field/frame."))
             return
-        img, vmin, vmax = rendered
-
-        if dialog._images_tab.include_colorbar():
-            img = attach_colorbar(
-                img, self.colorbar_style(), cfg.colormap, vmin, vmax, colorbar_label(field)
-            )
-        img = add_margin(img, self.margin_ratio(), self.margin_color())
-
-        rgb = np.ascontiguousarray(img[:, :, ::-1])
+        rgb = np.ascontiguousarray(np.asarray(img)[:, :, ::-1])
         h, w = rgb.shape[:2]
         qimg = QImage(rgb.data, w, h, 3 * w, QImage.Format.Format_RGB888).copy()
         pix = QPixmap.fromImage(qimg).scaled(

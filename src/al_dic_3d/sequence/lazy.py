@@ -36,6 +36,16 @@ def load_gray(path: str | Path) -> NDArray[np.float64]:
     Decoding goes through :func:`al_dic_3d.pathsafe.imread_unicode` (G3):
     byte-identical to ``cv2.imread`` but survives non-ASCII Windows paths.
     """
+    return decode_gray(path).astype(np.float64)
+
+
+def decode_gray(path: str | Path) -> NDArray:
+    """:func:`load_gray` in the file's NATIVE dtype (uint8 / uint16 / float).
+
+    The lazy providers cache this form: an 8-bit frame costs 1 byte per pixel
+    instead of 8 (fix batch V: ~0.7 GB less resident at 12 Mpx). Converting to
+    float64 on access is exact for every integer bit depth.
+    """
     import cv2
 
     from al_dic_3d.pathsafe import imread_unicode
@@ -44,8 +54,70 @@ def load_gray(path: str | Path) -> NDArray[np.float64]:
     if img is None:
         raise ValueError(f"cannot read image: {path}")
     if img.ndim == 3:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.shape[2] == 3 else img[..., 0]
-    return img.astype(np.float64)
+        if img.shape[2] == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        elif img.shape[2] == 4:  # BGRA: channel 0 alone is BLUE, not luminance
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+        else:
+            img = img[..., 0]
+    return np.ascontiguousarray(img)
+
+
+def as_binary_mask(mask) -> NDArray[np.float64]:
+    """Return ``mask`` as a contiguous float64 array in ``{0, 1}`` (non-zero = valid).
+
+    The 2D engine multiplies image gradients by the mask, so anything other than
+    0/1 rescales the IC-GN step: a 0/255 mask file made every update 1/255 of its
+    true size and let the solver "converge" on its integer seed (fix batch V).
+    A float64 C-contiguous array already within ``[0, 1]`` is returned unchanged
+    (no copy), so shared constant masks stay shared; anything else is
+    thresholded at zero.
+    """
+    m = np.asarray(mask)
+    if (
+        m.dtype == np.float64
+        and m.flags["C_CONTIGUOUS"]
+        and m.size
+        and float(m.min()) >= 0.0
+        and float(m.max()) <= 1.0
+    ):
+        return m
+    return np.ascontiguousarray(m > 0, dtype=np.float64)
+
+
+class _BinaryMaskView(Sequence):
+    """Indexed view that binarizes each mask of a foreign lazy sequence on access."""
+
+    def __init__(self, base: Sequence) -> None:
+        self._base = base
+
+    def __len__(self) -> int:
+        return len(self._base)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return [self[i] for i in range(*idx.indices(len(self)))]
+        return as_binary_mask(self._base[idx])
+
+
+def binary_mask_sequence(masks: Sequence) -> Sequence:
+    """Return ``masks`` so that every element is a ``{0, 1}`` float64 array.
+
+    Eager lists/tuples are coerced element-wise (binary float64 arrays are kept
+    as the same objects, so a shared constant mask stays ONE array);
+    :class:`LazyMaskList` already binarizes at decode and passes through
+    unmaterialized; any other lazy sequence is wrapped in a binarizing view.
+    """
+    if isinstance(masks, (list, tuple)):
+        return [as_binary_mask(m) for m in masks]
+    if isinstance(masks, (LazyMaskList, _BinaryMaskView)):
+        return masks
+    return _BinaryMaskView(masks)
+
+
+def _binary_u8(mask: NDArray) -> NDArray[np.uint8]:
+    """``{0, 1}`` uint8 form of a decoded mask file (non-zero = valid)."""
+    return np.ascontiguousarray(np.asarray(mask) > 0, dtype=np.uint8)
 
 
 class _LruDecoder:
@@ -58,11 +130,19 @@ class _LruDecoder:
     treat returned arrays as read-only, so sharing cache hits stays safe.
     """
 
-    def __init__(self, paths: Sequence[str | Path], capacity: int = _LRU_CAPACITY) -> None:
+    def __init__(
+        self,
+        paths: Sequence[str | Path],
+        capacity: int = _LRU_CAPACITY,
+        transform=None,
+        decode=None,
+    ) -> None:
+        self._decode = load_gray if decode is None else decode
         self._paths = [Path(p) for p in paths]
         self._capacity = max(1, int(capacity))
         self._cache: OrderedDict[int, NDArray[np.float64]] = OrderedDict()
         self._lock = threading.Lock()
+        self._transform = transform  # applied once per decode (e.g. mask binarization)
 
     @property
     def paths(self) -> list[Path]:
@@ -77,7 +157,9 @@ class _LruDecoder:
             if cached is not None:
                 self._cache.move_to_end(idx)
                 return cached
-        frame = load_gray(self._paths[idx])
+        frame = self._decode(self._paths[idx])
+        if self._transform is not None:
+            frame = self._transform(frame)
         with self._lock:
             self._cache[idx] = frame
             while len(self._cache) > self._capacity:
@@ -96,7 +178,9 @@ class LazyFrameProvider(_LruDecoder):
     """
 
     def __init__(self, paths: Sequence[str | Path], capacity: int = _LRU_CAPACITY) -> None:
-        super().__init__(paths, capacity)
+        # The LRU holds frames in their native dtype; get_normalized returns a
+        # float64 copy (exact), so callers can never write into the cache.
+        super().__init__(paths, capacity, decode=decode_gray)
         self._shape: tuple[int, int] | None = None
 
     @property
@@ -106,7 +190,15 @@ class LazyFrameProvider(_LruDecoder):
         return self._shape
 
     def get_normalized(self, idx: int) -> NDArray[np.float64]:
-        return self._get(idx)
+        frame = self._get(idx)
+        expected = self.shape
+        if tuple(frame.shape) != tuple(expected):
+            raise ValueError(
+                f"image {self._paths[idx].name} is {frame.shape[1]}x{frame.shape[0]} but the "
+                f"first frame is {expected[1]}x{expected[0]}: every frame of a camera "
+                "must have the same size"
+            )
+        return frame.astype(np.float64)
 
 
 class LazyMaskList(Sequence):
@@ -115,12 +207,17 @@ class LazyMaskList(Sequence):
     A drop-in replacement for a ``list`` of float64 mask arrays: the 2D engine
     only ever does ``len(masks)`` and ``masks[i].astype(...)``, and the 3D
     layer indexes single masks — so lazily decoding via ``__getitem__`` keeps
-    at most a handful resident. Non-zero pixels mean valid, matching the eager
-    loader; values are served as float64 contiguous arrays.
+    at most a handful resident. Non-zero pixels mean valid; every mask is
+    BINARIZED to ``{0.0, 1.0}`` at decode time (:func:`as_binary_mask`) and served
+    as a float64 contiguous array — the engine multiplies gradients by the mask,
+    so a raw 0/255 file must never reach it (fix batch V).
     """
 
     def __init__(self, paths: Sequence[str | Path], capacity: int = _LRU_CAPACITY) -> None:
-        self._decoder = _LruDecoder(paths, capacity)
+        # The LRU holds uint8 {0, 1} (1/8 of float64: ~0.4 GB less per camera
+        # at 12 Mpx); each access returns a fresh float64 copy.
+        self._decoder = _LruDecoder(paths, capacity, transform=_binary_u8, decode=decode_gray)
+        self._shape: tuple[int, int] | None = None
 
     @property
     def paths(self) -> list[Path]:
@@ -132,4 +229,13 @@ class LazyMaskList(Sequence):
     def __getitem__(self, idx):
         if isinstance(idx, slice):
             return [self[i] for i in range(*idx.indices(len(self)))]
-        return np.ascontiguousarray(self._decoder._get(idx), dtype=np.float64)
+        m = self._decoder._get(idx).astype(np.float64, order="C")
+        if self._shape is None:
+            self._shape = tuple(m.shape)
+        elif tuple(m.shape) != self._shape:
+            raise ValueError(
+                f"mask {self._decoder._paths[idx].name} is {m.shape[1]}x{m.shape[0]} but the "
+                f"first mask is {self._shape[1]}x{self._shape[0]}: all masks of a camera "
+                "must have the image size"
+            )
+        return m

@@ -2,8 +2,14 @@
 
 Port of the 2D ``al_dic.gui.file_association`` (Q6). Windows-only, per-user
 (``HKCU\\Software\\Classes``) so no administrator rights are needed. The launch
-command is ``pythonw -m al_dic_3d "%1"``; the CLI folds a bare session path
-into the ``gui`` sub-command (:func:`al_dic_3d.cli.normalize_argv`).
+command is ``pythonw -m al_dic_3d "%1"`` for a source install (the CLI folds a
+bare session path into the ``gui`` sub-command, :func:`al_dic_3d.cli.normalize_argv`)
+and simply ``pyaldic3d.exe "%1"`` for a frozen build.
+
+Fix batch V mirrored two 2D 0.8.0 fixes: a frozen build registered
+``-m al_dic_3d``, which only an interpreter can run (it worked by accident,
+because the launcher scans every argument), and an association left pointing
+at a deleted or moved copy was reported as current.
 """
 
 from __future__ import annotations
@@ -28,12 +34,38 @@ def _launcher() -> str:
 
 
 def open_command() -> str:
-    """The ``shell\\open\\command`` string used for the association."""
+    """The ``shell\\open\\command`` string used for the association.
+
+    A frozen build's ``sys.executable`` is the application itself, which takes
+    the session path as a plain argument; there is no interpreter for ``-m``.
+    """
+    if getattr(sys, "frozen", False):
+        return f'"{Path(sys.executable)}" "%1"'
     return f'"{_launcher()}" -m al_dic_3d "%1"'
 
 
+def _registered_command() -> str | None:
+    """The command currently stored for our ProgID, or None."""
+    import winreg
+
+    try:
+        with winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER, rf"Software\Classes\{PROGID}\shell\open\command"
+        ) as key:
+            value, _ = winreg.QueryValueEx(key, "")
+            return value
+    except OSError:
+        return None
+
+
 def is_associated() -> bool:
-    """True if ``.aldic3d`` currently points at our ProgID for this user."""
+    """True if ``.aldic3d`` currently opens with THIS copy of pyALDIC-3D.
+
+    The stored command is compared as well as the ProgID: after the
+    application moved (a reinstall elsewhere, a portable copy deleted), the
+    registry still names the old path, and "already associated" would leave a
+    dead double-click with nothing in the interface offering to repair it.
+    """
     if not is_supported():
         return False
     import winreg
@@ -41,9 +73,9 @@ def is_associated() -> bool:
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, rf"Software\Classes\{EXT}") as key:
             value, _ = winreg.QueryValueEx(key, "")
-            return value == PROGID
     except OSError:
         return False
+    return value == PROGID and _registered_command() == open_command()
 
 
 def register_association() -> None:

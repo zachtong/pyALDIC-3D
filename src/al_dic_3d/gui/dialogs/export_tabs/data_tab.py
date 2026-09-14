@@ -1,12 +1,19 @@
 """Data tab — field-selective NPZ / MAT / CSV / PLY / VTU export (Batch E1 UI).
 
 The E1 dialog content (format checkboxes + displacement/strain field pickers)
-moved here as one tab; the export itself now runs on the shared
+moved here as one tab; the export itself runs on the shared
 :class:`ExportWorker` thread so a large VTU/PLY series never freezes the GUI.
+
+Progress + cancel (fix batch V, M5): the job forwards the worker's progress
+callback and stop event into every writer — one bar segment per format, NPZ
+and MAT per array chunk / variable, CSV / PLY / VTU per frame — stops between
+arrays / frames, never leaves a truncated NPZ/MAT (temporary file + replace),
+and reports "cancelled" only when it really stopped early.
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -22,7 +29,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS
+from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS, ExportCancelled, ExportOutcome
 from al_dic_3d.gui.dialogs.export_tabs.common import FIELD_LABELS, ExportTabBase
 
 if TYPE_CHECKING:
@@ -162,14 +169,71 @@ class DataTab(ExportTabBase):
         result = self._dialog.result
         extra = self._dialog.extra_params
 
-        def job(progress_cb, stop_event) -> list[str]:
-            return _run_data_export(out, prefix, ts, result, extra, fields, want)
+        def job(progress_cb, stop_event) -> ExportOutcome:
+            return _run_data_export(
+                out,
+                prefix,
+                ts,
+                result,
+                extra,
+                fields,
+                want,
+                progress_cb=progress_cb,
+                stop_event=stop_event,
+            )
 
         self.start_job(job)
 
     def describe_success(self, out: object) -> str:
         names = list(out) if isinstance(out, (list, tuple)) else []
         return self.tr("Wrote: {0}").format(", ".join(names))
+
+    def describe_cancelled(self, out: object) -> str:
+        names = list(out) if isinstance(out, (list, tuple)) else []
+        return self.tr("Export cancelled — kept: {0}").format(", ".join(names))
+
+
+# Resolution of each format's segment of the progress bar (Qt ints are 32-bit:
+# byte counts of multi-GB arrays must never reach the signal).
+_STAGE_UNITS = 1000
+
+
+def _remove_empty_dir(folder: Path) -> None:
+    """Delete *folder* only if it is empty (a format cancelled before frame 1)."""
+    try:
+        folder.rmdir()
+    except OSError:  # not empty / already gone: keep it
+        pass
+
+
+class _StageProgress:
+    """Maps each writer's own progress onto one bar: one segment per format."""
+
+    def __init__(self, emit: Callable[[int, int, str], None] | None, n_stages: int) -> None:
+        self._emit = emit
+        self._total = max(1, n_stages) * _STAGE_UNITS
+        self._stage = 0
+        self._label = ""
+
+    def begin(self, label: str) -> None:
+        self._label = label
+        self._report(0.0, "")
+
+    def end(self) -> None:
+        self._report(1.0, "")
+        self._stage += 1
+
+    def fraction(self, done: float, total: float, detail: str = "") -> None:
+        self._report(float(done) / max(float(total), 1.0), detail)
+
+    def _report(self, frac: float, detail: str) -> None:
+        if self._emit is None:
+            return
+        frac = min(max(frac, 0.0), 1.0)
+        done = self._stage * _STAGE_UNITS + int(round(frac * _STAGE_UNITS))
+        # PLY / VTU messages already start with their format name.
+        label = detail if detail.startswith(self._label) else f"{self._label} {detail}".strip()
+        self._emit(min(done, self._total), self._total, label)
 
 
 def _run_data_export(
@@ -180,8 +244,17 @@ def _run_data_export(
     extra: dict,
     fields: list[str],
     want: dict[str, bool],
-) -> list[str]:
-    """The Qt-free data export job (runs on the worker thread)."""
+    *,
+    progress_cb: Callable[[int, int, str], None] | None = None,
+    stop_event=None,
+) -> ExportOutcome:
+    """The Qt-free data export job (runs on the worker thread).
+
+    Returns the written names as an :class:`ExportOutcome`; ``cancelled`` is set
+    only when a stop left formats (or frames) unwritten. A cancelled NPZ/MAT
+    leaves no file (the writers remove their temporary file); CSV / PLY / VTU
+    keep the complete frames written before the stop.
+    """
     from al_dic_3d.export import (
         export_csv_frames,
         export_mat,
@@ -189,25 +262,74 @@ def _run_data_export(
         export_params,
         export_ply_frames,
         export_vtu_series,
+        selected_arrays,
     )
+    from al_dic_3d.export.outcome import stop_requested
 
-    written: list[str] = [export_params(out, prefix, ts, result, extra).name]
-    if want["npz"] or want["mat"]:
-        # P3.3: build the field payload ONCE and hand it to both writers.
-        from al_dic_3d.export import selected_arrays
-
-        arrays = selected_arrays(result, fields)
-        if want["npz"]:
-            written.append(export_npz(result, fields, out, f"{prefix}_{ts}", arrays=arrays).name)
-        if want["mat"]:
-            written.append(export_mat(result, fields, out, f"{prefix}_{ts}", arrays=arrays).name)
-    if want["csv"]:
-        frames = export_csv_frames(result, fields, out, f"{prefix}_{ts}")
-        written.append(f"{len(frames)} CSV")
-    if want["ply"]:
-        export_ply_frames(out, prefix, ts, result, fields)
-        written.append(f"{prefix}_ply_{ts}/")
-    if want["vtu"]:
-        export_vtu_series(out, prefix, ts, result, fields)
-        written.append(f"{prefix}_vtu_{ts}/")
+    written = ExportOutcome([export_params(out, prefix, ts, result, extra).name])
+    stages = [name for name in ("npz", "mat", "csv", "ply", "vtu") if want.get(name)]
+    bar = _StageProgress(progress_cb, len(stages))
+    arrays = None
+    try:
+        for stage in stages:
+            if stop_requested(stop_event):
+                written.cancelled = True
+                break
+            bar.begin(stage.upper())
+            if stage in ("npz", "mat"):
+                if arrays is None:  # P3.3: build the payload ONCE for both writers
+                    arrays = selected_arrays(result, fields)
+                writer = export_npz if stage == "npz" else export_mat
+                path = writer(
+                    result,
+                    fields,
+                    out,
+                    f"{prefix}_{ts}",
+                    arrays=arrays,
+                    progress_cb=bar.fraction,
+                    stop_event=stop_event,
+                )
+                written.append(path.name)
+            elif stage == "csv":
+                # Own sub-folder, like the CLI (`<prefix>_csv_<ts>`): hundreds of
+                # per-frame CSVs no longer flood the chosen output folder.
+                csv_dir = out / f"{prefix}_csv_{ts}"
+                frames = export_csv_frames(
+                    result,
+                    fields,
+                    csv_dir,
+                    prefix,
+                    progress_cb=bar.fraction,
+                    stop_event=stop_event,
+                )
+                if frames:
+                    written.append(f"{len(frames)} CSV")
+                else:
+                    _remove_empty_dir(csv_dir)
+                written.cancelled = written.cancelled or frames.cancelled
+            else:
+                export = export_ply_frames if stage == "ply" else export_vtu_series
+                files = export(
+                    out,
+                    prefix,
+                    ts,
+                    result,
+                    fields,
+                    progress_cb=lambda frac, msg: bar.fraction(frac, 1.0, msg),
+                    stop_event=stop_event,
+                )
+                stopped = bool(getattr(files, "cancelled", False))
+                frame_files = [p for p in files if Path(p).suffix != ".pvd"]
+                if frame_files:
+                    written.append(f"{prefix}_{stage}_{ts}/")
+                elif stopped:  # cancelled before the first frame: leave nothing behind
+                    for p in files:
+                        Path(p).unlink(missing_ok=True)
+                    _remove_empty_dir(out / f"{prefix}_{stage}_{ts}")
+                written.cancelled = written.cancelled or stopped
+            if written.cancelled:
+                break
+            bar.end()
+    except ExportCancelled:
+        written.cancelled = True  # the NPZ/MAT writer already removed its temp file
     return written

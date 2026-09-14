@@ -2,14 +2,21 @@
 
 No 2D counterpart (the 2D app has no 3D scene). The surface is the SAME
 geometry the interactive ``View3D`` widget shows: the regular-grid quad
-connectivity from :mod:`al_dic_3d.viz3d.surface` over ``points[k]``, colored
-by the selected field, falling back to a Delaunay triangulation when no
-usable quad lattice exists. Rendering happens on an offscreen
-``pyvista.Plotter`` — no Qt, no window — so it is safe inside worker threads
-and headless runs.
+connectivity from :mod:`al_dic_3d.viz3d.surface` over ``points[k]`` with the
+drawn ROI knocked out, colored by the selected field, falling back to a
+Delaunay triangulation when no usable quad lattice exists. Rendering happens on
+an offscreen ``pyvista.Plotter`` — no Qt, no window — so it is safe inside
+worker threads and headless runs.
 
-pyvista/VTK is imported lazily inside functions (``[viz3d]`` extra;
-architecture test enforced).
+Consistency with the interactive view (fix batch V, M4): the colour range is
+the view's rule — per frame, the 2nd-98th percentile of the nodes inside the
+ROI (:func:`view3d_color_range`), or the user's fixed range; the surface honours
+the ROI; the camera is the user's view when the caller passes one (the
+isometric default otherwise); values/labels follow the display unit through
+``value_scale`` / ``field_label``. An encoder that cannot open raises, and a
+cancelled animation is deleted rather than reported as written.
+
+pyvista/VTK is imported lazily inside functions (architecture test enforced).
 
 Two modes:
 
@@ -40,8 +47,12 @@ from numpy.typing import NDArray
 
 from al_dic_3d.export.animation import StreamingAnimWriter, animation_fps
 from al_dic_3d.export.colorbar import colorbar_label
+from al_dic_3d.export.outcome import ExportOutcome, stop_requested
+from al_dic_3d.export.render import CameraTuple
 from al_dic_3d.export.tables import display_field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
+from al_dic_3d.viz3d.fieldmap import auto_range as _percentile_range
+from al_dic_3d.viz3d.fieldmap import visible_values
 from al_dic_3d.viz3d.surface import build_surface_polydata
 
 if TYPE_CHECKING:
@@ -52,9 +63,14 @@ ProgressCb = Callable[[int, int, str], None]
 # Window-size presets offered by the 3D View tab (W, H).
 VIEW3D_RESOLUTIONS = ((1024, 768), (1280, 960), (1920, 1080), (800, 600))
 
-# (position, focal_point, view_up) — pass to override the default isometric view.
-CameraTuple = tuple[
-    tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]
+__all__ = [
+    "VIEW3D_RESOLUTIONS",
+    "CameraTuple",
+    "build_surface",
+    "export_view3d_frames",
+    "export_view3d_turntable",
+    "render_view3d_frame",
+    "view3d_color_range",
 ]
 
 
@@ -64,17 +80,19 @@ def build_surface(
     name: str,
     ref_coords: NDArray | None = None,
     barrier_mask: NDArray | None = None,
+    roi_mask: NDArray | None = None,
 ):
     """Surface (``pv.PolyData``) from finite 3D points + scalars (Qt-free).
 
     Same construction as the interactive ``View3D`` — both delegate to the
     shared :func:`al_dic_3d.viz3d.surface.build_surface_polydata` (F3.2), so
-    exported frames carry the exact geometry the canvas shows. ``barrier_mask``
-    (Batch C item 4) drops cells whose edges bridge a thin crack; ``None`` (the
-    crack-free default) keeps the surface byte-identical. Returns ``None`` when
-    fewer than 3 finite points exist.
+    exported frames carry the exact geometry the canvas shows: ``roi_mask``
+    (the drawn LEFT ROI) knocks out cells outside it / its holes, and
+    ``barrier_mask`` (Batch C item 4) drops cells whose edges bridge a thin
+    crack; ``None`` for both keeps the surface byte-identical to the unmasked
+    build. Returns ``None`` when fewer than 3 finite points exist.
     """
-    return build_surface_polydata(points_3d, values, name, ref_coords, None, barrier_mask)
+    return build_surface_polydata(points_3d, values, name, ref_coords, roi_mask, barrier_mask)
 
 
 def _surface_barrier(result: RunResult, roi_mask: NDArray | None) -> NDArray | None:
@@ -86,7 +104,29 @@ def _surface_barrier(result: RunResult, roi_mask: NDArray | None) -> NDArray | N
     """
     if roi_mask is None or not bool(result.meta.get("crack_aware", False)):
         return None
-    return np.asarray(roi_mask, dtype=np.float64)
+    return np.asarray(roi_mask)  # read as is (bool or float), never copied
+
+
+def view3d_color_range(
+    values: NDArray, ref_coords: NDArray, roi_mask: NDArray | None
+) -> tuple[float, float]:
+    """The interactive 3D view's auto range for one frame (M4).
+
+    2nd-98th percentile of the values of the nodes inside the drawn ROI
+    (reference coordinates), exactly what ``CanvasArea3D._render_3d`` computes.
+    """
+    return _percentile_range(visible_values(values, ref_coords, roi_mask))
+
+
+def _safe_clim(lo: float, hi: float) -> tuple[float, float]:
+    """A renderable colour range (VTK rejects an empty or non-finite one)."""
+    lo, hi = float(lo), float(hi)
+    if not (np.isfinite(lo) and np.isfinite(hi)):
+        return 0.0, 1.0
+    if hi > lo:
+        return lo, hi
+    pad = max(abs(lo) * 1e-6, 1e-12)
+    return lo - pad, hi + pad
 
 
 def _make_plotter(window_size: tuple[int, int], background: str):
@@ -109,9 +149,31 @@ def _add_surface(pl, surf, field_label: str, cmap: str, vmin: float, vmax: float
     )
 
 
+def _set_clim(actor, clim: tuple[float, float]) -> None:
+    """Move a live actor's colour range (the in-place update path)."""
+    mapper = getattr(actor, "mapper", None)
+    if mapper is None:
+        return
+    mapper.scalar_range = clim
+    lut = getattr(mapper, "lookup_table", None)
+    if lut is not None:
+        lut.scalar_range = clim  # the scalar bar follows the lookup table
+
+
 def _screenshot_bgr(pl) -> NDArray[np.uint8]:
+    # Render FIRST: an in-place point/scalar update (and a camera Azimuth())
+    # does not repaint the framebuffer, and pyvista only renders inside
+    # screenshot() on the first call — without this every sequence frame after
+    # the first was a copy of it (fix batch V; the turntable's copy of this bug
+    # was fixed in 1bfe769).
+    pl.render()
     img = pl.screenshot(return_img=True)  # (H, W, 3) RGB
     return np.ascontiguousarray(img[:, :, ::-1])  # -> BGR
+
+
+def _blank_frame(writer: StreamingAnimWriter) -> NDArray[np.uint8]:
+    """A no-surface frame (the empty white scene) that keeps its time slot."""
+    return np.full((writer.h, writer.w, 3), 255, np.uint8)
 
 
 def render_view3d_frame(
@@ -127,19 +189,21 @@ def render_view3d_frame(
     camera: CameraTuple | None = None,
     background: str = "white",
     barrier_mask: NDArray | None = None,
+    roi_mask: NDArray | None = None,
 ) -> NDArray[np.uint8] | None:
     """Render one 3D surface frame offscreen -> BGR uint8 array.
 
     ``camera`` is a pyvista ``(position, focal_point, view_up)`` tuple; the
-    default is the isometric view. ``barrier_mask`` (Batch C item 4) drops
-    crack-bridging cells. Returns None when no surface can be built.
+    default is the isometric view. ``roi_mask`` knocks out cells outside the
+    drawn ROI; ``barrier_mask`` (Batch C item 4) drops crack-bridging cells.
+    Returns None when no surface can be built.
     """
-    surf = build_surface(points_3d, values, field_label, ref_coords, barrier_mask)
+    surf = build_surface(points_3d, values, field_label, ref_coords, barrier_mask, roi_mask)
     if surf is None:
         return None
     pl = _make_plotter(window_size, background)
     try:
-        _add_surface(pl, surf, field_label, cmap, vmin, vmax)
+        _add_surface(pl, surf, field_label, cmap, *_safe_clim(vmin, vmax))
         if camera is not None:
             pl.camera_position = camera
         else:
@@ -163,10 +227,12 @@ def _range_of(frames: list[NDArray | None]) -> tuple[float, float]:
 
 
 def _stable_field_range(result: RunResult, field_id: str) -> tuple[float, float]:
-    """Color range over ALL frames (GUI 3D-view contract: playback stable).
+    """Min/max over ALL frames — a playback-stable range for callers that want one.
 
-    Uses the display-masked field (frame-k strain validity — the surface always
-    shows the deformed geometry) so trimmed strain nodes never stretch the range.
+    The exporters follow the interactive view instead (per-frame percentile,
+    :func:`view3d_color_range`). Uses the display-masked field (frame-k strain
+    validity — the surface always shows the deformed geometry) so trimmed
+    strain nodes never stretch the range.
     """
     n_frames = int(result.reconstruction.n_frames)
     return _range_of(
@@ -194,125 +260,156 @@ def export_view3d_frames(
     fps: int = 10,
     frame_step: int = 1,
     roi_mask: NDArray | None = None,
+    value_scale: float = 1.0,
+    field_label: str | None = None,
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
-) -> list[Path]:
+) -> ExportOutcome:
     """Render the deforming surface per frame -> PNGs and/or an animation.
 
     Args:
         field_id: selectable field id (``U``/``W``/``exx``/...) coloring the
             surface.
-        roi_mask: the drawn LEFT ROI mask; on a crack-aware run it doubles as
-            the crack barrier so cells bridging the crack are dropped (item 4).
-        auto_range: color range from ALL frames (stable during playback) when
-            True; the explicit ``vmin``/``vmax`` otherwise.
-        camera: fixed ``(position, focal_point, view_up)`` for every frame, or
-            None for the default isometric view.
+        roi_mask: the drawn LEFT ROI mask (bool): the surface keeps only the
+            cells inside it, the auto range only its nodes; on a crack-aware
+            run it also doubles as the crack barrier (item 4).
+        auto_range: per-frame 2nd-98th percentile over the nodes inside the
+            ROI (the interactive view's rule) when True; the explicit
+            ``vmin``/``vmax`` (display units) otherwise.
+        camera: fixed ``(position, focal_point, view_up)`` for every frame —
+            pass the user's 3D-view camera — or None for the isometric view.
         write_frames: write ``{field}/frame_XX.png`` per frame.
         animation_format: ``"mp4"`` / ``"gif"`` to also stream the frames into
             ``{field}.{ext}``; None disables the animation.
+        value_scale / field_label: display-unit factor applied to the values
+            and the scalar-bar title (default: native mm label).
         stop_event: cooperative cancel — checked before every frame.
         progress_cb: ``(frames_done, total_frames, label)``.
 
     Returns:
-        Written paths (frame PNGs + the animation file), partial on cancel.
+        An :class:`ExportOutcome` of the frame PNGs + the animation. Frames
+        without a surface are ``skipped`` (no PNG; the animation keeps their
+        slot with an empty frame); on cancel the PNGs written so far are kept
+        and the unfinished animation is deleted (``discarded``).
+
+    Raises:
+        OSError: the animation encoder could not be opened.
 
     Performance (P3.2): ONE offscreen plotter serves the whole sequence — a
     fresh plotter per frame costs 100-300 ms of GL-context churn each. When a
     frame's surface topology matches the previous one (same points/faces —
-    the common case; the NaN pattern rarely changes), the live mesh's points
-    and scalars are updated in place like the interactive ``View3D`` (P2.4)
-    and the turntable path; otherwise the scene is rebuilt on the same
-    plotter. The per-frame field values are computed ONCE and shared between
-    the color-range pass and the render loop.
+    the common case; the NaN pattern rarely changes), the live mesh's points,
+    scalars and colour range are updated in place like the interactive
+    ``View3D`` (P2.4); otherwise the scene is rebuilt on the same plotter.
+    Each frame's field values are computed ONCE (range and render share them).
     """
     from al_dic_3d.pathsafe import imwrite_unicode
 
+    outcome = ExportOutcome()
     n_frames = int(result.reconstruction.n_frames)
     if frame_end < 0 or frame_end >= n_frames:
         frame_end = n_frames - 1
     if frame_end < frame_start or (not write_frames and animation_format is None):
-        return []
+        return outcome
     frame_step, out_fps = animation_fps(fps, frame_step)
     frame_indices = list(range(frame_start, frame_end + 1, frame_step))
     total = len(frame_indices)
-
-    # Hoisted per-frame values (P3.2): field_frame recomputes derived fields
-    # (e.g. |D| = norm) on every call — compute each frame's values once and
-    # share them between the stable-range pass and the render loop.
-    values: dict[int, NDArray | None] = (
-        {k: display_field_frame(result, field_id, k, deformed=True) for k in range(n_frames)}
-        if auto_range
-        else {k: display_field_frame(result, field_id, k, deformed=True) for k in frame_indices}
-    )
-    if auto_range:
-        vmin, vmax = _range_of([values[k] for k in range(n_frames)])
-    label = colorbar_label(field_id)
+    label = field_label or colorbar_label(field_id)
     barrier = _surface_barrier(result, roi_mask)
     view_dir = ensure_dir(dest_dir / f"{prefix}_view3d_{timestamp}")
     frames_dir = ensure_dir(view_dir / field_id) if write_frames else None
 
     rec = result.reconstruction
     pl = None
+    actor = None
     live_surf = None  # PolyData attached to the live actor (in-place updates)
     writer: StreamingAnimWriter | None = None
-    paths: list[Path] = []
+    pending_blank = 0  # surface-less frames before the encoder could open
+    drawn = 0
     done = 0
     try:
         for k in frame_indices:
-            if stop_event is not None and stop_event.is_set():
+            if stop_requested(stop_event):
+                outcome.cancelled = True
                 break
-            vals = values[k]
-            if vals is None:
-                continue
-            surf = build_surface(rec.points[k], vals, label, result.ref_coords, barrier)
+            tag = frame_tag(k, n_frames)
+            vals = display_field_frame(result, field_id, k, deformed=True)
+            surf = None
+            if vals is not None:
+                if value_scale != 1.0:
+                    vals = vals * float(value_scale)
+                surf = build_surface(
+                    rec.points[k], vals, label, result.ref_coords, barrier, roi_mask
+                )
             if surf is None:
-                continue
-            if pl is None:
-                pl = _make_plotter(window_size, background="white")
-            if (
-                live_surf is not None
-                and live_surf.n_points == surf.n_points
-                and live_surf.n_cells == surf.n_cells
-                and np.array_equal(live_surf.faces, surf.faces)
-            ):
-                # Same topology: mutate the live mesh (camera/clim persist).
-                live_surf.points[:] = surf.points
-                live_surf[label][:] = surf[label]
+                outcome.skipped.append(f"{field_id} {tag}")
+                if animation_format is not None:
+                    if writer is None:
+                        pending_blank += 1
+                    else:
+                        writer.append(_blank_frame(writer))
             else:
-                pl.clear()
-                _add_surface(pl, surf, label, cmap, vmin, vmax)
-                live_surf = surf
-                if camera is not None:
-                    pl.camera_position = camera
+                if auto_range:
+                    clim = _safe_clim(*view3d_color_range(vals, result.ref_coords, roi_mask))
                 else:
-                    pl.view_isometric()
-            img = _screenshot_bgr(pl)
-            if frames_dir is not None:
-                out = frames_dir / f"{frame_tag(k, n_frames)}.png"
-                # G3: raises on failure instead of cv2.imwrite's silent False.
-                imwrite_unicode(out, img)
-                paths.append(out)
-            if animation_format is not None:
-                if writer is None:
-                    w = StreamingAnimWriter(
-                        animation_format.lower(), view_dir, field_id, out_fps, img.shape[:2]
-                    )
-                    if not w.ok:
-                        w.close()
-                        break
-                    writer = w
-                writer.append(img)
+                    clim = _safe_clim(vmin, vmax)
+                if pl is None:
+                    pl = _make_plotter(window_size, background="white")
+                if (
+                    live_surf is not None
+                    and live_surf.n_points == surf.n_points
+                    and live_surf.n_cells == surf.n_cells
+                    and np.array_equal(live_surf.faces, surf.faces)
+                ):
+                    # Same topology: mutate the live mesh (camera persists).
+                    live_surf.points[:] = surf.points
+                    live_surf[label][:] = surf[label]
+                    _set_clim(actor, clim)
+                else:
+                    pl.clear()
+                    actor = _add_surface(pl, surf, label, cmap, *clim)
+                    live_surf = surf
+                    if camera is not None:
+                        pl.camera_position = camera
+                    else:
+                        pl.view_isometric()
+                img = _screenshot_bgr(pl)
+                drawn += 1
+                if frames_dir is not None:
+                    out = frames_dir / f"{tag}.png"
+                    # G3: raises on failure instead of cv2.imwrite's silent False.
+                    imwrite_unicode(out, img)
+                    outcome.append(out)
+                if animation_format is not None:
+                    if writer is None:
+                        writer = StreamingAnimWriter(
+                            animation_format.lower(), view_dir, field_id, out_fps, img.shape[:2]
+                        )
+                        for _ in range(pending_blank):
+                            writer.append(_blank_frame(writer))
+                        pending_blank = 0
+                    writer.append(img)
             done += 1
             if progress_cb is not None:
-                progress_cb(done, total, frame_tag(k, n_frames))
+                progress_cb(done, total, tag)
+    except BaseException:
+        if writer is not None:
+            writer.discard()  # never leave a truncated video behind
+        raise
     finally:
         if pl is not None:
             pl.close()
-        if writer is not None:
+
+    if writer is not None:
+        if outcome.cancelled:
+            outcome.discarded.append(writer.discard())
+        else:
             writer.close()
-            paths.append(writer.out)
-    return paths
+            outcome.append(writer.out)
+    if drawn == 0 and not outcome.cancelled:
+        outcome.unavailable.append(field_id)
+        outcome.skipped.clear()  # folded into "unavailable"
+    return outcome
 
 
 def export_view3d_turntable(
@@ -332,73 +429,93 @@ def export_view3d_turntable(
     animation_format: str = "mp4",
     fps: int = 10,
     roi_mask: NDArray | None = None,
+    camera: CameraTuple | None = None,
+    value_scale: float = 1.0,
+    field_label: str | None = None,
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
-) -> list[Path]:
+) -> ExportOutcome:
     """Orbit the surface of a FIXED frame 360° -> ``{field}_turntable.{ext}``.
 
     One offscreen plotter is built once; the camera azimuth advances by
-    ``360 / n_orbit`` per rendered frame. ``roi_mask`` doubles as the crack
-    barrier on a crack-aware run (item 4). Returns the animation path (empty
-    on cancel-before-first-frame or when no surface exists).
+    ``360 / n_orbit`` per rendered frame, starting from ``camera`` (the user's
+    view) when given, else the isometric view. The colour range is frame
+    ``frame_k``'s percentile inside ``roi_mask`` (or the fixed range); the ROI
+    bounds the surface and doubles as the crack barrier on a crack-aware run.
+
+    Returns:
+        An :class:`ExportOutcome` with the animation path; empty with
+        ``unavailable`` set when there is no surface, empty with ``cancelled``
+        (and the partial file deleted) on cancel.
+
+    Raises:
+        OSError: the animation encoder could not be opened.
     """
+    outcome = ExportOutcome()
+    name = f"{field_id}_turntable"
     n_frames = int(result.reconstruction.n_frames)
     frame_k = max(0, min(int(frame_k), n_frames - 1))
     n_orbit = max(1, int(n_orbit))
     vals = display_field_frame(result, field_id, frame_k, deformed=True)
     if vals is None:
-        return []
+        outcome.unavailable.append(name)
+        return outcome
+    if value_scale != 1.0:
+        vals = vals * float(value_scale)
     if auto_range:
-        finite = vals[np.isfinite(vals)]
-        vmin = float(finite.min()) if finite.size else 0.0
-        vmax = float(finite.max()) if finite.size else 1.0
+        clim = _safe_clim(*view3d_color_range(vals, result.ref_coords, roi_mask))
+    else:
+        clim = _safe_clim(vmin, vmax)
 
-    label = colorbar_label(field_id)
+    label = field_label or colorbar_label(field_id)
     surf = build_surface(
         result.reconstruction.points[frame_k],
         vals,
         label,
         result.ref_coords,
         _surface_barrier(result, roi_mask),
+        roi_mask,
     )
     if surf is None:
-        return []
+        outcome.unavailable.append(name)
+        return outcome
     view_dir = ensure_dir(dest_dir / f"{prefix}_view3d_{timestamp}")
 
     pl = _make_plotter(window_size, "white")
     writer: StreamingAnimWriter | None = None
     try:
-        _add_surface(pl, surf, label, cmap, vmin, vmax)
-        pl.view_isometric()
+        _add_surface(pl, surf, label, cmap, *clim)
+        if camera is not None:
+            pl.camera_position = camera
+        else:
+            pl.view_isometric()
         step_deg = 360.0 / n_orbit
         for i in range(n_orbit):
-            if stop_event is not None and stop_event.is_set():
+            if stop_requested(stop_event):
+                outcome.cancelled = True
                 break
-            # Azimuth() moves the camera but does NOT redraw: without this
-            # render() the offscreen framebuffer still holds the PREVIOUS
-            # view, so every orbit frame came out pixel-identical and the
-            # "turntable" was a still image (verified on pyvista 0.48;
-            # camera_position does change, the screenshot just lags).
-            pl.render()
+            # _screenshot_bgr renders first: Azimuth() moves the camera but does
+            # NOT redraw, so without it every orbit frame was pixel-identical.
             img = _screenshot_bgr(pl)
             if writer is None:
-                w = StreamingAnimWriter(
-                    animation_format.lower(),
-                    view_dir,
-                    f"{field_id}_turntable",
-                    max(1, int(fps)),
-                    img.shape[:2],
+                writer = StreamingAnimWriter(
+                    animation_format.lower(), view_dir, name, max(1, int(fps)), img.shape[:2]
                 )
-                if not w.ok:
-                    w.close()
-                    return []
-                writer = w
             writer.append(img)
             pl.camera.Azimuth(step_deg)
             if progress_cb is not None:
-                progress_cb(i + 1, n_orbit, f"{field_id}_turntable")
+                progress_cb(i + 1, n_orbit, name)
+    except BaseException:
+        if writer is not None:
+            writer.discard()
+        raise
     finally:
         pl.close()
-        if writer is not None:
+
+    if writer is not None:
+        if outcome.cancelled:
+            outcome.discarded.append(writer.discard())
+        else:
             writer.close()
-    return [writer.out] if writer is not None else []
+            outcome.append(writer.out)
+    return outcome

@@ -38,9 +38,23 @@ def make_prefix(folder: Path | None) -> str:
     return re.sub(r'[<>:"/\\|?*\s]', "_", stem)
 
 
+_LAST_TIMESTAMP: list[datetime] = []
+
+
 def make_timestamp() -> str:
-    """Return the current local time as a ``YYYYMMDDHHMMSS`` string."""
-    return datetime.now().strftime("%Y%m%d%H%M%S")
+    """Return a ``YYYYMMDDHHMMSS`` string, unique within this process.
+
+    Timestamps have one-second resolution, so two exports in the same second
+    minted the same name and the second overwrote the first (fix batch V). A
+    repeat is bumped to the next second instead.
+    """
+    from datetime import timedelta
+
+    now = datetime.now().replace(microsecond=0)
+    if _LAST_TIMESTAMP and now <= _LAST_TIMESTAMP[0]:
+        now = _LAST_TIMESTAMP[0] + timedelta(seconds=1)
+    _LAST_TIMESTAMP[:] = [now]
+    return now.strftime("%Y%m%d%H%M%S")
 
 
 def ensure_dir(path: Path) -> Path:

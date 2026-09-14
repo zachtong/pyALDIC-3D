@@ -4,7 +4,9 @@ Same per-field rows / camera / resolution / background / range controls as the
 Images tab plus format (MP4 or GIF), timeline fps, and a frame-step decimator
 (the playback fps scales down by the same factor so the real duration is
 preserved). Drives the Qt-free :func:`al_dic_3d.export.export_animation` on
-the shared worker thread — frames stream straight into the encoder.
+the shared worker thread — frames stream straight into the encoder (GIFs too:
+one frame in memory, see :mod:`al_dic_3d.export.gifstream`). A note explains
+that a GIF cannot play faster than 50 fps.
 """
 
 from __future__ import annotations
@@ -24,8 +26,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS
+from al_dic_3d.export import GIF_MAX_FPS, animation_fps
 from al_dic_3d.gui.dialogs.export_tabs.common import (
+    MEDIA_FIELD_IDS,
     BackgroundRow,
     CameraRow,
     ExportTabBase,
@@ -55,9 +58,12 @@ class AnimationTab(ExportTabBase):
         fg_layout = QVBoxLayout(fields_group)
         fg_layout.setContentsMargins(8, 4, 8, 4)
         self._rows = FieldRowsPanel(
-            [*DISPLACEMENT_IDS, *STRAIN_IDS],
+            MEDIA_FIELD_IDS,
             hint,
             strain_available=result.strain is not None,
+            velocity_available=n_frames > 1,
+            display=dialog.field_display,
+            seed_range=dialog.seed_range,
         )
         fg_layout.addWidget(self._rows)
         layout.addWidget(fields_group)
@@ -98,6 +104,18 @@ class AnimationTab(ExportTabBase):
         opts.addStretch()
         layout.addLayout(opts)
 
+        self._gif_note = QLabel()
+        self._gif_note.setWordWrap(True)
+        self._gif_note.setStyleSheet(f"color: {COLORS.WARNING}; font-size: 11px;")
+        layout.addWidget(self._gif_note)
+        for signal in (
+            self._format_combo.currentIndexChanged,
+            self._fps_spin.valueChanged,
+            self._step_spin.valueChanged,
+        ):
+            signal.connect(self._update_gif_note)
+        self._update_gif_note()
+
         self._colorbar_check = QCheckBox(self.tr("Include colorbar"))
         self._colorbar_check.setChecked(True)
         layout.addWidget(self._colorbar_check)
@@ -131,6 +149,20 @@ class AnimationTab(ExportTabBase):
                 self.tr("Load an image sequence first (open the project in the main window).")
             )
 
+    def _update_gif_note(self) -> None:
+        """GIF delays are 1/100 s: faster than 50 fps plays at 50 fps (say so)."""
+        _step, playback = animation_fps(self._fps_spin.value(), self._step_spin.value())
+        too_fast = self._format_combo.currentData() == "gif" and playback > GIF_MAX_FPS
+        self._gif_note.setText(
+            self.tr(
+                "GIF timing has 1/100 s steps: {0} fps will play at {1} fps. "
+                "Choose MP4 for faster playback."
+            ).format(playback, GIF_MAX_FPS)
+            if too_fast
+            else ""
+        )
+        self._gif_note.setVisible(too_fast)
+
     # ---- surface consumed by the Preview & Colorbar tab -------------------------
 
     @property
@@ -159,6 +191,7 @@ class AnimationTab(ExportTabBase):
             frame_step=self._step_spin.value(),
             mesh_step=self._dialog.mesh_step,
             roi_mask=self._dialog.roi_mask,
+            right_roi_mask=self._dialog.right_roi_mask(compute=False),
             show_deformed=self._background_row.show_deformed(),
             output_max_dim=int(self._resolution_combo.currentData()),
             include_colorbar=self._colorbar_check.isChecked(),

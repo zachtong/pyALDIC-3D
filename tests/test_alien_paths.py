@@ -250,7 +250,7 @@ def test_animation_writer_under_alien_path(alien_dir: Path) -> None:
 
 
 def test_gif_writer_under_alien_path(alien_dir: Path) -> None:
-    pytest.importorskip("imageio")
+    pytest.importorskip("PIL")  # GIFs stream through Pillow (fix batch V)
     frame = np.zeros((32, 40, 3), dtype=np.uint8)
     w = StreamingAnimWriter("gif", alien_dir, "动画 anim", 5, (32, 40))
     for _ in range(2):

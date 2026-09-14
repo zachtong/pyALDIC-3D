@@ -12,6 +12,7 @@ strings are locale-invariant by design.
 
 from __future__ import annotations
 
+import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -876,8 +877,9 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 }
 
 _MSG_RE = re.compile(
-    r"(<source>(?P<src>.*?)</source>\s*(?:<comment>.*?</comment>\s*)?"
-    r"<translation)(?P<attrs>[^>]*)>(?P<old>.*?)(</translation>)",
+    r"(<source>(?P<src>[^<]*)</source>\s*"
+    r"(?:<(?:comment|extracomment|translatorcomment)>[^<]*</(?:comment|extracomment|translatorcomment)>\s*)*"
+    r"<translation)(?P<attrs>[^>]*)>(?P<old>[^<]*)(</translation>)",
     re.S,
 )
 
@@ -901,7 +903,7 @@ def fill_locale(locale: str) -> tuple[int, list[str]]:
         count += 1
         return f"{m.group(1)}>{escape(translation)}</translation>"
 
-    path.write_text(_MSG_RE.sub(_sub, text), encoding="utf-8")
+    path.write_text(_MSG_RE.sub(_sub, text), encoding="utf-8", newline="\n")  # LF, as committed
     return count, missing
 
 
@@ -5090,6 +5092,29 @@ _BATCH_C_CRACK: dict[str, dict[str, str]] = {
 
 for _loc, _entries in _BATCH_C_CRACK.items():
     TRANSLATIONS[_loc].update(_entries)
+
+
+# ---------------------------------------------------------------------------
+# Fix batch V (readiness review, 2026-09): each work stream keeps its strings
+# in its own module, tools/i18n_batch_v_<stream>.py, as ``BATCH`` (locale ->
+# {English source -> translation}). Their tests keep them in step with the
+# sources, so they are loaded from there rather than copied into this file.
+# ---------------------------------------------------------------------------
+
+_BATCH_V_STREAMS = ("main", "ops", "export", "view")
+
+
+def _load_batch_v(stream: str) -> dict[str, dict[str, str]]:
+    path = Path(__file__).resolve().parent / f"i18n_batch_v_{stream}.py"
+    spec = importlib.util.spec_from_file_location(f"i18n_batch_v_{stream}", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.BATCH
+
+
+for _stream in _BATCH_V_STREAMS:
+    for _loc, _entries in _load_batch_v(_stream).items():
+        TRANSLATIONS[_loc].update(_entries)
 
 
 def main() -> int:

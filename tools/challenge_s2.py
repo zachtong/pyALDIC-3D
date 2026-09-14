@@ -6,24 +6,38 @@ an independent 2-frame pipeline (reference + step) so every step gets a fresh
 FFT seed — consecutive steps jump up to 30 mm, which defeats warm-start
 seeding, and accumulative multi-frame runs would freeze (the S3 lesson).
 
-Usage: challenge_s2.py <rig>   with rig in {16mm, 35mm}
+Data: the Stereo-DIC Challenge 1.0 distribution. Sample 2 is NOT part of the
+curated examples/ collection (examples/README.md: example1 is Sample 1), so it
+is looked up in its original layout under the data root:
+
+    <data root>/StereoDIC_Challenge_1/StereoSample2 - Simulated/SimulatedTranslate/
+        16mm/Calibration.csv, "16-mm Step NN_0.tif", "16-mm Step NN_1.tif"
+        35mm/...
+
+The data root is --data-root DIR, else $ALDIC3D_DATA_ROOT, else the repo's
+examples/ folder.
+
+Usage: python tools/challenge_s2.py [16mm|35mm] [--data-root DIR]   (default 16mm)
 Writes reports/challenge/s2_<rig>.json (+ per-step medians npz).
 """
 
 from __future__ import annotations
 
+import argparse
 import json
+import os
 import sys
 import time
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
 
-C1 = Path(
-    r"C:/Users/13014/OneDrive - The University of Texas at Austin/Documents"
-    r"/MATLABCodes/StereoDIC_Challenge_1/StereoSample2 - Simulated/SimulatedTranslate"
-)
-OUT = Path(__file__).resolve().parents[1] / "reports" / "challenge"
+REPO = Path(__file__).resolve().parents[1]
+DATA_ROOT_ENV = "ALDIC3D_DATA_ROOT"
+C1_REL = Path("StereoDIC_Challenge_1") / "StereoSample2 - Simulated" / "SimulatedTranslate"
+RIGS = ("16mm", "35mm")
+OUT = REPO / "reports" / "challenge"
 
 # Imposed plate-frame translations (X, Z) mm; Y = 0 (GlobalDataStatistics.xlsx
 # step labels, independently verified <30 um by LK+triangulation during recon).
@@ -34,6 +48,42 @@ TRUTH_XZ = {
     13: (10, -10), 14: (20, -20), 15: (-10, 10), 16: (-20, 20),
     17: (0, 0),
 }
+
+
+def find_dataset(
+    cli_root: str | None, layouts: Sequence[tuple[Path, Sequence[str]]], what: str
+) -> Path:
+    """First ``<root>/<rel>`` holding every listed entry; else exit 2 with a clear message.
+
+    The data root is ``cli_root`` (--data-root), else ``$ALDIC3D_DATA_ROOT``, else
+    the repo's examples/ folder (layout: examples/README.md).
+    """
+    if cli_root:
+        root, origin = Path(cli_root).expanduser(), "--data-root"
+    elif os.environ.get(DATA_ROOT_ENV):
+        root, origin = Path(os.environ[DATA_ROOT_ENV]).expanduser(), DATA_ROOT_ENV
+    else:
+        root, origin = REPO / "examples", "default: the repo's examples/ folder"
+    report = []
+    for rel, entries in layouts:
+        base = root / rel
+        missing = [e for e in entries if not (base / e).exists()]
+        if not missing:
+            return base
+        state = "missing " + ", ".join(missing) if base.is_dir() else "folder does not exist"
+        report.append(f"  {base}  ({state})")
+    print(
+        f"error: {what} not found under the data root {root} ({origin}). Looked for:\n"
+        + "\n".join(report)
+        + f"\nPoint --data-root (or {DATA_ROOT_ENV}) at the folder that holds it.",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
+
+
+def rig_prefix(rig: str) -> str:
+    """File-name prefix of a rig's images: ``16mm`` -> ``16-mm``."""
+    return rig.replace("mm", "-mm")
 
 
 def estimate_disparity(folder: Path, prefix: str) -> tuple[float, float]:
@@ -61,11 +111,12 @@ def estimate_disparity(folder: Path, prefix: str) -> tuple[float, float]:
     return float(np.median(arr[:, 0])), float(np.median(arr[:, 1]))
 
 
-def run_rig(rig: str) -> dict:
+def run_rig(rig: str, c1: Path) -> dict:
+    """Run all 17 moving steps of one rig; ``c1`` is the SimulatedTranslate folder."""
     from al_dic_3d.runner import RunConfig, run_pipeline
 
-    folder = C1 / rig
-    prefix = rig.replace("mm", "-mm")
+    folder = c1 / rig
+    prefix = rig_prefix(rig)
     calib = folder / "Calibration.csv"
     OUT.mkdir(parents=True, exist_ok=True)
     offset = estimate_disparity(folder, prefix)
@@ -151,5 +202,23 @@ def run_rig(rig: str) -> dict:
     return out
 
 
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="Challenge 1.0 Sample 2 (simulated rigid translations) validation."
+    )
+    parser.add_argument("rig", nargs="?", default="16mm", choices=RIGS, help="rig (default 16mm)")
+    parser.add_argument(
+        "--data-root", help=f"dataset root (default: ${DATA_ROOT_ENV}, else the repo's examples/)"
+    )
+    args = parser.parse_args(argv)
+    prefix = rig_prefix(args.rig)
+    c1 = find_dataset(
+        args.data_root,
+        [(C1_REL, (f"{args.rig}/Calibration.csv", f"{args.rig}/{prefix} Step 00_0.tif"))],
+        f"Stereo-DIC Challenge 1.0 Sample 2 ({args.rig} rig)",
+    )
+    run_rig(args.rig, c1)
+
+
 if __name__ == "__main__":
-    run_rig(sys.argv[1] if len(sys.argv) > 1 else "16mm")
+    main()

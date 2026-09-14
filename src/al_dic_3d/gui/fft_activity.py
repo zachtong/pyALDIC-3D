@@ -6,7 +6,9 @@ runs its FFT integer search ONLY when it has no ``U0`` to warm-start from
 ``core/pipeline.py``). Two selections make ``current_U0`` None on that path:
 
 * ``init_guess == "fft"`` passes ``U0 = None`` — FFT seeds frame 1 (and every
-  reference switch).
+  reference switch). ``"seed"`` with no point placed falls back to exactly
+  this at run time (fix batch V: the knobs used to be greyed out in that case,
+  precisely when they were in use).
 * ``reference_mode == "incremental"`` makes every frame a reference switch,
   which clears the sibling warm start and forces FFT regardless of
   ``init_guess`` (the passed ``U0`` only ever seeds frame 1). The ``every_n`` /
@@ -28,10 +30,31 @@ if TYPE_CHECKING:
     from al_dic_3d.project.draft import ProjectDraft
 
 
+def has_starting_point(draft: ProjectDraft) -> bool:
+    """Whether at least one Starting Point is placed (list or legacy single)."""
+    return bool(getattr(draft, "seed_points", None)) or (
+        getattr(draft, "seed_point", None) is not None
+    )
+
+
+def effective_init_guess(draft: ProjectDraft) -> str:
+    """The initial-guess mode the run will actually use.
+
+    ``"seed"`` without a placed point runs as ``"fft"`` (the runner's
+    auto-fallback, :func:`al_dic_3d.matching.seed.resolve_init_guess`); every
+    other selection is used as is.
+    """
+    mode = getattr(draft, "init_guess", "fft")
+    if mode == "seed" and not has_starting_point(draft):
+        return "fft"
+    return mode
+
+
 def fft_controls_active(draft: ProjectDraft) -> bool:
     """True when ``fft_search`` / ``fft_auto_expand`` can affect the run.
 
     See the module docstring for the engine conditions. Equivalent to: FFT
-    seeding is selected, or the reference switches (incremental mode) force it.
+    seeding will run (selected, or Starting Points with none placed), or the
+    reference switches (incremental mode) force it.
     """
-    return draft.init_guess == "fft" or draft.reference_mode == "incremental"
+    return effective_init_guess(draft) == "fft" or draft.reference_mode == "incremental"

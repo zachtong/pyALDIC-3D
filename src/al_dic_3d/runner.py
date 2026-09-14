@@ -13,6 +13,7 @@ glue, not one of the mode-/strategy-agnostic downstream compute modules.
 from __future__ import annotations
 
 import glob
+import os
 import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field, replace
@@ -43,8 +44,14 @@ from al_dic_3d.reconstruct import (
     reconstruct_correspondence,
     remove_3d_outliers,
 )
+from al_dic_3d.run_output import (  # noqa: F401 - re-exported: runner is their public home
+    ARCHIVE_SCHEMA,
+    RESULT_FORMATS,
+    _arrays,
+    write_results,
+)
 from al_dic_3d.sequence import LazyFrameProvider, LazyMaskList, StereoSequence, load_gray
-from al_dic_3d.strain3d import STRAIN_FIELDS, compute_surface_strain
+from al_dic_3d.strain3d import compute_surface_strain
 
 if TYPE_CHECKING:
     from al_dic.core.data_structures import DICMesh
@@ -110,6 +117,10 @@ class RunConfig:
     # ``seed_points = [[x1,y1], [x2,y2], ...]``.
     seed_points: tuple[tuple[float, float], ...] = ()
     temporal_gate_znssd: float = 1.0  # honesty gate on cumulative tracks; <=0 off
+    # Stereo-link acceptance (fix batch V, H4): reject converged-but-wrong L->R
+    # links above this ZNSSD or further than this from their epipolar line (px).
+    stereo_znssd_max: float = 0.6
+    stereo_epipolar_max_px: float = 2.0
     # P3.6 opt-in: track both cameras concurrently (track_both strategy).
     # ~2x faster on the numba/numpy-heavy engine, doubles peak memory.
     # TOML: [matching].parallel_cameras. Results are identical either way.
@@ -246,6 +257,8 @@ def load_config(path: str | Path) -> RunConfig:
         seed_point=seed_point,
         seed_points=seed_points,
         temporal_gate_znssd=float(match.get("temporal_gate_znssd", 1.0)),
+        stereo_znssd_max=float(match.get("stereo_znssd_max", 0.6)),
+        stereo_epipolar_max_px=float(match.get("stereo_epipolar_max_px", 2.0)),
         parallel_cameras=bool(match.get("parallel_cameras", False)),
         refine_inner=bool(match.get("refine_inner", False)),
         refine_outer=bool(match.get("refine_outer", False)),
@@ -285,9 +298,16 @@ def _natural_key(name: str) -> list:
 
 
 def _resolve_paths(spec: str | Sequence[str], base: Path) -> list[Path]:
-    """Turn a glob string or explicit list into a naturally-sorted list of paths."""
+    """Turn a glob string or explicit list into a naturally-sorted list of paths.
+
+    The base directory is escaped before it is joined with the pattern (fix
+    batch V): a config inside a folder such as ``test [1]`` used to find no
+    images, because the brackets were read as a glob character class. An
+    absolute pattern is used as written.
+    """
     if isinstance(spec, str):
-        matches = sorted(glob.glob(str(base / spec)), key=lambda p: _natural_key(Path(p).name))
+        pattern = os.path.join(glob.escape(str(base)), spec)
+        matches = sorted(glob.glob(pattern), key=lambda p: _natural_key(Path(p).name))
         if not matches:
             raise FileNotFoundError(f"no files match {spec!r} under {base}")
         return [Path(m) for m in matches]
@@ -315,6 +335,25 @@ def _open_stream(
         return None, None
     paths = _resolve_paths(spec, base)
     return LazyFrameProvider(paths), [p.name for p in paths]
+
+
+def _check_calibration_size(rig, cam: str, shape: tuple[int, int]) -> None:
+    """Refuse a calibration recorded for a different image resolution.
+
+    Only formats that record the image size (DICe ``IMAGE_HEIGHT_WIDTH``) can be
+    checked; a mismatch (binned / cropped images, the other rig's file) silently
+    corrupts every triangulated point, so it is an error, not a warning.
+    """
+    intr = rig.cameras.get(cam) if hasattr(rig, "cameras") else None
+    if intr is None or not intr.width or not intr.height:
+        return
+    h, w = int(shape[0]), int(shape[1])
+    if (int(intr.width), int(intr.height)) != (w, h):
+        raise ValueError(
+            f"calibration for camera {cam} was made for {intr.width}x{intr.height} images, "
+            f"but the {cam} images are {w}x{h}: use the calibration of this setup "
+            "(binned or cropped images need their own calibration)"
+        )
 
 
 def _open_masks(spec: str | Sequence[str] | None, base: Path) -> LazyMaskList | None:
@@ -450,6 +489,8 @@ def run_pipeline(
     cfg: RunConfig,
     progress: ProgressFn | None = None,
     stop: Callable[[], bool] | None = None,
+    *,
+    complete_partial: bool = False,
 ) -> RunResult:
     """Execute the full headless correspondence + reconstruction pipeline.
 
@@ -472,6 +513,8 @@ def run_pipeline(
     right_masks = _open_masks(cfg.right_masks, seq_base)
     img_h, img_w = provider_left.shape
     n_frames = len(provider_left)
+    _check_calibration_size(rig, cfg.cam_left, (img_h, img_w))
+    _check_calibration_size(rig, cfg.cam_right, provider_right.shape)
 
     if cfg.roi_mask is not None:
         # Arbitrary-shape ROI (toolbox-drawn): its bounding box overrides the
@@ -484,23 +527,6 @@ def run_pipeline(
         cfg = replace(cfg, roi=_mask_bbox(roi_mask))
         if left_masks is None:
             left_masks = [roi_mask.astype(np.float64)] * n_frames
-
-    # Fail-fast RAM pre-check (P1.4) BEFORE any stack touches memory: project
-    # the run's peak from the sequence geometry and refuse runs that would
-    # swap/OOM. [advanced].ignore_memory_check = true overrides.
-    if not cfg.ignore_memory_check:
-        xmin, xmax, ymin, ymax = cfg.roi
-        step = max(1, cfg.winstepsize)
-        n_pts_est = max(1, (max(0, xmax - xmin) // step + 1) * (max(0, ymax - ymin) // step + 1))
-        memcheck.check_run_memory(
-            n_frames,
-            img_h,
-            img_w,
-            n_cameras=2,
-            lazy=True,
-            n_pts=n_pts_est,
-            parallel=cfg.parallel_cameras,  # P3.6: both engine transients live
-        )
 
     masks: dict = {}
     if left_masks is not None:
@@ -521,8 +547,26 @@ def run_pipeline(
         masks=masks,
         names=names,
     )
+    if progress is not None:
+        progress(0.0, "Setup: checking the sequence and building the reference mesh")
     seq.validate()
     mesh_L = _build_reference_mesh(cfg, img_h, img_w, masks.get(cfg.cam_left))
+
+    # Fail-fast RAM pre-check (P1.4) BEFORE any stack touches memory: project
+    # the run's peak from the sequence geometry and refuse runs that would
+    # swap/OOM. [advanced].ignore_memory_check = true overrides. It runs after
+    # the (cheap) reference mesh so a refined mesh is sized by its real node
+    # count, not by the regular-grid estimate (fix batch V).
+    if not cfg.ignore_memory_check:
+        memcheck.check_run_memory(
+            n_frames,
+            img_h,
+            img_w,
+            n_cameras=2,
+            lazy=True,
+            n_pts=int(np.asarray(mesh_L.coordinates_fem).shape[0]),
+            parallel=cfg.parallel_cameras,  # P3.6: both engine transients live
+        )
 
     # Batch C item 1/5: cut the external frame-1 mesh at any thin crack barrier
     # (mark_bridging) so FEM/global-step elements do not bridge the crack.
@@ -552,16 +596,14 @@ def run_pipeline(
         temporal_gate_znssd=cfg.temporal_gate_znssd,
         parallel_cameras=cfg.parallel_cameras,
     )
-    try:
-        # Forward only the kwargs this strategy's constructor accepts (P3.6:
-        # parallel_cameras exists on track_both only — an unfiltered TypeError
-        # fallback would silently drop ALL matching-scale parameters).
-        import inspect
+    # Forward only the kwargs this strategy's constructor accepts (P3.6:
+    # parallel_cameras exists on track_both only). No TypeError fallback: the
+    # old ``except TypeError: strategy_cls()`` silently dropped EVERY user
+    # parameter on any constructor error (fix batch V).
+    import inspect
 
-        accepted = inspect.signature(strategy_cls.__init__).parameters
-        strategy = strategy_cls(**{k: v for k, v in kwargs.items() if k in accepted})
-    except TypeError:
-        strategy = strategy_cls()  # strategy without tunable matching scale
+    accepted = inspect.signature(strategy_cls.__init__).parameters
+    strategy = strategy_cls(**{k: v for k, v in kwargs.items() if k in accepted})
 
     # Q5: an explicit reference-update schedule (incremental every_n / custom);
     # None keeps the engine's reference_mode-derived default. Both cameras
@@ -584,6 +626,9 @@ def run_pipeline(
         init_guess=cfg.init_guess,  # type: ignore[arg-type]
         seed_point=cfg.seed_point,
         seed_points=tuple(getattr(cfg, "seed_points", ()) or ()),
+        stereo_znssd_max=float(cfg.stereo_znssd_max),
+        stereo_epipolar_max_px=float(cfg.stereo_epipolar_max_px),
+        complete_partial_prefix=bool(complete_partial),
     )
     cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress, stop=stop)
     # R2 (engine 0.7 partial-results): a cooperative cancel mid-run RETURNS a
@@ -661,7 +706,15 @@ def run_pipeline(
     # it survives the session file and the parameters export.
     from al_dic_3d.matching.diagnostics import summarize_run
 
-    summary = summarize_run(cs, rec.points)
+    # Nodes that CAN be valid: the mesh spans the ROI's bounding box, so a
+    # shaped ROI leaves out-of-mask nodes that are NaN by construction.
+    n_in_roi = int(cs.n_pts)
+    if left_mask0 is not None:
+        rc = np.asarray(mesh_L.coordinates_fem, dtype=np.float64).reshape(-1, 2)
+        xi = np.clip(np.round(rc[:, 0]).astype(np.int64), 0, left_mask0.shape[1] - 1)
+        yi = np.clip(np.round(rc[:, 1]).astype(np.int64), 0, left_mask0.shape[0] - 1)
+        n_in_roi = int((left_mask0[yi, xi] > 0.5).sum()) or int(cs.n_pts)
+    summary = summarize_run(cs, rec.points, n_eligible=n_in_roi)
 
     tracked = int((rec.source != 3).sum())  # 3 == INVALID
     meta = {
@@ -676,6 +729,25 @@ def run_pipeline(
         "crack_aware": bool(crack_aware),
         "image_size": (img_h, img_w),
         "base_dir": str(seq_base),
+        # Fix batch V: what was actually run. Exports / display read these, not
+        # the project draft (which the user may have edited since).
+        "n_pts_in_roi": n_in_roi,
+        "run_params": {
+            "strategy": cfg.strategy,
+            "reference_mode": cfg.reference_mode,
+            "winsize": int(cfg.winsize),
+            "winstepsize": int(cfg.winstepsize),
+            "winsize_min": int(cfg.winsize_min),
+            "stereo_search": int(cfg.stereo_search),
+            "fft_search": int(cfg.fft_search),
+            "init_guess": cfg.init_guess,
+            "use_global_step": bool(cfg.use_global_step),
+            "admm_max_iter": int(cfg.admm_max_iter),
+            "temporal_gate_znssd": float(cfg.temporal_gate_znssd),
+            "stereo_znssd_max": float(cfg.stereo_znssd_max),
+            "stereo_epipolar_max_px": float(cfg.stereo_epipolar_max_px),
+            "roi": [int(v) for v in cfg.roi],
+        },
         "diagnostics": [dict(r) for r in cs.diagnostics],
         "summary": summary.to_meta(),
         "gates": gates,
@@ -697,114 +769,5 @@ def run_pipeline(
 
 
 # --- output ------------------------------------------------------------------
-
-
-RESULT_FORMATS = ("npz", "mat", "csv", "ply", "vtu")
-
-# Archive layout version recorded in the parameters JSON. Schema 2 (P3.3)
-# dropped the doubled ``strain_<name>`` aliases: strain stacks live ONLY under
-# their canonical GUI-selection ids (``exx`` ... ``von_mises`` plus ``dwdx`` /
-# ``dwdy``). Schema 3 (Batch C item 3) adds an OPTIONAL ``strain_valid``
-# ``(n_frames, n_pts)`` bool stack (edge-trim UNION crack-trim) alongside the
-# now-DENSE strain values; readers that ignore unknown keys are unaffected.
-ARCHIVE_SCHEMA = 3
-
-
-def _arrays(result: RunResult) -> dict:
-    """The unified archive: GUI selection schema + correspondence extras.
-
-    Built on :func:`al_dic_3d.export.tables.selected_arrays` with ALL field ids
-    (strategy / ref_coords / points3D / reproj_error / source + one
-    ``(n_frames, n_pts)`` stack per field: U, V, W, mag, exx, ...), merged with
-    the correspondence extras ``xL`` / ``xR`` / ``quality`` and the LEGACY keys
-    ``displacement3D`` / ``n_frames`` / ``n_pts`` that parity tools read.
-    Schema 2 (see :data:`ARCHIVE_SCHEMA`): ONE canonical key per strain field —
-    ``dwdx`` / ``dwdy`` (not in the GUI picker) are added under their bare
-    names and the old ``strain_<name>`` duplicates are gone.
-    """
-    from al_dic_3d.export import DISPLACEMENT_IDS, STRAIN_IDS, selected_arrays
-
-    cs = result.correspondence
-    arrays = selected_arrays(result, [*DISPLACEMENT_IDS, *STRAIN_IDS])
-    arrays.update(
-        {
-            "xL": cs.xL,
-            "xR": cs.xR,
-            "quality": cs.quality,
-            "displacement3D": result.reconstruction.displacement,
-            "n_frames": np.int64(cs.n_frames),
-            "n_pts": np.int64(cs.n_pts),
-        }
-    )
-    if result.strain is not None:
-        for name in STRAIN_FIELDS:
-            arrays.setdefault(name, getattr(result.strain, name))
-        # Schema 3: DENSE strain values + an optional validity stack (edge-trim
-        # UNION crack-trim). Absent when trimming/crack-awareness was off.
-        if getattr(result.strain, "strain_valid", None) is not None:
-            arrays.setdefault("strain_valid", np.asarray(result.strain.strain_valid))
-    return arrays
-
-
-def write_results(
-    result: RunResult, cfg: RunConfig, formats: Sequence[str] = ("npz", "mat")
-) -> dict[str, Path]:
-    """Write the run outputs under ``cfg.output_dir``; return format -> path.
-
-    ``npz`` / ``mat`` carry the unified SUPERSET archive (see :func:`_arrays`)
-    at the fixed ``<prefix>.npz`` / ``<prefix>.mat`` paths that the parity
-    tooling reads. ``csv`` / ``ply`` / ``vtu`` route through the export package
-    into ``<prefix>_{fmt}_{timestamp}`` folders — a fresh timestamp per call,
-    so repeated runs never overwrite them. A ``<prefix>_parameters_{ts}.json``
-    recording the full RunConfig is ALWAYS written (key ``"params"``).
-    """
-    from dataclasses import asdict
-
-    from al_dic_3d.export import (
-        DISPLACEMENT_IDS,
-        STRAIN_IDS,
-        export_csv_frames,
-        export_params,
-        export_ply_frames,
-        export_vtu_series,
-        make_timestamp,
-    )
-
-    unknown = sorted(set(formats) - set(RESULT_FORMATS))
-    if unknown:
-        raise ValueError(f"unknown output format(s): {', '.join(unknown)}")
-
-    cfg.output_dir.mkdir(parents=True, exist_ok=True)
-    prefix = cfg.output_prefix
-    ts = make_timestamp()
-    fields = list(DISPLACEMENT_IDS) + (list(STRAIN_IDS) if result.strain is not None else [])
-    # Schema 3: csv/vtu/ply also carry the DENSE strain's validity column when present.
-    if result.strain is not None and getattr(result.strain, "strain_valid", None) is not None:
-        fields.append("strain_valid")
-    # archive_schema documents the npz/mat key layout (P3.3 alias removal).
-    extra = {**asdict(cfg), "archive_schema": ARCHIVE_SCHEMA}
-    paths: dict[str, Path] = {
-        "params": export_params(cfg.output_dir, prefix, ts, result, extra=extra)
-    }
-
-    if "npz" in formats or "mat" in formats:
-        arrays = _arrays(result)
-        if "npz" in formats:
-            paths["npz"] = cfg.output_dir / f"{prefix}.npz"
-            np.savez_compressed(paths["npz"], **arrays)
-        if "mat" in formats:
-            import scipy.io
-
-            paths["mat"] = cfg.output_dir / f"{prefix}.mat"
-            scipy.io.savemat(str(paths["mat"]), arrays, do_compression=True)
-    if "csv" in formats:
-        csv_dir = cfg.output_dir / f"{prefix}_csv_{ts}"
-        export_csv_frames(result, fields, csv_dir, prefix)
-        paths["csv"] = csv_dir
-    if "ply" in formats:
-        export_ply_frames(cfg.output_dir, prefix, ts, result, fields)
-        paths["ply"] = cfg.output_dir / f"{prefix}_ply_{ts}"
-    if "vtu" in formats:
-        export_vtu_series(cfg.output_dir, prefix, ts, result, fields)
-        paths["vtu"] = cfg.output_dir / f"{prefix}_vtu_{ts}"
-    return paths
+# Writing the results lives in al_dic_3d.run_output (the 800-line cap); these
+# names are re-exported above for the CLI, the tools and the README.

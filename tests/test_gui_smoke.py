@@ -214,9 +214,15 @@ def test_init_guess_section_maps_to_draft(qapp, scene):
     widget._rb_seed.setChecked(True)
     assert draft.init_guess == "seed"
 
-    # The config card mirrors the choice through its INIT row.
-    win._canvas_area._config_overlay.refresh()
-    assert win._canvas_area._config_overlay._init_lbl.text() == "Starting Point"
+    # The config card shows the mode the run will USE: Starting Points with
+    # no point placed runs as FFT (fix batch V), with a point it is the seed.
+    overlay = win._canvas_area._config_overlay
+    overlay.refresh()
+    assert overlay._init_lbl.text() == "FFT (no starting point)"
+    draft.seed_points = [(100.0, 100.0)]
+    overlay.refresh()
+    assert overlay._init_lbl.text() == "Starting Point"
+    draft.seed_points = []
     win.close()
 
 

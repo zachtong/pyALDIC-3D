@@ -8,8 +8,10 @@ the selected displacement/strain fields plus ``reproj_error`` and ``source``.
 A ``{prefix}.pvd`` collection references every frame with its timestep so
 ParaView loads the whole sequence in one open.
 
-Qt-free; pyvista/VTK is imported lazily INSIDE the entry point (the
-``al-dic-3d[viz3d]`` extra) so the compute layer stays installable without it.
+Qt-free; pyvista/VTK is imported lazily INSIDE the entry point so the compute
+layer stays importable where VTK cannot load. pyvista is a CORE dependency
+since v1.0.0 (the old ``[viz3d]`` extra is only a compatibility alias), so a
+missing pyvista means a broken install: the error says how to repair it.
 """
 
 from __future__ import annotations
@@ -20,9 +22,17 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from al_dic_3d.export.outcome import ExportOutcome
 from al_dic_3d.export.tables import field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
 from al_dic_3d.viz3d import as_vtk_faces, build_quad_connectivity, filter_cells_finite
+
+_PYVISTA_MISSING = (
+    "VTU export requires pyvista, which is missing from this Python environment. "
+    "pyvista is a core dependency of al-dic-3d: repair the install with "
+    "'pip install --upgrade al-dic-3d' or 'pip install pyvista' "
+    "(the old 'al-dic-3d[viz3d]' extra is only an alias for the core install)."
+)
 
 if TYPE_CHECKING:
     from al_dic_3d.runner import RunResult
@@ -68,21 +78,20 @@ def export_vtu_series(
             frames — the ``.pvd`` then references only the frames written.
 
     Returns:
-        The written paths (frame files, ``.pvd`` last). Point count and order
-        are identical in every frame (NaN = invalid kept as NaN), so point ids
-        are stable across the series.
+        The written paths (frame files, ``.pvd`` last) as an
+        :class:`~al_dic_3d.export.outcome.ExportOutcome` whose ``cancelled``
+        is set when a stop left frames unwritten. Point count and order are
+        identical in every frame (NaN = invalid kept as NaN), so point ids are
+        stable across the series.
 
     Raises:
-        ImportError: when pyvista is missing — install the viz3d extra:
-            ``pip install al-dic-3d[viz3d]``.
+        ImportError: when pyvista is missing (a broken install — pyvista is a
+            core dependency); the message says how to repair it.
     """
     try:
         import pyvista as pv
     except ImportError as exc:  # pragma: no cover - exercised via sys.modules patch
-        raise ImportError(
-            "VTU export requires pyvista; install the optional extra with "
-            "'pip install al-dic-3d[viz3d]'"
-        ) from exc
+        raise ImportError(_PYVISTA_MISSING) from exc
 
     rec = result.reconstruction
     n_frames = rec.n_frames
@@ -90,8 +99,10 @@ def export_vtu_series(
     connectivity = build_quad_connectivity(result.ref_coords)
 
     frame_files: list[Path] = []
+    cancelled = False
     for k in range(n_frames):
         if stop_event is not None and stop_event.is_set():
+            cancelled = True
             break
         points = np.asarray(rec.points[k], dtype=np.float64)
         quads = filter_cells_finite(connectivity, points)
@@ -111,4 +122,4 @@ def export_vtu_series(
             progress_cb((k + 1) / n_frames, f"VTU {path.name}")
 
     pvd = _write_pvd(out_dir / f"{prefix}.pvd", frame_files)
-    return [*frame_files, pvd]
+    return ExportOutcome([*frame_files, pvd], cancelled=cancelled)

@@ -100,7 +100,9 @@ def main() -> None:
     # 0. pre-flight guards -------------------------------------------------
     todos = len(TODO_RE.findall(src)) - src.count("\\newcommand{\\todo}")
     if todos > 0:
-        sys.exit(f"{todos} unresolved \\todo{{}} marker(s) in the manuscript -- resolve them first.")
+        sys.exit(
+            f"{todos} unresolved \\todo{{}} marker(s) in the manuscript -- resolve them first."
+        )
 
     figures = included_figures(src)
     if not figures:

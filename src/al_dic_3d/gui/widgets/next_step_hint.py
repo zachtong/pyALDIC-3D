@@ -30,8 +30,9 @@ class NextStepHint(QLabel):
         self.hide()
 
     def refresh(self, draft) -> None:
-        """Recompute the message from ``draft.issues()``; hide when ready."""
-        message = self.message_for(draft.issues())
+        """Recompute the message from the draft's readiness issues; hide when ready."""
+        issues = draft.readiness_issues() if hasattr(draft, "readiness_issues") else draft.issues()
+        message = self.message_for(issues)
         if message is None:
             self.hide()
             return
@@ -51,4 +52,7 @@ class NextStepHint(QLabel):
                 return issue_text(issue)  # mismatch / too-few-frames details
         if "calibration file not set" in issues:
             return self.tr("Calibrate from images or import a calibration")
-        return self.tr("Draw the ROI on the left camera, frame 1")
+        if "ROI not set" in issues or any(i.startswith("ROI is empty") for i in issues):
+            return self.tr("Draw the ROI on the left camera, frame 1")
+        # Content problems (fix batch V, M8): name the specific one.
+        return issue_text(issues[0])

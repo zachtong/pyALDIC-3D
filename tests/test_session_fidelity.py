@@ -267,6 +267,9 @@ DRAFT_DISTINCTIVE: dict[str, object] = {
     "admm_max_iter": 9,
     "fft_search": 27,
     "fft_auto_expand": False,
+    "temporal_gate_znssd": 0.85,
+    "stereo_znssd_max": 0.45,
+    "stereo_epipolar_max_px": 3.5,
     "parallel_cameras": True,
     "refine_inner": True,
     "refine_outer": True,
@@ -345,6 +348,8 @@ CONFIG_DISTINCTIVE: dict[str, object] = {
     "seed_point": (33.5, 44.5),
     "seed_points": ((33.5, 44.5), (55.5, 66.5)),
     "temporal_gate_znssd": 0.75,
+    "stereo_znssd_max": 0.45,
+    "stereo_epipolar_max_px": 3.5,
     "parallel_cameras": True,
     "refine_inner": True,
     "refine_outer": True,
@@ -397,6 +402,7 @@ APPSTATE_PERSISTED = {"draft", "config", "result", "view_state", "workflow_step"
 APPSTATE_TRANSIENT = {
     "project_path": "set to the file just loaded, not read from it",
     "dirty": "loading yields a clean state by definition",
+    "open_notes": "messages produced BY opening (e.g. calibration restored), never stored",
 }
 
 

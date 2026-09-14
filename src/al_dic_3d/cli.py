@@ -3,7 +3,9 @@
 Exposes ``--version``, the Phase-1 ``run`` sub-command (a headless
 ``config.toml`` -> ``.npz`` + ``.mat`` pipeline), ``gui``, and the D12
 ``calibrate`` sub-command (board image pairs -> QC'd stereo calibration ->
-OpenCV YAML). Further sub-commands (``export``, ...) land as their backing
+OpenCV YAML), ``demo`` (a synthetic dataset to try the pipeline on, see
+:mod:`al_dic_3d.synthetic`) and ``self-test`` (the installation / frozen-bundle
+check, see :mod:`al_dic_3d.self_test`). Further sub-commands land as their backing
 modules arrive; the ``subparsers`` handle is the reserved seam. The heavy
 lifting lives in :mod:`al_dic_3d.runner` / :mod:`al_dic_3d.calibration` so it
 stays unit-testable without a subprocess.
@@ -16,6 +18,13 @@ import sys
 from pathlib import Path
 
 from al_dic_3d import __version__
+
+# ``demo`` defaults: small enough to write in about a second and to run in a few
+# seconds once the kernels are compiled.
+_DEMO_FRAMES = 4
+_DEMO_SIZE = 320
+_DEMO_FRAMES_RANGE = (2, 100)
+_DEMO_SIZE_RANGE = (160, 2048)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -150,6 +159,51 @@ def build_parser() -> argparse.ArgumentParser:
         "--verify-right", metavar="FILE", help="RIGHT image of a verification board pair"
     )
 
+    demo_p = subparsers.add_parser(
+        "demo",
+        help="write a small synthetic stereo dataset (images, calibration, config.toml)",
+        description=(
+            "Write a synthetic stereo-DIC dataset with analytic ground truth into OUT: "
+            "a distorted 18 deg convergent camera pair viewing a tilted speckle plane "
+            "under a known deformation, its OpenCV calibration YAML and a ready "
+            "config.toml. Then run 'al-dic-3d run OUT/config.toml', or pass --run."
+        ),
+    )
+    demo_p.add_argument("out", metavar="OUT", help="folder to write into (created if missing)")
+    demo_p.add_argument(
+        "--frames",
+        type=int,
+        default=_DEMO_FRAMES,
+        metavar="N",
+        help=f"frames per camera, {_DEMO_FRAMES_RANGE[0]}-{_DEMO_FRAMES_RANGE[1]} "
+        f"(default {_DEMO_FRAMES})",
+    )
+    demo_p.add_argument(
+        "--size",
+        type=int,
+        default=_DEMO_SIZE,
+        metavar="PX",
+        help=f"square image size in pixels, {_DEMO_SIZE_RANGE[0]}-{_DEMO_SIZE_RANGE[1]} "
+        f"(default {_DEMO_SIZE})",
+    )
+    demo_p.add_argument(
+        "--run",
+        action="store_true",
+        help="also run the pipeline and report the accuracy against the ground truth",
+    )
+
+    st_p = subparsers.add_parser(
+        "self-test",
+        help="check that this installation works end to end",
+        description=(
+            "Check the packaged data, Qt, the translations, numba, file I/O in a "
+            "non-ASCII folder, the video/GIF writers, the colorbar, session save/load, "
+            "an offscreen 3D render and a mini stereo run. One line per check; exit "
+            "code 0 when nothing failed. ALDIC3D_SELFTEST_SKIP_GL=1 skips the render."
+        ),
+    )
+    st_p.add_argument("--json", metavar="PATH", help="also write a UTF-8 JSON report to PATH")
+
     return parser
 
 
@@ -175,10 +229,43 @@ def _run_command(args: argparse.Namespace) -> int:
 
     def progress(frac: float, msg: str) -> None:
         if not args.quiet:
-            print(f"  [{frac * 100:5.1f}%] {msg}")
+            _say(f"  [{frac * 100:5.1f}%] {msg}")
 
-    result = run_pipeline(cfg, progress=progress)
-    paths = write_results(result, cfg, formats=formats)
+    # Fix batch V: the first Ctrl+C asks the pipeline to stop at its next
+    # cooperative checkpoint and KEEPS the finished frames (the partial-results
+    # contract the GUI already used); a second Ctrl+C aborts outright.
+    import signal
+    import threading
+
+    stop_event = threading.Event()
+
+    def _on_sigint(signum, frame):  # noqa: ARG001
+        if stop_event.is_set():
+            raise KeyboardInterrupt
+        stop_event.set()
+        print(
+            "\ninterrupt: finishing the current frame and keeping the finished ones; "
+            "if the first camera was still tracking, the second camera is tracked over the "
+            "kept frames first (press Ctrl+C again to abort)",
+            file=sys.stderr,
+        )
+
+    previous = signal.signal(signal.SIGINT, _on_sigint)
+    try:
+        try:
+            result = run_pipeline(
+                cfg, progress=progress, stop=stop_event.is_set, complete_partial=True
+            )
+        except RuntimeError as exc:
+            if stop_event.is_set() and str(exc) == "cancelled":
+                print("interrupted before any frame finished: nothing to write", file=sys.stderr)
+                return 130
+            raise
+    finally:
+        signal.signal(signal.SIGINT, previous)
+
+    write_errors: list[str] = []
+    paths = write_results(result, cfg, formats=formats, errors=write_errors)
 
     m = result.meta
     total = int(m["n_frames"]) * int(m["n_pts"])
@@ -190,15 +277,28 @@ def _run_command(args: argparse.Namespace) -> int:
     # F3.1: post-run failure accounting — every silent kill becomes a line.
     from al_dic_3d.matching.diagnostics import summarize_run, summary_lines
 
-    summary = summarize_run(result.correspondence, result.reconstruction.points)
+    summary = summarize_run(
+        result.correspondence, result.reconstruction.points, n_eligible=m.get("n_pts_in_roi")
+    )
     for level, msg in summary_lines(summary, m.get("gates"), stopped=m):
         if level in ("warning", "error"):
-            print(f"{level}: {msg}", file=sys.stderr)
+            _say(f"{level}: {msg}", err=True)
         else:
-            print(msg)
+            _say(msg)
 
     for key in ("params", *formats):
-        print(f"wrote {paths[key]}")
+        if key in paths:
+            _say(f"wrote {paths[key]}")
+    for err in write_errors:
+        _say(f"error: could not write {err}", err=True)
+    if write_errors:
+        return 1
+    if m.get("stopped_early"):
+        print(
+            f"interrupted: kept frames [0, {m.get('stopped_at_frame')}); later frames are empty",
+            file=sys.stderr,
+        )
+        return 130
     # An all-empty result is a failure even though the pipeline ran to the end.
     return 1 if summary.all_empty else 0
 
@@ -358,6 +458,131 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     return 0
 
 
+# Typographic characters the compute layer's English messages use, spelled in
+# ASCII for the terminal (fix batch V: an em dash came out as mojibake when the
+# output was redirected to a file, and crashed a console on code page 437).
+_PLAIN = str.maketrans(
+    {"\u2014": "-", "\u2013": "-", "\u2192": "->", "\u00d7": "x", "\u00b5": "u",
+     "\u2026": "...", "\u2264": "<=", "\u2265": ">=", "\u2212": "-"}
+)  # fmt: skip
+
+
+def _say(text: str, *, err: bool = False) -> None:
+    """Print pipeline text in plain ASCII punctuation (paths still escaped safely)."""
+    _echo(str(text).translate(_PLAIN), err=err)
+
+
+def _echo(text: str, *, err: bool = False) -> None:
+    """Print a line; a console that cannot encode it (a path) gets it escaped, never a crash."""
+    stream = sys.stderr if err else sys.stdout
+    if stream is None:
+        return
+    try:
+        print(text, file=stream, flush=True)
+    except UnicodeEncodeError:
+        encoding = getattr(stream, "encoding", None) or "ascii"
+        print(text.encode(encoding, "backslashreplace").decode(encoding), file=stream, flush=True)
+
+
+def _quote(path: Path) -> str:
+    """``path`` quoted (only when needed) for pasting into this platform's shell."""
+    if sys.platform == "win32":
+        import subprocess
+
+        return subprocess.list2cmdline([str(path)])
+    import shlex
+
+    return shlex.quote(str(path))
+
+
+def _demo_command(args: argparse.Namespace) -> int:
+    """Handle ``al-dic-3d demo OUT`` (synthetic dataset; ``--run`` also runs it)."""
+    from al_dic_3d import synthetic
+
+    for flag, value, (lo, hi) in (
+        ("--frames", args.frames, _DEMO_FRAMES_RANGE),
+        ("--size", args.size, _DEMO_SIZE_RANGE),
+    ):
+        if not lo <= value <= hi:
+            _echo(f"error: {flag} must be between {lo} and {hi}, got {value}", err=True)
+            return 2
+    out = Path(args.out).expanduser()
+    if out.exists() and not out.is_dir():
+        _echo(f"error: {out} exists and is not a folder", err=True)
+        return 2
+    if out.is_dir() and any(out.iterdir()) and not synthetic.is_synthetic_dataset(out):
+        # Never write calib.yml / config.toml over somebody's project.
+        _echo(
+            f"error: {out} is not empty; choose a new folder (only an earlier demo "
+            "folder is rewritten)",
+            err=True,
+        )
+        return 2
+    try:
+        # Rewriting an earlier demo: drop its frames beyond the new count, so the
+        # folder holds exactly the dataset the new config.toml describes.
+        for stale in synthetic.frame_files(out, first=args.frames):
+            stale.unlink()
+        scene = synthetic.build_scene(out, img=args.size, n_frames=args.frames)
+        synthetic.write_config(
+            out, scene, prefix="demo", explicit_files=True, output_dir="results", strain=True
+        )
+    except (OSError, ValueError) as exc:
+        _echo(f"error: could not write the demo dataset: {exc}", err=True)
+        return 1
+    config = out / synthetic.CONFIG_NAME  # spelled the way the user gave OUT
+    _echo(f"wrote a synthetic stereo dataset to {out}")
+    _echo(
+        f"  {args.frames} frames per camera, {args.size}x{args.size} px, "
+        f"{synthetic.RIG_ANGLE_DEG:g} deg convergent rig with lens distortion; "
+        "a tilted speckle plane under a known deformation"
+    )
+    _echo(
+        f"  {synthetic.CALIB_NAME} (OpenCV YAML), {scene['left'][0]} ... "
+        f"{scene['right'][-1]}, {synthetic.CONFIG_NAME}"
+    )
+    if not args.run:
+        _echo("next, run the pipeline on it:")
+        _echo(f"  al-dic-3d run {_quote(config)}")
+        return 0
+    return _run_demo(config, scene)
+
+
+def _run_demo(config: Path, scene: dict) -> int:
+    """``demo --run``: run the pipeline on the dataset and report its accuracy."""
+    from al_dic_3d import synthetic
+    from al_dic_3d.runner import load_config, run_pipeline, write_results
+
+    _echo(f"running: al-dic-3d run {_quote(config)}")
+    _echo("  (the first run on a new installation also compiles its kernels)")
+
+    def progress(frac: float, msg: str) -> None:
+        _echo(f"  [{frac * 100:5.1f}%] {msg}")
+
+    errors: list[str] = []
+    try:
+        cfg = load_config(config)
+        result = run_pipeline(cfg, progress=progress)
+        paths = write_results(result, cfg, formats=("npz", "mat"), errors=errors)
+        acc = synthetic.accuracy_summary(result, scene)
+    except Exception as exc:  # noqa: BLE001 - a first-run check reports, it does not crash
+        _echo(f"error: the demo run failed: {type(exc).__name__}: {exc}", err=True)
+        _echo("  run 'al-dic-3d self-test' to check this installation", err=True)
+        return 1
+    _echo(
+        "accuracy vs analytic ground truth: 3D displacement error median "
+        f"{acc['disp_median_mm'] * 1000:.1f} um, p90 {acc['disp_p90_mm'] * 1000:.1f} um; "
+        f"coverage {acc['coverage_min']:.0%} ({int(acc['n_points'])} points x "
+        f"{int(acc['n_frames'])} frames)"
+    )
+    for key in ("params", "npz", "mat"):
+        if key in paths:
+            _echo(f"wrote {paths[key]}")
+    for err in errors:
+        _echo(f"error: could not write {err}", err=True)
+    return 1 if errors or not acc["coverage_min"] > 0 else 0
+
+
 def normalize_argv(argv: list[str]) -> list[str]:
     """Rewrite a bare ``SESSION.aldic3d`` first argument to ``gui SESSION`` (Q6).
 
@@ -382,6 +607,12 @@ def main(argv: list[str] | None = None) -> int:
         return _run_command(args)
     if command == "calibrate":
         return _calibrate_command(args)
+    if command == "demo":
+        return _demo_command(args)
+    if command == "self-test":
+        from al_dic_3d.self_test import run_self_test
+
+        return run_self_test(json_path=args.json)
     if command == "gui":
         try:
             from al_dic_3d.gui.app import main as gui_main

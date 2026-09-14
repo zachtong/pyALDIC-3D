@@ -52,13 +52,13 @@ def test_lazy_provider_lru_bounds_decodes(tmp_path, monkeypatch):
     import al_dic_3d.sequence.lazy as lazy_mod
 
     calls: list[str] = []
-    real = load_gray
+    real = lazy_mod.decode_gray  # the provider caches the native-dtype decode
 
     def counting(path):
         calls.append(str(path))
         return real(path)
 
-    monkeypatch.setattr(lazy_mod, "load_gray", counting)
+    monkeypatch.setattr(lazy_mod, "decode_gray", counting)
     prov = LazyFrameProvider(paths, capacity=2)
 
     prov.get_normalized(0)
@@ -81,7 +81,9 @@ def test_lazy_mask_list_serves_float64_contiguous(tmp_path):
     assert len(masks) == 2
     got = masks[0]
     assert got.dtype == np.float64 and got.flags["C_CONTIGUOUS"]
-    assert got[2, 3] == 255.0 and got[0, 0] == 0.0
+    # Binarized at decode (fix batch V): the engine multiplies gradients by the
+    # mask, so a 0/255 file must arrive as {0, 1}.
+    assert got[2, 3] == 1.0 and got[0, 0] == 0.0
     # Sequence protocol (StereoSequence.validate iterates the stream).
     assert len(list(masks)) == 2
 

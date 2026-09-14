@@ -7,6 +7,12 @@ the 2D ``ExportImagesWorker`` idiom — surfaced through a per-tab
 owns one worker per tab so the dialog can stay open, run tabs independently,
 and join everything on close.
 
+Honest status (fix batch V): the tab reads the job's
+:class:`~al_dic_3d.export.outcome.ExportOutcome` — "cancelled" only when the
+job really stopped early, zero written files is a red failure (never a green
+"Wrote 0 file(s)"), and frames without data / fields without data / a missing
+right-camera ROI are spelled out in amber.
+
 The worker itself was generalized into :class:`al_dic_3d.gui.workers.JobWorker`
 (the session save/load flow reuses it, P2.5); ``ExportWorker`` stays the
 importable name here for the existing tab/test import sites.
@@ -14,13 +20,17 @@ importable name here for the existing tab/test import sites.
 
 from __future__ import annotations
 
+import re
 import threading
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
 from al_dic.gui.theme import COLORS
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from PySide6.QtCore import QCoreApplication, Signal
+from PySide6.QtGui import QValidator
 from PySide6.QtWidgets import (
+    QAbstractSpinBox,
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
@@ -34,7 +44,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.export import RESOLUTION_PRESETS, FieldImageConfig, VizExportHint
+from al_dic_3d.export import (
+    DISPLACEMENT_IDS,
+    RESOLUTION_PRESETS,
+    STRAIN_IDS,
+    VELOCITY_ID,
+    FieldImageConfig,
+    VizExportHint,
+)
+from al_dic_3d.export.outcome import WARN_RIGHT_ROI
 from al_dic_3d.gui.workers import JobWorker as ExportWorker
 
 if TYPE_CHECKING:
@@ -46,6 +64,7 @@ FIELD_LABELS = {
     "V": "V",
     "W": "W",
     "mag": "|D|",
+    VELOCITY_ID: "|V|",
     "exx": "εxx",
     "eyy": "εyy",
     "exy": "εxy",
@@ -55,10 +74,66 @@ FIELD_LABELS = {
     "von_mises": "von Mises",
 }
 
+# Fields the rendered-media tabs offer (the canvas's fields, velocity included).
+MEDIA_FIELD_IDS = (*DISPLACEMENT_IDS, VELOCITY_ID, *STRAIN_IDS)
+
 # Media-export defaults: displacement components enabled (spec: U, V, W).
 MEDIA_DEFAULT_ENABLED = {"U", "V", "W"}
 
 COLORMAPS = ["turbo", "viridis", "jet", "coolwarm", "plasma", "inferno", "RdBu_r"]
+
+# How many labels of skipped frames / empty passes the status line lists.
+_MAX_LISTED = 3
+
+# A number being typed: sign, digits, one dot, optional exponent.
+_PARTIAL_NUMBER = re.compile(r"[+-]?(\d+\.?\d*|\.\d*)?([eE][+-]?\d*)?")
+
+
+class RangeSpinBox(LocaleSafeDoubleSpinBox):
+    """Colour-range Min/Max box that keeps strain-sized values exact.
+
+    ``QDoubleSpinBox`` rounds its VALUE to ``decimals()``: with 4 decimals a
+    strain range of 1.2e-5 snapped to 0 (fix batch V, low). This box keeps 12
+    decimals and shows up to 6 significant digits (``1.234e-05``, ``150.25``),
+    accepts typed exponents and a comma decimal (the 2D locale-safe base), and
+    steps adaptively (one step in the last shown digit).
+
+    Pattern for the other colour-range boxes (right sidebar / strain window):
+    ``setDecimals(12)`` + this ``textFromValue`` / ``valueFromText`` /
+    ``validate`` trio + ``AdaptiveDecimalStepType``.
+    """
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setDecimals(12)
+        self.setRange(-1e9, 1e9)
+        self.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
+
+    def textFromValue(self, value: float) -> str:  # noqa: N802 - Qt override
+        return self.locale().toString(float(value), "g", 6)
+
+    def valueFromText(self, text: str) -> float:  # noqa: N802 - Qt override
+        value, ok = self.locale().toDouble(text.replace(",", ".").strip())
+        return float(value) if ok else self.value()
+
+    def validate(self, text: str, pos: int) -> object:
+        s = text.replace(",", ".").strip()
+        if s in ("", "+", "-"):
+            return QValidator.State.Intermediate, text, pos
+        value, ok = self.locale().toDouble(s)
+        if ok:
+            state = (
+                QValidator.State.Acceptable
+                if self.minimum() <= value <= self.maximum()
+                else QValidator.State.Intermediate
+            )
+            return state, text.replace(",", "."), pos
+        if _PARTIAL_NUMBER.fullmatch(s):
+            return QValidator.State.Intermediate, text, pos
+        return QValidator.State.Invalid, text, pos
+
+    def fixup(self, text: str) -> str:
+        return text.replace(",", ".")
 
 
 class ProgressRow(QWidget):
@@ -101,16 +176,41 @@ class ProgressRow(QWidget):
         self._bar.setValue(int(done / max(1, total) * 1000))
         self._status.setText(f"{done}/{total}  {label}")
 
-    def finish(self, message: str, *, ok: bool = True) -> None:
+    def finish(self, message: str, *, ok: bool = True, error: bool = False) -> None:
+        """Final status: green (ok), amber (``ok=False``) or red (``error``)."""
         self._bar.setVisible(False)
         self._cancel_btn.setVisible(False)
-        color = COLORS.SUCCESS if ok else COLORS.WARNING
+        color = COLORS.DANGER if error else (COLORS.SUCCESS if ok else COLORS.WARNING)
         self._status.setStyleSheet(f"color: {color}; font-size: 11px;")
         self._status.setText(message)
 
     def set_note(self, message: str) -> None:
         self._status.setStyleSheet(f"color: {COLORS.TEXT_MUTED}; font-size: 11px;")
         self._status.setText(message)
+
+
+# Workers still running when their dialog closed (see ExportTabBase.shutdown).
+# Holding the Python reference keeps the QThread alive until it finishes.
+_ORPHANED_WORKERS: list = []
+
+
+def _prune_orphans() -> None:
+    """Drop detached workers that have finished."""
+    alive = []
+    for worker in _ORPHANED_WORKERS:
+        try:
+            running = worker.isRunning()
+        except RuntimeError:  # C++ object already gone
+            running = False
+        if running:
+            alive.append(worker)
+    _ORPHANED_WORKERS[:] = alive
+
+
+def _listed(items: Sequence[str]) -> str:
+    """First few labels, comma-joined, with an ellipsis when there are more."""
+    shown = ", ".join(items[:_MAX_LISTED])
+    return shown + (", …" if len(items) > _MAX_LISTED else "")
 
 
 class ExportTabBase(QWidget):
@@ -152,23 +252,73 @@ class ExportTabBase(QWidget):
     def _on_job_done(self, out: object) -> None:
         if self._export_btn is not None:
             self._export_btn.setEnabled(True)
-        cancelled = self._worker is not None and self._worker.was_cancelled
+        # "Cancelled" only when the job REALLY stopped early: a stop requested
+        # after its last file changes nothing (fix batch V). Jobs without
+        # bookkeeping fall back to the stop flag.
+        cancelled = getattr(out, "cancelled", None)
+        if cancelled is None:
+            cancelled = self._worker is not None and self._worker.was_cancelled
         n = len(out) if isinstance(out, (list, tuple)) else 0
         if cancelled:
-            self._progress.finish(
-                self.tr("Export cancelled — {0} file(s) kept").format(n), ok=False
-            )
+            self._progress.finish(self.describe_cancelled(out), ok=False)
+            return
+        if n == 0:
+            self._progress.finish(self.describe_nothing_written(out), error=True)
+            return
+        problems = self.describe_problems(out)
+        message = self.describe_success(out)
+        if problems:
+            self._progress.finish(message + " — " + problems, ok=False)
         else:
-            self._progress.finish(self.describe_success(out))
+            self._progress.finish(message)
 
     def _on_job_failed(self, message: str) -> None:
         if self._export_btn is not None:
             self._export_btn.setEnabled(True)
-        self._progress.finish(self.tr("Error: {0}").format(message), ok=False)
+        self._progress.finish(self.tr("Error: {0}").format(message), error=True)
 
     def describe_success(self, out: object) -> str:
         n = len(out) if isinstance(out, (list, tuple)) else 0
         return self.tr("Wrote {0} file(s)").format(n)
+
+    def describe_cancelled(self, out: object) -> str:
+        """Amber status of an export that stopped early on Cancel."""
+        n = len(out) if isinstance(out, (list, tuple)) else 0
+        message = self.tr("Export cancelled — {0} file(s) kept").format(n)
+        if getattr(out, "discarded", None):
+            message += " " + self.tr("(the unfinished animation was deleted)")
+        return message
+
+    def describe_nothing_written(self, out: object) -> str:
+        """Red status for an export that finished without writing anything."""
+        unavailable = list(getattr(out, "unavailable", []) or [])
+        if unavailable:
+            return self.tr("Nothing was written: no data to draw for {0}.").format(
+                _listed(unavailable)
+            )
+        return self.tr("Nothing was written — the export produced no files.")
+
+    def describe_problems(self, out: object) -> str:
+        """Amber notes for a partly successful export ('' when there are none)."""
+        notes: list[str] = []
+        skipped = list(getattr(out, "skipped", []) or [])
+        if skipped:
+            notes.append(
+                self.tr("{0} frame(s) had no data to draw ({1})").format(
+                    len(skipped), _listed(skipped)
+                )
+            )
+        unavailable = list(getattr(out, "unavailable", []) or [])
+        if unavailable:
+            notes.append(self.tr("no data for {0}").format(_listed(unavailable)))
+        for code in getattr(out, "warnings", []) or []:
+            if code == WARN_RIGHT_ROI:
+                notes.append(
+                    self.tr("the right-camera ROI could not be derived; the tracked area was used")
+                )
+            else:
+                notes.append(str(code))
+        return "; ".join(notes)
 
     # -- test/teardown support ----------------------------------------------
 
@@ -176,10 +326,28 @@ class ExportTabBase(QWidget):
         return self._worker is not None and self._worker.isRunning()
 
     def shutdown(self, timeout_ms: int = 10_000) -> None:
-        """Request-stop and join the worker (dialog close)."""
-        if self._worker is not None and self._worker.isRunning():
-            self._worker.request_stop()
-            self._worker.wait(timeout_ms)
+        """Request-stop and join the worker (dialog close).
+
+        A worker that outlives the join (a job that does not poll its stop
+        event quickly) is DETACHED rather than left for Qt to destroy: deleting
+        a running ``QThread`` aborts the whole process (the 2D 0.7.2 crash). The
+        detached worker keeps a module-level reference until it finishes.
+        """
+        _prune_orphans()
+        worker = self._worker
+        if worker is None or not worker.isRunning():
+            return
+        worker.request_stop()
+        if worker.wait(timeout_ms):
+            return
+        for signal in (worker.progress, worker.finished_ok, worker.failed):
+            try:
+                signal.disconnect()
+            except (RuntimeError, TypeError):
+                pass
+        worker.setParent(None)
+        _ORPHANED_WORKERS.append(worker)
+        self._worker = None
 
 
 # ---------------------------------------------------------------------------
@@ -194,6 +362,12 @@ class FieldRow(QWidget):
     Preview tab reads it via :meth:`get_appearance` and writes back via
     :meth:`set_appearance` (signals blocked, 2D idiom). Any direct user edit
     on the row emits :attr:`appearance_changed` so the preview can follow.
+
+    Units (fix batch V, M1): ``value_scale`` / ``label`` put the field in the
+    canvas's display unit, so the range spins hold display-unit values. Only
+    the row of the canvas's CURRENT field is prefilled with the canvas range
+    and follows its Auto setting; the others start on Auto and seed their
+    Min/Max from the data (``seed_range``) the first time Auto is unticked.
     """
 
     appearance_changed = Signal()
@@ -205,9 +379,18 @@ class FieldRow(QWidget):
         *,
         has_data: bool,
         parent: QWidget | None = None,
+        value_scale: float = 1.0,
+        label: str | None = None,
+        seed_range: Callable[[str], tuple[float, float]] | None = None,
     ) -> None:
         super().__init__(parent)
         self._field_id = field_id
+        self._value_scale = float(value_scale)
+        self._label = label
+        self._seed_range = seed_range
+        prefill = field_id == hint.current_field
+        self._range_seeded = prefill  # the canvas range IS this field's range
+        auto = bool(hint.auto_range) if prefill else True
 
         row = QHBoxLayout(self)
         row.setContentsMargins(0, 1, 0, 1)
@@ -220,7 +403,7 @@ class FieldRow(QWidget):
 
         name_lbl = QLabel(FIELD_LABELS.get(field_id, field_id))
         name_lbl.setFixedWidth(72)
-        name_lbl.setToolTip(field_id)
+        name_lbl.setToolTip(label or field_id)
         name_lbl.setStyleSheet(
             f"color: {COLORS.TEXT_PRIMARY if has_data else COLORS.TEXT_MUTED}; font-size: 11px;"
         )
@@ -236,19 +419,18 @@ class FieldRow(QWidget):
 
         self._auto_check = QCheckBox(self.tr("Auto"))
         self._auto_check.setToolTip(self.tr("Auto range"))
-        self._auto_check.setChecked(True)
+        self._auto_check.setChecked(auto)
         self._auto_check.setEnabled(has_data)
         self._auto_check.toggled.connect(self._on_auto_changed)
         row.addWidget(self._auto_check)
 
-        self._vmin_spin = QDoubleSpinBox()
-        self._vmax_spin = QDoubleSpinBox()
-        for spin, val in ((self._vmin_spin, hint.vmin), (self._vmax_spin, hint.vmax)):
-            spin.setRange(-1e9, 1e9)
-            spin.setDecimals(4)
-            spin.setValue(val)
+        self._vmin_spin = RangeSpinBox()
+        self._vmax_spin = RangeSpinBox()
+        values = (hint.vmin, hint.vmax) if prefill else (0.0, 1.0)
+        for spin, val in zip((self._vmin_spin, self._vmax_spin), values, strict=True):
+            spin.setValue(float(val))
             spin.setFixedWidth(84)
-            spin.setEnabled(False)
+            spin.setEnabled(has_data and not auto)
             row.addWidget(spin)
 
         opacity_lbl = QLabel(self.tr("Opacity"))
@@ -268,13 +450,34 @@ class FieldRow(QWidget):
         # Direct user edits notify listeners (the Preview tab's live sync).
         self._cmap_combo.currentIndexChanged.connect(self.appearance_changed)
         self._auto_check.toggled.connect(self.appearance_changed)
-        self._vmin_spin.valueChanged.connect(self.appearance_changed)
-        self._vmax_spin.valueChanged.connect(self.appearance_changed)
+        for spin in (self._vmin_spin, self._vmax_spin):
+            spin.valueChanged.connect(self._on_range_edited)
+            spin.valueChanged.connect(self.appearance_changed)
         self._alpha_spin.valueChanged.connect(self.appearance_changed)
 
     def _on_auto_changed(self, auto: bool) -> None:
+        if not auto:
+            self.seed_range_if_needed()
         self._vmin_spin.setEnabled(not auto)
         self._vmax_spin.setEnabled(not auto)
+
+    def _on_range_edited(self, _value: float) -> None:
+        self._range_seeded = True  # the user's own numbers: never overwrite
+
+    def seed_range_if_needed(self) -> bool:
+        """Fill Min/Max from the data once (display units); True when it did."""
+        if self._range_seeded or self._seed_range is None:
+            return False
+        self._range_seeded = True
+        try:
+            lo, hi = self._seed_range(self._field_id)
+        except Exception:  # noqa: BLE001 - a seed is a convenience, never fatal
+            return False
+        for spin, val in ((self._vmin_spin, lo), (self._vmax_spin, hi)):
+            spin.blockSignals(True)
+            spin.setValue(float(val))
+            spin.blockSignals(False)
+        return True
 
     @property
     def field_id(self) -> str:
@@ -289,6 +492,8 @@ class FieldRow(QWidget):
             vmin=self._vmin_spin.value(),
             vmax=self._vmax_spin.value(),
             opacity=self._alpha_spin.value(),
+            value_scale=self._value_scale,
+            label=self._label,
         )
 
     def get_appearance(self) -> dict:
@@ -314,6 +519,8 @@ class FieldRow(QWidget):
         Lets the Preview tab edit a field's appearance while this row stays
         the single source of truth that export reads via :meth:`config`.
         """
+        if vmin is not None or vmax is not None:
+            self._range_seeded = True
         for widget, value in (
             (self._vmin_spin, vmin),
             (self._vmax_spin, vmax),
@@ -336,7 +543,12 @@ class FieldRow(QWidget):
 
 
 class FieldRowsPanel(QWidget):
-    """Rows for every exportable field (strain rows disabled without strain)."""
+    """Rows for every exportable field (rows without data are disabled).
+
+    ``display(field_id) -> (value_scale, label)`` supplies each row's display
+    unit (the dialog's canvas unit); ``seed_range(field_id) -> (lo, hi)`` the
+    data range a row adopts when its Auto box is first unticked.
+    """
 
     def __init__(
         self,
@@ -344,18 +556,28 @@ class FieldRowsPanel(QWidget):
         hint: VizExportHint,
         *,
         strain_available: bool,
+        velocity_available: bool = True,
+        display: Callable[[str], tuple[float, str | None]] | None = None,
+        seed_range: Callable[[str], tuple[float, float]] | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        from al_dic_3d.export import STRAIN_IDS
 
         self._rows: list[FieldRow] = []
         for fid in field_ids:
-            has_data = strain_available if fid in STRAIN_IDS else True
-            row = FieldRow(fid, hint, has_data=has_data)
+            if fid in STRAIN_IDS:
+                has_data = strain_available
+            elif fid == VELOCITY_ID:
+                has_data = velocity_available
+            else:
+                has_data = True
+            scale, label = display(fid) if display is not None else (1.0, None)
+            row = FieldRow(
+                fid, hint, has_data=has_data, value_scale=scale, label=label, seed_range=seed_range
+            )
             layout.addWidget(row)
             self._rows.append(row)
 

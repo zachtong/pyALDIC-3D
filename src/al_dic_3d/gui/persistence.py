@@ -46,14 +46,25 @@ def restore_window_state(window, key: str) -> bool:
 # ---- recent projects ---------------------------------------------------------
 
 
+def _deleted(path: str) -> bool:
+    """True when ``path`` is gone from a folder that is still reachable."""
+    p = Path(path)
+    return not p.exists() and p.parent.exists()
+
+
 def recent_projects() -> list[str]:
-    """Most-recent-first ``.aldic3d`` paths; missing files are pruned in place."""
+    """Most-recent-first ``.aldic3d`` paths; deleted files are pruned in place.
+
+    A file is pruned only when its folder is reachable and the file is gone.
+    One on an unplugged drive or an offline share stays listed (fix batch V: it
+    used to be dropped for good); the menu shows it disabled until it is back.
+    """
     s = settings()
     raw = s.value(_RECENT_KEY, [])
     if isinstance(raw, str):  # QSettings collapses a 1-item list to a string
         raw = [raw]
     paths = [str(p) for p in (raw or [])]
-    kept = [p for p in paths if Path(p).exists()]
+    kept = [p for p in paths if not _deleted(p)]
     if kept != paths:
         s.setValue(_RECENT_KEY, kept)
     return kept
@@ -90,3 +101,18 @@ def set_last_dir(key: str, path) -> None:
     p = Path(str(path))
     d = p if p.is_dir() else p.parent
     settings().setValue(f"last_dir/{key}", str(d))
+
+
+def suggested_save_path(name: str, key: str, near=None) -> str:
+    """The file a save dialog proposes: in ``near``'s folder, else the last
+    folder used for ``key``, else the home folder.
+
+    Never a bare file name: that resolves against the working directory, which
+    for an application started from a shortcut is not the user's data (the
+    same fix 2D made in 0.8.0).
+    """
+    candidates = (Path(str(near)).parent if near else None, last_dir(key))
+    for folder in candidates:
+        if folder and Path(folder).is_dir():
+            return str(Path(folder) / name)
+    return str(Path.home() / name)

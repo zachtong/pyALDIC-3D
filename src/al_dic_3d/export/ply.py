@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from al_dic_3d.export.outcome import ExportOutcome
 from al_dic_3d.export.tables import field_frame
 from al_dic_3d.export.utils import ensure_dir, frame_tag
 
@@ -109,14 +110,17 @@ def export_ply_frames(
             frames and returns the paths written so far.
 
     Returns:
-        The written frame paths (possibly partial when cancelled).
+        The written frame paths as an
+        :class:`~al_dic_3d.export.outcome.ExportOutcome` (partial, with
+        ``cancelled`` set, when a stop left frames unwritten).
     """
     rec = result.reconstruction
     n_frames = rec.n_frames
     out_dir = ensure_dir(Path(dest_dir) / f"{prefix}_ply_{timestamp}")
-    paths: list[Path] = []
+    paths = ExportOutcome()
     for k in range(n_frames):
         if stop_event is not None and stop_event.is_set():
+            paths.cancelled = True
             break
         columns = [
             (name, vals) for name in fields if (vals := field_frame(result, name, k)) is not None

@@ -12,7 +12,14 @@ from __future__ import annotations
 
 from al_dic.gui.theme import COLORS
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QColorDialog, QHBoxLayout, QPushButton, QSpinBox, QWidget
+from PySide6.QtWidgets import (
+    QColorDialog,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSpinBox,
+    QWidget,
+)
 
 from al_dic_3d.gui.state import GuiSignals
 
@@ -28,6 +35,11 @@ class MeshAppearanceControls(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
 
+        # Named: a bare color swatch on the toolbar said nothing (fix batch V).
+        caption = QLabel(self.tr("Mesh:"))
+        caption.setToolTip(self.tr("Line color and width of the mesh overlay (Show Grid)"))
+        layout.addWidget(caption)
+
         self._color_btn = QPushButton()
         self._color_btn.setFixedSize(24, 18)
         self._color_btn.setToolTip(self.tr("Mesh overlay line color — click to choose"))
@@ -37,8 +49,7 @@ class MeshAppearanceControls(QWidget):
         self._width_spin = QSpinBox()
         self._width_spin.setRange(1, 8)
         self._width_spin.setValue(int(signals.mesh_line_width))
-        self._width_spin.setSuffix(" px")
-        self._width_spin.setFixedWidth(56)
+        self._width_spin.setSuffix(" px")  # sized by Qt: a fixed 56 px showed "1 p."
         self._width_spin.setToolTip(self.tr("Mesh overlay line width (screen pixels)"))
         self._width_spin.valueChanged.connect(self._on_width_changed)
         layout.addWidget(self._width_spin)

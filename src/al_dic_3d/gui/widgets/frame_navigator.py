@@ -3,6 +3,11 @@
 Prev / play / next buttons, a playback-speed selector, a bold ``FRAME N/M``
 label, and a timeline slider — wired to :class:`GuiSignals` instead of the 2D
 AppState singleton (the 3D backend stays Qt-free).
+
+V-view: while the slider HANDLE is dragged, frame changes are coalesced (the
+first value applies at once, later ones at most every ``SLIDER_COALESCE_MS``;
+the label follows every value, and the release applies the final one), so a
+drag across hundreds of frames no longer queues a render per pixel of travel.
 """
 
 from __future__ import annotations
@@ -15,6 +20,7 @@ from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QPushButton, QSlid
 from al_dic_3d.gui.state import GuiSignals
 
 _SPEED_PRESETS = [("1 fps", 1000), ("2 fps", 500), ("5 fps", 200), ("10 fps", 100), ("30 fps", 33)]
+SLIDER_COALESCE_MS = 80  # min interval between applied frames while dragging
 
 
 class FrameNavigator3D(QWidget):
@@ -75,7 +81,14 @@ class FrameNavigator3D(QWidget):
         self._slider = QSlider(Qt.Orientation.Horizontal)
         self._slider.setRange(0, 0)
         self._slider.valueChanged.connect(self._on_slider)
+        self._slider.sliderReleased.connect(self._flush_slider)
         layout.addWidget(self._slider, stretch=1)
+        # Drag coalescing: leading value applies at once, the rest per window.
+        self._drag_timer = QTimer(self)
+        self._drag_timer.setSingleShot(True)
+        self._drag_timer.setInterval(SLIDER_COALESCE_MS)
+        self._drag_timer.timeout.connect(self._flush_slider)
+        self._pending_value: int | None = None
 
         self._timer = QTimer(self)
         self._timer.setInterval(_SPEED_PRESETS[1][1])
@@ -85,6 +98,8 @@ class FrameNavigator3D(QWidget):
         self._update_label(0)
 
     def set_frame_count(self, n: int) -> None:
+        self._drag_timer.stop()
+        self._pending_value = None
         self._n_frames = n
         self._slider.blockSignals(True)
         self._slider.setRange(0, max(0, n - 1))
@@ -100,7 +115,28 @@ class FrameNavigator3D(QWidget):
         self._signals.set_current_frame(self._signals.current_frame + delta, self._n_frames)
 
     def _on_slider(self, value: int) -> None:
-        self._signals.set_current_frame(value, self._n_frames)
+        if not self._slider.isSliderDown():
+            self._pending_value = None
+            self._signals.set_current_frame(value, self._n_frames)
+            return
+        self._update_label(value)  # the label tracks the handle at once
+        if self._drag_timer.isActive():
+            self._pending_value = value  # coalesced into the window's last value
+            return
+        self._signals.set_current_frame(value, self._n_frames)  # leading edge
+        self._drag_timer.start()
+
+    def _flush_slider(self) -> None:
+        """Apply the newest dragged value (window end or handle release)."""
+        value = self._pending_value
+        self._pending_value = None
+        if value is None:
+            value = self._slider.value()
+        if value != self._signals.current_frame:
+            self._signals.set_current_frame(value, self._n_frames)
+            if self._slider.isSliderDown():
+                self._drag_timer.start()  # keep throttling while the drag goes on
+        self._update_label(self._signals.current_frame)
 
     def _on_frame_changed(self, idx: int) -> None:
         self._slider.blockSignals(True)

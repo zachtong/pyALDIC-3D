@@ -69,19 +69,22 @@ class ROIToolbar(QWidget):
         layout.setSpacing(4)
 
         # --- Row 1: Add / Cut / Refine dropdown buttons ---
-        self._btn_add = QPushButton(self.tr("+ Add") + "  ▴")
+        # Fix batch V: no "▴" glyph in the text (fonts without it drew a box,
+        # e.g. the zh_CN UI); the buttons own their menus, so Qt draws the
+        # arrow and opens the menu below or above, wherever it fits.
+        self._btn_add = QPushButton(self.tr("+ Add"))
         self._btn_add.setToolTip(
             self.tr("Add region to the Region of Interest (Polygon / Rectangle / Circle)")
         )
         self._btn_add.setFixedHeight(30)
 
-        self._btn_cut = QPushButton("✂ " + self.tr("Cut") + "  ▴")
+        self._btn_cut = QPushButton("✂ " + self.tr("Cut"))
         self._btn_cut.setToolTip(
             self.tr("Cut region from the Region of Interest (Polygon / Rectangle / Circle)")
         )
         self._btn_cut.setFixedHeight(30)
 
-        self._btn_refine = QPushButton(self.tr("+ Refine") + "  ▴")
+        self._btn_refine = QPushButton(self.tr("+ Refine"))
         self._btn_refine.setToolTip(
             self.tr(
                 "Paint extra mesh-refinement zones with a brush\n"
@@ -99,11 +102,9 @@ class ROIToolbar(QWidget):
         self._cut_menu = self._build_shape_menu("cut")
         self._brush_menu = self._build_brush_menu()
 
-        self._btn_add.clicked.connect(lambda: self._popup_above(self._btn_add, self._add_menu))
-        self._btn_cut.clicked.connect(lambda: self._popup_above(self._btn_cut, self._cut_menu))
-        self._btn_refine.clicked.connect(
-            lambda: self._popup_above(self._btn_refine, self._brush_menu)
-        )
+        self._btn_add.setMenu(self._add_menu)
+        self._btn_cut.setMenu(self._cut_menu)
+        self._btn_refine.setMenu(self._brush_menu)
 
         # --- Row 2: Import ---
         self._btn_import = QPushButton(self.tr("Import"))
@@ -219,12 +220,6 @@ class ROIToolbar(QWidget):
         menu.addAction(clear_action)
 
         return menu
-
-    def _popup_above(self, button: QPushButton, menu: QMenu) -> None:
-        """Show ``menu`` popping ABOVE ``button`` (the sidebar sits low)."""
-        pos = button.mapToGlobal(button.rect().topLeft())
-        pos.setY(pos.y() - menu.sizeHint().height())
-        menu.popup(pos)
 
     # ------------------------------------------------------------------ slots
 

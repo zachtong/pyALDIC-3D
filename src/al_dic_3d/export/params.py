@@ -3,8 +3,17 @@
 The parameters file is always written regardless of which data formats were
 selected, so every export folder records how its numbers were produced (the 2D
 platform's ``export_params`` idiom). It merges the run's own bookkeeping
-(``result.meta``) with a caller-supplied ``extra`` dict — the CLI passes the
-full ``RunConfig``, the GUI passes the draft's matching parameters.
+(``result.meta``, including ``meta["run_params"]`` — what was actually run) with
+a caller-supplied ``extra`` dict — the CLI passes the full ``RunConfig``, the
+GUI passes the draft's matching parameters.
+
+Precedence (fix batch V, H6): whatever the RUN recorded wins. The GUI draft is
+live — the user may have changed Subset Size or Step after the run — so a
+draft value only fills a key the run did not record; it never overrides one.
+
+:func:`run_mesh_step` is the one place the node step of a result is resolved
+(the run's ``winstepsize``, else the median node spacing of an older result),
+so overlays and support masks never follow a later draft edit (H3).
 """
 
 from __future__ import annotations
@@ -46,6 +55,27 @@ def _to_json_value(v: Any) -> Any:
     return str(v)
 
 
+def run_param(result: Any, name: str, default: Any = None) -> Any:
+    """One value of ``result.meta["run_params"]`` (what was run), or *default*."""
+    run_params = (getattr(result, "meta", None) or {}).get("run_params") or {}
+    value = run_params.get(name)
+    return default if value is None else value
+
+
+def run_mesh_step(result: Any, default: int = 16) -> int:
+    """The node step (px) the result was computed with.
+
+    ``run_params["winstepsize"]`` when the run recorded it; otherwise (sessions
+    saved before fix batch V) the median nearest-neighbour spacing of the
+    reference nodes; *default* only for a degenerate node set. Delegates to
+    :func:`al_dic_3d.viz3d.runstep.run_node_step` — the ONE rule the canvas,
+    the strain window and the exports share, so their overlays agree.
+    """
+    from al_dic_3d.viz3d.runstep import run_node_step
+
+    return run_node_step(result, default=default)
+
+
 def export_params(
     dest_dir: Path,
     prefix: str,
@@ -61,12 +91,15 @@ def export_params(
         timestamp: 14-digit ``YYYYMMDDHHMMSS`` string (fresh per export).
         result: the completed run whose metadata is recorded.
         extra: caller-supplied parameter dict (RunConfig fields, GUI draft
-            fields, ...); values are JSON-sanitised, ndarrays dropped.
+            fields, ...); values are JSON-sanitised, ndarrays dropped. A key
+            the run itself recorded (``result.meta`` or its ``run_params``)
+            keeps the run's value; ``extra`` only fills the gaps.
 
     Returns:
         Path to the written JSON file.
     """
     rec = result.reconstruction
+    meta = result.meta or {}
     data: dict[str, Any] = {
         "export_timestamp": timestamp,
         "n_frames": rec.n_frames,
@@ -74,10 +107,13 @@ def export_params(
         "strategy": result.strategy,
         "has_strain": result.strain is not None,
     }
-    for key, value in (result.meta or {}).items():
+    for key, value in meta.items():
         data.setdefault(str(key), _to_json_value(value))
-    for key, value in (extra or {}).items():
+    # What was RUN, flattened to the top level (the historical key layout).
+    for key, value in (meta.get("run_params") or {}).items():
         data[str(key)] = _to_json_value(value)
+    for key, value in (extra or {}).items():
+        data.setdefault(str(key), _to_json_value(value))
 
     out = ensure_dir(Path(dest_dir)) / f"{prefix}_parameters_{timestamp}.json"
     out.write_text(json.dumps(data, indent=2), encoding="utf-8")

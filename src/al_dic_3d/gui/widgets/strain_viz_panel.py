@@ -9,7 +9,6 @@ carries no behavior, so the window's decoupling contracts are untouched.
 
 from __future__ import annotations
 
-from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -66,15 +65,15 @@ class StrainVizPanel3D(QWidget):
 
         # G2.2: locale-safe manual bounds (dot decimal accepted everywhere),
         # enabled with Auto off, seeded by the window from the rendered range.
-        self.vmin_spin = LocaleSafeDoubleSpinBox()
-        self.vmax_spin = LocaleSafeDoubleSpinBox()
+        # Fix batch V: RangeSpinBox keeps strain-sized values (1.2e-5) exact.
+        from al_dic_3d.gui.dialogs.export_tabs.common import RangeSpinBox
+
+        self.vmin_spin = RangeSpinBox()
+        self.vmax_spin = RangeSpinBox()
         for spin, tip in (
             (self.vmin_spin, self.tr("Lower color-range bound (only with Auto range off)")),
             (self.vmax_spin, self.tr("Upper color-range bound (only with Auto range off)")),
         ):
-            spin.setDecimals(6)
-            spin.setRange(-1e9, 1e9)
-            spin.setSingleStep(1e-3)
             spin.setEnabled(False)
             spin.setToolTip(tip)
         minmax = QHBoxLayout()

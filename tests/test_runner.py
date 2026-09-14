@@ -218,19 +218,23 @@ def test_run_pipeline_cancel_keeps_partial_frames(tmp_path):
     scene = synth_stereo.build_scene(tmp_path, n_frames=4)
     cfg = load_config(synth_stereo.write_config(tmp_path, scene))
 
+    import threading
+
     polls = {"n": 0}
 
     def stop() -> bool:
-        # Sequential track_both polls once per engine frame AND once per gate
-        # frame (P4: the honesty gate is cancellable too, so a cancel no longer
-        # waits out the whole verification pass). With 4 frames the sequence is
-        #   1-3   L engine frame heads      4-6   L honesty gate
-        #   7-9   R engine frame heads     10-12  R honesty gate
-        # Tripping on poll 8 = R's frame-2 head: L is fully tracked AND fully
-        # verified, R tracks + verifies frame 1 only -> the correspondence keeps
-        # frames 0..1 and loses frames 2..3.
+        # The default track_both path verifies the LEFT camera on a "gate_L"
+        # worker thread while the RIGHT engine runs (fix batch V), so polls from
+        # the two sides interleave. Keep this cancel deterministic: the left
+        # verification never sees it, and on the calling thread the engines
+        # poll once per frame head -- polls 1-3 are L's, 4-6 are R's. Tripping
+        # on poll 5 = R's frame-2 head: L is fully tracked and verified, R
+        # tracks frame 1 and verifies it without polling -> the correspondence
+        # keeps frames 0..1 and loses frames 2..3.
+        if threading.current_thread().name.startswith("gate_L"):
+            return False
         polls["n"] += 1
-        return polls["n"] >= 8
+        return polls["n"] >= 5
 
     result = run_pipeline(cfg, stop=stop)
 

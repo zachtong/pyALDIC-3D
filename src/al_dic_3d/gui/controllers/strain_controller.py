@@ -30,6 +30,7 @@ from numpy.typing import NDArray
 
 from al_dic_3d.strain3d import compute_surface_strain
 from al_dic_3d.strain3d.specimen import specimen_frame
+from al_dic_3d.viz3d.runstep import run_node_step
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.controller import WorkflowController
@@ -88,11 +89,14 @@ class StrainController3D:
             drawn = self._workflow.state.draft.roi_mask_array
             if drawn is not None:
                 roi_mask = (np.asarray(drawn) > 0).astype(np.float64)
+        # H3: the gauge spans (strain_size - 1) node steps of the mesh the RUN
+        # was built on — never the live draft step (edited after the run).
+        step = run_node_step(result, default=int(self._workflow.state.draft.winstepsize))
         return compute_surface_strain(
             result.reconstruction,
             result.ref_coords,
             strain_size=int(override.get("strain_size", 5)),
-            winstepsize=int(self._workflow.state.draft.winstepsize),
+            winstepsize=step,
             smooth_sigma=float(override.get("smooth_sigma", 0.0)),
             coordinate=str(override.get("coordinate", "local")),
             specimen_R=override.get("specimen_R"),  # type: ignore[arg-type]

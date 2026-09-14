@@ -33,13 +33,17 @@ Z0 = 800.0
 
 
 def test_fft_controls_active_truth_table():
-    def draft(mode: str, guess: str) -> ProjectDraft:
-        return ProjectDraft(reference_mode=mode, init_guess=guess)
+    def draft(mode: str, guess: str, placed: bool = True) -> ProjectDraft:
+        points = [(100.0, 100.0)] if placed else []
+        return ProjectDraft(reference_mode=mode, init_guess=guess, seed_points=points)
 
-    # Accumulative + seed/previous: external mesh + non-None U0 -> engine never
-    # runs FFT -> knobs inert.
+    # Accumulative + seed (a point placed) / previous: external mesh + non-None
+    # U0 -> engine never runs FFT -> knobs inert.
     assert not fft_controls_active(draft("accumulative", "seed"))
     assert not fft_controls_active(draft("accumulative", "previous"))
+    # Starting Points with NO point placed falls back to FFT at run time, so the
+    # knobs are live (fix batch V: they were greyed out exactly then).
+    assert fft_controls_active(draft("accumulative", "seed", placed=False))
     # FFT seeding (U0=None) always runs FFT on frame 1.
     assert fft_controls_active(draft("accumulative", "fft"))
     # Incremental: every frame is a reference switch -> forced FFT regardless of
@@ -144,7 +148,15 @@ def test_fft_knobs_grey_out_when_inert(qapp):
     win = MainWindow3D()
     left = win._left
 
-    # Default draft is accumulative + Starting Point -> knobs inert -> disabled.
+    draft = win.controller.state.draft
+    # Default draft is accumulative + Starting Points with NO point placed: the
+    # run falls back to FFT, so the knobs are live (fix batch V -- they used to
+    # be greyed out in exactly this case).
+    assert left._temporal_spin.isEnabled() and left._fft_expand_cb.isEnabled()
+
+    # With a point placed the engine never runs FFT -> knobs inert -> disabled.
+    draft.seed_points = [(50.0, 50.0)]
+    win.signals.params_changed.emit()
     assert not left._temporal_spin.isEnabled()
     assert not left._fft_expand_cb.isEnabled()
     assert "no effect" in left._fft_expand_cb.toolTip()
@@ -156,8 +168,8 @@ def test_fft_knobs_grey_out_when_inert(qapp):
     assert left._temporal_spin.isEnabled() and left._fft_expand_cb.isEnabled()
     assert "no effect" not in left._fft_expand_cb.toolTip()
 
-    # Back to Starting Point -> inert again; incremental mode re-activates them
-    # (every frame is a reference switch -> forced FFT).
+    # Back to Starting Point (point still placed) -> inert again; incremental
+    # mode re-activates them (every frame is a reference switch -> forced FFT).
     left._init_guess_widget._rb_seed.setChecked(True)
     assert not left._temporal_spin.isEnabled()
     left._mode_combo.setCurrentIndex(left._mode_combo.findData("incremental"))

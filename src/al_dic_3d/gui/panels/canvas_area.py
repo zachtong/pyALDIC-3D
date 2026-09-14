@@ -38,18 +38,12 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.gui.controllers.roi_controller import ROIController
-from al_dic_3d.gui.controllers.viz_controller import VizController3D, auto_range, visible_values
-from al_dic_3d.gui.display_units import (
-    display_field_key,
-    field_display_factor,
-    field_label,
-)
+from al_dic_3d.gui.panels.canvas_render import CanvasRenderMixin
 from al_dic_3d.gui.panels.canvas_tools import CanvasToolsMixin
 from al_dic_3d.gui.panels.mesh_preview import MeshPreviewBuilder, snapshot_preview_params
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.widgets.config_overlay import ConfigOverlay3D
 from al_dic_3d.gui.widgets.frame_navigator import FrameNavigator3D
-from al_dic_3d.gui.widgets.frame_prefetcher import FramePrefetcher
 from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
 from al_dic_3d.gui.widgets.mesh_appearance import MeshAppearanceControls
 from al_dic_3d.gui.widgets.mesh_overlay import MeshOverlay
@@ -62,11 +56,13 @@ if TYPE_CHECKING:
 _MAG_CACHE_SIZE = 32  # per-frame |D| / |ΔD| vectors (P2.6/Q2); results-scoped
 
 
-class CanvasArea3D(CanvasToolsMixin, QWidget):
+class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
     """Toolbar + canvas (+ overlays) + frame navigator.
 
     The seed-point / refinement-brush relays live in :class:`CanvasToolsMixin`
-    (same behavior, split for the 800-line file cap).
+    and result rendering (frames, dense overlay, 3D view — off the GUI thread
+    when heavy, V-view) in :class:`CanvasRenderMixin` (split for the 800-line
+    file cap).
     """
 
     def __init__(
@@ -188,10 +184,8 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._init_empty_hint()  # G3.3: quick-start text until the first image
         self._canvas.viewport().installEventFilter(self)
         self._rig_cache = None  # loaded lazily for the 3D frusta
-        self._viz_ctrl = VizController3D()  # dense field renderer + caches
-
-        # P2.2: background frame decoder — scrubbing blits ready pixmaps.
-        self._prefetcher = FramePrefetcher(self)
+        # Dense renderer + frame prefetcher (P2.2) + V-view presenters.
+        self._init_render_pipeline()
         # P2.6: per-frame |D| magnitude + drawn-ROI-as-bool caches.
         self._mag_cache: LRUCache[int, np.ndarray] = LRUCache(_MAG_CACHE_SIZE)
         # Q2: per-frame |D_k − D_{k−1}| in mm/frame — frame-rate applied at
@@ -204,8 +198,9 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._synced_roi_src: np.ndarray | None = None  # draft array last pushed
 
         # RIGHT-camera ROI support (F2.3): the left mask warped through the
-        # frame-1 correspondence. Cached; dropped on ROI edits / new results.
-        self._right_mask_cache: np.ndarray | None = None
+        # frame-1 correspondence — a compute-once value resolved off the GUI
+        # thread by heavy renders; rebuilt on ROI edits / new results.
+        self._right_mask_lazy = None
         self._right_mask_dirty = True
 
         # Mesh preview (P2.3): debounced background build; hover lookup arrays.
@@ -251,6 +246,10 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
     def _update_zoom_readout(self) -> None:
         """G2.4: the '100%' button label follows the live zoom level."""
         self._zoom_btn.setText(f"{self._canvas.zoom_level * 100:.0f}%")
+
+    def view3d_camera(self):
+        """The interactive 3D view's camera, for the 3D export (None: not shown)."""
+        return self._view3d.camera_position()
 
     def toggle_playback(self) -> None:
         """Space shortcut relay (G2.5): play/pause the frame navigator."""
@@ -321,32 +320,38 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
     def roi_import(self, path: str) -> None:
         ctrl = self.roi_ctrl
         if ctrl is None:
-            self.signals.log.emit("load images first before importing a ROI mask", "warning")
+            self.signals.log.emit(self.tr("Load images before importing an ROI mask"), "warning")
             return
         try:
             ctrl.import_mask(path)
         except Exception as exc:  # noqa: BLE001 - surface bad files to the user log
-            self.signals.log.emit(f"mask import failed: {exc}", "error")
+            self.signals.log.emit(self.tr("Could not import the mask: {0}").format(exc), "error")
             return
         self.commit_roi_mask()
-        self.signals.log.emit(f"ROI mask imported from {path}", "info")
+        self.signals.log.emit(self.tr("ROI mask imported from {0}").format(path), "info")
 
     def roi_save(self) -> None:
         ctrl = self.roi_ctrl
         if ctrl is None or not ctrl.mask.any():
-            self.signals.log.emit("no ROI mask to save — draw one first", "warning")
+            self.signals.log.emit(self.tr("No ROI mask to save — draw one first"), "warning")
             return
+        from al_dic_3d.gui import persistence
+
+        left = self.controller.state.draft.left
+        near = left[0] if left else None  # the images' folder, else the last one
+        start = persistence.suggested_save_path("roi_mask.png", "mask", near=near)
         path, _ = QFileDialog.getSaveFileName(
-            self, self.tr("Save Mask"), "roi_mask.png", self.tr("PNG image (*.png)")
+            self, self.tr("Save Mask"), start, self.tr("PNG image (*.png)")
         )
         if not path:
             return
         try:
             ctrl.save_mask(path)
         except Exception as exc:  # noqa: BLE001 - surface IO errors to the user log
-            self.signals.log.emit(f"mask save failed: {exc}", "error")
+            self.signals.log.emit(self.tr("Could not save the mask: {0}").format(exc), "error")
             return
-        self.signals.log.emit(f"ROI mask saved to {path}", "success")
+        persistence.set_last_dir("mask", path)
+        self.signals.log.emit(self.tr("ROI mask saved to {0}").format(path), "success")
 
     def _on_roi_changed(self) -> None:
         """ROI edits change the dense-field support: drop mask-derived caches."""
@@ -515,6 +520,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         n = max(len(draft.left), len(draft.right))
         self._frame_nav.set_frame_count(n)
         self._config_overlay.refresh()
+        self._cancel_render_work()  # queued renders/decodes belong to old images
         self._viz_ctrl.clear_all()  # image size may have changed
         self._prefetcher.invalidate()  # decoded frames are stale by definition
         self._mag_cache.clear()
@@ -533,6 +539,8 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._empty_notice.setText(
             self.tr("Analysis produced no valid points — nothing to display. See the log.")
         )
+        self._cancel_render_work()  # in-flight overlays belong to the old result
+        self._run_step_memo = None
         self._viz_ctrl.clear_all()
         self._mag_cache.clear()
         self._vel_cache.clear()
@@ -541,244 +549,7 @@ class CanvasArea3D(CanvasToolsMixin, QWidget):
         self._view3d.request_camera_reset()
         self.render()
 
-    # ---- rendering ------------------------------------------------------------------
-
-    def render(self) -> None:
-        """Redraw the current view (2D frame + overlay, or the 3D surface)."""
-        # Q8: mesh-overlay appearance follows the display state (cheap no-op
-        # when unchanged; render() is already the display_changed sink).
-        self._mesh_overlay.set_appearance(
-            self.signals.mesh_line_color, int(self.signals.mesh_line_width)
-        )
-        show_notice = self._result_empty and self._stack.currentIndex() == 0
-        if show_notice:
-            vp = self._canvas.viewport()
-            self._empty_notice.setGeometry(0, vp.height() // 2 - 40, vp.width(), 80)
-        self._empty_notice.setVisible(show_notice)
-        if self._stack.currentIndex() == 1:
-            self._update_empty_hint()  # never over the 3D page (G3.3)
-            self._render_3d()
-            return
-
-        draft = self.controller.state.draft
-        cam = self.signals.current_camera
-        files = draft.left if cam == "L" else draft.right
-        k = self.signals.current_frame
-
-        if not files:
-            self._canvas.clear_image()
-            self._colorbar.setVisible(False)
-            self._update_empty_hint()  # G3.3: quick-start hint on the blank canvas
-            return
-        self._empty_hint.setVisible(False)
-        k = min(k, len(files) - 1)
-        # Reference-frame plotting (2D idiom): the toggle switches GEOMETRY —
-        # background image and node positions — while the field VALUES stay
-        # those of frame k. Without results there is no geometry to switch.
-        has_result = self.controller.state.result is not None
-        bg = k if self.signals.show_deformed or not has_result else 0
-        path = files[bg]
-        try:
-            pixmap = self._prefetcher.get(path)
-            if pixmap is not None:
-                self._canvas.set_image_pixmap(path, pixmap)  # hot: blit, no decode
-            else:
-                self._canvas.set_image_file(path)  # cold: sync (correctness first)
-                self._prefetcher.store(path, self._canvas.background_pixmap())
-        except Exception:  # noqa: BLE001 - a bad frame must not crash the canvas
-            self._canvas.clear_image()
-            return
-        # Warm current/next/prev in the background for the next scrub step.
-        neighbors = [path]
-        if bg + 1 < len(files):
-            neighbors.append(files[bg + 1])
-        if bg - 1 >= 0:
-            neighbors.append(files[bg - 1])
-        self._prefetcher.request(neighbors)
-
-        self._render_overlay(k)
-        self._sync_roi()
-        self._sync_seed_marker()
-
-    def _render_3d(self) -> None:
-        result = self.controller.state.result
-        if result is None:
-            self._view3d.show_message(
-                self.tr("3D view — run an analysis to see the reconstructed surface.")
-            )
-            return
-        k = min(self.signals.current_frame, result.reconstruction.n_frames - 1)
-        vals = self._field_values(result, k)
-        if vals is None:
-            self._view3d.show_message(self.tr("Selected field is not available."))
-            return
-        # Q1: display-layer unit conversion (mm-native data untouched).
-        factor = field_display_factor(self.signals.display_field, self.signals.display_unit)
-        if factor != 1.0:
-            vals = vals * factor
-
-        # F3.2: the drawn LEFT reference ROI mask bounds the surface exactly
-        # like the 2D dense view (holes stay open), and the auto color range
-        # comes from the VISIBLE nodes of THIS frame (2–98 percentile, G2.3)
-        # and is written back to the shared signals — 2D and 3D show identical
-        # field/colormap/range, and the Min/Max spins seed from live values.
-        roi_mask = self._drawn_roi_bool()
-        if self.signals.color_auto:
-            vmin, vmax = auto_range(visible_values(vals, result.ref_coords, roi_mask))
-            self.signals.color_min, self.signals.color_max = vmin, vmax
-        else:
-            vmin, vmax = self.signals.color_min, self.signals.color_max
-        # Item 4: on a crack-aware run the drawn ROI mask doubles as the crack
-        # barrier so surface cells bridging the crack are dropped (the barrier
-        # filter keys off reference coords, so it is frame-independent).
-        barrier_mask = None
-        if roi_mask is not None and bool(result.meta.get("crack_aware", False)):
-            barrier_mask = roi_mask.astype(np.float64)
-        self._view3d.update_view(
-            result.reconstruction.points[k],
-            vals,
-            field_label=field_label(self.signals.display_field, self.signals.display_unit),
-            cmap=self.signals.colormap,
-            vmin=vmin,
-            vmax=vmax,
-            rig=self._load_rig(),
-            ref_coords=result.ref_coords,
-            roi_mask=roi_mask,
-            barrier_mask=barrier_mask,
-        )
-
-    def _clear_overlay(self) -> None:
-        self._canvas.set_overlay_pixmap(None)
-        self._colorbar.setVisible(False)
-
-    def _right_roi_mask(self, result) -> np.ndarray | None:
-        """The left ROI mask warped into the RIGHT camera (cached; None -> fallback)."""
-        mask = self._drawn_roi_bool()
-        if mask is None or result is None:
-            return None
-        if not self._right_mask_dirty:
-            return self._right_mask_cache
-        from al_dic_3d.viz3d.maskwarp import warp_mask_left_to_right
-
-        cs = result.correspondence
-        try:
-            warped = warp_mask_left_to_right(mask, cs.xL[0], cs.xR[0], mask.shape)
-        except Exception as exc:  # noqa: BLE001 - warp is display support, never fatal
-            self.signals.log.emit(f"right-mask warp failed: {exc}", "warning")
-            warped = None
-        self._right_mask_cache = warped
-        self._right_mask_dirty = False
-        return warped
-
-    def _render_overlay(self, k: int) -> None:
-        result = self.controller.state.result
-        if result is None:
-            self._clear_overlay()
-            return
-
-        cs = result.correspondence
-        if k >= cs.n_frames:
-            self._clear_overlay()
-            return
-        cam = self.signals.current_camera
-        x_cam = cs.xL if cam == "L" else cs.xR
-        # Geometry follows the toggle (frame-k vs frame-1 positions); the
-        # field values below always belong to the navigated frame k.
-        deformed = bool(self.signals.show_deformed) and k > 0
-        pts = x_cam[k] if deformed else x_cam[0]
-        ref_pts = x_cam[0]
-        vals = self._field_values(result, k)
-        if vals is None:
-            self._clear_overlay()
-            return
-        # Q1: display-layer unit conversion (mm-native data untouched).
-        factor = field_display_factor(self.signals.display_field, self.signals.display_unit)
-        if factor != 1.0:
-            vals = vals * factor
-        ref_uv = None
-        if deformed:
-            d = x_cam[k] - x_cam[0]  # 2D ref_uv contract: x_k - x_1 per node
-            ref_uv = (d[:, 0], d[:, 1])
-
-        # LEFT camera: the user-drawn reference ROI mask bounds the field.
-        # RIGHT camera (F2.3): the left mask warped into right pixel space via
-        # the frame-1 correspondence (holes preserved); when unavailable the
-        # renderer falls back to the F1.5 valid-node support.
-        if cam == "L":
-            roi_mask = self._drawn_roi_bool()
-        else:
-            roi_mask = self._right_roi_mask(result)
-
-        # Item 4 WYSIWYG: on a crack-aware run the drawn LEFT ROI mask doubles as
-        # the crack barrier so the overlay blanks crack-bridging cells exactly
-        # like the image export. Reference view only (the deformed crack is not
-        # warped), LEFT camera (the barrier lives in left reference coords).
-        barrier_mask = None
-        if (
-            cam == "L"
-            and not deformed
-            and roi_mask is not None
-            and bool(result.meta.get("crack_aware", False))
-        ):
-            barrier_mask = roi_mask.astype(np.float64)
-
-        # Auto colorbar range from VISIBLE nodes only (2D visible_values
-        # contract), clipped to the 2–98 percentile (G2.3, 2D parity):
-        # clipped-by-mask nodes and outliers must not stretch the range. The
-        # range is written back so switching Auto off starts from live values.
-        if self.signals.color_auto:
-            vmin, vmax = auto_range(visible_values(vals, ref_pts, roi_mask))
-            self.signals.color_min, self.signals.color_max = vmin, vmax
-        else:
-            vmin, vmax = self.signals.color_min, self.signals.color_max
-
-        img_rect = self._canvas.scene().sceneRect()
-        w, h = int(img_rect.width()), int(img_rect.height())
-        if w <= 0 or h <= 0:
-            self._clear_overlay()
-            return
-
-        # Q1/Q2 cache honesty: unit (and frame rate, for velocity) change the
-        # rendered VALUES, so they are part of the interp-cache field key.
-        field_key = display_field_key(
-            self.signals.display_field, self.signals.display_unit, self.signals.frame_rate
-        )
-        try:
-            pixmap, xg, yg, out_step = self._viz_ctrl.render_field(
-                k,
-                f"{cam}:{field_key}",
-                pts,
-                vals,
-                img_shape=(h, w),
-                mesh_step=int(self.controller.state.draft.winstepsize),
-                cmap=self.signals.colormap,
-                vmin=vmin,
-                vmax=vmax,
-                roi_mask=roi_mask,
-                deformed=deformed,
-                ref_uv=ref_uv,
-                ref_pts=ref_pts,
-                barrier_mask=barrier_mask,
-            )
-        except Exception as exc:  # noqa: BLE001 - a render bug must not kill the GUI
-            self.signals.log.emit(f"overlay render failed: {type(exc).__name__}: {exc}", "error")
-            self._clear_overlay()
-            return
-        if pixmap is None:
-            self._clear_overlay()
-            return
-
-        self._canvas.set_overlay_pixmap(pixmap)
-        self._canvas.set_overlay_geometry(float(out_step), float(xg.min()), float(yg.min()))
-        self._canvas.set_overlay_opacity(self.signals.overlay_alpha)
-
-        self._colorbar.update_params(
-            self.signals.colormap,
-            vmin,
-            vmax,
-            field_label(self.signals.display_field, self.signals.display_unit),
-        )
-        self._colorbar.setVisible(True)
+    # ---- rendering: see CanvasRenderMixin (canvas_render.py) --------------------
 
     # ---- overlay geometry ------------------------------------------------------------
 

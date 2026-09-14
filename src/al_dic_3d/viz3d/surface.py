@@ -17,12 +17,25 @@ and its Delaunay fallback is edge-capped so it can never span ROI holes.
 
 Qt-free (architecture test enforced); pyvista appears only as a lazy
 in-function import behind the ``[viz3d]`` extra.
+
+V-view: the frame-INDEPENDENT part of the surface (quad lattice, ROI filter,
+crack-barrier filter) is computed once per (reference coordinates, ROI mask,
+barrier) CONTENT by :func:`surface_cells` and cached (thread-safe, small LRU),
+so scrubbing only re-filters invalid nodes; the crack test is vectorised
+(:func:`al_dic_3d.viz3d.raster.cells_cross_barrier`) and bool masks are read
+in place (no full-image float copy per render).
 """
 
 from __future__ import annotations
 
+import threading
+
 import numpy as np
 from numpy.typing import NDArray
+
+from al_dic_3d.viz3d.lru import LRUCache
+from al_dic_3d.viz3d.raster import cells_cross_barrier
+from al_dic_3d.viz3d.sized_cache import DigestMemo, array_digest, mask_digest
 
 # Cells with an edge longer than this multiple of the node step are dropped by
 # :func:`filter_cells_edge_cap`: Delaunay spans node-free ROI holes with long
@@ -30,6 +43,14 @@ from numpy.typing import NDArray
 # transparent (F1.5). 2.5x leaves regular grids (longest edge = sqrt(2) x step)
 # and moderately distorted disparity-warped clouds untouched.
 MAX_EDGE_FACTOR = 2.5
+
+# Frame-independent surface topologies kept per (ref coords, ROI, barrier).
+SURFACE_CACHE_SIZE = 4
+_surface_lock = threading.Lock()
+_surface_cache: LRUCache[tuple, NDArray[np.int64]] = LRUCache(SURFACE_CACHE_SIZE)
+_ref_digest = DigestMemo(array_digest)
+_roi_digest = DigestMemo(mask_digest)
+_barrier_digest = DigestMemo(lambda m: mask_digest(m, barrier=True))
 
 
 def median_nn_spacing(pts: NDArray[np.float64]) -> float:
@@ -95,21 +116,31 @@ def build_quad_connectivity(
     if ix is None or iy is None:
         return empty
 
-    on_lattice = (ix >= 0) & (iy >= 0)
-    lattice: dict[tuple[int, int], int] = {}
-    for node in np.flatnonzero(on_lattice):
-        lattice.setdefault((int(ix[node]), int(iy[node])), int(node))
-
-    quads: list[tuple[int, int, int, int]] = []
-    for (i, j), n00 in lattice.items():
-        n10 = lattice.get((i + 1, j))
-        n11 = lattice.get((i + 1, j + 1))
-        n01 = lattice.get((i, j + 1))
-        if n10 is not None and n11 is not None and n01 is not None:
-            quads.append((n00, n10, n11, n01))
-    if not quads:
+    nodes = np.flatnonzero((ix >= 0) & (iy >= 0))
+    if nodes.size == 0:
         return empty
-    return np.asarray(sorted(quads), dtype=np.int64)
+    # Vectorised lattice lookup: one int64 key per (i, j); a row width of
+    # max(i) + 2 means (i + 1, j) never wraps into the next row. The FIRST
+    # (lowest-index) node claims a duplicated lattice site.
+    width = int(ix[nodes].max()) + 2
+    keys = iy[nodes] * width + ix[nodes]
+    site_keys, first = np.unique(keys, return_index=True)
+    site_node = nodes[first]
+
+    def neighbour(offset: int) -> tuple[NDArray[np.bool_], NDArray[np.int64]]:
+        want = site_keys + offset
+        pos = np.minimum(np.searchsorted(site_keys, want), site_keys.size - 1)
+        return site_keys[pos] == want, site_node[pos]
+
+    has10, n10 = neighbour(1)
+    has11, n11 = neighbour(width + 1)
+    has01, n01 = neighbour(width)
+    ok = has10 & has11 & has01
+    if not ok.any():
+        return empty
+    quads = np.column_stack([site_node[ok], n10[ok], n11[ok], n01[ok]]).astype(np.int64)
+    # Sorted like the tuples it replaces (n00 is unique per quad).
+    return quads[np.argsort(quads[:, 0], kind="stable")]
 
 
 def filter_cells_finite(cells: NDArray[np.int64], points: NDArray[np.float64]) -> NDArray[np.int64]:
@@ -133,7 +164,9 @@ def nodes_in_mask(coords: NDArray[np.float64], mask: NDArray[np.bool_]) -> NDArr
     Non-finite or out-of-image nodes are False (outside). ``coords`` are
     ``(n, 2)`` reference pixel ``[x, y]``.
     """
-    m = np.asarray(mask) > 0
+    m = np.asarray(mask)
+    if m.dtype != np.bool_:
+        m = m > 0  # bool masks are read in place (no full-image copy)
     h, w = m.shape
     xy = np.nan_to_num(np.asarray(coords, dtype=np.float64).reshape(-1, 2), nan=-1.0)
     ix = np.round(xy[:, 0]).astype(int)
@@ -208,35 +241,54 @@ def filter_cells_cross_barrier(
     edge counts only when BOTH endpoints are material (``>= 0.5``), matching the
     2D endpoint gate, so a convex ROI overhang is never flagged. ``None`` (no
     barrier) is a no-op, keeping crack-free surfaces bit-exact.
+
+    Vectorised over the unique cell edges with the scalar test's exact
+    sampling (V-view: the per-edge Python loop cost 4-12 s per frame at
+    36k-145k cells). ``barrier`` may be bool or float; it is never copied.
     """
     cells = np.asarray(cells, dtype=np.int64)
     if cells.size == 0 or barrier is None:
         return cells
-    from al_dic.utils.crack_barrier import segment_crosses_barrier  # DEPENDS_ON_2D.md
+    return cells[~cells_cross_barrier(cells, ref_coords, np.asarray(barrier))]
 
-    b = np.ascontiguousarray(barrier, dtype=np.float64)
+
+def clear_surface_cache() -> None:
+    """Forget every cached surface topology (tests / explicit invalidation)."""
+    with _surface_lock:
+        _surface_cache.clear()
+
+
+def surface_cells(
+    ref_coords: NDArray[np.float64],
+    roi_mask: NDArray | None = None,
+    barrier_mask: NDArray | None = None,
+) -> NDArray[np.int64]:
+    """Frame-independent quad cells: lattice, ROI filter, crack filter (cached).
+
+    Keyed by the CONTENT of the reference coordinates, the ROI (``> 0``) and
+    the barrier (``>= 0.5``) — an ROI edit changes the key, so a stale crack
+    filter can never be reused. Per-frame invalid points are filtered by the
+    caller. The returned array is shared: treat it as read-only.
+    """
     ref = np.asarray(ref_coords, dtype=np.float64).reshape(-1, 2)
-    h, w = b.shape
-
-    def _inside(x: float, y: float) -> bool:
-        xi = min(max(int(round(x)), 0), w - 1)
-        yi = min(max(int(round(y)), 0), h - 1)
-        return bool(b[yi, xi] >= 0.5)
-
-    k = cells.shape[1]
-    keep = np.ones(len(cells), dtype=bool)
-    for i, cell in enumerate(cells):
-        for e in range(k):
-            xa, ya = ref[cell[e]]
-            xc, yc = ref[cell[(e + 1) % k]]
-            if (
-                _inside(xa, ya)
-                and _inside(xc, yc)
-                and segment_crosses_barrier(float(xa), float(ya), float(xc), float(yc), b)
-            ):
-                keep[i] = False
-                break
-    return cells[keep]
+    key = (
+        _ref_digest(ref_coords),
+        None if roi_mask is None else _roi_digest(roi_mask),
+        None if barrier_mask is None else _barrier_digest(barrier_mask),
+    )
+    with _surface_lock:
+        hit = _surface_cache.get(key)
+    if hit is not None:
+        return hit
+    cells = build_quad_connectivity(ref)
+    if roi_mask is not None:
+        cells = filter_cells_by_mask(cells, ref, roi_mask)
+    if barrier_mask is not None:  # item 4: blank cells bridging the crack
+        cells = filter_cells_cross_barrier(cells, ref, barrier_mask)
+    cells.setflags(write=False)
+    with _surface_lock:
+        _surface_cache[key] = cells
+    return cells
 
 
 def build_tri_connectivity(
@@ -300,11 +352,7 @@ def build_surface_polydata(
 
     cells = np.empty((0, 4), dtype=np.int64)
     if ref is not None:
-        cells = build_quad_connectivity(ref)
-        if roi_mask is not None:
-            cells = filter_cells_by_mask(cells, ref, roi_mask)
-        if barrier_mask is not None:  # item 4: blank cells bridging the crack
-            cells = filter_cells_cross_barrier(cells, ref, barrier_mask)
+        cells = surface_cells(ref_coords, roi_mask, barrier_mask)  # frame-independent
         if len(cells):
             cells = cells[usable[cells].all(axis=1)]
 
