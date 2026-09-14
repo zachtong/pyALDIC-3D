@@ -55,8 +55,8 @@ A **SOLVER OPTIONS** group exposes the same switches the CLI has:
 - **Dot eccentricity correction** — corrects the projected-circle centroid bias
   for circle / coded targets; **on by default**.
 - **Joint bundle adjustment (robust, uses mono views)** — a final scipy bundle
-  adjustment, on the points the solve used (for dot targets, the
-  eccentricity-corrected centres).
+  adjustment, on the points and views the solve used (for dot targets, the
+  eccentricity-corrected centres; views the solve rejected stay out).
 - **Optimize board shape (printed boards)** — enabled only when bundle
   adjustment is on.
 
@@ -85,10 +85,57 @@ The **RESULT** panel is the sanity check — read it before trusting a run:
   and the range of board tilts.
 - Optional lines report the bundle-adjustment RMS change, board flatness, and
   any warnings.
+- The **calibration checks** below add one line per finding. A warning turns the
+  result text amber, and the preview draws the covered radius (see below) as an
+  amber outline on each camera's image.
 
 If you loaded a verification pair, a **Verify** line reports the measured board
 pitch versus the true pitch, the scale error, and the plane RMS in mm — the most
 direct check that the calibration's absolute scale is correct.
+
+### Can this calibration be trusted? (calibration checks)
+
+A small RMS says the lens model fits the calibration points. It does not say
+where the model can be trusted. After every solve, pyALDIC-3D runs two checks
+per camera and reports them in the result panel, in the `calibrate` command's
+output and in the saved file:
+
+- **Extrapolation.** The lens model is fitted only as far from the image centre
+  as the board reached (the *covered radius*, shown as the amber outline in the
+  preview). Beyond it the distortion is extrapolated. The check fits the lens
+  twice, with k3 free and with k3 fixed, and compares the two where there were
+  no points. If they differ by more than 0.3 px there, the data do not determine
+  the lens in that part of the image, and a warning says so. On ground-truth
+  images the viewing rays at the corners were up to 2-4 px wrong in that case
+  while the RMS stayed at 0.03 px.
+- **Lens model.** If the leftover errors form a pattern across the image instead
+  of random scatter, the lens model does not describe the data. On ground-truth
+  images about 1 px of such distortion shifted the 3D shape by 0.7 mm while the
+  RMS only rose from 0.03 to 0.05 px. On real photos of hand-held dot boards the
+  board itself was the usual cause: it is not perfectly flat, or its dots are
+  not exactly where the board description puts them (by up to about 0.1 mm on
+  the sets tested). Tick **Joint bundle adjustment** and **Optimize board shape**
+  (`--board-shape` on the command line); the checks then judge the calibration
+  against the refined board. On those photos this cut the leftover error about
+  three-fold (0.19-0.20 px to 0.06-0.07 px); on 40 pairs it takes several
+  minutes. Other causes: a lens the 5-coefficient model cannot represent, or
+  detector bias (very sharp chessboard images, uneven lighting).
+
+How to avoid the warnings:
+
+- **Bring the board into every corner of each camera.** Views in which only one
+  camera sees the board still count for that camera's lens model, so close-ups
+  of the corners taken for one camera at a time are fine.
+- Otherwise keep the region of interest inside the covered radius, or, for a
+  low-distortion lens, tick **Fix k3 = 0**. With k3 fixed the check still
+  compares the two fits, because the data cannot tell whether the lens has a k3
+  term; the warning then says that the corners are right only if it has none.
+- For precision, prefer dot targets: on ground-truth images circle-grid dot
+  centres were about six times more precise than chessboard corners (0.005
+  against 0.03 px).
+
+An information line (*the board reached …% of the image-corner radius*) is not a
+problem by itself; it tells you how far the lens model is fitted.
 
 ## Option B — import an existing calibration
 
@@ -138,8 +185,17 @@ Board-specific arguments mirror the dialog: `--square` (chessboard/charuco),
 `--marker` + `--dict` + `--legacy` (charuco), `--spacing` + `--dot` +
 `--asymmetric` (circles/coded). Solver switches: `--joint`, `--tangential`,
 `--fix-k3`, `--release-object`, `--no-ecc-correction`, `--min-pairs` (default 6),
-`--bundle`. Verify against a known board with `--verify-left` / `--verify-right`.
+`--bundle`, `--board-shape` (optimise the board shape in the bundle adjustment;
+implies `--bundle`). Verify against a known board with `--verify-left` /
+`--verify-right`.
 Run `al-dic-3d calibrate -h` for the full list.
+
+After the pair QC the command prints the calibration checks (per camera: the
+covered radius, the k3 free against fixed difference beyond it, and the residual
+pattern statistics) and one line per finding. `--strict` makes a warning fail
+the command with exit code 1 (the YAML is still written), for scripted
+pipelines. The checks' numbers are stored in the YAML as `meta_*` entries,
+which the importer ignores.
 
 The written YAML is consumed by a run as `[calibration] file = "calibration.yml"`,
 `format = "opencv_yaml"`.

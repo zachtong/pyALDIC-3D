@@ -46,6 +46,9 @@ class MonoCalibration:
     method: str  # "standard" | "release_object"
     board_rvecs: NDArray[np.float64]  # (n_used, 3) board pose per used view
     board_tvecs: NDArray[np.float64]  # (n_used, 3)
+    # Release-object solve only: the refined board points (n, 3) mm and their ids.
+    board_points: NDArray[np.float64] | None = None
+    board_ids: NDArray[np.int64] | None = None
 
 
 @dataclass(frozen=True)
@@ -134,6 +137,7 @@ def calibrate_mono(
     reject_view_rms: float = 1.0,
     reject_view_factor: float = 3.0,
     max_reject_rounds: int = 3,
+    initial: CameraIntrinsics | None = None,
 ) -> MonoCalibration:
     """Solve one camera's intrinsics from its usable board detections.
 
@@ -152,7 +156,12 @@ def calibrate_mono(
     enables the Strobl-Hirzinger RO method (better for imprecise printed
     boards); it requires the identical full point set in every view and
     silently falls back to the standard solve (recorded in ``method``) when
-    views are partial.
+    views are partial; the refined board is returned in ``board_points``.
+
+    ``initial`` seeds the solve (``CALIB_USE_INTRINSIC_GUESS``). OpenCV needs a
+    seed when the board points are not planar, a refined board shape for
+    example. With ``fix_k3`` the seed's k3 is set to 0, with ``zero_tangent``
+    its p1 and p2.
     """
     import cv2
 
@@ -162,6 +171,18 @@ def calibrate_mono(
 
     flags = _mono_flags(fix_k3=fix_k3, zero_tangent=zero_tangent, fix_aspect=fix_aspect)
     size = (int(image_size[0]), int(image_size[1]))
+    k_seed = d_seed = None
+    if initial is not None:
+        flags |= cv2.CALIB_USE_INTRINSIC_GUESS
+        k_seed = np.asarray(initial.K, np.float64).copy()
+        d_seed = np.asarray(initial.dist_coeffs, np.float64)[:5].copy()
+        if fix_k3:
+            d_seed[4] = 0.0
+        if zero_tangent:
+            d_seed[2:4] = 0.0
+
+    def seeds():
+        return (None, None) if k_seed is None else (k_seed.copy(), d_seed.copy())
 
     method = "standard"
     if release_object:
@@ -180,16 +201,19 @@ def calibrate_mono(
             obj0 = detections[view_ids[0]].object_points
             row_len = int(np.sum(np.isclose(obj0[:, 1], obj0[0, 1])))
             ret = cv2.calibrateCameraROExtended(
-                obj, img, size, max(1, row_len - 1), None, None, flags=flags
+                obj, img, size, max(1, row_len - 1), *seeds(), flags=flags
             )
-            rms, K, dist, rvecs, tvecs, _new_obj, std_i, _std_e, _std_o, per_view = ret
+            rms, K, dist, rvecs, tvecs, new_obj, std_i, _std_e, _std_o, per_view = ret
+            new_obj = np.asarray(new_obj, np.float64).reshape(-1, 3)
         else:
             rms, K, dist, rvecs, tvecs, std_i, _std_e, per_view = cv2.calibrateCameraExtended(
-                obj, img, size, None, None, flags=flags
+                obj, img, size, *seeds(), flags=flags
             )
-        return rms, K, dist, rvecs, tvecs, std_i, np.asarray(per_view, np.float64).ravel()
+            new_obj = None
+        per_view = np.asarray(per_view, np.float64).ravel()
+        return rms, K, dist, rvecs, tvecs, std_i, per_view, new_obj
 
-    rms, K, dist, rvecs, tvecs, std_i, per_view = _solve(usable)
+    rms, K, dist, rvecs, tvecs, std_i, per_view, new_obj = _solve(usable)
     for _round in range(max_reject_rounds):
         if len(usable) <= 3:
             break
@@ -198,7 +222,7 @@ def calibrate_mono(
         if keep.all():
             break
         usable = [i for i, k in zip(usable, keep, strict=True) if k]
-        rms, K, dist, rvecs, tvecs, std_i, per_view = _solve(usable)
+        rms, K, dist, rvecs, tvecs, std_i, per_view, new_obj = _solve(usable)
 
     std = np.asarray(std_i, np.float64).ravel()
     std_devs = {k: float(std[j]) if j < std.size else 0.0 for j, k in enumerate(_STD_KEYS)}
@@ -211,6 +235,8 @@ def calibrate_mono(
         method=method,
         board_rvecs=np.asarray(rvecs, np.float64).reshape(-1, 3),
         board_tvecs=np.asarray(tvecs, np.float64).reshape(-1, 3),
+        board_points=new_obj,
+        board_ids=None if new_obj is None else np.asarray(detections[usable[0]].ids, np.int64),
     )
 
 

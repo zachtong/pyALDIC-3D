@@ -208,6 +208,22 @@ start from (`al-dic-3d demo`).
 
 ### Added
 
+- **Calibration checks.** Every calibration now reports, per camera, how far
+  the board reached and whether the lens model is determined beyond that (a
+  warning when two equally good fits, k3 free and k3 fixed, differ by more
+  than 0.3 px there), and whether the residuals show a pattern the lens model
+  does not explain. They appear in the calibration dialog (translated, with the
+  covered radius drawn on the preview and the result text amber on a warning),
+  in `al-dic-3d calibrate`'s output (with `--strict` to fail on a warning) and
+  as `meta_*` entries in the saved calibration. On ground-truth images they
+  flagged every camera whose corners were off by 0.3 px or more, and no camera
+  whose lens the model describes. The checks judge a calibration against the
+  board it was fitted with (the refined points after *Optimize board shape* or
+  the release-object method), and their advice follows your choices (k3 fixed,
+  board shape already optimised).
+- **`al-dic-3d calibrate --board-shape`** optimises the board shape in the
+  bundle adjustment (and implies `--bundle`), like the dialog's *Optimize board
+  shape*.
 - **`al-dic-3d demo OUT`** writes a synthetic stereo dataset with an analytic
   ground truth (images, calibration and `config.toml`); `--run` also runs it
   and reports the error. The README Quick Start uses it.

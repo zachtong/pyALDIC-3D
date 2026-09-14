@@ -17,6 +17,12 @@ from al_dic_3d.calibration.boards import (
 )
 from al_dic_3d.calibration.bundle import bundle_refine
 from al_dic_3d.calibration.detect import BoardDetection, detect_board
+from al_dic_3d.calibration.diagnostics import (
+    CalibrationDiagnostics,
+    DiagnosticThresholds,
+    Finding,
+    diagnose_calibration,
+)
 from al_dic_3d.calibration.geometry import project_points, undistort_points
 from al_dic_3d.calibration.importers import (
     IMPORTERS,
@@ -29,6 +35,7 @@ from al_dic_3d.calibration.importers import (
     load_calibration,
 )
 from al_dic_3d.calibration.model import CameraIntrinsics, StereoRig
+from al_dic_3d.calibration.pipeline import CalibrationRun, run_calibration
 from al_dic_3d.calibration.printout import save_board_pdf, spec_summary
 from al_dic_3d.calibration.report import (
     coverage_fraction,
@@ -58,6 +65,12 @@ from al_dic_3d.calibration.verify import (
 __all__ = [
     "IMPORTERS",
     "BoardDetection",
+    "CalibrationDiagnostics",
+    "CalibrationRun",
+    "DiagnosticThresholds",
+    "Finding",
+    "diagnose_calibration",
+    "run_calibration",
     "BoardSpec",
     "CameraIntrinsics",
     "CharucoSpec",

@@ -160,6 +160,25 @@ class CalibrationDiagnostics:
                 return level
         return None
 
+    def summary(self) -> dict[str, float | str]:
+        """Flat numbers per camera (``*_left`` / ``*_right``) and the finding codes.
+
+        For ``summarize`` and the saved calibration's ``meta_*`` nodes, which the
+        importer ignores, so older readers keep working. ``findings`` lists
+        ``CODE:camera`` entries separated by ``;``.
+        """
+        out: dict[str, float | str] = {}
+        for key, d in self.cameras.items():
+            side = {"L": "left", "R": "right"}.get(key, key)
+            out[f"r_cover_{side}"] = d.r_cover
+            out[f"r_corner_{side}"] = d.r_corner
+            out[f"cover_ratio_{side}"] = d.cover_ratio
+            out[f"extrapolation_disagreement_px_{side}"] = d.disagreement_outside_px
+            out[f"residual_excess_{side}"] = d.residual_excess
+            out[f"residual_field_{side}"] = d.residual_field_ratio
+        out["findings"] = ";".join(f"{f.code}:{f.camera}" for f in self.findings)
+        return out
+
 
 @dataclass(frozen=True)
 class Disagreement:
@@ -190,9 +209,7 @@ def _normalised(uv: NDArray[np.float64], intr: CameraIntrinsics) -> NDArray[np.f
 def _used_points(
     detections: Sequence[BoardDetection], view_indices: Sequence[int] | None
 ) -> NDArray[np.float64]:
-    views = (
-        range(len(detections)) if view_indices is None else [int(i) for i in view_indices]
-    )
+    views = range(len(detections)) if view_indices is None else [int(i) for i in view_indices]
     pts = [
         detections[i].image_points
         for i in views
@@ -215,6 +232,23 @@ def corner_radius(intr: CameraIntrinsics, image_size: tuple[int, int]) -> float:
     corners = np.array([[0.0, 0.0], [w, 0.0], [0.0, h], [w, h]])
     xy = _normalised(corners, intr)
     return float(np.max(np.hypot(xy[:, 0], xy[:, 1])))
+
+
+def coverage_outline(
+    intrinsics: CameraIntrinsics, r_cover: float, n_points: int = 180
+) -> NDArray[np.float64]:
+    """Pixel outline of the covered radius, for drawing on an image.
+
+    The circle of undistorted normalised radius ``r_cover`` around the optical
+    axis, projected through the camera's lens model. Empty without a radius.
+    """
+    from al_dic_3d.calibration.geometry import project_points
+
+    if not (np.isfinite(r_cover) and r_cover > 0.0):
+        return np.empty((0, 2))
+    angle = np.linspace(0.0, 2.0 * np.pi, int(n_points), endpoint=False)
+    rays = np.column_stack([r_cover * np.cos(angle), r_cover * np.sin(angle), np.ones_like(angle)])
+    return project_points(rays, intrinsics, np.eye(3), np.zeros(3))
 
 
 def _max_or_nan(values: NDArray[np.float64]) -> float:
@@ -409,6 +443,13 @@ def _residual_statistics(
 # ---- per-camera diagnosis ------------------------------------------------------------------
 
 
+def _planar(detections: Sequence[BoardDetection]) -> bool:
+    """True when every usable view's board points lie in z = 0 (a nominal board)."""
+    return all(
+        not (d.ok and d.n_points) or bool(np.all(d.object_points[:, 2] == 0.0)) for d in detections
+    )
+
+
 def _model_name(fix_k3: bool) -> str:
     return "k3 fixed" if fix_k3 else "k3 free"
 
@@ -423,13 +464,22 @@ def _extrapolation_finding(d: CameraDiagnostics, threshold: float) -> Finding:
         "threshold_px": threshold,
         "chosen_model": d.chosen_model,
     }
+    if d.chosen_model == _model_name(True):  # the advice must fit the user's choice
+        advice = (
+            "With k3 fixed the corners are right only if the lens has no k3 distortion: "
+            "add views with the board near the image corners, or keep the region of "
+            "interest inside the covered area."
+        )
+    else:
+        advice = (
+            "Add views with the board near the image corners, keep the region of interest "
+            "inside the covered area, or, for a low-distortion lens, fix k3."
+        )
     message = (
         f"camera {d.camera}: the calibration points reach {d.cover_ratio:.0%} of the "
         f"image-corner radius; beyond that the lens model is extrapolated, and two "
         f"equally good fits (k3 free and k3 fixed) differ by up to "
-        f"{d.disagreement_outside_px:.2f} px there. Add views with the board near the "
-        f"image corners, keep the region of interest inside the covered area, or, for a "
-        f"low-distortion lens, fix k3."
+        f"{d.disagreement_outside_px:.2f} px there. {advice}"
     )
     return Finding(EXTRAPOLATION_UNDETERMINED, SEVERITY_WARNING, d.camera, values, message)
 
@@ -444,7 +494,13 @@ def _low_coverage_finding(d: CameraDiagnostics, ratio: float) -> Finding:
     return Finding(LOW_COVERAGE, SEVERITY_INFO, d.camera, values, message)
 
 
-def _model_finding(camera: str, stats: _ResidualStats, th: DiagnosticThresholds) -> Finding:
+def _model_finding(
+    camera: str, stats: _ResidualStats, th: DiagnosticThresholds, board_refined: bool
+) -> Finding:
+    """The lens-model warning. The advice depends on the board model: on two real
+    hand-held dot-board sets (brief section 7.4) the board, not the lens, left
+    most of the residual, so a nominal board is named first; after a board-shape
+    optimisation the lens and the detector remain."""
     values = {
         "residual_excess": stats.excess,
         "residual_field_ratio": stats.field_ratio,
@@ -452,15 +508,27 @@ def _model_finding(camera: str, stats: _ResidualStats, th: DiagnosticThresholds)
         "cells": stats.cells,
         "threshold_excess": th.residual_excess,
         "threshold_field": th.residual_field,
+        "board_refined": board_refined,
     }
-    message = (
+    pattern = (
         f"camera {camera}: the residuals have a spatial pattern the lens model leaves "
         f"unexplained (binned excess {stats.excess:.1f}, fitted field "
-        f"{stats.field_ratio:.1f} x noise; about 1 for a model that fits). Possible "
-        f"causes: a lens the model cannot describe, a board that is not flat (try the "
-        f"board-shape option of the bundle adjustment), or detector bias (very sharp "
-        f"chessboard images, uneven lighting)."
+        f"{stats.field_ratio:.1f} x noise; about 1 for a model that fits)"
     )
+    if board_refined:
+        message = (
+            f"{pattern}, with the board shape already optimised. Remaining causes: a lens "
+            f"the model cannot describe, a board that bends differently from view to view, "
+            f"or detector bias (very sharp chessboard images, uneven lighting)."
+        )
+    else:
+        message = (
+            f"{pattern}. Often the board is the cause (not flat, or its points not exactly "
+            f"where the board description puts them): optimise the board shape (bundle "
+            f"adjustment with board shape; --board-shape on the command line). A lens the "
+            f"model cannot describe or detector bias (very sharp chessboard images, uneven "
+            f"lighting) can also cause it."
+        )
     return Finding(LENS_MODEL_INADEQUATE, SEVERITY_WARNING, camera, values, message)
 
 
@@ -495,18 +563,25 @@ def diagnose_camera(
     """Diagnose one camera of a final calibration.
 
     ``intrinsics`` is the camera as calibrated (after bundle adjustment when
-    used); ``detections`` are the ones the final solve used. The solve options
-    are the user's. ``mono``, when given, is the solve's own mono fit of this
-    camera (same options, same detections): it is reused as the fit of the
-    user's k3 choice, so only the alternative fit is solved here.
+    used); ``detections`` are the ones the final solve used, with the board it
+    was fitted with (the refined points after a board-shape optimisation). The
+    solve options are the user's. ``mono``, when given, is the solve's own mono
+    fit of this camera (same options, same detections): it is reused as the
+    fit of the user's k3 choice, so only the alternative fit is solved here. A
+    non-planar board seeds the alternative fits with ``intrinsics`` (OpenCV
+    needs a seed for such a board).
     """
     th = thresholds or DiagnosticThresholds()
     options = dict(zero_tangent=zero_tangent, fix_aspect=fix_aspect, release_object=release_object)
     r_corner = corner_radius(intrinsics, image_size)
     findings: list[Finding] = []
+    planar = _planar(detections)
+    seed = None if planar else intrinsics
     try:
-        chosen = mono or calibrate_mono(detections, image_size, fix_k3=fix_k3, **options)
-        other = calibrate_mono(detections, image_size, fix_k3=not fix_k3, **options)
+        chosen = mono or calibrate_mono(
+            detections, image_size, fix_k3=fix_k3, initial=seed, **options
+        )
+        other = calibrate_mono(detections, image_size, fix_k3=not fix_k3, initial=seed, **options)
     except ValueError as exc:  # fewer than three usable views
         chosen = other = None
         findings.append(_skipped_finding(camera, str(exc)))
@@ -521,8 +596,10 @@ def diagnose_camera(
     else:
         nan = float("nan")
         dis = Disagreement(nan, nan, "not computed", nan)
-    n_views = len(views) if views is not None else sum(
-        1 for d in detections if d.ok and d.n_points >= _MIN_POINTS
+    n_views = (
+        len(views)
+        if views is not None
+        else sum(1 for d in detections if d.ok and d.n_points >= _MIN_POINTS)
     )
     if chosen is not None:  # the model check judges the views of a solve
         stats = _residual_statistics(intrinsics, detections, views, image_size)
@@ -556,7 +633,7 @@ def diagnose_camera(
         if not stats.usable:
             findings.append(_model_skipped_finding(camera, stats))
         elif stats.excess > th.residual_excess and stats.field_ratio > th.residual_field:
-            findings.append(_model_finding(camera, stats, th))
+            findings.append(_model_finding(camera, stats, th, board_refined=not planar))
     return CameraReport(diag, tuple(findings))
 
 

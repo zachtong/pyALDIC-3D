@@ -64,6 +64,28 @@
 
 ## Changelog
 
+- 2026-09-14 v1.15.0 — **标定诊断 WP6（集成）+ 真实照片误报检查 + WP3 复现（分支 `feat/calib-integration`，未合并，1157 tests；WP0–WP2 已本地合并进 main，未推送）**。
+  **WP6**：新模块 `calibration/pipeline.py`，`run_calibration` 把求解、可选 bundle、诊断、汇总串成一条流程，
+  CLI 与 GUI 共用（简报 5.2）。诊断进 CLI 输出（`--strict`：有警告时退出码 1，YAML 仍写出）、GUI 结果面板
+  （`gui/calibration_findings.py` 按代码 + 数值生成可翻译句子，有警告时结果变琥珀色，预览上画覆盖半径轮廓）
+  和 YAML 的 `meta_*` 节点（导入器忽略）。真值验收（OpenCV 5.0，CLI/YAML/GUI 三处一致）：
+  chessboard none s0 两台相机都报（0.461/1.977 px），circle grid brown 不报（0.063/0.066 px）；GUI 冒烟截图正常。
+  **真实照片检查（简报 7.4）**：两套手持圆点板实拍（Challenge 1.0 S1 16 mm 43 对；Challenge 2.0 08 Correlated
+  102 对，厂商 MatchID 标定误差 0.04 px），默认选项下 4 台相机两种警告全报。排查：标定板本身是主要误差
+  （release-object 让每视图 RMS 降 3–4 倍；在名义平板上换更高阶镜头模型几乎无改善；偏心校正的圆点半径取值无影响）。
+  由此修了三处：① bundle 用了求解已剔除的误索引视图（每台相机 2–3 张、约 25 px；1.0 S1 的 BA RMS 5.2 px →
+  修后 0.17 px）；② 板形优化或 release-object 之后，诊断仍按名义平板评判——改为按精化后的板点评判
+  （`with_board`；非平面板用 `calibrate_mono(initial=...)` 给初值）；③ 提示文字按用户选项给建议（k3 已固定、
+  板形已优化时不再重复建议；名义平板先点名标定板），新增 3 句 ×7 语言（788 条）。CLI 新增 `--board-shape`。
+  1.0 S1 加板形优化后：残差 0.19–0.20 → 0.06–0.07 px；外推分歧 L 0.79 → 0.16 px（警告消失）、R 1.57 → 0.63 px；
+  镜头模型检查仍报（拟合场约 0.03 px，量级与真值失配例 0.033 px 相当；再放开切向畸变降到约 0.01 px，场比 4–5，
+  仍超过 3）。只用全视图、每台相机各自 release-object 时场比 2.4–2.5（不报，但单相机板点可能吸收了镜头误差）。
+  2.0 08（fx ≈ 10800，窄视场）：外推分歧 L 4.5 px，板形优化后残差 0.35/0.32 → 0.22/0.13 px，但 k 系数更飘
+  （L 15 px），属简报的典型失效，应固定 k3（k3 固定 + 板形优化：R 0.066 px 不报、L 11 px 仍报；窄视场下
+  板形与畸变可以互相抵换，所以结果随 k3 选择而变）；板形优化 102 对耗时 20 分钟。阈值未改（待作者据此判断）。
+  **WP3 复现**（stereo_gt 侧新脚本 `plans/2026-09-14_wp3_window_centroid_repro.py` 及输出）：现有圆心误差与简报
+  完全一致（编码点 0.0168、圆点 0.0052 px）；窗口质心在 1.5/3 灰度噪声下与简报一致（0.0042/0.0081 px），
+  无噪声时优于原型（0.0007 对 0.0038 px）；满足 WP3 验收界限；尚未移植到 `detect.py`（待作者决定）。
 - 2026-09-14 v1.14.0 — **标定诊断 WP0–WP2（分支 `feat/calib-diagnostics`，未合并，1126 tests）**。
   依据 stereo_gt 项目（riley-raster fork）的设计简报
   `stereo_gt/plans/2026-09-14_pyaldic3d_calibration_design_brief.md`：用 Riley 渲染的真值标定图

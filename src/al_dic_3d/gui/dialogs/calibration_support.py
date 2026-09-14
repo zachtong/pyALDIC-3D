@@ -18,13 +18,14 @@ from PySide6.QtGui import QColor, QImage, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QDialog,
     QDoubleSpinBox,
+    QFileDialog,
     QLabel,
     QSpinBox,
     QVBoxLayout,
     QWidget,
 )
 
-from al_dic_3d.calibration import calibrate_stereo, detect_board, summarize
+from al_dic_3d.calibration import detect_board, run_calibration
 
 
 class CalibWorker(QThread):
@@ -68,35 +69,13 @@ class CalibWorker(QThread):
                     raise ValueError(f"cannot read image: {self._files_l[0]}")
                 image_size = (first.shape[1], first.shape[0])
             self.progress.emit("solving")
-            options = dict(self._options)
-            bundle = options.pop("bundle", False)
-            morphology = options.pop("board_morphology", False)
-            result = calibrate_stereo(dl, dr, image_size, **options)
-            if bundle:
-                import dataclasses
-
-                from al_dic_3d.calibration import bundle_refine
-
-                self.progress.emit("bundle adjustment")
-                # On the points the solve used (the eccentricity-corrected dot
-                # centres); the raw ones brought back a -5.6 ue scale bias.
-                new_rig, info = bundle_refine(
-                    result.detections.get("L", dl),
-                    result.detections.get("R", dr),
-                    result,
-                    zero_tangent=options["zero_tangent"],
-                    fix_k3=options["fix_k3"],
-                    board_morphology=morphology,
-                    progress=self.progress.emit,
-                )
-                result = dataclasses.replace(result, rig=new_rig)
-            stats = summarize(result, dl, dr, image_size)
-            if bundle:
-                stats["ba_rms_before"] = info["rms_before"]
-                stats["ba_rms_after"] = info["rms_after"]
-                stats["ba_mono_views"] = info["n_mono_views"]
-                if "board_z_range" in info:
-                    stats["ba_board_z_range"] = info["board_z_range"]
+            # One pipeline with the CLI: solve, bundle adjustment (on the points
+            # the solve used), diagnostics of the final calibration, summary.
+            run = run_calibration(
+                dl, dr, image_size, options=self._options, progress=self.progress.emit
+            )
+            result, stats = run.result, run.stats
+            stats["diagnostics"] = run.diagnostics
             from al_dic_3d.calibration import pair_max_errors
 
             stats["pair_max"] = pair_max_errors(result, dl, dr)
@@ -155,9 +134,12 @@ class PairBars(QWidget):
 # ---------------------------------------------------------------------------
 
 
-def overlay_panel(path: str, det, height: int | None = 142) -> np.ndarray:
+def overlay_panel(
+    path: str, det, height: int | None = 142, outline: np.ndarray | None = None
+) -> np.ndarray:
     """RGB panel of one image (scaled to ``height``; None = full size) with
-    the detected points drawn."""
+    the detected points drawn, and ``outline`` (``(n, 2)`` px, closed) in amber:
+    the radius the calibration points covered, when the calibration is solved."""
     import cv2
 
     from al_dic_3d.calibration.detect import to_gray_u8
@@ -180,14 +162,27 @@ def overlay_panel(path: str, det, height: int | None = 142) -> np.ndarray:
         radius = 3 if height is not None else max(3, int(round(gray.shape[0] / 300)))
         for x, y in det.image_points * scale:
             cv2.circle(rgb, (int(round(x)), int(round(y))), radius, (74, 222, 128), 1, cv2.LINE_AA)
+    if outline is not None and len(outline) > 2:
+        pts = np.round(np.asarray(outline, np.float64) * scale).astype(np.int32)
+        width = 1 if height is not None else max(1, int(round(gray.shape[0] / 600)))
+        cv2.polylines(rgb, [pts.reshape(-1, 1, 2)], True, (251, 191, 36), width, cv2.LINE_AA)
     return rgb
 
 
-def pair_strip(path_l: str, path_r: str, det_l, det_r, height: int | None = 142) -> np.ndarray:
-    """Side-by-side L|R annotated RGB strip (``height=None`` = full size)."""
+def pair_strip(
+    path_l: str, path_r: str, det_l, det_r, height: int | None = 142, outlines=None
+) -> np.ndarray:
+    """Side-by-side L|R annotated RGB strip (``height=None`` = full size).
+
+    ``outlines`` maps ``"L"`` / ``"R"`` to the covered-radius outline in pixels.
+    """
     import cv2
 
-    panels = [overlay_panel(path_l, det_l, height), overlay_panel(path_r, det_r, height)]
+    outlines = outlines or {}
+    panels = [
+        overlay_panel(path_l, det_l, height, outlines.get("L")),
+        overlay_panel(path_r, det_r, height, outlines.get("R")),
+    ]
     h = max(p.shape[0] for p in panels)
     gap = np.full((h, 6, 3), 20, dtype=np.uint8)
     padded = [
@@ -202,6 +197,69 @@ def strip_to_pixmap(strip: np.ndarray) -> QPixmap:
         strip.data, strip.shape[1], strip.shape[0], 3 * strip.shape[1], QImage.Format_RGB888
     )
     return QPixmap.fromImage(image.copy())
+
+
+class DetectionFilesMixin:
+    """Save / load the detections of a calibration dialog (split out for the 800-line cap).
+
+    Uses the dialog's ``_detections``, ``_files_l`` / ``_files_r``,
+    ``_cached_size``, ``_default_dir``, ``_set_status``, ``_refresh_table``,
+    ``_table`` and ``_recal_btn``.
+    """
+
+    def _on_save_detections(self) -> None:
+        if self._detections is None:
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            self.tr("Save detections"),
+            str(self._default_dir() / "detections.npz"),
+            self.tr("NumPy detections (*.npz)"),
+        )
+        if not path:
+            return
+        from al_dic_3d.calibration import save_detections
+        from al_dic_3d.pathsafe import imread_unicode
+
+        dl, dr = self._detections
+        size = self._cached_size
+        if size is None:
+            first = imread_unicode(self._files_l[0])
+            if first is not None:
+                size = (first.shape[1], first.shape[0])
+        out = save_detections(path, self._files_l, self._files_r, dl, dr, image_size=size)
+        self._set_status(self.tr("Detections saved: {0}").format(out))
+
+    def _on_load_detections(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Load detections"),
+            str(self._default_dir()),
+            self.tr("NumPy detections (*.npz)"),
+        )
+        if not path:
+            return
+        from al_dic_3d.calibration import load_detections
+
+        try:
+            files_l, files_r, dl, dr, size = load_detections(path)
+        except (ValueError, OSError) as exc:
+            self._set_status(str(exc), warn=True)
+            return
+        self._files_l, self._files_r = files_l, files_r
+        self._detections = (dl, dr)
+        self._cached_size = size
+        self._refresh_table()
+        for k, (det_l, det_r) in enumerate(zip(dl, dr, strict=True)):
+            item = self._table.topLevelItem(k)
+            if item is not None:
+                item.setText(3, f"{det_l.n_points}/{det_r.n_points}")
+        self._recal_btn.setEnabled(True)
+        self._set_status(
+            self.tr(
+                "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting"
+            ).format(len(dl))
+        )
 
 
 class DetectionZoomDialog(QDialog):

@@ -217,8 +217,14 @@ def summarize(
     left: Sequence[BoardDetection],
     right: Sequence[BoardDetection],
     image_size: tuple[int, int],
+    *,
+    diagnostics=None,
 ) -> dict[str, float | int | str]:
-    """Flat QC numbers for the GUI panel / phase report / YAML provenance."""
+    """Flat QC numbers for the GUI panel / phase report / YAML provenance.
+
+    ``diagnostics`` (a :class:`~al_dic_3d.calibration.diagnostics.CalibrationDiagnostics`)
+    adds its per-camera numbers and finding codes (``diagnostics.summary()``).
+    """
     used = [p for p in result.pairs if p.used]
     tilts = np.array([p.tilt_deg for p in used], dtype=np.float64)
     dists = np.array([p.distance for p in used], dtype=np.float64)
@@ -240,4 +246,6 @@ def summarize(
     }
     if result.warnings:
         out["warnings"] = " | ".join(result.warnings)
+    if diagnostics is not None:
+        out.update(diagnostics.summary())
     return out

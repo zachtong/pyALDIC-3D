@@ -274,397 +274,414 @@ raise it only for a poor calibration; 0 turns the check off.</source>
 <context>
     <name>CalibrationDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="89"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="92"/>
         <source>Stereo Calibration</source>
         <translation>立体标定</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="127"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="131"/>
         <source>CALIBRATION IMAGE PAIRS</source>
         <translation>标定图像对</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="130"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="134"/>
         <source>Add left images…</source>
         <translation>添加左相机图像…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="132"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="136"/>
         <source>Add right images…</source>
         <translation>添加右相机图像…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="134"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="138"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="136"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="140"/>
         <source>Save detections…</source>
         <translation>保存检测结果…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="143"/>
         <source>Load detections…</source>
         <translation>加载检测结果…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="146"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="150"/>
         <source>No images loaded</source>
         <translation>尚未加载图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="154"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="158"/>
         <source>Left</source>
         <translation>左</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="155"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="159"/>
         <source>Right</source>
         <translation>右</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="156"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="160"/>
         <source>Points</source>
         <translation>点数</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="157"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="161"/>
         <source>RMS L/R</source>
         <translation>RMS 左/右</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="158"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="162"/>
         <source>Max E</source>
         <translation>最大误差</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="159"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="163"/>
         <source>Status</source>
         <translation>状态</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="170"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="174"/>
         <source>SELECTED PAIR (L | R)</source>
         <translation>选中的图像对（左 | 右）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="171"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="403"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="175"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="408"/>
         <source>select a pair to preview detected points</source>
         <translation>选择一对图像以预览检测到的点</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="178"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="182"/>
         <source>Click to enlarge the annotated detection</source>
         <translation>点击放大标注检测结果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="182"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="186"/>
         <source>PER-PAIR REPROJECTION ERROR</source>
         <translation>逐对重投影误差</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="187"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="191"/>
         <source>Reject threshold (px)</source>
         <translation>剔除阈值（像素）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="196"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="200"/>
         <source>Recalibrate</source>
         <translation>重新标定</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="208"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="212"/>
         <source>CALIBRATION BOARD</source>
         <translation>标定板</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="216"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="220"/>
         <source>Chessboard</source>
         <translation>棋盘格</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="217"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="221"/>
         <source>ChArUco</source>
         <translation>ChArUco</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="218"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="222"/>
         <source>Circle grid</source>
         <translation>圆点阵列</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="219"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="223"/>
         <source>Coded dot target (3 ring markers)</source>
         <translation>编码圆点靶（3 个环形标记）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="221"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="225"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="226"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="230"/>
         <source>Columns x Rows</source>
         <translation>列数 × 行数</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="233"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="237"/>
         <source>Square size (mm)</source>
         <translation>方格边长（mm）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="238"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="242"/>
         <source>Marker size (mm)</source>
         <translation>标记边长（mm）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="243"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="247"/>
         <source>Dot pitch (mm)</source>
         <translation>圆点间距（mm）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="248"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="252"/>
         <source>Dot diameter (mm)</source>
         <translation>圆点直径（mm）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="252"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="256"/>
         <source>Asymmetric grid</source>
         <translation>非对称阵列</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="254"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="258"/>
         <source>Board printed with OpenCV &lt; 4.7</source>
         <translation>使用 OpenCV &lt; 4.7 打印的标定板</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="258"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="262"/>
         <source>Print board… (1:1 PDF)</source>
         <translation>打印标定板…（1:1 PDF）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="262"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="266"/>
         <source>SOLVER OPTIONS</source>
         <translation>求解选项</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="263"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="267"/>
         <source>Jointly refine intrinsics (advanced)</source>
         <translation>联合精化内参（高级）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="264"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="268"/>
         <source>Estimate tangential distortion p1/p2</source>
         <translation>估计切向畸变 p1/p2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="265"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="269"/>
         <source>Fix k3 = 0 (low-distortion lens)</source>
         <translation>固定 k3 = 0（低畸变镜头）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="266"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="270"/>
         <source>Release-object method (printed boards)</source>
         <translation>Release-object 方法（打印标定板）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="267"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="271"/>
         <source>Dot eccentricity correction</source>
         <translation>圆点偏心修正</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="269"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="273"/>
         <source>Joint bundle adjustment (robust, uses mono views)</source>
         <translation>联合光束平差（鲁棒，可利用单相机视图）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="270"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="274"/>
         <source>Optimize board shape (printed boards)</source>
         <translation>优化标定板形貌（打印板）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="285"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="289"/>
         <source>Calibrate</source>
         <translation>标定</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="296"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="300"/>
         <source>RESULT</source>
         <translation>结果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="297"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="301"/>
         <source>No calibration yet</source>
         <translation>尚未标定</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="302"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="306"/>
         <source>Verify with board images…</source>
         <translation>用标定板图像验证…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="314"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="318"/>
         <source>Accept &amp;&amp; Save…</source>
         <translation>接受并保存…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="320"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="324"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="379"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="383"/>
         <source>Choose {0} calibration images</source>
         <translation>选择 {0} 相机标定图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="381"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="749"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="385"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="717"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>图像文件 (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="425"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="430"/>
         <source>{0} left / {1} right images</source>
         <translation>左 {0} 张 / 右 {1} 张</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="435"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="440"/>
         <source>Load equal, &gt;= 3 left/right image sets first.</source>
         <translation>请先加载数量相等且 ≥ 3 组的左右图像。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="466"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="471"/>
         <source>Working… {0}</source>
         <translation>处理中… {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="475"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="480"/>
         <source>Calibration failed: {0}</source>
         <translation>标定失败：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="499"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="505"/>
         <source>used</source>
         <translation>已采用</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="501"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="507"/>
         <source>L: {0}</source>
         <translation>左：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="503"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
         <source>R: {0}</source>
         <translation>右：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="519"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="525"/>
         <source>Stereo RMS {0:.3f} px | epipolar {1:.3f} px</source>
         <translation>立体 RMS {0:.3f} px | 极线 {1:.3f} px</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="522"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="528"/>
         <source>Baseline {0:.2f} mm | pairs {1}/{2}</source>
         <translation>基线 {0:.2f} mm | 图像对 {1}/{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="525"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="531"/>
         <source>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</source>
         <translation>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="534"/>
         <source>Coverage L {0:.0%} / R {1:.0%} | tilt {2:.0f}-{3:.0f}°</source>
         <translation>覆盖率 左 {0:.0%} / 右 {1:.0%} | 倾角 {2:.0f}-{3:.0f}°</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="537"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="543"/>
         <source>Bundle adjustment: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} mono views)</source>
         <translation>光束平差：RMS {0:.3f} -&gt; {1:.3f} px（单相机视图 {2:.0f} 个）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="543"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
         <source>Board flatness: z-range {0:.3f} mm</source>
         <translation>标定板平整度：z 范围 {0:.3f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="546"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="552"/>
         <source>Warning: {0}</source>
         <translation>警告：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="562"/>
-        <source>Save detections</source>
-        <translation>保存检测结果</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="564"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="585"/>
-        <source>NumPy detections (*.npz)</source>
-        <translation>NumPy 检测结果 (*.npz)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="578"/>
-        <source>Detections saved: {0}</source>
-        <translation>检测结果已保存：{0}</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="583"/>
-        <source>Load detections</source>
-        <translation>加载检测结果</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="607"/>
-        <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
-        <translation>已加载 {0} 组检测结果——点击重新标定即可免检测重解</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="722"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
         <source>Save board PDF</source>
         <translation>保存标定板 PDF</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="692"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="735"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
         <source>Board PDF written: {0}</source>
         <translation>标定板 PDF 已写入：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="751"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="719"/>
         <source>Choose LEFT verification image</source>
         <translation>选择左相机验证图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="756"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
         <source>Choose RIGHT verification image</source>
         <translation>选择右相机验证图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="765"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="733"/>
         <source>Verification failed: {0}</source>
         <translation>验证失败：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="771"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>验证：间距 {0:.4f} mm 对比 {1:g} mm——尺度误差 {2:.3%}，平面 RMS {3:.4f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="785"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="753"/>
         <source>Save calibration as</source>
         <translation>标定另存为</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="787"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="755"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
+    </message>
+</context>
+<context>
+    <name>CalibrationFindings</name>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="49"/>
+        <source>Camera {0}: the board reached {1:.0%} of the image-corner radius. Beyond it the lens model is a guess: two equally good fits differ by up to {2:.2f} px there. Add views with the board near the image corners, keep the region of interest inside the covered area, or fix k3 for a low-distortion lens.</source>
+        <translation>相机 {0}：标定板只覆盖到图像角点半径的 {1:.0%}。在此之外，镜头模型是推测的：两个同样好的拟合在那里最多相差 {2:.2f} px。请补拍标定板靠近图像四角的视图，把感兴趣区域限制在覆盖范围内，或者对低畸变镜头固定 k3。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="57"/>
+        <source>Camera {0}: the board reached {1:.0%} of the image-corner radius; the lens model is fitted only inside that radius.</source>
+        <translation>相机 {0}：标定板覆盖到图像角点半径的 {1:.0%}；镜头模型只在这个半径以内拟合。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="40"/>
+        <source>Camera {0}: the board reached {1:.0%} of the image-corner radius. Beyond it the lens model is a guess: two equally good fits differ by up to {2:.2f} px there. With k3 fixed, the corners are right only if the lens has no k3 distortion: add views with the board near the image corners, or keep the region of interest inside the covered area.</source>
+        <translation>相机 {0}：标定板只覆盖到图像角点半径的 {1:.0%}。在此之外，镜头模型是推测的：两个同样好的拟合在那里最多相差 {2:.2f} px。固定 k3 后，只有当镜头确实没有 k3 畸变时角点区域才准确：请补拍标定板靠近图像四角的视图，或者把感兴趣区域限制在覆盖范围内。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="63"/>
+        <source>Camera {0}: the residuals follow a pattern the lens model does not explain (binned excess {1:.1f}, fitted field {2:.1f} × noise; about 1 when the model fits), although the board shape is already optimised. A lens the model cannot describe, a board that bends differently from view to view, or detector bias can cause this.</source>
+        <translation>相机 {0}：残差呈现镜头模型解释不了的规律（分格超额 {1:.1f}，拟合场 {2:.1f} × 噪声；模型合适时约为 1），尽管标定板形貌已经优化过。可能的原因：模型描述不了的镜头、在不同视图中弯曲程度不同的标定板，或检测偏差。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="72"/>
+        <source>Camera {0}: the residuals follow a pattern the lens model does not explain (binned excess {1:.1f}, fitted field {2:.1f} × noise; about 1 when the model fits). Often the board is the cause (not flat, or its points not exactly where the board description puts them): tick Joint bundle adjustment and Optimize board shape. A lens the model cannot describe or detector bias can also cause this.</source>
+        <translation>相机 {0}：残差呈现镜头模型解释不了的规律（分格超额 {1:.1f}，拟合场 {2:.1f} × 噪声；模型合适时约为 1）。常见原因是标定板本身（不平，或者点的实际位置与标定板描述不完全一致）：请勾选“联合光束平差”和“优化标定板形貌”。模型描述不了的镜头或检测偏差也可能导致这种情况。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="82"/>
+        <source>Camera {0}: the extrapolation check was skipped (too few usable views).</source>
+        <translation>相机 {0}：外推检查已跳过（可用视图太少）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="88"/>
+        <source>Camera {0}: the lens-model check was skipped: the points fill only {1} image cells.</source>
+        <translation>相机 {0}：镜头模型检查已跳过：标定点只落在 {1} 个图像格子里。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/calibration_findings.py" line="103"/>
+        <source>Warning: {0}</source>
+        <translation>警告：{0}</translation>
     </message>
 </context>
 <context>
@@ -1172,14 +1189,43 @@ to the 2D image view. Requires results.</source>
     </message>
 </context>
 <context>
+    <name>DetectionFilesMixin</name>
+    <message>
+        <location filename="../../gui/dialogs/calibration_support.py" line="215"/>
+        <source>Save detections</source>
+        <translation>保存检测结果</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_support.py" line="217"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="238"/>
+        <source>NumPy detections (*.npz)</source>
+        <translation>NumPy 检测结果 (*.npz)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <source>Detections saved: {0}</source>
+        <translation>检测结果已保存：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_support.py" line="236"/>
+        <source>Load detections</source>
+        <translation>加载检测结果</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_support.py" line="260"/>
+        <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
+        <translation>已加载 {0} 组检测结果——点击重新标定即可免检测重解</translation>
+    </message>
+</context>
+<context>
     <name>DetectionZoomDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="214"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
         <source>Detection preview — pair {0}</source>
         <translation>检测预览 — 图像对 {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="223"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="283"/>
         <source>Wheel: zoom · Right/middle drag: pan</source>
         <translation>滚轮：缩放 · 右键/中键拖动：平移</translation>
     </message>
@@ -2681,12 +2727,12 @@ The previous version of the file, if any, is unchanged.</source>
 <context>
     <name>PairBars</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="125"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="106"/>
         <source>no solve yet</source>
         <translation>尚未求解</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="147"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="128"/>
         <source>worst-camera RMS per pair; dashed = reject threshold</source>
         <translation>每对图像的最差相机 RMS；虚线 = 剔除阈值</translation>
     </message>

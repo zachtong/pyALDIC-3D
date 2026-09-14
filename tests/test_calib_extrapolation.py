@@ -109,6 +109,15 @@ def test_the_user_choice_of_k3_does_not_change_what_is_compared():
     assert free.chosen_model == "k3 free" and fixed.chosen_model == "k3 fixed"
 
 
+def test_with_k3_fixed_the_advice_is_not_to_fix_k3():
+    # The comparison stays the same (above); the advice must fit the user's choice.
+    diag = diagnose_camera("L", CAM, _dets(_central_poses()), SIZE, fix_k3=True)
+    finding = next(f for f in diag.findings if f.code == EXTRAPOLATION_UNDETERMINED)
+    assert finding.values["chosen_model"] == "k3 fixed"
+    assert "With k3 fixed" in finding.message_en
+    assert "fix k3." not in finding.message_en
+
+
 def test_the_solve_own_fit_is_reused(monkeypatch):
     from al_dic_3d.calibration import calibrate_mono
     from al_dic_3d.calibration import diagnostics as diag_mod

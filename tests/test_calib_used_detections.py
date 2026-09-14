@@ -84,7 +84,8 @@ def test_the_new_field_defaults_for_older_constructors():
 
 
 def _capture_bundle(monkeypatch) -> dict:
-    import al_dic_3d.calibration as calib
+    # Both entry points run through calibration.pipeline (WP6).
+    from al_dic_3d.calibration import pipeline as calib
 
     seen: dict = {}
     real_solve = calib.calibrate_stereo
@@ -142,15 +143,12 @@ def test_gui_worker_bundle_adjusts_on_the_corrected_detections(monkeypatch):
     import pytest
 
     pytest.importorskip("PySide6")
-    import al_dic_3d.calibration as calib
     from al_dic_3d.gui.app import create_app
     from al_dic_3d.gui.dialogs import calibration_support
 
     create_app([])
     left, right = _views(DOTS)
     seen = _capture_bundle(monkeypatch)
-    # The worker module imported calibrate_stereo by name at import time.
-    monkeypatch.setattr(calibration_support, "calibrate_stereo", calib.calibrate_stereo)
     options = dict(zero_tangent=True, fix_k3=False, dot_radius_mm=DOTS.dot_mm / 2.0, bundle=True)
     worker = calibration_support.CalibWorker(
         [], [], DOTS, options, detections=(left, right), image_size=SIZE

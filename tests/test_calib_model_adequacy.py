@@ -22,6 +22,8 @@ writing this test: 14-27 % footprints left an excess of 2.4-4.8 for the same
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import numpy as np
 import pytest
 
@@ -90,6 +92,24 @@ def test_a_field_the_model_cannot_represent_is_flagged(seed):
     assert finding.values["residual_excess"] == pytest.approx(d.residual_excess)
     assert finding.values["residual_field_ratio"] == pytest.approx(d.residual_field_ratio)
     assert "flat" in finding.message_en  # names the board as a possible cause
+
+
+def test_with_a_refined_board_the_advice_is_not_to_refine_it_again():
+    # After a board-shape optimisation the diagnostics get the refined, non-planar
+    # board; the message then points at the lens and the detector instead.
+    dets = _dets(0.03, sp.cubic_mismatch_field(1.0))
+    nominal = diagnose_camera("L", CAM, dets, SIZE)
+    first = next(f for f in nominal.findings if f.code == LENS_MODEL_INADEQUATE)
+    assert first.values["board_refined"] is False and "--board-shape" in first.message_en
+    curved = []
+    for d in dets:
+        obj = d.object_points.copy()
+        obj[:, 2] = 1e-6 * obj[:, 0] ** 2  # a refined board is not exactly planar
+        curved.append(replace(d, object_points=obj))
+    refined = diagnose_camera("L", CAM, curved, SIZE)
+    finding = next(f for f in refined.findings if f.code == LENS_MODEL_INADEQUATE)
+    assert finding.values["board_refined"] is True
+    assert "already optimised" in finding.message_en and "--board-shape" not in finding.message_en
 
 
 @pytest.mark.parametrize("noise", [0.01, 0.03, 0.1])

@@ -153,6 +153,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="joint scipy bundle adjustment after the solve (robust loss, uses mono views)",
     )
     cal_p.add_argument(
+        "--board-shape",
+        action="store_true",
+        help="optimise the board shape in the bundle adjustment (printed or imperfect "
+        "boards; implies --bundle)",
+    )
+    cal_p.add_argument(
+        "--strict",
+        action="store_true",
+        help="exit with status 1 when the calibration diagnostics raise a warning "
+        "(the calibration is still written)",
+    )
+    cal_p.add_argument(
         "--verify-left", metavar="FILE", help="LEFT image of a verification board pair"
     )
     cal_p.add_argument(
@@ -342,11 +354,24 @@ def _board_spec_from_args(args: argparse.Namespace, parser_error) -> object:
     )
 
 
+def _print_diagnostics(diagnostics) -> None:
+    """Per-camera numbers and every finding of the calibration diagnostics."""
+    print("\ncalibration diagnostics:")
+    for cam, d in diagnostics.cameras.items():
+        print(
+            f"  camera {cam}: covered to {d.cover_ratio:.0%} of the image-corner radius | "
+            f"k3 free vs fixed beyond it {d.disagreement_outside_px:.3f} px | "
+            f"residual excess {d.residual_excess:.2f}, field {d.residual_field_ratio:.2f} x noise"
+        )
+    for finding in diagnostics.findings:
+        print(f"{finding.severity}: {finding.message_en}")
+
+
 def _calibrate_command(args: argparse.Namespace) -> int:
     """Handle ``al-dic-3d calibrate`` (detect -> solve -> QC -> YAML)."""
     import glob as globlib
 
-    from al_dic_3d.calibration import calibrate_stereo, detect_board, summarize, to_opencv_yaml
+    from al_dic_3d.calibration import detect_board, run_calibration, to_opencv_yaml
     from al_dic_3d.pathsafe import imread_unicode
 
     def fail(msg: str) -> None:
@@ -386,41 +411,34 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     dot_mm = getattr(spec, "dot_mm", None)
     ecc = None if args.no_ecc_correction or dot_mm is None else dot_mm / 2.0
 
+    options = dict(
+        joint_refine=args.joint,
+        zero_tangent=not args.tangential,
+        fix_k3=args.fix_k3,
+        release_object=args.release_object,
+        min_pairs=args.min_pairs,
+        dot_radius_mm=ecc,
+        bundle=args.bundle or args.board_shape,
+        board_morphology=args.board_shape,
+    )
     try:
-        res = calibrate_stereo(
-            dl,
-            dr,
-            image_size,
-            joint_refine=args.joint,
-            zero_tangent=not args.tangential,
-            fix_k3=args.fix_k3,
-            release_object=args.release_object,
-            min_pairs=args.min_pairs,
-            dot_radius_mm=ecc,
-        )
+        # One pipeline with the GUI: solve, bundle adjustment (on the points the
+        # solve used), diagnostics of the final calibration, summary.
+        run = run_calibration(dl, dr, image_size, options=options)
     except ValueError as exc:
         fail(str(exc))
-
-    if args.bundle:
-        from dataclasses import replace as _replace
-
-        from al_dic_3d.calibration import bundle_refine
-
-        # On the points the solve used: for dot targets the eccentricity-
-        # corrected centres (bundling the raw ones brought back a -5.6 ue scale
-        # bias on the stereo_gt circle grid).
-        new_rig, info = bundle_refine(
-            res.detections.get("L", dl),
-            res.detections.get("R", dr),
-            res,
-            zero_tangent=not args.tangential,
-            fix_k3=args.fix_k3,
-        )
-        res = _replace(res, rig=new_rig)
+    res, stats = run.result, run.stats
+    if run.bundle_info is not None:
+        info = run.bundle_info
         print(
             f"bundle adjustment: rms {info['rms_before']:.4f} -> {info['rms_after']:.4f} px "
             f"({info['n_views']:.0f} views, {info['n_mono_views']:.0f} mono-only)"
         )
+        if "board_z_range" in info:
+            print(
+                f"board shape: out-of-plane range {info['board_z_range']:.3f} mm, largest "
+                f"change {info.get('board_max_dev', float('nan')):.3f} mm"
+            )
 
     print("\npair QC (rms px, left/right):")
     for p in res.pairs:
@@ -430,18 +448,19 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     for w in res.warnings:
         print(f"warning: {w}")
 
-    stats = summarize(res, dl, dr, image_size)
     print(
         f"\nstereo rms {res.rms:.4f} px | epipolar {res.epipolar_rms:.4f} px | "
         f"baseline {res.baseline:.3f} | pairs {res.n_pairs_used}/{len(res.pairs)} | "
         f"coverage L {stats['coverage_left']:.0%} R {stats['coverage_right']:.0%}"
     )
+    _print_diagnostics(run.diagnostics)
     meta = {
         "source": "al-dic-3d calibrate",
         "board": args.board,
         "rms_px": res.rms,
         "epipolar_rms_px": res.epipolar_rms,
         "n_pairs_used": res.n_pairs_used,
+        **run.diagnostics.summary(),
     }
     path = to_opencv_yaml(res.rig, args.output, meta=meta)
     print(f"wrote {path}")
@@ -462,6 +481,14 @@ def _calibrate_command(args: argparse.Namespace) -> int:
             f"scale error {v.scale_error:+.4%} | distance rmse {v.distance_rmse:.4f} mm | "
             f"plane rms {v.plane_rms:.4f} mm"
         )
+    warnings = [f for f in run.diagnostics.findings if f.severity == "warning"]
+    if args.strict and warnings:
+        print(
+            f"error: --strict: the calibration diagnostics raised {len(warnings)} warning(s); "
+            f"the calibration was written to {path}",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

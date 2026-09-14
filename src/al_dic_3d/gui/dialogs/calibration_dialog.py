@@ -39,9 +39,12 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.calibration import detect_board, to_opencv_yaml
+from al_dic_3d.calibration.diagnostics import coverage_outline
 from al_dic_3d.gui import persistence
+from al_dic_3d.gui.calibration_findings import findings_lines, result_colour
 from al_dic_3d.gui.dialogs.calibration_support import (
     CalibWorker,
+    DetectionFilesMixin,
     DetectionZoomDialog,
     PairBars,
     int_spin,
@@ -81,7 +84,7 @@ class _PreviewRelay(QObject):
     done = Signal(int, int, object)  # generation, pair index, (det_l, det_r)
 
 
-class CalibrationDialog(QDialog):
+class CalibrationDialog(DetectionFilesMixin, QDialog):
     """Image pairs -> board spec -> QC'd stereo solve -> opencv_yaml."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -95,6 +98,7 @@ class CalibrationDialog(QDialog):
         self._detections = None  # (dl, dr) cache for fast recalibrate
         self._cached_size = None  # (w, h) from loaded detections (images optional)
         self._result = None
+        self._diagnostics = None  # the calibration diagnostics of the last solve
         self._stats = None
         self._worker: CalibWorker | None = None
         self._preview_idx: int | None = None  # pair shown in the preview strip
@@ -397,6 +401,7 @@ class CalibrationDialog(QDialog):
         self._detections = None
         self._cached_size = None
         self._result = None
+        self._diagnostics = None
         self._preview_idx = None
         self._preview_dets = None
         # setText drops any pixmap, restoring the placeholder caption.
@@ -476,6 +481,7 @@ class CalibrationDialog(QDialog):
 
     def _on_solved(self, payload) -> None:
         dl, dr, result, stats = payload
+        self._diagnostics = stats.pop("diagnostics", None)
         self._detections = (dl, dr)
         self._result = result
         self._stats = stats
@@ -544,8 +550,10 @@ class CalibrationDialog(QDialog):
             )
         for w in result.warnings:
             lines.append(self.tr("Warning: {0}").format(w))
+        lines += findings_lines(self._diagnostics)  # WP6: translated from code + values
         self._result_lbl.setText("\n".join(lines))
-        self._result_lbl.setStyleSheet(f"color: {COLORS.SUCCESS}; font-size: 12px;")
+        colour = result_colour(self._diagnostics)
+        self._result_lbl.setStyleSheet(f"color: {colour}; font-size: 12px;")
 
     def _set_status(self, text: str, *, warn: bool = False) -> None:
         self._status.setText(text)
@@ -553,60 +561,6 @@ class CalibrationDialog(QDialog):
         self._status.setStyleSheet(f"color: {color}; font-size: 11px;")
 
     # ---- detections persistence ------------------------------------------------
-
-    def _on_save_detections(self) -> None:
-        if self._detections is None:
-            return
-        path, _ = QFileDialog.getSaveFileName(
-            self,
-            self.tr("Save detections"),
-            str(self._default_dir() / "detections.npz"),
-            self.tr("NumPy detections (*.npz)"),
-        )
-        if not path:
-            return
-        from al_dic_3d.calibration import save_detections
-        from al_dic_3d.pathsafe import imread_unicode
-
-        dl, dr = self._detections
-        size = self._cached_size
-        if size is None:
-            first = imread_unicode(self._files_l[0])
-            if first is not None:
-                size = (first.shape[1], first.shape[0])
-        out = save_detections(path, self._files_l, self._files_r, dl, dr, image_size=size)
-        self._set_status(self.tr("Detections saved: {0}").format(out))
-
-    def _on_load_detections(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(
-            self,
-            self.tr("Load detections"),
-            str(self._default_dir()),
-            self.tr("NumPy detections (*.npz)"),
-        )
-        if not path:
-            return
-        from al_dic_3d.calibration import load_detections
-
-        try:
-            files_l, files_r, dl, dr, size = load_detections(path)
-        except (ValueError, OSError) as exc:
-            self._set_status(str(exc), warn=True)
-            return
-        self._files_l, self._files_r = files_l, files_r
-        self._detections = (dl, dr)
-        self._cached_size = size
-        self._refresh_table()
-        for k, (det_l, det_r) in enumerate(zip(dl, dr, strict=True)):
-            item = self._table.topLevelItem(k)
-            if item is not None:
-                item.setText(3, f"{det_l.n_points}/{det_r.n_points}")
-        self._recal_btn.setEnabled(True)
-        self._set_status(
-            self.tr(
-                "Loaded {0} detection pairs — Recalibrate re-solves without re-detecting"
-            ).format(len(dl))
-        )
 
     # ---- preview (strip + click-to-enlarge + live re-detect, G3.7) --------------
 
@@ -624,10 +578,22 @@ class CalibrationDialog(QDialog):
         det_r = dr[k] if dr is not None and k < len(dr) else None
         return det_l, det_r
 
+    def _coverage_outlines(self) -> dict:
+        """Covered-radius outline per camera (px) once solved, else empty."""
+        diag, result = getattr(self, "_diagnostics", None), self._result
+        if diag is None or result is None:
+            return {}
+        return {
+            cam: coverage_outline(result.rig.cameras[cam], d.r_cover)
+            for cam, d in diag.cameras.items()
+        }
+
     def _render_preview(self, k: int, dets_override=None) -> None:
         """Side-by-side L|R panel of pair ``k`` with detected points overlaid."""
         det_l, det_r = dets_override if dets_override is not None else self._pair_dets(k)
-        strip = pair_strip(self._files_l[k], self._files_r[k], det_l, det_r, height=142)
+        strip = pair_strip(
+            self._files_l[k], self._files_r[k], det_l, det_r, 142, self._coverage_outlines()
+        )
         self._preview.setPixmap(strip_to_pixmap(strip))
         self._preview_idx = k
         self._preview_dets = (det_l, det_r)
@@ -640,7 +606,9 @@ class CalibrationDialog(QDialog):
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             det_l, det_r = self._preview_dets or (None, None)
-            strip = pair_strip(self._files_l[k], self._files_r[k], det_l, det_r, height=None)
+            strip = pair_strip(
+                self._files_l[k], self._files_r[k], det_l, det_r, None, self._coverage_outlines()
+            )
             pixmap = strip_to_pixmap(strip)
         finally:
             QApplication.restoreOverrideCursor()
@@ -795,5 +763,7 @@ class CalibrationDialog(QDialog):
             "epipolar_rms_px": self._result.epipolar_rms,
             "n_pairs_used": self._result.n_pairs_used,
         }
+        if self._diagnostics is not None:  # WP6: the findings travel with the file
+            meta.update(self._diagnostics.summary())
         self.saved_path = to_opencv_yaml(self._result.rig, path, meta=meta)
         self.accept()

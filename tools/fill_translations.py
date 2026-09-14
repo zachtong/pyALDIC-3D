@@ -5117,6 +5117,19 @@ for _stream in _BATCH_V_STREAMS:
         TRANSLATIONS[_loc].update(_entries)
 
 
+def _load_batch_file(name: str) -> dict[str, dict[str, str]]:
+    path = Path(__file__).resolve().parent / name
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.BATCH
+
+
+# Calibration diagnostics (WP6 of the 2026-09-14 calibration brief).
+for _loc, _entries in _load_batch_file("i18n_batch_calib.py").items():
+    TRANSLATIONS[_loc].update(_entries)
+
+
 def main() -> int:
     ok = True
     for locale in TRANSLATIONS:
