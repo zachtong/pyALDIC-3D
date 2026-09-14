@@ -169,6 +169,19 @@ start from (`al-dic-3d demo`).
 
 ### Changed
 
+- **Coded dot targets are measured more precisely.** Each dot centre is now
+  refined by a weighted centroid over an elliptical window of 1.45 dot radii,
+  with the background (a plane, so uneven light does not pull the centre) and
+  its noise subtracted, instead of the intensity centroid inside the dot's
+  binary outline. On ground-truth images the centres moved from 0.017 px to
+  0.0007 px of the true disc centroid without image noise, and from 0.017 to
+  0.004 px with 1.5 grey levels of noise, fiducial and ordinary dots alike. On
+  real calibration photos, with the board's own shape taken out, the leftover
+  error fell by about a third (Challenge 1.0 Sample 1) and by more than half
+  (Challenge 2.0, 0.08-0.11 to 0.03-0.04 px); on a third set (Challenge 1.0
+  Sample 5, large dots) it stayed within 4%. The same views and points are
+  detected as before. Circle grids and chessboards are unchanged. Detection
+  takes about 50-60 ms more per 5 Mpx image.
 - **Runs start reporting at once and finish sooner.** On a 12 Mpx pair the
   first progress message appears within a second and tracking starts after
   about 5 s; setup used to be silent for 14–34 s. The left camera's

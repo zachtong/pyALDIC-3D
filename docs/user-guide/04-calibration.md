@@ -130,9 +130,12 @@ How to avoid the warnings:
   low-distortion lens, tick **Fix k3 = 0**. With k3 fixed the check still
   compares the two fits, because the data cannot tell whether the lens has a k3
   term; the warning then says that the corners are right only if it has none.
-- For precision, prefer dot targets: on ground-truth images circle-grid dot
-  centres were about six times more precise than chessboard corners (0.005
-  against 0.03 px).
+- For precision, prefer dot targets. On noise-free ground-truth images,
+  chessboard corners were 0.03 px from the truth, circle-grid dot centres
+  0.005 px and coded dot centres 0.0007 px; with 1.5 grey levels of image
+  noise the dot centres were 0.004-0.006 px. Coded-target centres are measured
+  with the local background subtracted as a plane, so uneven light does not
+  shift them.
 
 An information line (*the board reached …% of the image-corner radius*) is not a
 problem by itself; it tells you how far the lens model is fitted.

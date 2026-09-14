@@ -14,7 +14,8 @@ Detectors per board family (D12):
 - Coded circle grid: custom detector — Otsu binarize, contour hierarchy finds
   the three concentric-ring fiducials, affine hypotheses over the 6 fiducial
   assignments are scored by lattice match count, then a homography refine
-  indexes every visible dot (partial views OK).
+  indexes every visible dot (partial views OK). The indexed centres are then
+  refined by a background-subtracted window centroid (:mod:`.dot_centre`).
 
 Failures never raise: they return ``ok=False`` with a ``reason`` so the GUI /
 report can show per-image status. Qt-free; cv2 imported lazily.
@@ -34,6 +35,7 @@ from al_dic_3d.calibration.boards import (
     CircleGridSpec,
     CodedCircleGridSpec,
 )
+from al_dic_3d.calibration.dot_centre import refine_dot_centres
 
 _EMPTY2 = np.empty((0, 2), dtype=np.float64)
 _EMPTY3 = np.empty((0, 3), dtype=np.float64)
@@ -380,19 +382,25 @@ def _refine_rim_and_refit(
 
 def _find_dots_and_fiducials(
     gray: NDArray[np.uint8], binary: NDArray[np.uint8], spec: CodedCircleGridSpec
-) -> tuple[NDArray[np.float64], NDArray[np.float64], str]:
-    """Segment the target: return (dot_centers (n,2), fiducial_centers (m,2), err)."""
+) -> tuple[NDArray[np.float64], NDArray[np.float64], str, NDArray[np.bool_]]:
+    """Segment the target: return (dot_centers (n,2), fiducial_centers (m,2), err, arc).
+
+    ``arc`` (n,) marks the border-clipped dots whose centre came from the
+    visible arc; the window-centroid refinement leaves those alone.
+    """
     import cv2
 
+    no_arc = np.zeros(0, dtype=bool)
     contours, hierarchy = cv2.findContours(binary, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
     if hierarchy is None or len(contours) < spec.rows:  # far too few blobs
-        return _EMPTY2, _EMPTY2, "too few blobs after thresholding"
+        return _EMPTY2, _EMPTY2, "too few blobs after thresholding", no_arc
     hierarchy = hierarchy.reshape(-1, 4)  # [next, prev, first_child, parent]
 
     a_max = np.pi / 4.0 * (min(gray.shape) / 4.0) ** 2
     h_img, w_img = gray.shape
     rings: list[tuple[float, float, float]] = []  # (cx, cy, hole_area)
     blobs: list[tuple[float, float, float]] = []  # (cx, cy, area)
+    arc: list[bool] = []  # per blob: centre from the border arc
     fid_direct: list[tuple[float, float]] = []  # donut-style fiducials (see below)
     for i, cnt in enumerate(contours):
         if hierarchy[i][3] != -1:  # holes are handled through their parents
@@ -408,6 +416,7 @@ def _find_dots_and_fiducials(
                 center = _arc_ellipse_center(gray, cnt, a_max)
                 if center is not None:
                     blobs.append((center[0], center[1], area))
+                    arc.append(True)
             continue
         child = hierarchy[i][2]
         hole_area = cv2.contourArea(contours[child]) if child != -1 else 0.0
@@ -429,6 +438,7 @@ def _find_dots_and_fiducials(
                 r_eq = np.sqrt(area / np.pi)
                 if (hx - cx) ** 2 + (hy - cy) ** 2 <= (0.35 * r_eq) ** 2:
                     blobs.append((cx, cy, area))
+                    arc.append(False)
                     fid_direct.append((cx, cy))
                     continue
         hull = cv2.convexHull(cnt)
@@ -438,9 +448,10 @@ def _find_dots_and_fiducials(
         center = _weighted_center(gray, cnt, spec.dark_dots)
         if center is not None:
             blobs.append((center[0], center[1], area))
+            arc.append(False)
 
     if not blobs:
-        return _EMPTY2, _EMPTY2, "no dot-like blobs found"
+        return _EMPTY2, _EMPTY2, "no dot-like blobs found", no_arc
     dots = np.array([(x, y) for x, y, _a in blobs], dtype=np.float64)
 
     # A fiducial center is the dot inside a ring's hole (nearest dot to ring
@@ -451,7 +462,7 @@ def _find_dots_and_fiducials(
         j = int(np.argmin(d2))
         if d2[j] <= hole_area:  # generous: within the hole's characteristic scale
             fid.append((dots[j, 0], dots[j, 1]))
-    return dots, np.asarray(fid, dtype=np.float64).reshape(-1, 2), ""
+    return dots, np.asarray(fid, dtype=np.float64).reshape(-1, 2), "", np.asarray(arc, bool)
 
 
 def _match_lattice(
@@ -500,7 +511,7 @@ def _coded_attempt(
 
     import cv2
 
-    dots, fid, err = _find_dots_and_fiducials(gray, binary, spec)
+    dots, fid, err, arc = _find_dots_and_fiducials(gray, binary, spec)
     if err:
         return _fail(err, method)
     if fid.shape[0] != 3:
@@ -562,9 +573,14 @@ def _coded_attempt(
     obj = np.column_stack(
         [cols_f * spec.spacing, rows_f * spec.spacing, np.zeros(len(node_ids))]
     ).astype(np.float64)
+    # WP3: refine the matched centres by the background-subtracted window
+    # centroid (border-arc centres stay as they are).
+    centres, _kept = refine_dot_centres(
+        gray, dots[dot_ids], dark=spec.dark_dots, pitch_px=pitch_px, refinable=~arc[dot_ids]
+    )
     return BoardDetection(
         ok=True,
-        image_points=dots[dot_ids],
+        image_points=centres,
         object_points=obj,
         ids=ids,
         method=method,
