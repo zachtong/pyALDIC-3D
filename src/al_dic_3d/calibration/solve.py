@@ -21,7 +21,7 @@ Convention out: ``X_R = R @ X_L + T``, left camera = world — exactly
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 from numpy.typing import NDArray
@@ -73,6 +73,12 @@ class StereoResult:
     mono: dict[str, MonoCalibration]  # keys "L", "R"
     joint_refined: bool
     warnings: tuple[str, ...]
+    # The per-camera detection lists the final solve used, index-paired like
+    # the inputs: for dot targets with the eccentricity correction these are
+    # the corrected centres, otherwise the inputs themselves. Checks of the
+    # final calibration (residuals, diagnostics, bundle adjustment) must use
+    # them, or they measure against points the solve never saw.
+    detections: dict[str, tuple[BoardDetection, ...]] = field(default_factory=dict)
 
     @property
     def n_pairs_used(self) -> int:
@@ -453,6 +459,7 @@ def calibrate_stereo(
         mono={"L": mono_l, "R": mono_r},
         joint_refined=joint_refine,
         warnings=tuple(warnings),
+        detections={"L": tuple(left), "R": tuple(right)},
     )
 
 

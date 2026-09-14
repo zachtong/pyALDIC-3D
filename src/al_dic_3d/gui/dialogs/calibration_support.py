@@ -78,9 +78,11 @@ class CalibWorker(QThread):
                 from al_dic_3d.calibration import bundle_refine
 
                 self.progress.emit("bundle adjustment")
+                # On the points the solve used (the eccentricity-corrected dot
+                # centres); the raw ones brought back a -5.6 ue scale bias.
                 new_rig, info = bundle_refine(
-                    dl,
-                    dr,
+                    result.detections.get("L", dl),
+                    result.detections.get("R", dr),
                     result,
                     zero_tangent=options["zero_tangent"],
                     fix_k3=options["fix_k3"],

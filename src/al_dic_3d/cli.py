@@ -406,8 +406,15 @@ def _calibrate_command(args: argparse.Namespace) -> int:
 
         from al_dic_3d.calibration import bundle_refine
 
+        # On the points the solve used: for dot targets the eccentricity-
+        # corrected centres (bundling the raw ones brought back a -5.6 ue scale
+        # bias on the stereo_gt circle grid).
         new_rig, info = bundle_refine(
-            dl, dr, res, zero_tangent=not args.tangential, fix_k3=args.fix_k3
+            res.detections.get("L", dl),
+            res.detections.get("R", dr),
+            res,
+            zero_tangent=not args.tangential,
+            fix_k3=args.fix_k3,
         )
         res = _replace(res, rig=new_rig)
         print(
