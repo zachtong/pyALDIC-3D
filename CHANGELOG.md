@@ -154,6 +154,11 @@ start from (`al-dic-3d demo`).
   refitted the rig on the uncorrected dot centres, which brought back a scale
   bias of about -5.6 µε on a ground-truth circle grid (-0.4 µε without bundle
   adjustment). It now uses the corrected centres (-0.6 µε).
+- **Bundle adjustment used the views the solve had rejected.** Misindexed
+  detections, which the solve drops (two or three per camera on real photos,
+  about 25 px off), still entered the bundle adjustment. The robust loss only
+  damped them: on a real 43-pair set its RMS ended at 5.2 px. It now uses the
+  views the solve kept (0.33 -> 0.17 px on the same set).
 
 #### Command line
 

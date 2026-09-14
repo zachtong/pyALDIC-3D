@@ -119,8 +119,9 @@ def test_bundle_keeps_gate_accuracy(rig, chess_set, base_result):
     assert ang < 0.05
 
 
-def test_bundle_robust_to_point_outliers(rig, chess_set):
-    # Corrupt 5 individual corners in ONE left view by 8 px. The robust
+def test_bundle_robust_to_point_outliers(rig, chess_set, base_result):
+    # Corrupt 5 individual corners in ONE left view by 8 px, a view the base
+    # solve kept (a view it rejects never reaches the bundle). The robust
     # per-point loss must hold the solve near truth.
     dl, dr = chess_set
     rng = np.random.default_rng(11)
@@ -129,8 +130,8 @@ def test_bundle_robust_to_point_outliers(rig, chess_set):
     pts[idx] += 8.0
     dl_bad = [*dl[:3], dataclasses.replace(dl[3], image_points=pts), *dl[4:]]
 
-    base = calibrate_stereo(dl_bad, dr, (sc.IMG_W, sc.IMG_H), reject_rms=50.0)
-    new_rig, _info = bundle_refine(dl_bad, dr, base)
+    assert 3 in base_result.mono["L"].view_indices
+    new_rig, _info = bundle_refine(dl_bad, dr, base_result)
     assert _fx_err(new_rig, rig) < 1e-3
     assert abs(new_rig.cameras["L"].cx - rig.cameras["L"].cx) < 1.0
 
@@ -147,6 +148,27 @@ def test_bundle_uses_mono_only_views(rig, chess_set, base_result):
     assert info["n_views"] == 18
     assert info["n_mono_views"] == 4
     assert _fx_err(new_rig, rig) < 5e-4
+
+
+def test_bundle_skips_the_views_the_solve_rejected():
+    # Real photos (2026-09-14) had two or three misindexed views per camera,
+    # about 25 px off; the solve rejects them, the bundle must not use them.
+    from tests import synth_calib_points as sp
+
+    rig = sc.make_rig()
+    extent = ((CHESS.cols - 1) * CHESS.square_size, (CHESS.rows - 1) * CHESS.square_size)
+    poses = sc.board_poses(extent, n=12)
+    left = sp.detections(CHESS, rig, poses, "L", noise_px=0.02, seed=1)
+    right = sp.detections(CHESS, rig, poses, "R", noise_px=0.02, seed=2)
+    rng = np.random.default_rng(3)
+    bad = left[4]  # a misindexed view: right points, wrong board positions
+    shuffled = bad.object_points[rng.permutation(bad.n_points)]
+    left[4] = dataclasses.replace(bad, object_points=shuffled)
+    base = calibrate_stereo(left, right, (sc.IMG_W, sc.IMG_H))
+    assert 4 not in base.mono["L"].view_indices  # the solve rejects it
+    _rig, info = bundle_refine(left, right, base)
+    assert info["rms_after"] < 0.06
+    assert info["n_mono_views"] == 1  # view 4 now counts for the right camera only
 
 
 def test_bundle_input_validation(chess_set, base_result):

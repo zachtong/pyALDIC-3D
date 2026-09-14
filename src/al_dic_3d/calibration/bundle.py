@@ -34,7 +34,7 @@ from al_dic_3d.calibration.detect import BoardDetection
 from al_dic_3d.calibration.model import CameraIntrinsics, StereoRig
 
 if TYPE_CHECKING:
-    from al_dic_3d.calibration.solve import StereoResult
+    from al_dic_3d.calibration.solve import MonoCalibration, StereoResult
 
 _BASE_KEYS = ("fx", "fy", "cx", "cy", "k1", "k2")
 
@@ -56,6 +56,19 @@ def _intr_from(base: CameraIntrinsics, keys: tuple[str, ...], vals: NDArray) -> 
     from dataclasses import replace
 
     return replace(base, **{k: float(v) for k, v in zip(keys, vals, strict=True)})
+
+
+def _solve_views(
+    detections: Sequence[BoardDetection], mono: MonoCalibration | None
+) -> list[BoardDetection]:
+    """``detections`` with every view the base mono solve rejected marked unusable."""
+    if mono is None:
+        return list(detections)
+    kept = {int(i) for i in mono.view_indices}
+    return [
+        d if (i in kept or not d.ok) else BoardDetection(ok=False, reason="rejected by the solve")
+        for i, d in enumerate(detections)
+    ]
 
 
 def _init_poses(
@@ -182,10 +195,14 @@ def bundle_refine(
     max_nfev: int = 200,
     progress: Callable[[str], None] | None = None,
 ) -> tuple[StereoRig, dict]:
-    """Jointly refine ``base.rig`` on ALL usable views; returns (rig, info).
+    """Jointly refine ``base.rig`` on all usable views; returns (rig, info).
 
     ``left[i]``/``right[i]`` are index-paired captures (same convention as
-    :func:`~al_dic_3d.calibration.solve.calibrate_stereo`). ``info`` carries
+    :func:`~al_dic_3d.calibration.solve.calibrate_stereo`). A view the base
+    solve's mono calibration rejected for a camera is left out for that camera
+    (a misindexed detection, for example): the robust loss only damps such
+    views, and on real photos three of them per camera held the bundle's RMS at
+    5 px. Views one camera kept still count as mono-only views. ``info`` carries
     ``rms_before``/``rms_after`` (plain px RMS over all residuals),
     ``n_views``/``n_mono_views``, ``nfev``, and ``cost_history`` (rms per
     residual evaluation, for convergence plots). With ``board_morphology`` it
@@ -199,6 +216,8 @@ def bundle_refine(
 
     if len(left) != len(right):
         raise ValueError(f"left/right view counts differ: {len(left)} vs {len(right)}")
+    left = _solve_views(left, base.mono.get("L"))
+    right = _solve_views(right, base.mono.get("R"))
 
     def usable(d: BoardDetection) -> bool:
         return d.ok and d.n_points >= min_points
