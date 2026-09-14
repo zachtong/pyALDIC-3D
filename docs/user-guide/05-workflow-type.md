@@ -56,13 +56,16 @@ applies (range **1–10**, default **3**): 1 is a single global pass (fastest), 
 is the default, 5+ gives diminishing returns. Config key
 `[matching].admm_max_iter = 3`. (It is ignored by Local DIC.)
 
-## Quality gates
+## Extra filters
 
-A **Quality gates (ZNSSD / outliers)** checkbox (off by default) enables the
-robustness gates: a ZNSSD gate on the correspondence, plus reprojection and
-3D-outlier filters on the reconstruction. Every point a gate removes is
-*counted* and reported in the run log (see [Running](09-running.md)) — a gate
-never eats points silently. Leave it off to keep every tracked point.
+An **Extra filters (correlation, outliers)** checkbox (off by default) enables
+the robustness gates: a correlation (ZNSSD) gate on the correspondence, plus
+reprojection and 3D-outlier filters on the reconstruction. Every point a gate
+removes is *counted* and reported in the run log (see [Running](09-running.md))
+— a gate never eats points silently. Leave it off to keep every tracked point.
+
+These filters come on top of the checks every run makes. Those are set in the
+**ADVANCED** section under **Result checks** (see below).
 
 Config keys: `[quality].enabled = true`, `znssd_max = 0.5`,
 `reproj_max_px = 2.0`, `outlier_threshold = 3.0`.

@@ -1,3 +1,108 @@
+# FIX BATCH V (2026-09-13) — readiness-assessment findings, ALL fixes (user: "你去做所有的修复")
+# Source: readiness report https://claude.ai/code/artifact/264d0826-0815-47be-b73b-ee5357288d3d
+# Out of scope by user decision: commit 28027ce (leave as is). von Mises: explained first, then the
+# user chose the 2D formula (MATLAB computeStrain3D.m:51 is wrong; CHANGELOG must not mention MATLAB).
+# Rules: tests first; no commits unless asked; files <= 800 lines; tr() + 7 locales for new UI text;
+# compute stays Qt-free; results-changing fixes re-run parity (tools/matlab_parity.py) + stress.
+# Helper agent (WS-D) owns: packaging/, .github/, docs/RELEASING.md, CHANGELOG.md (past versions),
+#   CITATION.cff, tools/challenge_*.py + dshape_report.py (--data-root), docs/DEPENDS_ON_2D.md.
+
+## Stage 1 — dependencies
+- [x] pyproject: al-dic>=0.7.2,<0.9; opencv: single package (opencv-python, drop headless) + comment fix;
+      declare matplotlib/numba/imageio; psutil in [dev]; classifier Beta
+- [x] OpenCV 4.x support: undistortPointsIter fallback (geometry.py) + test in a cv4 venv
+- [x] strain kernels: numba cache fallback (unwritable cache dir)
+
+## Stage 2 — blockers
+- [x] B2 per-frame masks binarized {0,1} (LazyMaskList) + guards + fix test_lazy_provider + 0/255 GT regression
+- [x] B3 right-camera validity propagates (resample validity, edge cap, capped nearest fill) — all strategies
+- [x] H4 frame-1 stereo link acceptance: ZNSSD + epipolar distance thresholds (default on)
+- [x] B4 3D sequence export: pl.render() before screenshot + test frames differ
+- [x] B1 export dialog closes (reject/closeEvent) + real-dialog tests (main + strain window)
+- [x] B5 New/Open/Recent blocked during run + result bound to the starting state
+- [x] H6 atomic session save (tmp + os.replace) + QMessageBox.critical on save/open/run failure
+
+## Stage 3 — compute highs / mediums / lows
+- [x] H1 honesty gate affine (F from u_accum gradient) + two-tier neighbour support; [x] GUI control (ADVANCED > Result checks > Tracking check)
+- [x] H9 zero-filled frame -> invalidate that frame & keep the rest; CLI SIGINT -> partial results (exit 130)
+- [x] M6 calibration: full distortion vector, DICe K4-K6/S/T + model check, skew-consistent undistort; image-size check in runner
+- [x] M4 validity % denominator = nodes inside ROI
+- [x] quality field per frame (temporal ZNSSD), S2 per-frame mask, frame-size validation per frame,
+      RGBA->gray, admm_max_iter 0 = local-only, strategy TypeError, provenance roi bbox + run_params
+- [x] export: CSV naming frame_1.. + subfolder, MAT size guard, gate chunk by bytes, timestamps unique
+- [x] cancelled runs keep EVERY frame the engine finished (gate verifies the tracked prefix; used to keep 1)
+
+## Stage 4 — speed / memory
+- [x] gate workers 8 (cpu-2 cap); spline prefilter once per frame (affine + retry share it)
+      [skipped: crop to ROI -- not bit-identical, the reuse gave the same saving exactly]
+- [x] L gate overlaps the R engine (default path): 6-frame 12 Mpx 52 s -> 45 s, results == parallel path
+- [x] validate() decodes only first/last lazy mask; LazyMaskList enforces one shape at decode
+- [x] setup progress messages (first message 0.3 s; first tracking tick ~5 s, was 14-34 s)
+- [x] stereo seed search threaded (bit-identical, ~3x); match_points ZNSSD threaded
+- [x] memcheck: +SETUP_AND_GATE_FRAMES (measured fit), n_pts from the real (refined) mesh;
+      masks cached uint8, frames cached in native dtype (resident terms updated)
+- [x] ref_direct: reference gradient + IC-GN precompute built once, not per frame
+- [x] GUI-vs-CLI 30% gap: not reproducible under controlled load (6 frames 12 Mpx: CLI 52 s, GUI 56 s);
+      the original measurement overlapped the review agents' experiments
+- [x] stress_test.py: stage timings chained (were empty since 1.1.0); mask-ROI n_pts estimate
+
+## Stage 5 — GUI / export (agents: OPS = packaging/self-test, EXP = export, VIEW = viewer speed)
+- [x] H2 no starting point: automatic disparity prior (probe patches, epipolar-checked, seeds the
+      propagation) -> 12 Mpx rig 75 % -> 100 % frame-1 match; FFT greying / overlay / readiness use
+      the effective mode; amber note; Auto-place button; seed readiness off the GUI thread
+- [x] ADVANCED: tracking check / stereo check / epipolar limit controls
+- [x] H3 viewer speed (VIEW agent): longest GUI stall per browsing action 0.25-3.2 s -> 6-62 ms at
+      12 Mpx x 40 frames; scrub memory +1159 MB -> +351 MB; first 3D open 0.79 s (pyvista import,
+      now with a busy message). Follow-ups: 3D export camera = the 3D view's, strain-window export
+      rebuild, bool barrier (no float copy) in exports/strain, overlay drawn centred on its nodes
+      (was (step-1)/2 px off, canvas + strain window + export), DEPENDS rows for the dropped imports
+- [x] H5 layout: right sidebar scroll, min 960x600, label column from font metrics
+- [x] frozen app: log file, crash dialog, faulthandler, JIT warm-up, self-test, demo (OPS agent)
+      (warm-up 23 s cold in the background, first run 0.3 s after it; self-test 12 checks)
+- [x] H10 same-folder L/R split (6 naming families), identical-list refusal, per-frame mask import
+- [x] H7 export = run config, dialog refresh, units, R mask, 3D range/ROI/camera, 16-bit (EXP agent)
+      [x] stale hint only adopts a SUCCESSFUL run
+- [x] H8 animation failure raises; GIF streamed via Pillow + exact delays (EXP agent)
+- [x] M5 data export progress + cancel (EXP agent)
+- [x] M7 close order: the run is stopped only after the unsaved prompt; responsive join
+- [x] M8 readiness checks content (calibration loads, same files, sizes, ROI mask size);
+      calibration embedded in the session + moved-calibration search; open without images
+- [x] M9 Run disabled when not ready; M10 progress text translated, jargon, per-frame velocity
+      label until a frame rate is given, tr() on main-window / sidebar logs
+      [x] canvas/export log strings + per_frame label in canvas/export (after VIEW/EXP)
+- [x] parallel-camera zero-fill: only the bad frame is dropped (was: whole run fails)
+- [x] lows: language menu (effective locale + restart note), Help > User Guide, recent list keeps
+      unreachable drives, cross-platform Reveal (selects the file), ROI menu arrows drawn by Qt,
+      calibration dialog: live preview off the GUI thread + dialogs start in the image folder,
+      summary without "(see above)" when nothing is flagged, final elapsed time, Min/Max show the
+      live auto range, 6-decimal range boxes
+      [x] canvas toolbar swatch ("Mesh:" label) / "1 p." spinbox (Qt-sized), save dialogs start in
+          the data's folder (Save Mask, Save log, Save calibration as: persistence.suggested_save_path)
+      [x] CLI em dash: run output spelled in ASCII (cli._say), cp437 console test
+
+## Stage 6 — onboarding & docs
+- [x] `al-dic-3d demo OUT` (synthetic stereo dataset + config) + README Quick Start
+      (README API example verified on the demo output with -W error::UserWarning)
+- [x] user guide corrections (6 claims + versions), README CI claim, CHANGELOG [Unreleased]
+- [ ] 00_INDEX changelog (after Stage 7, with the final numbers)
+
+## Stage 7 — verification
+- [x] i18n extract/fill/compile: 780 strings x 7 locales finished, scan clean (extract now -no-obsolete;
+      fill regex steps over <extracomment>; gui '#:' comments were read by lupdate as translator notes)
+- [x] parity gate: P1 + P2 PASSED (tool fixed: left frames staged under the baseline numbers; h5py in [dev])
+- [x] GUI journey tier12 (same script as the assessment): run 616 s (heartbeat) / 516 s (clean) -> 319 s,
+      first progress 16.2 -> 0.3 s, run stalls >100 ms 402 -> 8, result scrub 811 -> 46 ms, right camera
+      1626 -> 20 ms, strain scrub 983 -> 18 ms, first 3D open 2656 -> 688 ms, reopen 4.5 -> 2.3 s,
+      peak RSS 6.75 -> 5.89 GB
+- [x] run warnings in user terms (gui/warning_text: no Starting Point, FFT clamp); runner.py split
+      under 800 lines (run_output.py re-exported)
+- [x] full pytest + ruff (final): 1085 passed in 4 min 25 s (-n 6), ruff clean
+- [x] von Mises = 2D formula (strain3d.gradients.von_mises_strain, bit-identical to al_dic; sessions
+      re-derive it on load); docs/strain3d_math.md, guide ch 11 (+ smoothing sentence), DEPENDS test row
+- [x] full pytest after the von Mises change: 1092 passed, ruff clean
+
+# ===================== ARCHIVE (July 2026 plans; kept for history) =====================
+
 # UX + PERF AUDIT PLAN (2026-07-09, PM review + stress tests; PENDING USER APPROVAL)
 # === UX track ===
 # G1 safety/correctness (~half day): unsaved-changes guard (dirty bit EXISTS but never read);

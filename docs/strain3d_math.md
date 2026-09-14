@@ -127,8 +127,16 @@ Derived quantities:
 max_shear = sqrt( (½(exx − eyy))² + exy² )
 e1        = ½(exx + eyy) + max_shear                 (major principal)
 e2        = ½(exx + eyy) − max_shear                 (minor principal)
-von_mises = sqrt( e1² + e2² − e1·e2 + 3·max_shear² )
+von_mises = sqrt( exx² + eyy² − exx·eyy + 3·exy² )    (= sqrt(m² + 3·max_shear²), m = ½(exx + eyy))
 ```
+
+`von_mises` is the plane formula of pyALDIC (2D), bit-identical to
+`al_dic.strain.compute_strain` (pinned by `tests/test_batch_v_von_mises.py`).
+`computeStrain3D.m:51` (and `Plotstrain_inc.m:137`) compute
+`sqrt(e1² + e2² − e1·e2 + 3·max_shear²)`: the first three terms already equal
+`m² + 3·max_shear²`, so the extra term counts the shear twice. The MATLAB
+reference is wrong here (confirmed by the author, 2026-09-13); do not port it
+back for parity.
 
 ## 5. Optional post/pre-steps (parametrised, default off)
 

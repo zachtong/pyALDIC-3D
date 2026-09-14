@@ -70,7 +70,8 @@ Exports honour the same mask (see [Exporting](12-export.md)).
 
 ### Strain field smoothing
 
-An optional Gaussian smoother of the strain field (not the displacement):
+An optional Gaussian smoothing of the displacement field before the plane fit
+(so every strain component is computed from the same smoothed field):
 **Off** (default), **Light (σ = 0.5 × step)**, **Medium (σ = 1 × step)**, or
 **Strong (σ = 2 × step) ⚠**.
 
@@ -95,8 +96,9 @@ label and a **Cancel** button. If you change a parameter after computing, a
 Seven exclusive toggle buttons select the strain field (default **εxx**):
 
 `εxx`, `εyy`, `εxy` (`exx, eyy, exy`); the principal strains `ε₁`, `ε₂`
-(`e1, e2`); `γ max` (`max_shear`); and `von Mises` (`von_mises`). Buttons are
-disabled until strain is computed. (The result also carries `dwdx` / `dwdy`
+(`e1, e2`); `γ max` (`max_shear`); and `von Mises` (`von_mises`), the plane
+equivalent strain `sqrt(εxx² + εyy² − εxx·εyy + 3·εxy²)` used by pyALDIC (2D) as
+well. Buttons are disabled until strain is computed. (The result also carries `dwdx` / `dwdy`
 out-of-plane slope diagnostics, which are not exposed as field buttons but are
 present in exports.)
 

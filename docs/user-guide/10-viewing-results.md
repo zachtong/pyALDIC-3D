@@ -31,7 +31,9 @@ Below the toggles:
   camera's images as a cross-check that the stereo match is sound.
 
 The overlay is a **dense, continuous field** interpolated across the mesh — not
-just coloured nodes.
+just coloured nodes. Each value sits on its own node, and a triangle that touches
+an invalid node is left transparent, so a gap in the colour is a gap in the
+result (the same in the 3D view and in exported images).
 
 ## VISUALIZATION section
 
@@ -51,26 +53,34 @@ just coloured nodes.
 
 - **Display unit** — `µm`, `mm` (default), `cm`, `m`. This converts the
   displacement / velocity **display** values (colorbar, 3D scalar bar, and the
-  bounds auto-range writes back). The underlying data, session, and exports stay
-  **mm** on the wire. Strain is dimensionless and never converted.
-- **Frame rate** — feeds only the *Vel* (velocity) field, converting mm/frame to
-  mm/s.
+  bounds auto-range writes back). Rendered exports (images, animations, 3D
+  renders) follow it too, so they match the screen; the numeric data, the
+  session and the data exports stay **mm**. Strain is dimensionless and never
+  converted.
+- **Frame rate** — feeds only the *Vel* (velocity) field. It starts as *not set
+  (per frame)*: velocity is then shown per frame (the colorbar reads, for
+  example, *|V| (mm/frame)*). Enter the acquisition rate to see it per second
+  (*|V| (mm/s)*).
 
 ## The 3D View
 
-The canvas toolbar has a **3D View** checkbox (requires the `[viz3d]` extra and
-existing results). Checking it switches the canvas from the 2D image view to the
+The canvas toolbar has a **3D View** checkbox (it needs existing results; the
+3D libraries are part of every installation). Checking it switches the canvas from the 2D image view to the
 **reconstructed 3D surface**, coloured by the selected field and shown with the
 two **camera frusta** so you can see the rig geometry. Uncheck it to return to
 the 2D view. Without results it shows *3D view — run an analysis to see the
-reconstructed surface.*
+reconstructed surface.* The first time you check it, the 3D libraries load
+(about a second; *Starting the 3D view…* and a busy cursor show it). The 3D
+export uses the camera you set here ([Export](12-export.md)).
 
 ## Frame navigator
 
 The bottom bar navigates frames: previous / play-pause / next buttons, a
 **speed** combo (`1, 2, 5, 10, 30 fps`, default **2 fps**), a bold
 **FRAME k/N** label (1-based), and a timeline slider. Playback loops and needs at
-least two frames.
+least two frames. Large images load and render in the background: the previous
+frame stays on screen until the next one is ready, so browsing and dragging the
+slider stay responsive on 12-megapixel sequences.
 
 ## Console log
 

@@ -17,6 +17,9 @@ A `.aldic3d` file is a **versioned ZIP bundle** containing:
   ROI mask as an 8-bit grayscale PNG (255 = inside the ROI, 0 = outside).
 - **`refinement_mask.png`** — present only when you painted refinement zones
   with the brush; same encoding.
+- **`calibration/<file name>`** — a copy of the calibration file (up to 50 MB),
+  so the project still has its calibration on another computer or after the
+  file moved.
 
 The bundle is versioned: `session.json` carries `schema_version` (currently
 **1**). Opening a file with an unknown schema, or a file that is not a zip,
@@ -26,8 +29,9 @@ simply comes back with no drawn mask).
 
 `session.json` top-level keys: `schema_version`, `config` (the reproducible
 `RunConfig`, or null), `draft` (the GUI project draft), `view_state`,
-`workflow_step`, `strategy`, `meta` (human-readable run metadata), and
-`has_results`.
+`workflow_step`, `strategy`, `meta` (human-readable run metadata, including
+`run_params`, the parameters that produced the results), `has_results`, and
+`calibration_member` (the name of the embedded calibration copy).
 
 ## What is saved
 
@@ -35,8 +39,13 @@ simply comes back with no drawn mask).
   mode and update policy, subset size / step, stereo & temporal search,
   refinement, quality gates, calibration file path and format, etc. (path fields
   are stored as strings).
-- **The project draft** — the ROI, disparity offset, output directory, and the
-  calibration file reference.
+- **The project draft** — the ROI, disparity offset, output directory, the
+  calibration file path, and per-frame mask files if you imported them.
+- **The calibration itself** — a copy travels inside the file. When the
+  original path does not exist on opening, pyALDIC-3D first looks for a file
+  of the same name next to the project and next to the image folders, and
+  otherwise restores the embedded copy to a folder of your user profile; the
+  log says which one it used.
 - **The ROI, exactly as drawn** — the bounding box lives in `session.json` and
   the pixel mask itself is embedded as `roi_mask.png`. Polygons, circles, cut
   shapes, brush strokes and imported PNG masks therefore all come back
@@ -58,7 +67,8 @@ simply comes back with no drawn mask).
 
 The persisted `view_state` restores: `display_field`, `colormap`, `color_auto`,
 `color_min`, `color_max`, `overlay_alpha`, `show_deformed`, `camera` (L/R),
-`current_frame`, `display_unit`, `frame_rate`, the mesh overlay
+`current_frame`, `display_unit`, `frame_rate` (and whether you set one:
+without it velocity is shown per frame), the mesh overlay
 `mesh_line_color` / `mesh_line_width`, and the canvas toolbar toggles
 `show_grid` / `show_subset` / `view_3d` — so a project reopens on the view you
 left it on, 3D page included.
@@ -101,7 +111,10 @@ so the next save persists the corrected paths.
 
 Only when auto-relocation cannot find a camera's frames does a **Locate Images**
 dialog prompt you to pick the folder that now holds that camera's frames (file
-names must match). Cancelling the prompt aborts the open; the app keeps its prior
-state.
+names must match). If you cancel it, a second question offers **Open anyway**:
+the project opens with its results viewable and exportable, the log lists the
+images that were not found, and the **Run** button stays disabled until the
+images are back (readiness reports the unreadable images). Choosing **Cancel**
+there aborts the open, and the app keeps its prior state.
 
 Next: [Troubleshooting →](14-troubleshooting.md)

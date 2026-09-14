@@ -22,6 +22,8 @@ Config key: `[matching].init_guess = "seed" | "fft" | "previous"`.
 > those points, every frame warm-starts from its predecessor. This is why the
 > **Temporal Search** and **Auto-expand** controls in the sidebar grey out when
 > the current mode means no FFT will run (see [Parameters](08-parameters.md)).
+> *Starting Points* with no point placed runs as FFT, so the controls stay
+> active in that case.
 
 ## When to use each
 
@@ -43,12 +45,34 @@ When **Starting Points** is selected, a seed panel appears with:
   *Placing… (click to exit)*. In placement mode, **left-click** the LEFT camera,
   frame 1 to add a point (the tool stays armed, so you can place several);
   **right-click** removes the nearest; **Esc** exits.
+- **Auto-place** — places one point for you, at the spot deepest inside the
+  drawn ROI (the centre of a rectangle). Draw the ROI first. It does nothing
+  when points are already placed; press **Clear** first to replace them.
 - **Clear** — remove all Starting Points.
 - A **readiness status** line, which reflects per-region coverage:
-  - *No points placed — FFT fallback at run*
+  - *No point placed: the run finds the stereo offset from probe patches and
+    seeds frame 1 by FFT…* (shown in amber, see below)
   - *N point(s) placed*
   - *N point(s) · X/Y regions ready* (all connected ROI regions seeded)
   - *N point(s) · X/Y regions seeded — rest auto-seeded at run* (partial)
+
+## Running without a Starting Point
+
+A run without any point is not blocked, and it no longer degrades silently:
+
+- **Stereo (left to right, frame 1).** Five probe patches spread over the
+  ROI are matched over the *whole* right image, exactly as a placed point is.
+  Matches that disagree with the calibration's epipolar geometry are dropped.
+  The remaining probes then act as Starting Points for the stereo match: the
+  disparity is propagated from them node to node. On a 12 Mpx convergent test
+  rig this raised the frame-1 stereo coverage from 75 % to 100 %, the same as
+  one clicked point. The run log's stereo line names the probes it used.
+- **Temporal (frame 1 to frame 2).** The engine's FFT search seeds the first
+  frame pair, as with the *FFT* mode. Place a point, or press **Auto-place**,
+  when the first-frame motion is larger than the **Temporal Search** radius.
+
+The canvas card then reads *FFT (no starting point)*, and the right sidebar
+shows *Ready to run* with an amber note that says the same.
 
 Seeds are placed on the **LEFT camera, frame 1** only — the reference view.
 Clicking elsewhere is refused with a warning telling you to switch to the LEFT /

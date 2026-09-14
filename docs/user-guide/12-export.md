@@ -3,7 +3,15 @@
 Both the main window and the [Strain window](11-strain-processing.md) open the
 **same** export dialog (title: *Export Results*, `assets/export_window.png`).
 Which window you launch it from only seeds the initial visualization preset
-(colormap, range, deformed toggle).
+(colormap, range, deformed toggle, display unit). The dialog always exports
+the results currently on screen: after a new run, a strain recompute or a
+project switch, reopening it builds a fresh dialog, and an idle dialog left
+open on the old results closes by itself.
+
+Images, animations, the preview and the 3D renders use the canvas's **display
+unit** and its velocity rule (per frame until you set a frame rate, see
+[Viewing results](10-viewing-results.md)), so a colorbar reads exactly as on
+screen. The numeric data (NPZ / MAT / CSV / PLY / VTU) always stays in **mm**.
 
 At the top of the dialog, above the tabs, is a shared **OUTPUT FOLDER** row: a
 path field (placeholder *Select output folder…*), a **Browse…** button, and an
@@ -30,13 +38,21 @@ Check the numeric-data formats you want (the **Format** group):
 |----------|---------|--------|
 | **NumPy archive (.npz)** | on | `<prefix>_<ts>.npz` |
 | **MATLAB (.mat)** | on | `<prefix>_<ts>.mat` |
-| **CSV (one file per frame)** | off | `<prefix>_<ts>_frameNNN.csv` (flat, in the folder) |
+| **CSV (one file per frame)** | off | `<prefix>_csv_<ts>/<prefix>_frame_1.csv`, `…_frame_2.csv`, … (own sub-folder, frames numbered from 1 like every other export) |
 | **PLY point clouds (per frame)** | off | `<prefix>_ply_<ts>/…` |
 | **VTU mesh series (ParaView)** | off | `<prefix>_vtu_<ts>/frame_XXX.vtu` + `<prefix>.pvd` |
 
 A **parameters JSON is always written** (`<prefix>_parameters_<ts>.json`),
 regardless of which formats you tick — the note *"✓ Parameters file (JSON)
-always exported"* reminds you.
+always exported"* reminds you. It records the parameters of the run that
+produced the results (subset size, step, strategy, thresholds, ROI), even if
+you changed the sidebar afterwards.
+
+A progress bar follows each format, and **Cancel** stops between frames. A
+cancelled NPZ or MAT leaves no partial file behind, and the status line says
+*cancelled* only when the export really stopped early. MAT files refuse any
+variable larger than MATLAB's version-5 limit (2 GB) before writing, naming the
+variable.
 
 Below the formats are two **field pickers**, each with **All** / **None**
 buttons:
@@ -90,15 +106,15 @@ exports apply this mask (frame-0 validity for the reference view, frame-*k* for
 the deformed view); the raw `.npz`/`.mat` strain arrays keep every value, so you
 can re-trim downstream.
 
-The per-frame **CSV** files (`<prefix>_<ts>_frameNNN.csv`) have one row per node
-with columns `x_px, y_px, X_mm, Y_mm, Z_mm`, then the selected fields.
+The per-frame **CSV** files (`<prefix>_frame_1.csv`, … in the
+`<prefix>_csv_<ts>/` sub-folder) have one row per node with columns
+`x_px, y_px, X_mm, Y_mm, Z_mm`, then the selected fields.
 
 The headless `al-dic-3d run` records the archive layout as `archive_schema = 3`
 in its parameters JSON (the export dialog's parameters JSON does not carry this
-key). The two paths also differ in file layout: the headless runner groups CSV
-into a `<prefix>_csv_<ts>/` subfolder and names the archives `<prefix>.npz` /
-`<prefix>.mat`, whereas the export dialog writes flat, timestamped files as
-shown above.
+key). Both paths put CSV files in a `<prefix>_csv_<ts>/` sub-folder; the
+headless runner names the archives `<prefix>.npz` / `<prefix>.mat`, whereas the
+export dialog adds the timestamp to every name.
 
 ## Images tab
 
@@ -115,11 +131,15 @@ Render each field to a per-frame image. Controls:
   **Full resolution** (native). Aspect ratio is kept.
 - **Include colorbar** — on by default. Leave it on for quantitative figures.
 - **Background** — *Original (frame 1 background)* or *Deformed (current frame
-  background)*.
+  background)*. The background uses the canvas's brightness stretch, so 12-bit
+  images stored in 16-bit files are no longer nearly black.
 - **Frame range** — *All frames* (default), or a *From frame* / *to* range
   (1-based).
 
 Click **Export Images** to write one file per frame per enabled field.
+Right-camera images use the same region as the canvas (the left ROI mapped
+into the right camera). A frame with nothing to draw is skipped and named in
+the status line, and an export that writes nothing is shown as a failure.
 
 ## Animation tab
 
@@ -135,8 +155,13 @@ Frame range / Include colorbar) plus:
   factor so real duration is preserved.
 - **Resolution (long edge)** — same presets as Images.
 
-> MP4 encoding requires `ffmpeg`. GIF is a dependency-free fallback but explodes
-> in size at native resolution — cap the resolution for GIFs.
+> MP4 uses the encoder bundled with OpenCV (mp4v, with XVID as a fallback);
+> odd frame sizes are padded to even. If no encoder opens, the export fails
+> with an error instead of reporting success. GIFs are written frame by frame,
+> so memory stays small even for long sequences, and they play at the chosen
+> rate (GIF timing allows at most 50 fps). GIF files are still large at native
+> resolution — cap the resolution for GIFs. A cancelled animation's unfinished
+> file is deleted.
 
 ## Preview & Colorbar tab (WYSIWYG)
 
@@ -165,10 +190,14 @@ When physical units are enabled, the colorbar label and ticks use them (e.g.
 
 ## 3D View tab (offscreen render)
 
-Render the interactive 3D surface offscreen (requires the `[viz3d]` extra):
+Render the interactive 3D surface offscreen:
 
 - **Field** / **Colormap** / **Resolution** — resolution is one of
   `1024 × 768` (default), `1280 × 960`, `1920 × 1080`, `800 × 600`.
+- **Auto** range (on: each frame's 2nd–98th percentile inside the ROI, the
+  interactive view's rule) or fixed **Min** / **Max**.
+- The surface is limited to the ROI, and the camera is the one of the
+  interactive 3D view when it is open (otherwise an isometric view).
 - **Frame sequence** group:
   - **Per-frame image sequence (PNG)** — on by default.
   - **Animation** — on by default; **MP4** (default) / **GIF**, **Frames per

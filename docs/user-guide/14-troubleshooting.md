@@ -14,6 +14,10 @@ sidebar hint name what is missing. Usual causes:
   parameters ([Calibration](04-calibration.md)).
 - **No Region of Interest** on the LEFT camera, frame 1
   ([Region of interest](07-region-of-interest.md)).
+- **An input that is set but not usable** — the message names it: a
+  calibration file that does not load with the selected format, left and right
+  sequences that are the same files, frames of different sizes within a
+  camera, unreadable images, or an ROI mask drawn for images of another size.
 
 Unseeded ROI regions do **not** block the run — they are auto-seeded, so a
 partial *Starting Points* setup is fine.
@@ -43,11 +47,16 @@ order:
 ## Low match fraction / few valid points
 
 The log's *Frame-1 stereo match: X/Y points matched (Z%)* and per-frame validity
-lines localize the loss. Low stereo yield points at calibration or an
-insufficient **Stereo Search**; temporal validity that decays over frames points
-at motion exceeding the search / seed, decorrelation, or (for large rotation)
-the wrong tracking mode — switch to **Incremental + Every Frame**
-([Workflow type](05-workflow-type.md)). Enabling **Quality gates** will remove
+lines localize the loss. Low stereo yield points at calibration (the epipolar
+check rejects links that disagree with it) or at a disparity that varies more
+than **Stereo Search** covers; placing a Starting Point helps. Temporal validity
+that decays over frames points at motion exceeding the search / seed,
+decorrelation, or (for large deformation or rotation) the wrong tracking mode —
+switch to **Incremental + Every Frame** ([Workflow type](05-workflow-type.md));
+the log suggests this when validity collapses in accumulative mode. For a
+specimen strained close to failure, raising **ADVANCED > Result checks >
+Tracking check** (for example to 1.5) keeps more of the strongly deformed
+points ([Parameters](08-parameters.md)). Enabling **Extra filters** will remove
 more points, but every removal is counted in the log, so you can see whether a
 gate (ZNSSD / reprojection / 3D-outlier) is doing the culling.
 
@@ -106,7 +115,8 @@ known-distance board.
   you are running. Upgrade.
 - **Images not found** — this is not a fatal error: the app auto-relocates moved
   image folders and, failing that, prompts you to *Locate Images* per camera.
-  Cancelling the prompt aborts the open. See [Sessions](13-session.md).
+  If you cancel that, **Open anyway** opens the project with its results
+  viewable and exportable. See [Sessions](13-session.md).
 
 ## A run was cancelled but I still have results
 
@@ -114,5 +124,27 @@ That is by design: cancelling keeps the frames computed so far (later frames are
 `NaN`), and only a cancel before any deformed frame finished returns to IDLE with
 nothing. A cancel during strain keeps the displacement / 3D results and drops
 only the strain ([Running](09-running.md)).
+
+## The application crashed or shows an error dialog
+
+An unexpected error opens a dialog with the details, and the installed
+(Windows installer) application also writes them to a log file:
+
+- `%LOCALAPPDATA%\pyALDIC-3D\logs\pyALDIC-3D.log` — messages and Python
+  errors (on macOS / Linux: `~/pyALDIC-3D/logs/`);
+- `pyALDIC-3D-crash.log` in the same folder — a native crash (for example in
+  the 3D renderer), which cannot show a dialog.
+
+Attach both files to a bug report. To see the output live, start
+`pyaldic3d-cli.exe gui` from a terminal. `al-dic-3d self-test` checks the
+installation itself (images, videos, translations, kernels, a small stereo
+run, a 3D render) and names the part that fails.
+
+## The first run takes much longer
+
+The numerical kernels are compiled once per installation. The application
+does this in the background a couple of seconds after it opens (the log says
+*Preparing compute kernels in the background…* and later *Compute kernels
+ready*); a run started before that finishes waits for the compilation.
 
 Back to the [index](index.md).

@@ -9,9 +9,10 @@ from it.*
 ## The ROI toolbox
 
 The **REGION OF INTEREST** section holds a compact toolbar. The first row has
-three drop-down buttons whose menus pop up above the button:
+three drop-down buttons; each opens its menu below the button, or above it
+when the window has no room below:
 
-### Add ▴ and Cut ▴
+### Add and Cut
 
 Both open the same shape menu; **+ Add** paints the shape into the ROI, **✂ Cut**
 removes it:
@@ -24,7 +25,7 @@ removes it:
 The shape tools are one-shot: after you finish one shape the tool reverts to
 select, so you can immediately pan/zoom.
 
-### + Refine ▴ (refinement brush)
+### + Refine (refinement brush)
 
 The refine menu paints a "refine-here" brush that densifies the mesh where you
 paint (used together with the mesh-refinement checkboxes in
@@ -38,8 +39,9 @@ paint (used together with the mesh-refinement checkboxes in
 
 - **Import** — load a mask image as the ROI (filter
   `*.png *.bmp *.tif *.tiff *.jpg *.jpeg`).
-- **Save** — write the current mask to a PNG (*Save Mask*, default
-  `roi_mask.png`).
+- **Save** — write the current mask to a PNG (*Save Mask*, proposed as
+  `roi_mask.png` in the images' folder, or in the folder you saved a mask to
+  last).
 - **Invert** — swap inside/outside.
 - **Clear** — remove the ROI.
 
@@ -47,6 +49,19 @@ A **bbox readout** below the toolbar shows the ROI bounding box:
 *bbox: not set*, or *bbox: xmin–xmax, ymin–ymax px* once drawn.
 
 You can also right-click the canvas for **Clear ROI** and **Clear seed points**.
+
+## Per-frame masks
+
+Below the toolbar, **Per-frame masks** imports one mask image per frame for
+each camera (**Import…** picks the folder, **Clear** removes them). Use them
+when the valid region changes during the test, for example a crack that opens
+or a specimen pulled to failure; without them the ROI of frame 1 serves every
+frame. Any non-zero pixel is valid, so 0/255 mask files are fine.
+
+The import checks that there is one mask per frame and that the masks have the
+image size, and refuses the folder otherwise (the log says why). When no ROI
+has been drawn yet, the first left mask becomes the ROI. The status line shows
+how many masks each camera has, and they are saved with the project.
 
 ## Mesh preview and subset hover
 
@@ -62,7 +77,7 @@ The canvas toolbar has two view toggles that make the ROI concrete:
   subset spans enough speckle texture. The hover snaps to the nearest node.
 
 You can also set the mesh overlay's line **color** and **width** (1–8 px) from
-the toolbar's appearance control — cosmetic only.
+the **Mesh:** control on the canvas toolbar — cosmetic only.
 
 ## Thin barriers = cracks (crack-aware runs)
 

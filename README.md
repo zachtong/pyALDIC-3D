@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/zachtong/pyALDIC-3D/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zachtong/pyALDIC-3D/ci.yml?style=flat-square&label=CI" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/tests-687-22c55e?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-1092-22c55e?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/3D-PyVista%2FVTK-blue?style=flat-square" alt="PyVista"/>
@@ -255,7 +255,7 @@ Measured end to end (tracking + honesty gate + reconstruction) on a desktop CPU:
 |---|---|---|---|
 | 400 frames × 5 Mpx, two cameras | 11,466 | 48.4 min<sup>†</sup> | **1.02 s** median |
 | 150 frames × 12 Mpx, two cameras | 27,170 | 58.9 min<sup>†</sup> | — |
-| 3 frames × 2.3 Mpx (shipped sample) | 1,309 | seconds | — |
+| 3 frames × 2.3 Mpx (Challenge 1.0 Sample 3) | 1,309 | seconds | — |
 
 Both long runs held **100% node validity end to end**, and the final frame matched the
 synthetic truth to **0.010–0.011 px** in the image plane and **0.002–0.004 mm** in 3D —
@@ -313,23 +313,30 @@ al-dic-3d gui              # desktop application
 al-dic-3d gui my.aldic3d   # …opening straight into a saved session
 al-dic-3d run config.toml  # headless pipeline
 al-dic-3d calibrate --help # built-in stereo calibration
+al-dic-3d demo demo_out    # a synthetic dataset to try it on (below)
+al-dic-3d self-test        # check that this installation works end to end
 ```
 
-### Try it on the shipped sample
+### Try it without data of your own
 
-The repo ships three synchronized stereo pairs of a speckled D-specimen (Stereo-DIC
-Challenge 1.0 "Sample 3") plus a DICe-format calibration under
-[`examples/Images_Stereo_Sample3_images/`](examples/Images_Stereo_Sample3_images):
+`al-dic-3d demo` writes a small synthetic stereo dataset with an analytic ground
+truth: four frames per camera from an 18° convergent, lens-distorted camera pair
+viewing a tilted speckle plane under a known deformation, its OpenCV calibration
+(`calib.yml`) and a ready `config.toml`. It needs nothing but the installation.
 
 ```bash
-al-dic-3d run examples/quickstart/config.toml -o examples/quickstart/out
+al-dic-3d demo demo_out                # write the dataset (about a second)
+al-dic-3d run demo_out/config.toml     # run it headless
+al-dic-3d demo demo_out --run          # …or both, plus the error against the ground truth
 ```
 
-That reconstructs the surface and computes surface strain for all three frames in
-seconds, writing `quickstart.npz` / `.mat` (3D points, U/V/W/|D|, the full strain
-stack, and the raw correspondence with quality and reprojection error) plus a
-parameters JSON. The GUI walkthrough for the same data is in
-[`examples/quickstart/README.md`](examples/quickstart/README.md).
+The run takes a few seconds (the first run on a new installation also compiles the
+numerical kernels, once) and writes `demo_out/results/demo.npz` / `.mat` (3D points,
+U/V/W/|D|, the full strain stack, and the raw correspondence with quality and
+reprojection error) plus a parameters JSON. To try the GUI on the same data, load
+`L_*.png` and `R_*.png` as the left and right images and `calib.yml` as the
+calibration (format `opencv_yaml`, the default), then draw a rectangle ROI on the
+speckle plane. `--frames` and `--size` make a longer or larger dataset.
 
 <details>
 <summary><b>Programmatic API</b></summary>
@@ -340,20 +347,20 @@ from pathlib import Path
 import numpy as np
 from al_dic_3d.runner import RunConfig, run_pipeline, write_results
 
+# The synthetic dataset from `al-dic-3d demo demo_out`
 cfg = RunConfig(
-    calibration_file=Path("examples/Images_Stereo_Sample3_images/cal.xml"),
-    calibration_format="dice",           # or matlabcv / matchid / mmc / opencorr / opencv_yaml
-    left="examples/Images_Stereo_Sample3_images/L/*_0.tif",
-    right="examples/Images_Stereo_Sample3_images/R/*_1.tif",
-    roi=(340, 1560, 430, 690),           # (xmin, xmax, ymin, ymax) on the LEFT frame 1
-    output_dir=Path("out"),
+    calibration_file=Path("demo_out/calib.yml"),
+    calibration_format="opencv_yaml",    # or dice / matlabcv / matchid / mmc / opencorr
+    left="demo_out/L_*.png",
+    right="demo_out/R_*.png",
+    roi=(51, 269, 51, 269),              # (xmin, xmax, ymin, ymax) on the LEFT frame 1
+    output_dir=Path("demo_out/results"),
     output_prefix="demo",
     strategy="track_both",               # or stereo_each_frame / ref_direct
-    reference_mode="incremental",        # or accumulative
+    reference_mode="accumulative",       # or incremental, for large deformation
     winsize=32,                          # subset size, px (even)
     winstepsize=16,                      # node spacing, px (power of 2)
-    stereo_search=60,
-    fft_search=60,
+    stereo_search=48,                    # left-to-right search half-width, px
     compute_strain=True,
     strain_size=5,                       # virtual strain gauge, in nodes
 )
@@ -392,9 +399,12 @@ src/al_dic_3d/
 ├── gui/            PySide6 desktop application (panels, controllers, dialogs, widgets)
 ├── i18n/           8-locale translation sources and compiled catalogues
 ├── runner.py       RunConfig / run_pipeline / write_results — the headless entry point
-└── cli.py          `al-dic-3d` console script (run · gui · calibrate)
+├── run_output.py   the result archive (NPZ / MAT) and CSV / PLY / VTU writers
+├── synthetic.py    Synthetic stereo datasets with analytic ground truth (`demo`)
+├── self_test.py    The installation / frozen-bundle check (`self-test`)
+└── cli.py          `al-dic-3d` console script (run · gui · calibrate · demo · self-test)
 
-tests/              67 test files, 687 tests
+tests/              112 test files, 1092 tests
 tools/marketing/    Generators for every figure in this README (headless, reproducible)
 ```
 
@@ -408,14 +418,16 @@ and `i18n` may touch Qt or OpenGL.
 <summary><b>Testing</b></summary>
 
 ```bash
-pytest                                   # everything (687 tests)
+pytest                                   # everything (1092 tests)
 pytest -n auto                           # parallel
 pytest tests/test_parity_gate.py         # the MATLAB-parity gates
 ruff check . && ruff format .
 ```
 
-CI runs the full suite on **Windows, macOS and Linux** against **Python 3.10 and 3.12**
-(six jobs), with Qt in offscreen mode.
+CI runs the suite on **Windows, macOS and Linux** against **Python 3.10 and 3.12**
+(six jobs), with Qt in offscreen mode. The hosted Windows and macOS runners have no
+usable OpenGL, so the tests that render with VTK run on Linux only (offscreen) and
+are skipped on the other two.
 
 </details>
 
