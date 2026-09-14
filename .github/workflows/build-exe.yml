@@ -1,0 +1,175 @@
+name: Build Windows Installer
+
+# Builds the standalone Windows installer (no Python needed on the user's
+# machine), proves it works, and attaches it to the GitHub Release of the tag.
+#
+# The build is packaging/build_installer.ps1 -- the same script a maintainer
+# runs locally: a clean venv from the pinned packaging/requirements-build.txt,
+# PyInstaller, the frozen `pyaldic3d-cli.exe self-test`, then Inno Setup. This
+# workflow adds a silent install / run / uninstall smoke test of the result.
+#
+# Kept out of publish.yml on purpose: an installer failure must never block the
+# PyPI release. Both run off the same tag; publish.yml creates the Release (with
+# the CHANGELOG.md notes), and the attach job below waits for it.
+#
+# Three ways in:
+#   * push a v* tag        -> build, test, attach to that tag's Release
+#   * dispatch with a tag  -> same, e.g. to re-attach after a failed run
+#   * dispatch with no tag -> build and test only (installer kept as a workflow
+#                             artifact). Use it to check a pin bump before tagging.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: >-
+          Existing tag whose Release should receive the installer (e.g. v1.2.0).
+          Leave empty to build and test without uploading.
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  # Short names on both paths, so a tag push (ref_name v1.2.0) and a dispatch
+  # re-run for the same tag (input v1.2.0) queue behind each other.
+  group: build-exe-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build-exe:
+    name: Build and test the installer
+    runs-on: windows-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # A dispatch names the tag to build; a tag push is already on it.
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Set up Python 3.12
+        # The build interpreter: requirements-build.txt pins numpy 2.5 / scipy
+        # 1.18, which need 3.12. build_installer.ps1 makes its own clean venv
+        # from it -- never a conda environment, whose DLLs leak into the bundle.
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify the tag matches the package version
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.tag != ''
+        shell: bash
+        # Same guard as publish.yml, before the long build: the version is
+        # hatchling-dynamic, read from src/al_dic_3d/__init__.py.
+        run: |
+          REF="${{ github.event.inputs.tag || github.ref_name }}"
+          TAG="${REF#v}"
+          PKG=$(python -c "import re,pathlib;print(re.search(r'__version__\s*=\s*\"([^\"]+)\"', pathlib.Path('src/al_dic_3d/__init__.py').read_text()).group(1))")
+          echo "tag=$TAG  __init__.py=$PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match package version $PKG"
+            exit 1
+          fi
+
+      - name: Build (pinned venv -> PyInstaller -> frozen self-test -> Inno Setup)
+        shell: pwsh
+        env:
+          # Hosted runners have no OpenGL 3.2 context (tests/conftest.py skips
+          # the VTK-rendering tests here for the same reason). A self-test
+          # check that needs one must honour this and report itself skipped.
+          ALDIC3D_SELFTEST_SKIP_GL: "1"
+        run: |
+          ./packaging/build_installer.ps1 -Python python
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Smoke-test the installer (silent install, run, uninstall)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $setup = Get-ChildItem packaging/dist/pyALDIC-3D-*-win64-setup.exe | Select-Object -First 1
+          if (-not $setup) { throw "no installer under packaging/dist" }
+          $target = Join-Path $env:RUNNER_TEMP "pyALDIC-3D install test"
+          $log = Join-Path $env:RUNNER_TEMP "installer.log"
+          $installArgs = @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CURRENTUSER",
+                           "/DIR=`"$target`"", "/LOG=`"$log`"")
+          $proc = Start-Process -FilePath $setup.FullName -ArgumentList $installArgs -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { Get-Content $log -Tail 40; throw "installer exited $($proc.ExitCode)" }
+
+          $cli = Join-Path $target "pyaldic3d-cli.exe"
+          $version = & $cli --version
+          if ($LASTEXITCODE -ne 0) { throw "installed CLI exited $LASTEXITCODE" }
+          Write-Host "installed: $version"
+
+          # The uninstaller re-launches itself from %TEMP% and returns at once,
+          # so wait for the files to go rather than for the process.
+          $proc = Start-Process -FilePath (Join-Path $target "unins000.exe") `
+                    -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART") -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "uninstaller exited $($proc.ExitCode)" }
+          for ($i = 0; ($i -lt 60) -and (Test-Path -LiteralPath $cli); $i++) { Start-Sleep -Seconds 2 }
+          if (Test-Path -LiteralPath $cli) { throw "uninstall left $cli behind" }
+          Write-Host "install / run / uninstall OK"
+
+      - name: Upload the installer as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyALDIC-3D-win64-setup
+          path: |
+            packaging/dist/pyALDIC-3D-*-win64-setup.exe
+            packaging/dist/pyALDIC-3D-*-win64-setup.exe.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload the build log
+        # Always: a failed build's log is the most useful thing it produces.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: packaging/build/logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  attach-exe:
+    name: Attach the installer to the GitHub Release
+    needs: build-exe
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.tag != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyALDIC-3D-win64-setup
+          path: installer/
+
+      - name: Upload to the Release for this tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        # publish.yml creates the Release after the PyPI upload (which may wait
+        # for approval of the 'pypi' environment), so poll for it rather than
+        # creating one here: only publish.yml writes the notes from CHANGELOG.md,
+        # and only a Release published after PyPI should mint the Zenodo DOI.
+        run: |
+          found=""
+          for i in $(seq 1 60); do
+            if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              found=1
+              break
+            fi
+            echo "Release $TAG does not exist yet (publish.yml creates it); waiting ($i/60)"
+            sleep 30
+          done
+          if [ -z "$found" ]; then
+            echo "::error::No GitHub Release for $TAG after 30 minutes. Let publish.yml" \
+                 "finish (approve the 'pypi' environment if it is waiting), then re-run" \
+                 "this workflow via workflow_dispatch with tag=$TAG."
+            exit 1
+          fi
+          gh release upload "$TAG" installer/* --clobber --repo "$GITHUB_REPOSITORY"
+          echo "Attached to https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"

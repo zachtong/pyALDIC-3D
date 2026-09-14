@@ -1,0 +1,50 @@
+# Pinned build environment for the frozen Windows installer.
+#
+# Used by packaging/build_installer.ps1 (locally) and by
+# .github/workflows/build-exe.yml (CI), which both install it into a CLEAN venv
+# and then add this repository with --no-deps.
+#
+# Pinned, not floating: PyInstaller's behaviour depends on the exact library
+# versions its hooks were written against, and an unpinned build is a build
+# whose contents change without anyone deciding they should. These are the
+# known-good versions measured in the dev environment on 2026-09-13
+# (Python 3.12). numpy 2.5 and scipy 1.18 need Python >= 3.12, so the build
+# interpreter must be 3.12 or newer.
+#
+# Never a conda environment: conda's Library\bin sits on PATH and leaks DLLs
+# into the bundle that exist on the build machine and nowhere else.
+#
+# Refreshing the pins -- deliberately, never as a side effect:
+#   1. In a fresh Python 3.12 venv: pip install -e ".[dev]" (newest in-range
+#      dependencies), then run the suite: pytest -m "not perf".
+#   2. Copy the resolved versions of the packages below from `pip freeze`.
+#   3. Rebuild: build_installer.ps1 notices that this file changed and
+#      re-creates its venv. The build only counts if the frozen self-test
+#      passes; in CI, dispatch build-exe.yml without a tag to check before
+#      tagging a release.
+#   4. Move pyinstaller / pyinstaller-hooks-contrib only together with such a
+#      build: the hooks decide what ends up in the bundle.
+# Every build log records the full `pip freeze` of the venv it built from.
+
+# Application runtime (what the bundle ships).
+numpy==2.5.3
+scipy==1.18.1
+opencv-python==5.0.0.93
+numba==0.67.0
+llvmlite==0.49.0
+PySide6==6.11.2
+pyvista==0.49.0
+pyvistaqt==0.13.1
+vtk==9.7.0
+matplotlib==3.11.1
+al-dic==0.7.2
+# Direct since fix batch V: export/gifstream.py streams GIFs through Pillow.
+pillow==12.3.0
+# Transitive (al-dic's own GIF export); pinned because it is bundled.
+imageio==2.37.4
+
+# The freezer. 6.19.0 is the version the pyALDIC 2D platform pins for its own
+# bundle; hooks-contrib 2026.6 is the release the pyALDIC-3D 1.0.0 / 1.1.0
+# installers were verified with (the vtkmodules hooks live there).
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.6

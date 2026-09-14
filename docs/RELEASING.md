@@ -1,9 +1,16 @@
 # Releasing pyALDIC-3D
 
-The maintainer's runbook for publishing `al-dic-3d` to PyPI and minting Zenodo
-DOIs. Written for the **first public release (v1.0.0)** and every release after
-it. Nothing in this document runs automatically — it is the human ceremony that
-the prepared artifacts (`publish.yml`, `CITATION.cff`, `.zenodo.json`) wait for.
+The maintainer's runbook for publishing `al-dic-3d` to PyPI, shipping the
+Windows installer, and minting Zenodo DOIs. Written for the **first public
+release (v1.0.0)** and every release after it. Nothing in this document runs
+automatically — it is the human ceremony that the prepared artifacts
+(`publish.yml`, `build-exe.yml`, `CHANGELOG.md`, `CITATION.cff`, `.zenodo.json`)
+wait for.
+
+Every release ships three things from one tag: the wheel + sdist on PyPI, the
+Windows installer `pyALDIC-3D-X.Y.Z-win64-setup.exe` on the GitHub Release, and
+the Zenodo archive. The installer is not optional: 1.0.1 and 1.0.2 went out
+without one because this runbook never mentioned it.
 
 > **Versioning note.** The package version has exactly one source of truth:
 > `__version__` in `src/al_dic_3d/__init__.py` (pyproject reads it via
@@ -17,8 +24,9 @@ the prepared artifacts (`publish.yml`, `CITATION.cff`, `.zenodo.json`) wait for.
 
 ## A. One-time setup (before the first release)
 
-Do these three steps **in order** — the PyPI pending publisher and the Zenodo
-switch both need the repo, and Zenodo needs it public.
+Done for v1.0.0; kept for the record and for a re-setup. Do these three steps
+**in order** — the PyPI pending publisher and the Zenodo switch both need the
+repo, and Zenodo needs it public.
 
 ### A.1 Flip the GitHub repo public
 
@@ -96,26 +104,50 @@ identifiers) from the versioned **`.zenodo.json`** at the repo root.
 
 ## B. Per-release ceremony
 
-For every release `vX.Y.Z` (including the first, `v1.0.0`):
+For every release `vX.Y.Z`:
 
-1. **Bump the version** — edit `src/al_dic_3d/__init__.py`:
+1. **Bump the version everywhere it is written down.** `__version__` is the
+   only value the build reads, but the copies below are what users and
+   citation managers see, and they drift silently (`CITATION.cff` still carried
+   the 1.0.0 release date at 1.1.0):
 
-   ```python
-   __version__ = "X.Y.Z"
+   | File | What to change |
+   |---|---|
+   | `src/al_dic_3d/__init__.py` | `__version__ = "X.Y.Z"` — the single source of truth (pyproject, both workflows and the installer build read it) |
+   | `CITATION.cff` | `version: X.Y.Z` **and** `date-released: "YYYY-MM-DD"` — the day the GitHub Release is published |
+   | `docs/user-guide/index.md` | "It documents pyALDIC-3D **X.Y.x**" |
+   | `docs/user-guide/02-installation-launching.md` | the sample output of `al-dic-3d --version` |
+   | `README.md` | the *Latest release* cell of the comparison table, the installer file name under *Installation*, and `version = {X.Y.Z}` in the BibTeX block |
+
+   Then look for leftovers: `git grep -n "<previous version>"`.
+
+2. **CHANGELOG.md** — rename `## [Unreleased]` to `## [X.Y.Z] — YYYY-MM-DD`,
+   delete the subsections it left empty and any `<!-- ... -->` placeholders,
+   put a fresh empty `## [Unreleased]` above it, and update the link
+   references at the bottom (`[Unreleased]: .../compare/vX.Y.Z...HEAD` and a
+   new `[X.Y.Z]: .../compare/v<previous>...vX.Y.Z`). **This section becomes the
+   GitHub release notes** — `publish.yml` extracts it verbatim — so write it
+   for users. Preview exactly what they will read:
+
+   ```bash
+   python packaging/extract_changelog.py X.Y.Z
    ```
 
-   and update `version:` in `CITATION.cff` to match.
-
-2. **Changelog** — record the release in `docs/architecture/00_INDEX.md`'s
-   changelog (internal doc milestones live there too; keep the package version
-   clearly labelled as such).
+   Also record the release in `docs/architecture/00_INDEX.md`'s changelog
+   (the internal milestone log; keep the package version labelled as such).
 
 3. **Verify locally** (green before tagging):
 
    ```bash
-   ruff check . && pytest -q
+   ruff check . && pytest -q -m "not perf"
    python -m build && python -m twine check dist/*
    ```
+
+   If the release touches packaging or `packaging/requirements-build.txt`,
+   also build the installer before tagging: run
+   `packaging\build_installer.ps1` locally, or dispatch **Build Windows
+   Installer** (`build-exe.yml`) on `main` with no tag. Both end with the
+   frozen self-test.
 
 4. **Commit and tag** (conventional commit, single author, no trailers):
 
@@ -125,18 +157,31 @@ For every release `vX.Y.Z` (including the first, `v1.0.0`):
    git push origin main vX.Y.Z
    ```
 
-5. **CI publishes** — the tag push triggers `.github/workflows/publish.yml`:
-   build → `twine check` → tag-vs-`__version__` guard → PyPI Trusted
-   Publishing (environment `pypi`; approve it if you enabled required
-   reviewers) → creates/updates the **GitHub Release** for the tag with the
-   sdist + wheel attached.
+5. **CI publishes** — the tag push starts two workflows:
 
-   *Re-run safety:* the publish step uses `skip-existing: true` and the
-   Release step reuses an existing Release (`--clobber` for artifacts), so
-   re-running a partially failed workflow — or a `workflow_dispatch` dry run —
-   is safe and idempotent.
+   - `.github/workflows/publish.yml`: build → `twine check` →
+     tag-vs-`__version__` guard → PyPI Trusted Publishing (environment
+     `pypi`; approve it if you enabled required reviewers) → creates the
+     **GitHub Release** for the tag, with the `CHANGELOG.md` section as its
+     notes, and attaches the sdist + wheel.
+   - `.github/workflows/build-exe.yml`: the same tag guard →
+     `packaging/build_installer.ps1` on `windows-latest` (clean venv from the
+     pinned `requirements-build.txt` → PyInstaller → frozen
+     `pyaldic3d-cli.exe self-test` → Inno Setup) → silent install / run /
+     uninstall of the installer → attaches
+     `pyALDIC-3D-X.Y.Z-win64-setup.exe` and its `.sha256` to the Release once
+     `publish.yml` has created it (it waits up to 30 minutes). An installer
+     failure never blocks the PyPI release.
 
-6. **Verify the PyPI install** in a clean environment:
+   *Re-run safety:* the publish step uses `skip-existing: true`, the Release
+   step reuses an existing Release (`--clobber` for artifacts), and the
+   installer attach uses `--clobber`, so re-running a partially failed
+   workflow is safe and idempotent.
+
+6. **Verify the Release** — its page must show your `CHANGELOG.md` section
+   and four assets: the wheel, the sdist, the installer and its `.sha256`
+   (plus GitHub's own source archives). Then check the PyPI install in a clean
+   environment:
 
    ```bash
    python -m venv /tmp/relcheck && . /tmp/relcheck/bin/activate   # or conda
@@ -145,12 +190,15 @@ For every release `vX.Y.Z` (including the first, `v1.0.0`):
    al-dic-3d --help
    ```
 
+   and, on a Windows desktop, install the downloaded installer once and open
+   the GUI (CI cannot open a real window with OpenGL).
+
 7. **Zenodo mints the DOI** — the GitHub Release publication (step 5) triggers
    Zenodo automatically. Check <https://zenodo.org/account/settings/github/>:
    the repo row shows the new record within a few minutes. Open the record and
    note **both** DOIs (version DOI + concept DOI).
 
-8. **First release only — paste the concept DOI back** into:
+8. **First release only (done for v1.0.0) — paste the concept DOI back** into:
    - `README.md` → Citation section (replace the "pending first release"
      wording, add the DOI badge if desired);
    - `CITATION.cff` → uncomment the `identifiers:` block and fill in the
@@ -173,6 +221,25 @@ For every release `vX.Y.Z` (including the first, `v1.0.0`):
 - **Zenodo record missing** — verify the A.3 toggle is ON *before* the Release
   is published; a Release published earlier is not archived retroactively.
   Simplest fix: toggle ON, then publish a new patch release.
-- **`workflow_dispatch` run** — builds and (thanks to `skip-existing`)
-  no-op-publishes; the Release step is skipped because there is no tag ref.
-  Use it to smoke-test the trusted-publisher wiring without a version bump.
+- **`workflow_dispatch` run of `publish.yml`** — builds and (thanks to
+  `skip-existing`) no-op-publishes; the Release step is skipped because there
+  is no tag ref. Use it to smoke-test the trusted-publisher wiring without a
+  version bump.
+- **The installer is missing from the Release** — open the *Build Windows
+  Installer* run for the tag. If the build failed, fix it and re-run. If only
+  the attach job failed because the Release did not appear within 30 minutes
+  (for example `publish.yml` was waiting for the `pypi` approval), re-run
+  *Build Windows Installer* via `workflow_dispatch` with `tag=vX.Y.Z` once the
+  Release exists.
+- **The frozen self-test failed** — the failing checks are printed in the
+  *Build* step; the complete log is the run's `build-log` artifact.
+  Reproduce locally with `packaging\build_installer.ps1`.
+- **The release notes are only a "Full Changelog" link** — `CHANGELOG.md` had
+  no `## [X.Y.Z]` section at the tag, so the Release fell back to generated
+  notes. An existing Release's notes are never rewritten by a re-run; set them
+  by hand:
+
+  ```bash
+  python packaging/extract_changelog.py X.Y.Z -o notes.md
+  gh release edit vX.Y.Z --notes-file notes.md
+  ```

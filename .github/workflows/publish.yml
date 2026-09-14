@@ -13,8 +13,13 @@ name: Publish to PyPI
 #
 # Release flow after that:
 #   git tag -a v1.0.0 -m "..." && git push origin v1.0.0
-#   -> this builds, checks and publishes, then attaches the artifacts
-#      to the GitHub Release for that tag.
+#   -> this builds, checks and publishes, then creates the GitHub Release for
+#      that tag -- its notes are the tag's section of CHANGELOG.md -- and
+#      attaches the wheel and sdist.
+#
+# The Windows installer is built by build-exe.yml, which runs off the same tag
+# and attaches to the Release this workflow creates. It is kept separate on
+# purpose: an installer failure must never block the PyPI release.
 
 on:
   push:
@@ -95,19 +100,45 @@ jobs:
     permissions:
       contents: write
     steps:
+      # The tagged tree: CHANGELOG.md and packaging/extract_changelog.py.
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
 
+      - name: Release notes from CHANGELOG.md
+        id: notes
+        # The body of the "## [X.Y.Z]" section becomes the release notes. A
+        # missing or empty section is a warning, not a failure: the Release then
+        # falls back to GitHub's generated notes (a bare compare link).
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES="$RUNNER_TEMP/release-notes.md"
+          if python3 packaging/extract_changelog.py "$VERSION" -o "$NOTES"; then
+            echo "file=$NOTES" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::CHANGELOG.md has no section for $VERSION -- using generated release notes"
+          fi
+
       - name: Create the GitHub Release for this tag (if missing) and upload
         env:
           GH_TOKEN: ${{ github.token }}
+          NOTES_FILE: ${{ steps.notes.outputs.file }}
         # Creating the GitHub *Release* (not just the tag) is what triggers the
-        # Zenodo DOI mint once the GitHub-Zenodo integration is enabled — see
-        # docs/RELEASING.md. Re-run safe: an existing release is reused and
-        # --clobber overwrites previously uploaded artifacts.
+        # Zenodo DOI mint once the GitHub-Zenodo integration is enabled -- see
+        # docs/RELEASING.md. Re-run safe: an existing release is reused as is
+        # (its notes are not rewritten) and --clobber overwrites previously
+        # uploaded artifacts.
         run: |
-          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
-            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
+          if ! gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            if [ -n "$NOTES_FILE" ]; then
+              gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+                --verify-tag --title "$GITHUB_REF_NAME" --notes-file "$NOTES_FILE"
+            else
+              gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+                --verify-tag --generate-notes
+            fi
+          fi
           gh release upload "$GITHUB_REF_NAME" dist/* --clobber --repo "$GITHUB_REPOSITORY"
