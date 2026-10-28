@@ -102,7 +102,8 @@ memory. Results are identical either way. Config key
 | Dynamic event / impact | Incremental | Every Frame |
 | Quasi-static with known load steps | Incremental | Every N / Custom |
 
-When in doubt, **Incremental + Every Frame** handles any deformation magnitude
-and needs an ROI only on frame 1.
+When in doubt, **Incremental + Every Frame** handles any deformation magnitude.
+It needs an ROI only on frame 1, but each later reference frame reuses that
+outline, so when the specimen moves far beyond it, add per-frame masks.
 
 Next: [Initial guess & Starting Points →](06-initial-guess.md)

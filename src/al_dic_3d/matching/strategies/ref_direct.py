@@ -61,6 +61,11 @@ class RefDirectStrategy:
     """Ref-direct (S3): left temporal (acc) + direct L1 -> R_k cross matches."""
 
     name: ClassVar[str] = "ref_direct"
+    # S3 is reference-direct by definition: the left chain tracks every frame
+    # against frame 1 whatever reference mode the run asks for. The runner
+    # reads this to give a frame-1 ROI mask to the frames that really are
+    # references (GitHub issue #1).
+    forced_reference_mode: ClassVar[str] = "accumulative"
 
     def __init__(
         self,
@@ -115,7 +120,7 @@ class RefDirectStrategy:
             winstepsize=self.winstepsize,
             winsize_min=self.winsize_min,
             img_ref_mask=mask_L1,
-            reference_mode="accumulative",
+            reference_mode=self.forced_reference_mode,
             use_global_step=self.use_global_step,
             admm_max_iter=self.admm_max_iter,
             fft_search=self.fft_search,

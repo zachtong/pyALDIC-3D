@@ -529,6 +529,13 @@ def run_pipeline(
         ref_update_n=cfg.ref_update_n,
         ref_update_frames=cfg.ref_update_frames,
     )
+    strategy_cls = get_strategy(cfg.strategy)
+    # The reference frames the strategy really tracks from: ref_direct tracks
+    # every frame against frame 1 whatever the configured mode.
+    forced_mode = getattr(strategy_cls, "forced_reference_mode", None)
+    mask_mode, mask_schedule = (
+        (forced_mode, None) if forced_mode else (cfg.reference_mode, schedule)
+    )
 
     if cfg.roi_mask is not None:
         # Arbitrary-shape ROI (toolbox-drawn): its bounding box overrides the
@@ -542,7 +549,7 @@ def run_pipeline(
         cfg = replace(cfg, roi=_mask_bbox(roi_mask))
         if left_masks is None:
             left_masks = reference_frame_masks(
-                roi_mask.astype(np.float64), n_frames, cfg.reference_mode, schedule
+                roi_mask.astype(np.float64), n_frames, mask_mode, mask_schedule
             )
 
     masks: dict = {}
@@ -600,7 +607,6 @@ def run_pipeline(
     if crack_aware:
         mesh_L = cut_mesh_at_barriers(mesh_L, left_mask0)
 
-    strategy_cls = get_strategy(cfg.strategy)
     kwargs = dict(
         winsize=cfg.winsize,
         winstepsize=cfg.winstepsize,

@@ -125,7 +125,8 @@ class _Captured(Exception):
 
 
 def _left_masks_seen(cfg, monkeypatch) -> list:
-    from al_dic_3d.matching.strategies import track_both
+    """The left per-frame masks the run hands its strategy (the run stops there)."""
+    from al_dic_3d.matching import get_strategy
     from al_dic_3d.runner import run_pipeline
 
     seen: list = []
@@ -134,32 +135,54 @@ def _left_masks_seen(cfg, monkeypatch) -> list:
         seen.extend(seq.masks["L"])
         raise _Captured
 
-    monkeypatch.setattr(track_both.TrackBothStrategy, "compute", spy)
+    monkeypatch.setattr(get_strategy(cfg.strategy), "compute", spy)
     with pytest.raises(_Captured):
         run_pipeline(cfg)
     return seen
 
 
-@pytest.mark.parametrize(
-    ("mode", "masked_frames"), [("accumulative", [0]), ("incremental", [0, 1])]
-)
-def test_run_pipeline_gives_the_roi_mask_to_reference_frames_only(
-    tmp_path, monkeypatch, mode, masked_frames
-):
+def _disc_roi_config(tmp_path, n_frames: int, **changes):
+    """The synthetic scene with a disc-shaped ``[roi].mask``; returns ``(cfg, disc)``."""
     from al_dic_3d.runner import load_config
     from tests import synth_stereo
 
-    scene = synth_stereo.build_scene(tmp_path, n_frames=3)
+    scene = synth_stereo.build_scene(tmp_path, n_frames=n_frames)
     cfg = load_config(synth_stereo.write_config(tmp_path, scene))
     img = cv2.imread(str(tmp_path / "L_000.png"), cv2.IMREAD_UNCHANGED)
     disc = np.zeros(img.shape[:2], dtype=np.uint8)
     cv2.circle(disc, (110, 130), 55, 255, -1)
     cv2.imwrite(str(tmp_path / "roi_mask.png"), disc)
-    cfg = replace(cfg, roi_mask=tmp_path / "roi_mask.png", roi=(0, 0, 0, 0), reference_mode=mode)
+    cfg = replace(cfg, roi_mask=tmp_path / "roi_mask.png", roi=(0, 0, 0, 0), **changes)
+    return cfg, disc
+
+
+@pytest.mark.parametrize(
+    ("n_frames", "changes", "masked_frames"),
+    [
+        (3, {"reference_mode": "accumulative"}, [0]),
+        (3, {"reference_mode": "incremental"}, [0, 1]),
+        (5, {"reference_mode": "incremental", "ref_update_mode": "every_n"}, [0, 2]),
+        (
+            5,
+            {
+                "reference_mode": "incremental",
+                "ref_update_mode": "custom",
+                "ref_update_frames": (3,),
+            },
+            [0, 3],
+        ),
+        # ref_direct tracks every frame against frame 1, whatever the mode asks.
+        (3, {"reference_mode": "incremental", "strategy": "ref_direct"}, [0]),
+    ],
+)
+def test_run_pipeline_gives_the_roi_mask_to_reference_frames_only(
+    tmp_path, monkeypatch, n_frames, changes, masked_frames
+):
+    cfg, disc = _disc_roi_config(tmp_path, n_frames, **changes)  # every_n: ref_update_n = 2
 
     masks = _left_masks_seen(cfg, monkeypatch)
-    assert len(masks) == 3
-    for k in range(3):
+    assert len(masks) == n_frames
+    for k in range(n_frames):
         if k in masked_frames:
             assert np.array_equal(masks[k] > 0.5, disc > 0), k
         else:
@@ -190,23 +213,37 @@ def test_explicit_per_frame_masks_still_take_precedence(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ("mode", "barrier_frames"), [("accumulative", [0]), ("incremental", [0, 1])]
+    ("n_frames", "mode", "custom_refs", "barrier_frames"),
+    [
+        (3, "accumulative", None, [0]),
+        (3, "incremental", None, [0, 1]),
+        (4, "incremental", [2], [0, 2]),  # an explicit schedule reaches the right camera
+    ],
 )
-def test_right_crack_barrier_goes_to_reference_frames_only(monkeypatch, mode, barrier_frames):
+def test_right_crack_barrier_goes_to_reference_frames_only(
+    monkeypatch, n_frames, mode, custom_refs, barrier_frames
+):
     import al_dic_3d.matching.strategies.track_both as tb
     from al_dic_3d.matching import get_strategy
     from al_dic_3d.matching.contracts import CorrespondenceConfig
     from al_dic_3d.sequence import ArrayFrameProvider, StereoSequence
     from tests.test_crack_batch_c import _stereo_scene
 
-    left, right, rig, img = _stereo_scene(n_frames=3)
+    left, right, rig, img = _stereo_scene(n_frames=n_frames)
     para = make_dicpara(img_size=(img, img), roi=(45, img - 45, 45, img - 45), winstepsize=16)
     mesh_L = build_grid_mesh(para, img, img)
     crack = np.ones((img, img), dtype=np.float64)
     crack[:, img // 2 - 1 : img // 2 + 2] = 0.0
+    schedule = (
+        None
+        if custom_refs is None
+        else build_frame_schedule(
+            mode, n_frames, ref_update_mode="custom", ref_update_frames=custom_refs
+        )
+    )
     seq = StereoSequence(
         providers={"L": ArrayFrameProvider(left), "R": ArrayFrameProvider(right)},
-        masks={"L": reference_frame_masks(crack, 3, mode)},
+        masks={"L": reference_frame_masks(crack, n_frames, mode, schedule)},
     )
     right_masks: list = []
     real = tb.temporal_track
@@ -216,11 +253,12 @@ def test_right_crack_barrier_goes_to_reference_frames_only(monkeypatch, mode, ba
         return real(frames, mesh, para, **kw)
 
     monkeypatch.setattr(tb, "temporal_track", spy)  # serial track_both: the right camera
-    get_strategy("track_both")().compute(
-        seq, rig, mesh_L, CorrespondenceConfig(strategy="track_both", reference_mode=mode)
+    cfg = CorrespondenceConfig(
+        strategy="track_both", reference_mode=mode, schedule_L=schedule, schedule_R=schedule
     )
+    get_strategy("track_both")().compute(seq, rig, mesh_L, cfg)
     (masks,) = right_masks
-    assert len(masks) == 3
-    for k in range(3):
+    assert len(masks) == n_frames
+    for k in range(n_frames):
         has_barrier = bool((np.asarray(masks[k]) < 0.5).any())
         assert has_barrier == (k in barrier_frames), k
