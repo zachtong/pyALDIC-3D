@@ -70,9 +70,10 @@ class RunConfig:
     ``roi_mask`` (``[roi].mask`` in TOML) is an arbitrary-shape ROI mask image
     drawn on the LEFT camera, frame 1. When set, its ``> 0`` bounding box
     OVERRIDES ``roi``, and — unless explicit ``left_masks`` are given, which
-    take precedence — the mask is applied as a constant per-frame left mask
-    (correct for the frame-1 reference mesh; accumulative tracking keys every
-    frame off that same reference geometry).
+    take precedence — the mask is the left mask of every REFERENCE frame
+    (frame 1; in incremental mode also each later reference, unchanged) and
+    later frames are unmasked, so material may leave the frame-1 outline
+    (:func:`al_dic_3d.matching.temporal.reference_frame_masks`).
     """
 
     calibration_file: Path
@@ -516,17 +517,33 @@ def run_pipeline(
     _check_calibration_size(rig, cfg.cam_left, (img_h, img_w))
     _check_calibration_size(rig, cfg.cam_right, provider_right.shape)
 
+    # Q5: an explicit reference-update schedule (incremental every_n / custom);
+    # None keeps the engine's reference_mode-derived default. Both cameras
+    # track the full sequence, so one schedule serves L and R alike.
+    from al_dic_3d.matching.temporal import build_frame_schedule, reference_frame_masks
+
+    schedule = build_frame_schedule(
+        cfg.reference_mode,
+        n_frames,
+        ref_update_mode=cfg.ref_update_mode,
+        ref_update_n=cfg.ref_update_n,
+        ref_update_frames=cfg.ref_update_frames,
+    )
+
     if cfg.roi_mask is not None:
         # Arbitrary-shape ROI (toolbox-drawn): its bounding box overrides the
         # rectangular roi, and — unless explicit per-frame left masks were
-        # given, which take precedence — the mask applies as a constant left
-        # mask on every frame (ONE shared array: all geometry keys off the
-        # frame-1 reference, and every consumer copies before writing).
+        # given, which take precedence — the mask is the left mask of the
+        # reference frames only (shared arrays, no per-frame copies). A copy
+        # on every frame killed the nodes that left the frame-1 outline
+        # (GitHub issue #1).
         path = cfg.roi_mask if cfg.roi_mask.is_absolute() else seq_base / cfg.roi_mask
         roi_mask = _load_roi_mask(path, (img_h, img_w))
         cfg = replace(cfg, roi=_mask_bbox(roi_mask))
         if left_masks is None:
-            left_masks = [roi_mask.astype(np.float64)] * n_frames
+            left_masks = reference_frame_masks(
+                roi_mask.astype(np.float64), n_frames, cfg.reference_mode, schedule
+            )
 
     masks: dict = {}
     if left_masks is not None:
@@ -605,18 +622,6 @@ def run_pipeline(
     accepted = inspect.signature(strategy_cls.__init__).parameters
     strategy = strategy_cls(**{k: v for k, v in kwargs.items() if k in accepted})
 
-    # Q5: an explicit reference-update schedule (incremental every_n / custom);
-    # None keeps the engine's reference_mode-derived default. Both cameras
-    # track the full sequence, so one schedule serves L and R alike.
-    from al_dic_3d.matching.temporal import build_frame_schedule
-
-    schedule = build_frame_schedule(
-        cfg.reference_mode,
-        n_frames,
-        ref_update_mode=cfg.ref_update_mode,
-        ref_update_n=cfg.ref_update_n,
-        ref_update_frames=cfg.ref_update_frames,
-    )
     corr_cfg = CorrespondenceConfig(
         strategy=cfg.strategy,
         reference_mode=cfg.reference_mode,

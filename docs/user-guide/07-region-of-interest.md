@@ -55,8 +55,15 @@ You can also right-click the canvas for **Clear ROI** and **Clear seed points**.
 Below the toolbar, **Per-frame masks** imports one mask image per frame for
 each camera (**Import…** picks the folder, **Clear** removes them). Use them
 when the valid region changes during the test, for example a crack that opens
-or a specimen pulled to failure; without them the ROI of frame 1 serves every
-frame. Any non-zero pixel is valid, so 0/255 mask files are fine.
+or a specimen pulled to failure. Any non-zero pixel is valid, so 0/255 mask
+files are fine.
+
+Without per-frame masks, the ROI you draw marks the material **on frame 1**.
+Later frames are not masked, so material may move out of the frame-1 outline
+and still be tracked. The one exception is **Incremental** tracking: each later
+*reference* frame reuses the frame-1 outline unchanged (as in the 2D app), so
+if the specimen moves or deforms far beyond that outline, import per-frame
+masks.
 
 The import checks that there is one mask per frame and that the masks have the
 image size, and refuses the folder otherwise (the log says why). When no ROI

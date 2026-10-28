@@ -208,6 +208,44 @@ def build_frame_schedule(
     )
 
 
+def reference_frame_masks(
+    mask: NDArray[np.float64],
+    n_frames: int,
+    reference_mode: str,
+    schedule=None,
+) -> list[NDArray[np.float64]]:
+    """A frame-1 mask as the engine's per-frame mask list: reference frames only.
+
+    The 2D engine reads the mask of a frame that is never a reference only in
+    its crack-aware composition, which kills every node whose tracked position
+    lands on a masked pixel of that frame's mask. A mask drawn on frame 1 does
+    not say where the material is once the specimen has moved, so repeating it
+    on every frame killed the nodes that left the frame-1 outline (GitHub issue
+    #1: a dogbone translating ~70 px lost every gauge node). Reference frames
+    keep the mask, since frames are correlated FROM them; every other frame gets
+    no mask. This is the 2D app's rule (``pipeline_controller._build_masks``).
+
+    Args:
+        mask: ``(H, W)`` float64 frame-1 mask (1 = material).
+        n_frames: total frame count, reference frame 0 included.
+        reference_mode: ``"accumulative"`` or ``"incremental"``; used when
+            ``schedule`` is ``None``.
+        schedule: the explicit engine ``FrameSchedule`` from
+            :func:`build_frame_schedule`, or ``None`` for the mode's default.
+
+    Returns:
+        ``n_frames`` arrays: ``mask`` itself on every reference frame and ONE
+        shared all-ones array elsewhere (no per-frame copies).
+    """
+    from al_dic.core.data_structures import FrameSchedule  # DEPENDS_ON_2D.md
+
+    if schedule is None:
+        schedule = FrameSchedule.from_mode(reference_mode, n_frames)
+    refs = schedule.ref_frame_set
+    ones = np.ones_like(mask, dtype=np.float64)
+    return [mask if k in refs else ones for k in range(n_frames)]
+
+
 def build_grid_mesh(
     para: DICPara,
     img_h: int,

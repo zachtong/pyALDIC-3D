@@ -55,6 +55,7 @@ from al_dic_3d.matching.temporal import (
     finish_track,
     node_spacing,
     note_zero_fill,
+    reference_frame_masks,
     resample_to_points,
     temporal_track,
     track_engine,
@@ -386,7 +387,10 @@ class TrackBothStrategy:
             warped_R = _derive_right_barrier(mask_L1, coords_L, right_pts, mesh_R, (img_h, img_w))
             if warped_R is not None:
                 mask_R1 = warped_R
-                right_masks = [warped_R] * n_frames
+                # Frame-1 geometry: reference frames only, like the left ROI.
+                right_masks = reference_frame_masks(
+                    warped_R, n_frames, cfg.reference_mode, cfg.schedule_R
+                )
         mesh_R = cut_mesh_at_barriers(mesh_R, mask_R1)
         # The right camera's seeds are the placed left seeds mapped into the
         # right frame (per-seed L->R NCC); the single-seed prior (seed + offset)

@@ -28,7 +28,9 @@ A **Reference Update** sub-section appears **only when Tracking Mode =
 Incremental**. It controls when the rolling reference refreshes:
 
 - **Every Frame** (default) — the reference resets every frame; most robust for
-  large deformation. Only frame 1 needs an ROI — it is warped forward.
+  large deformation. Only frame 1 needs an ROI; each later reference frame
+  reuses that outline unchanged, so if the specimen moves far beyond it, import
+  per-frame masks (see [Region of interest](07-region-of-interest.md)).
 - **Every N Frames** — the reference resets every *N* frames. An **Update every**
   spinbox appears (range **2–100**, default **2**, suffix *frames*).
 - **Custom Frames** — type a comma-separated list of 0-based reference-frame

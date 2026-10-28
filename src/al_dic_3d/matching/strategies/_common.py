@@ -262,7 +262,7 @@ def mask_stream(seq: StereoSequence, cam: str) -> Sequence[NDArray[np.float64]] 
     where the 2D engine then silently zero-filled an all-NaN field.
 
     Eager list/tuple streams are coerced element-wise (no-copy for float64, so
-    the runner's shared constant roi_mask stays ONE array); any other sequence
+    the runner's shared ROI and all-ones arrays stay shared); any other sequence
     (e.g. :class:`al_dic_3d.sequence.LazyMaskList`) already serves float64 and
     passes through unmaterialized (P1.2).
     """

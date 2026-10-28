@@ -3,7 +3,7 @@
 This file is the **single source of truth for exactly which parts of the 2D
 package (`al_dic`) the 3D code imports, and which of its behaviours the 3D code
 relies on.** pyALDIC-3D consumes `al-dic` as a **bounded, read-only library**
-(decision D11; the range lives in `pyproject.toml`, currently `>=0.7.2,<0.9`, and
+(decision D11; the range lives in `pyproject.toml`, currently `>=0.7.2,<1.1`, and
 CI tests both of its ends); we never modify the 2D repo. This ledger is what the
 2D maintainer consults before a refactor: if a symbol is listed here, a 2D-side
 rename/move is a breaking change for 3D — and so is a change to any behaviour
@@ -39,13 +39,22 @@ without changing any icon function 3D calls. `core/pipeline.py`,
 `core/data_structures.py`, `io/image_ops.py` and the solver, mesh and utils
 modules listed below are byte-identical.
 
+0.8.0 → 1.0.3 (checked 2026-10-28 for the 3D 1.2.0 range `<1.1`): the whole
+3D suite passes on 0.8.0, 0.9.0, 0.10.0 and 1.0.3 (1172 passed, 1 data-bound
+skip; 1173 passed on 1.0.3 with the local datasets), and `al-dic-3d demo --run`
+gives bit-identical 3D points and displacements on 0.7.2 and 1.0.3. Of the
+`run_aldic` changes in that span, the one near a path 3D uses: in 1.0.3 a
+reference frame whose mask holds material outside the frame-0 grid gets its
+own grid, but only when no external mesh is passed. 3D always passes one, and
+the engine then uses it for every pair.
+
 ## Ledger
 
 | 2D symbol | why we import it | public/internal |
 |---|---|---|
 | `al_dic.DICMesh` | reference-mesh type in `CorrespondenceStrategy.compute` / `matching` (type-only, `TYPE_CHECKING`) | public |
 | `al_dic.FrameSchedule` | acc/inc schedule fields on `CorrespondenceConfig` (type-only, `TYPE_CHECKING`) | public |
-| `al_dic.core.data_structures.FrameSchedule` | RUNTIME import in `matching.temporal.build_frame_schedule` (Q5): `from_every_n` / `from_custom` build the incremental reference-update schedule handed to `DICPara.frame_schedule` (validated by `run_aldic` against `n_frames - 1`) | public |
+| `al_dic.core.data_structures.FrameSchedule` | RUNTIME import in `matching.temporal.build_frame_schedule` (Q5): `from_every_n` / `from_custom` build the incremental reference-update schedule handed to `DICPara.frame_schedule` (validated by `run_aldic` against `n_frames - 1`). Also in `matching.temporal.reference_frame_masks` (issue #1): `from_mode` + `ref_frame_set` name the reference frames that receive a frame-1 ROI mask | public |
 | `al_dic.core.data_structures.DICPara.fft_auto_expand_search` / `.frame_schedule` | FIELDS set through `dicpara_default(**overrides)` in `matching.primitives.make_dicpara` (Q8 clipped-peak FFT expansion knob; Q5 explicit schedule) — a 2D rename breaks us | public (fields; no extra import) |
 | `al_dic.core.config.dicpara_default` | build + validate a local-only `DICPara` in `matching.primitives.make_local_dicpara` | public |
 | `al_dic.core.data_structures.DICPara` | parameter container consumed by the IC-GN primitive | public |
@@ -108,6 +117,7 @@ single import failing. Engine locations are al-dic **0.7.2** (identical in
 
 | Contract | Engine side | 3D side (what depends on it) |
 |---|---|---|
+| **The mask of a frame that is never a reference is read only by the crack-aware composition**, which kills every node whose composed position lies within `2 · winstepsize` of a masked pixel and on a majority-masked 3 × 3 neighbourhood (`majority_masked`). The deformed frame's `g_mask` is computed but unused. | `core/pipeline.py:487-492,652-664` (composition, 0.7.2), `core/pipeline.py:995` (`g_mask`) | `matching.temporal.reference_frame_masks` gives a frame-1 ROI mask (runner `[roi].mask` / GUI ROI, and the right camera's derived crack barrier in `track_both`) to the reference frames only; repeating it on every frame killed every node that left the frame-1 outline (GitHub issue #1). |
 | **Masks passed to the engine are binary `{0, 1}` `float64`.** The engine multiplies the reference image by the mask and then the image gradients by it again, so a `0/255` mask scales the IC-GN system by 255 and a fractional mask weights pixels — neither raises. | `core/pipeline.py:986-989` (`f_img_raw * f_mask`), `io/image_ops.py:168-170` (`df_dx *= img_ref_mask`) | every mask goes through `sequence.lazy.as_binary_mask` / `binary_mask_sequence` before `run_aldic` (`matching.temporal.temporal_track`) |
 | **The warning text `All nodes are NaN` means "this field is zeros, not a result".** When no node survives, the IDW refill returns an all-zero field with only a `UserWarning` — which would reach 3D as a perfectly valid frozen camera. | `utils/outlier_detection.py:155` (`"All nodes are NaN, cannot interpolate. Returning zeros."`) | `temporal_track` records warnings around `run_aldic`, pins each one to the engine frame then in flight (from the `Frame k/N` progress text) and invalidates that frame; only when no deformed frame survives does it raise `ZERO_FILL_ERROR` (fix batch V). The parallel path's shared recorder hands the warning to the emitting thread's track (`matching.temporal.note_zero_fill`). Matching is by substring on both texts: rewording either silently disables the guard. |
 | **`progress_fn` is not monotonic.** The frame loop ends at 0.99 and "Assembling results..." then reports 0.95. | `core/pipeline.py:933` (`_loop_end = 0.99`), `core/pipeline.py:1832` | `matching.temporal._Ratchet` clamps the fraction so the bar never moves backwards; messages pass through unchanged. |
