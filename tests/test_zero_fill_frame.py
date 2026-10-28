@@ -38,11 +38,12 @@ def test_a_black_frame_is_invalidated_and_the_rest_is_kept(tmp_path):
 def test_parallel_cameras_also_drop_only_the_bad_frame(tmp_path):
     # In parallel-camera mode the warning recorder is process-wide; it now pins
     # the zero-fill to the emitting camera's frame instead of failing the run.
-    import sys
     from dataclasses import replace
 
-    if sys.platform == "darwin":
-        pytest.skip("parallel camera tracking runs sequentially on macOS")
+    from al_dic_3d.matching.strategies.track_both import _parallel_tracks_supported
+
+    if not _parallel_tracks_supported():
+        pytest.skip("parallel camera tracking runs sequentially without numba's tbb/omp layer")
     scene = synth_stereo.build_scene(tmp_path, n_frames=4)
     black = tmp_path / "L_002.png"
     img = cv2.imread(str(black), cv2.IMREAD_UNCHANGED)

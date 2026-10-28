@@ -18,7 +18,6 @@ frames. The 3D layer downstream reads only the resulting ``CorrespondenceSet``.
 
 from __future__ import annotations
 
-import sys
 import threading
 import warnings
 from collections.abc import Callable
@@ -96,6 +95,33 @@ def _combined_progress(
         return cb
 
     return {"L": make("L"), "R": make("R")}
+
+
+def _parallel_tracks_supported() -> bool:
+    """Whether the two camera tracks may run their numba kernels at the same time.
+
+    numba's workqueue threading layer aborts the process when two host threads
+    enter parallel regions at once; the tbb and omp layers allow it. numba falls
+    back to workqueue whenever neither runtime loads -- on macOS by default and
+    on Linux without libgomp or libtbb -- so the platform alone cannot decide.
+    """
+    import importlib
+
+    import numba
+
+    if str(numba.config.THREADING_LAYER).lower() == "workqueue":
+        return False
+    try:
+        return numba.threading_layer() in ("tbb", "omp")
+    except ValueError:  # no parallel kernel has run yet: probe the runtimes
+        pass
+    for name in ("numba.np.ufunc.tbbpool", "numba.np.ufunc.omppool"):
+        try:
+            importlib.import_module(name)
+        except ImportError:
+            continue
+        return True
+    return False
 
 
 class _PrefixView:
@@ -428,21 +454,21 @@ class TrackBothStrategy:
             "L": dict(masks=mask_stream(seq, "L"), u0=u0_L),
             "R": dict(masks=right_masks, u0=u0_R),
         }
-        if self.parallel_cameras and sys.platform == "darwin":
-            # numba's default macOS threading layer (workqueue) ABORTS the
-            # process when two host threads enter JIT-parallel regions
-            # concurrently — reproduced on the first macOS CI run (Abort
-            # trap 6 in the parallel-cameras test). The measured gain is only
-            # ~1.1x (the solver already saturates all cores), so on macOS we
-            # run the two tracks sequentially instead of crashing.
+        parallel = self.parallel_cameras and _parallel_tracks_supported()
+        if self.parallel_cameras and not parallel:
+            # numba's workqueue threading layer ABORTS the process when two
+            # host threads enter JIT-parallel regions concurrently (Abort trap
+            # 6 on macOS CI, SIGABRT on Linux without libgomp). The measured
+            # gain is only ~1.1x (the solver already saturates all cores), so
+            # the two tracks run sequentially instead of crashing.
             warnings.warn(
-                "parallel camera tracking is unavailable on macOS "
-                "(numba workqueue threading-layer constraint); "
-                "running the two cameras sequentially.",
+                "parallel camera tracking needs numba's tbb or omp threading "
+                "layer, which this installation lacks (workqueue aborts on "
+                "concurrent kernels); running the two cameras sequentially.",
                 UserWarning,
                 stacklevel=2,
             )
-        if self.parallel_cameras and sys.platform != "darwin":
+        if parallel:
             tf_L, tf_R = self._track_parallel(
                 left, right, mesh_L, mesh_R, para_L, para_R, track_kwargs, progress, stop
             )

@@ -15,7 +15,6 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("QT_QPA_FONTDIR", "C:/Windows/Fonts")
 
-import sys
 import threading
 import time
 from dataclasses import replace
@@ -517,11 +516,17 @@ def test_load_config_parses_parallel_cameras(parity_cfg):
     assert load_config(alt).parallel_cameras is True
 
 
+def _threadsafe_numba_layer() -> bool:
+    from al_dic_3d.matching.strategies.track_both import _parallel_tracks_supported
+
+    return _parallel_tracks_supported()
+
+
 @pytest.mark.skipif(
-    sys.platform == "darwin",
-    reason="parallel_cameras falls back to sequential on macOS (numba workqueue "
-    "threading layer aborts on concurrent JIT entry) — no dual progress there; "
-    "the fallback itself is covered platform-independently below",
+    not _threadsafe_numba_layer(),
+    reason="parallel_cameras falls back to sequential without numba's tbb/omp "
+    "layer (workqueue aborts on concurrent JIT entry: macOS, Linux without "
+    "libgomp) — no dual progress there; the fallback is covered below",
 )
 def test_parallel_cameras_identical_results_and_dual_progress(parity_cfg):
     seq_result = run_pipeline(parity_cfg)
@@ -551,21 +556,53 @@ def test_parallel_cameras_identical_results_and_dual_progress(parity_cfg):
     assert "L: " in msgs and "R: " in msgs  # both cameras reported (serialized)
 
 
-def test_parallel_cameras_darwin_falls_back_sequential(parity_cfg, monkeypatch):
-    """On macOS the parallel path must warn and run sequentially (v1.0.2).
+def test_parallel_cameras_fall_back_sequential_without_a_threadsafe_layer(parity_cfg, monkeypatch):
+    """Without numba's tbb/omp layer the parallel path must warn and run sequentially.
 
     numba's workqueue threading layer aborts the process when two host threads
-    enter JIT-parallel regions concurrently, so track_both serializes on
-    darwin. Monkeypatching sys.platform exercises that branch on every OS.
+    enter JIT-parallel regions concurrently: macOS by default (v1.0.2) and
+    Linux without libgomp (CI, 1.2.0). Monkeypatching the layer check exercises
+    that branch on every OS.
     """
     import al_dic_3d.matching.strategies.track_both as tb
 
-    monkeypatch.setattr(tb.sys, "platform", "darwin")
-    with pytest.warns(UserWarning, match="parallel camera tracking is unavailable on macOS"):
+    monkeypatch.setattr(tb, "_parallel_tracks_supported", lambda: False)
+    with pytest.warns(UserWarning, match="parallel camera tracking needs numba's tbb or omp"):
         result = run_pipeline(replace(parity_cfg, parallel_cameras=True))
     baseline = run_pipeline(parity_cfg)
     np.testing.assert_array_equal(result.correspondence.xL, baseline.correspondence.xL)
     np.testing.assert_array_equal(result.correspondence.xR, baseline.correspondence.xR)
+
+
+def test_threadsafe_layer_check_follows_numba_not_the_platform(monkeypatch):
+    import importlib
+
+    import numba
+
+    import al_dic_3d.matching.strategies.track_both as tb
+
+    def uninitialized():
+        raise ValueError("Threading layer is not initialized.")
+
+    def only(available):
+        def import_module(name):
+            if name not in available:
+                raise ImportError(f"no runtime for {name}")
+
+        return import_module
+
+    monkeypatch.setattr(numba, "threading_layer", uninitialized)
+    monkeypatch.setattr(importlib, "import_module", only(set()))
+    assert tb._parallel_tracks_supported() is False  # workqueue is all that loads
+    monkeypatch.setattr(importlib, "import_module", only({"numba.np.ufunc.omppool"}))
+    assert tb._parallel_tracks_supported() is True  # omp loads (Windows: vcomp140)
+
+    monkeypatch.setattr(numba, "threading_layer", lambda: "workqueue")
+    assert tb._parallel_tracks_supported() is False  # an initialized layer decides
+    monkeypatch.setattr(numba, "threading_layer", lambda: "tbb")
+    assert tb._parallel_tracks_supported() is True
+    monkeypatch.setattr(numba.config, "THREADING_LAYER", "workqueue")
+    assert tb._parallel_tracks_supported() is False  # forced by NUMBA_THREADING_LAYER
 
 
 def test_parallel_cameras_cancel_reaches_both(parity_cfg):
