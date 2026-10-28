@@ -21,7 +21,7 @@ import cv2
 import numpy as np
 from scipy.ndimage import gaussian_filter, map_coordinates
 
-from al_dic_3d.calibration import CameraIntrinsics, StereoRig, project_points
+from al_dic_3d.calibration import CameraIntrinsics, StereoRig, project_points, undistort_points
 
 FX = FY = 1500.0
 Z0 = 800.0
@@ -97,11 +97,10 @@ def _back_project(
     Intersects each undistorted ray with the height-field Z = Z0 + h(a, b) by Newton
     iteration on the ray parameter (a genuine ray-vs-curved-surface solve).
     """
-    pts = np.ascontiguousarray(pixels, np.float64).reshape(-1, 1, 2)
-    crit = (cv2.TERM_CRITERIA_COUNT | cv2.TERM_CRITERIA_EPS, 40, 1e-12)
-    xn = cv2.undistortPoints(pts, intr.K, intr.dist_coeffs, R=None, P=None, criteria=crit).reshape(
-        -1, 2
-    )
+    # The production undistortion: the same tight criteria, on OpenCV 4.x
+    # (undistortPointsIter) and 5.x alike. cv2.undistortPoints(criteria=...)
+    # exists only in OpenCV 5, which failed CI's lower-bound (OpenCV 4) job.
+    xn = undistort_points(np.asarray(pixels, np.float64).reshape(-1, 2), intr)
     dir_cam = np.column_stack([xn, np.ones(len(xn))])
     dW = dir_cam @ R  # ray direction in world (R^T @ dir_cam, row-wise)
     cc = _cam_center(R, T)
