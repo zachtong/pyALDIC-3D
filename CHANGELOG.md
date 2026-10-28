@@ -11,6 +11,28 @@ section for that version (see `docs/RELEASING.md`).
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-10-28
+
+1.2.0 shipped without its Windows installer; this release adds it. The
+application is the same as 1.2.0 apart from the parallel-camera fix below.
+
+### Fixed
+
+- **The Windows installer could not be built.** SciPy 1.18 imports part of
+  its array support dynamically, the installer build left that module out,
+  and the packaged application could not run its computations, so the build
+  stopped at its self-test. The module is now included and the packaged
+  application passes its self-test again.
+- **Parallel camera tracking could crash the program on Linux.** When neither
+  OpenMP nor TBB is available, numba falls back to a threading layer that
+  aborts when both cameras run their solver at the same time. This was handled
+  on macOS only; Linux without OpenMP (libgomp) crashed. The option now checks
+  numba's threading layer on every system and, without a safe one, tracks the
+  two cameras one after the other with a warning. Results are identical either
+  way, and the option is off by default.
+- The test suite passes with OpenCV 4.x again (a test helper used an argument
+  only OpenCV 5 accepts).
+
 ## [1.2.0] — 2026-10-28
 
 A reliability release that follows a review of the whole workflow on real and
@@ -399,7 +421,8 @@ as a Windows installer on the GitHub release, and archived on Zenodo
   without Python: a per-user install that needs no administrator rights. It is
   not code-signed, so SmartScreen asks for confirmation on first run.
 
-[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/zachtong/pyALDIC-3D/compare/v1.0.1...v1.0.2

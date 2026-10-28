@@ -64,6 +64,15 @@
 
 ## Changelog
 
+- 2026-10-28 v1.17.1 — **包版本 1.2.1：补上 1.2.0 缺的 Windows 安装包 + Linux 并行相机崩溃（1189 tests）**。
+  v1.2.0 是固定版本安装包流水线（批次 V 引入）第一次在 CI 跑，冻结自检 8/12 失败：SciPy 1.18 的
+  `scipy._external.array_api_compat.numpy` 用 `__import__(__package__ + ".fft")` 动态导入，PyInstaller 看不到，
+  补 hiddenimports 后本地冻结自检 12/12、安装包编出。CI 的 ubuntu 两个作业崩溃（SIGABRT，WSL 复现）：
+  无 libgomp/libtbb 时 numba 退到 workqueue 线程层，`parallel_cameras` 两个引擎同时进并行核即中止；原先只按
+  macOS 判断，改为按 numba 实际线程层判断（`_parallel_tracks_supported`），无安全层时警告并顺序跟踪，结果不变；
+  默认顺序路径不受影响（左相机核验与右相机跟踪重叠，但核验不用 numba 并行核）。下界作业（OpenCV 4）失败是测试
+  辅助 `synth_surface` 用了 OpenCV 5 才有的 `criteria` 参数，改走生产的 `undistort_points`。macOS 作业自 9 月起
+  失败，原因未查明（日志需登录 GitHub 才能看）。
 - 2026-10-28 v1.17.0 — **包版本 1.2.0 发布：批次 V + 标定诊断 + issue #1 掩膜修复 + 真实数据 quickstart（1188 tests）**。
   **issue #1 根因**（外部用户：狗骨试样整体横移约 70 px，中心节点逐帧全灭）：runner 把第 1 帧画的 ROI 掩膜
   复制成每一帧的掩膜；2D 引擎只在裂纹感知累积合成里读非参考帧的掩膜（`g_mask` 计算了但没用），落点在该帧
