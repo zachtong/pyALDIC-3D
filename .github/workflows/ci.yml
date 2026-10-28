@@ -111,7 +111,7 @@ jobs:
             pins: '"al-dic==0.7.2" "opencv-python>=4.7,<5"'
           - bound: upper
             # The newest al-dic minor the range admits.
-            pins: '"al-dic>=0.8,<0.9"'
+            pins: '"al-dic>=1.0,<1.1"'
 
     env:
       QT_QPA_PLATFORM: offscreen

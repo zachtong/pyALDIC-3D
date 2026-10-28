@@ -64,6 +64,24 @@
 
 ## Changelog
 
+- 2026-10-28 v1.17.0 — **包版本 1.2.0 发布：批次 V + 标定诊断 + issue #1 掩膜修复 + 真实数据 quickstart（1188 tests）**。
+  **issue #1 根因**（外部用户：狗骨试样整体横移约 70 px，中心节点逐帧全灭）：runner 把第 1 帧画的 ROI 掩膜
+  复制成每一帧的掩膜；2D 引擎只在裂纹感知累积合成里读非参考帧的掩膜（`g_mask` 计算了但没用），落点在该帧
+  掩膜外的节点直接判死。改为 2D 应用的规则（`pipeline_controller._build_masks`）：ROI 只给参考帧（累积 = 第 1 帧；
+  增量 = 每个参考帧沿用原轮廓），其余帧全 1。新函数 `matching.temporal.reference_frame_masks`，runner
+  （`[roi].mask` 与 GUI 画的 ROI）和 track_both 右相机派生的裂纹屏障共用。实测 Challenge 1.0 S3（第 0、7 帧，
+  相距约 8 px，累积，GUI 式矩形 ROI）有效 93.0% → 99.7%；合成平移 10 px 测试锁住机理。增量模式行为不变（与 2D
+  一致），用户指南写明：试样移出原轮廓时导入逐帧掩膜。独立审查（0 严重 / 0 高）后补：`ref_direct` 不论配置
+  都按累积跟踪，掩膜规则改由策略声明的 `forced_reference_mode` 决定；测试补 every_n / custom / `schedule_R` /
+  `ref_direct` 的接线（去掉任一处 schedule 即失败）。遗留：逐帧掩膜区的提示文字（7 语言 .ts）仍写"第 1 帧 ROI
+  用于每一帧"，增量模式复用轮廓时也没有 2D 那样的提醒，留待下一版。
+  **quickstart/**（作者批准公开 S3）：第 0、7、14 帧 + DICe 标定（与 `28027ce` 前提交过的 blob 完全相同，仓库零增量）
+  + 逐帧掩膜（新增 63 KB）+ `config.toml` + README（GUI 逐步、CLI、预期结果表）。GUI 点击路径离屏实跑：有效
+  97.3/97.1/96.4%，11.6 s；截图 `assets/quickstart_result.jpg` 由 `tools/marketing/gen_quickstart_shot.py` 生成；
+  `tests/test_quickstart_dataset.py` 在 CI 里实跑 `quickstart/config.toml`，锁住 README 引用的数字（sdist 无数据时跳过）。
+  README 快速开始改指 quickstart，不再用 `al-dic-3d demo` 教学（命令保留）。
+  **依赖** `al-dic>=0.7.2,<1.1`：0.8.0 / 0.9.0 / 0.10.0 / 1.0.3 全套测试通过，demo 在 0.7.2 与 1.0.3 上位级一致；
+  Windows 安装包仍打包 0.7.2。
 - 2026-09-14 v1.16.0 — **标定诊断 WP3：编码点圆心改用去背景的窗口质心（分支 `feat/coded-dot-centre`，未合并，1173 tests）**。
   作者决定：WP6 合并进本地 main（未推送），两种检查默认以琥珀色警告显示，移植 WP3。新模块
   `calibration/dot_centre.py`：编码点完成索引后，每个点先从半灰度轮廓量出椭圆（填洞，甜甜圈基准点算一个点），

@@ -11,17 +11,30 @@ section for that version (see `docs/RELEASING.md`).
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-10-28
+
 A reliability release that follows a review of the whole workflow on real and
 large data. Several defects made results silently worse or wrong; they are
 fixed, and two result checks are stricter by default (see *Changed*). Runs start
 reporting progress at once and finish sooner, the application fits laptop
-screens, exports match the results on screen, and new users get a dataset to
-start from (`al-dic-3d demo`).
+screens, exports match the results on screen, and new users get a real dataset
+to learn on (`quickstart/`).
 
 ### Fixed
 
 #### Results
 
+- **A region of interest dropped the points that moved out of it.** The ROI is
+  drawn on frame 1 but was applied as the mask of every frame, and a point
+  whose tracked position lands outside a frame's mask is discarded. A specimen
+  that moved therefore lost the points near its edges, and a narrow one could
+  lose them all ([#1](https://github.com/zachtong/pyALDIC-3D/issues/1)). The
+  ROI now applies to the reference frames only, as in pyALDIC (2D); this covers
+  the ROI drawn in the application and `[roi].mask`. On Stereo-DIC Challenge 1.0
+  Sample 3 (two frames 8 px apart, accumulative, a drawn rectangle) 99.7% of the
+  points stay valid instead of 93.0%. In incremental mode every later reference
+  frame still reuses the frame-1 outline; import per-frame masks when the
+  specimen moves far beyond it.
 - **Per-frame masks saved as 0/255 images stalled the matching.** The engine
   multiplies the image gradients by the mask, so a mask of 255s made every
   solver step 1/255 of its size and the solver stopped next to its integer
@@ -212,7 +225,9 @@ start from (`al-dic-3d demo`).
   masked specimen can reach 100%.
 - **When validity collapses in accumulative mode, the run summary suggests
   incremental mode.**
-- **Dependencies.** `al-dic` 0.7.2 up to 0.8.x. One OpenCV package,
+- **Dependencies.** `al-dic` 0.7.2 up to 1.0.x (tested with 0.7.2, 0.8.0,
+  0.9.0, 0.10.0 and 1.0.3), so pyALDIC-3D installs next to the current
+  pyALDIC (2D). One OpenCV package,
   `opencv-python` (do not also install `opencv-python-headless`). `numba`,
   `matplotlib` and `pillow` are declared directly. The development status is
   Beta.
@@ -221,6 +236,12 @@ start from (`al-dic-3d demo`).
 
 ### Added
 
+- **A real dataset to learn on.** The repository's `quickstart/` folder holds
+  three image pairs of Stereo-DIC Challenge 1.0 Sample 3 (a D-shaped specimen
+  stretched in tension) with their calibration, a mask of the specimen in every
+  image and a `config.toml`. Its README walks through the analysis in the
+  application step by step and lists the results to expect; the README Quick
+  Start points to it.
 - **Calibration checks.** Every calibration now reports, per camera, how far
   the board reached and whether the lens model is determined beyond that (a
   warning when two equally good fits, k3 free and k3 fixed, differ by more
@@ -239,7 +260,7 @@ start from (`al-dic-3d demo`).
   shape*.
 - **`al-dic-3d demo OUT`** writes a synthetic stereo dataset with an analytic
   ground truth (images, calibration and `config.toml`); `--run` also runs it
-  and reports the error. The README Quick Start uses it.
+  and reports the error.
 - **`al-dic-3d self-test`** checks an installation end to end and names the
   part that fails.
 - **Automatic disparity estimate.** Without a Starting Point, the stereo
@@ -378,7 +399,8 @@ as a Windows installer on the GitHub release, and archived on Zenodo
   without Python: a per-user install that needs no administrator rights. It is
   not code-signed, so SmartScreen asks for confirmation on first run.
 
-[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/zachtong/pyALDIC-3D/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.0.0...v1.0.1

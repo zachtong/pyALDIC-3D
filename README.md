@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/zachtong/pyALDIC-3D/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zachtong/pyALDIC-3D/ci.yml?style=flat-square&label=CI" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/tests-1184-22c55e?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-1188-22c55e?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/3D-PyVista%2FVTK-blue?style=flat-square" alt="PyVista"/>
@@ -400,7 +400,7 @@ src/al_dic_3d/
 ├── self_test.py    The installation / frozen-bundle check (`self-test`)
 └── cli.py          `al-dic-3d` console script (run · gui · calibrate · demo · self-test)
 
-tests/              123 test files, 1184 tests
+tests/              123 test files, 1188 tests
 quickstart/         A real stereo dataset and a step-by-step first analysis
 tools/marketing/    Generators for every figure in this README (headless, reproducible)
 ```
@@ -415,7 +415,7 @@ and `i18n` may touch Qt or OpenGL.
 <summary><b>Testing</b></summary>
 
 ```bash
-pytest                                   # everything (1184 tests)
+pytest                                   # everything (1188 tests)
 pytest -n auto                           # parallel
 pytest tests/test_parity_gate.py         # the MATLAB-parity gates
 ruff check . && ruff format .

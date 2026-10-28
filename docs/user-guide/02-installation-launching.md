@@ -49,7 +49,7 @@ pyALDIC-3D is developed alongside the sibling 2D repo. Satisfy the `al-dic`
 pin from the sibling source, then install this package editable:
 
 ```bash
-pip install -e ../pyALDIC          # 2D engine, editable (0.7.2 up to 0.8.x)
+pip install -e ../pyALDIC          # 2D engine, editable (0.7.2 up to 1.0.x)
 pip install -e ".[dev]"            # this package + pytest/ruff/pre-commit
 pre-commit install                 # optional: enable hooks
 ```
@@ -94,7 +94,7 @@ al-dic-3d --version
 prints the name and the installed version, for example:
 
 ```
-al-dic-3d 1.1.0
+al-dic-3d 1.2.0
 ```
 
 To check that an installation works end to end — images and videos in
