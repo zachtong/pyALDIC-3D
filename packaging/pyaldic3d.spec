@@ -124,6 +124,12 @@ hiddenimports = [
     "numba.np.ufunc.workqueue",
     "numba.np.ufunc._internal",
     "numba.np.ufunc._num_threads",
+    # SciPy 1.18 vendors array_api_compat under scipy._external, whose numpy
+    # backend loads its submodules with __import__(__package__ + ".fft"), which
+    # the module graph cannot see. Without fft every scipy.special / linalg
+    # import failed in the frozen app, and the 1.2.0 installer build with it.
+    "scipy._external.array_api_compat.numpy.fft",
+    "scipy._external.array_api_compat.numpy.linalg",
 ]
 
 # --------------------------------------------------------------------------
