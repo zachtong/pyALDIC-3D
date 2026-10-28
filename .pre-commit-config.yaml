@@ -12,6 +12,12 @@
 # Setup:   pip install -e ".[dev]" && pre-commit install
 # Run all: pre-commit run --all-files
 # Bump:    pre-commit autoupdate
+
+# The quickstart dataset is committed byte for byte as published (Stereo-DIC
+# Challenge 1.0, Sample 3): 2.3 MB TIFFs and a DICe calibration file with
+# trailing spaces. No hook may flag or "fix" it.
+exclude: ^quickstart/(left|right|masks)/|^quickstart/calibration\.xml$
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

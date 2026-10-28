@@ -1,0 +1,30 @@
+# pyALDIC-3D quickstart: Stereo-DIC Challenge 1.0, Sample 3 (D-shaped specimen).
+#
+#     al-dic-3d run quickstart/config.toml
+#
+# Paths below are relative to this file, so the command works from any folder.
+# Every key not listed keeps its default; README.md in this folder walks
+# through the same analysis in the GUI.
+
+[calibration]
+file = "calibration.xml"
+format = "dice"                      # a DICe camera-system file
+
+[sequence]
+left = "left/*_0.tif"                # frames 0000, 0007, 0014 of the left camera
+right = "right/*_1.tif"
+left_mask = "masks/left/*_0.tif"     # the specimen outline in every frame
+right_mask = "masks/right/*_1.tif"
+
+[roi]
+mask = "masks/left/0000_0.tif"       # region of interest: the specimen on left frame 1
+
+[matching]
+reference_mode = "incremental"       # each frame against the previous one (large motion)
+
+[strain]
+enabled = true
+
+[output]
+dir = "results"
+prefix = "d_specimen"

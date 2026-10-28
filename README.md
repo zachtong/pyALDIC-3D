@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/zachtong/pyALDIC-3D/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zachtong/pyALDIC-3D/ci.yml?style=flat-square&label=CI" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/tests-1092-22c55e?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-1184-22c55e?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/3D-PyVista%2FVTK-blue?style=flat-square" alt="PyVista"/>
@@ -184,7 +184,7 @@ export.
 ### Eight languages, and a headless CLI
 
 The entire interface is translated into **English, 简体中文, 繁體中文, 日本語, 한국어,
-Deutsch, Français and Español** (647 strings × 7 locales, 100% filled, pseudo-locale
+Deutsch, Français and Español** (788 strings × 7 locales, 100% filled, pseudo-locale
 scan clean). And when you don't want an interface at all, `al-dic-3d run config.toml`
 drives the same pipeline from a TOML file on a headless server — Qt and OpenGL imports
 are lazy, so the compute path never needs a display.
@@ -206,7 +206,7 @@ are lazy, so the compute path never needs a display.
 | **GUI** | <mark>**Built-in desktop**</mark> | Built-in (MATLAB)¹ | Script-driven¹ | Built-in desktop (basic cases)³ | Built-in desktop | Built-in desktop | Built-in (MATLAB)¹ |
 | **Platform** | <mark>**Windows, macOS, Linux**</mark> | MATLAB R2024a+¹ | Windows (only OS tested)¹ | Windows, macOS, Linux | Windows only | Windows only | MATLAB¹ |
 | **Cost / licence** | <mark>**Free · BSD-3 · no MATLAB**</mark> | Free · MIT¹ | Free · Apache-2.0¹ | Free · BSD-3 | Commercial | Commercial | Free · BSD-3¹ |
-| **Latest release**² | <mark>**v1.1.0 (2026)**</mark> | No tagged release | v1.1.0 (2021) | v3.0-beta.8 (2023) | VIC-3D 11 | MatchID 2026.2 | v1.2.2 (2017) |
+| **Latest release**² | <mark>**v1.2.0 (2026)**</mark> | No tagged release | v1.1.0 (2021) | v3.0-beta.8 (2023) | VIC-3D 11 | MatchID 2026.2 | v1.2.2 (2017) |
 | **UI languages** | <mark>**8**</mark> | Not documented | Not documented | Not documented | Not documented | Not documented | Not documented |
 | **Cameras** | 2 (N-camera post-v1) | 2 | **Up to 12+** | ≤ 10 in code, no documented workflow³ | **Up to 16** | **Vendor: no limit** | n/a |
 
@@ -291,7 +291,7 @@ pip install al-dic-3d
 ```
 
 **Windows, no Python:** a self-contained installer
-(`pyALDIC-3D-1.1.0-win64-setup.exe`, ~197 MB — Python, Qt, VTK and all
+(`pyALDIC-3D-1.2.0-win64-setup.exe`, ~197 MB — Python, Qt, VTK and all
 dependencies bundled) is attached to the
 [latest release](https://github.com/zachtong/pyALDIC-3D/releases/latest).
 It installs per-user (no admin prompt) and registers `.aldic3d` files.
@@ -313,30 +313,23 @@ al-dic-3d gui              # desktop application
 al-dic-3d gui my.aldic3d   # …opening straight into a saved session
 al-dic-3d run config.toml  # headless pipeline
 al-dic-3d calibrate --help # built-in stereo calibration
-al-dic-3d demo demo_out    # a synthetic dataset to try it on (below)
 al-dic-3d self-test        # check that this installation works end to end
 ```
 
-### Try it without data of your own
+### Try it on real data
 
-`al-dic-3d demo` writes a small synthetic stereo dataset with an analytic ground
-truth: four frames per camera from an 18° convergent, lens-distorted camera pair
-viewing a tilted speckle plane under a known deformation, its OpenCV calibration
-(`calib.yml`) and a ready `config.toml`. It needs nothing but the installation.
+The [`quickstart/`](https://github.com/zachtong/pyALDIC-3D/tree/main/quickstart)
+folder of this repository holds a real stereo dataset ready to analyse: three image
+pairs of a D-shaped specimen stretched in tension (Stereo-DIC Challenge 1.0,
+Sample 3), its calibration, and a mask of the specimen in every image. Its
+[README](https://github.com/zachtong/pyALDIC-3D/blob/main/quickstart/README.md)
+walks through the analysis in the desktop app step by step, about five minutes
+from loading the images to the 3D displacement and strain, and shows what you
+should get. The same analysis runs headless with one command:
 
 ```bash
-al-dic-3d demo demo_out                # write the dataset (about a second)
-al-dic-3d run demo_out/config.toml     # run it headless
-al-dic-3d demo demo_out --run          # …or both, plus the error against the ground truth
+al-dic-3d run quickstart/config.toml   # about 15 s; results in quickstart/results/
 ```
-
-The run takes a few seconds (the first run on a new installation also compiles the
-numerical kernels, once) and writes `demo_out/results/demo.npz` / `.mat` (3D points,
-U/V/W/|D|, the full strain stack, and the raw correspondence with quality and
-reprojection error) plus a parameters JSON. To try the GUI on the same data, load
-`L_*.png` and `R_*.png` as the left and right images and `calib.yml` as the
-calibration (format `opencv_yaml`, the default), then draw a rectangle ROI on the
-speckle plane. `--frames` and `--size` make a longer or larger dataset.
 
 <details>
 <summary><b>Programmatic API</b></summary>
@@ -347,20 +340,22 @@ from pathlib import Path
 import numpy as np
 from al_dic_3d.runner import RunConfig, run_pipeline, write_results
 
-# The synthetic dataset from `al-dic-3d demo demo_out`
+qs = Path("quickstart")  # the sample dataset in this repository
 cfg = RunConfig(
-    calibration_file=Path("demo_out/calib.yml"),
-    calibration_format="opencv_yaml",    # or dice / matlabcv / matchid / mmc / opencorr
-    left="demo_out/L_*.png",
-    right="demo_out/R_*.png",
-    roi=(51, 269, 51, 269),              # (xmin, xmax, ymin, ymax) on the LEFT frame 1
-    output_dir=Path("demo_out/results"),
-    output_prefix="demo",
+    calibration_file=qs / "calibration.xml",
+    calibration_format="dice",           # or opencv_yaml / matlabcv / matchid / mmc / opencorr
+    left=str(qs / "left" / "*_0.tif"),
+    right=str(qs / "right" / "*_1.tif"),
+    roi_mask=qs / "masks" / "left" / "0000_0.tif",  # the ROI on LEFT frame 1, as a mask image
+    roi=(0, 0, 0, 0),                    # without roi_mask: (xmin, xmax, ymin, ymax) in px
+    left_masks=str(qs / "masks" / "left" / "*_0.tif"),    # optional: one mask per frame
+    right_masks=str(qs / "masks" / "right" / "*_1.tif"),
+    output_dir=qs / "results",
+    output_prefix="d_specimen",
     strategy="track_both",               # or stereo_each_frame / ref_direct
-    reference_mode="accumulative",       # or incremental, for large deformation
+    reference_mode="incremental",        # or accumulative, for small deformation
     winsize=32,                          # subset size, px (even)
     winstepsize=16,                      # node spacing, px (power of 2)
-    stereo_search=48,                    # left-to-right search half-width, px
     compute_strain=True,
     strain_size=5,                       # virtual strain gauge, in nodes
 )
@@ -368,11 +363,12 @@ cfg = RunConfig(
 result = run_pipeline(cfg)
 
 rec = result.reconstruction
-print(f"{rec.n_frames} frames, {rec.points.shape[1]} nodes")
+valid = result.meta["summary"]["valid_frac"]  # per frame, of the nodes inside the ROI
+print(f"{rec.n_frames} frames, {rec.points.shape[1]} nodes, "
+      f"{result.meta['n_pts_in_roi']} inside the ROI")
 for k in range(rec.n_frames):
     mag = np.linalg.norm(rec.displacement[k], axis=1)
-    print(f"frame {k}: max |D| = {np.nanmax(mag):.4f} mm, "
-          f"valid {100 * np.isfinite(mag).mean():.1f}%")
+    print(f"frame {k}: max |D| = {np.nanmax(mag):.4f} mm, valid {100 * valid[k]:.1f}%")
 
 # points3D (n_frames, n_pts, 3) in mm, displacement, strain, correspondence
 paths = write_results(result, cfg, formats=("npz", "mat", "csv", "ply", "vtu"))
@@ -404,7 +400,8 @@ src/al_dic_3d/
 ├── self_test.py    The installation / frozen-bundle check (`self-test`)
 └── cli.py          `al-dic-3d` console script (run · gui · calibrate · demo · self-test)
 
-tests/              112 test files, 1092 tests
+tests/              123 test files, 1184 tests
+quickstart/         A real stereo dataset and a step-by-step first analysis
 tools/marketing/    Generators for every figure in this README (headless, reproducible)
 ```
 
@@ -418,7 +415,7 @@ and `i18n` may touch Qt or OpenGL.
 <summary><b>Testing</b></summary>
 
 ```bash
-pytest                                   # everything (1092 tests)
+pytest                                   # everything (1184 tests)
 pytest -n auto                           # parallel
 pytest tests/test_parity_gate.py         # the MATLAB-parity gates
 ruff check . && ruff format .
@@ -518,7 +515,7 @@ repository"* button from it), every version is archived on Zenodo under the conc
              pyALDIC platform},
   year    = {2026},
   url     = {https://github.com/zachtong/pyALDIC-3D},
-  version = {1.1.0},
+  version = {1.2.0},
   doi     = {10.5281/zenodo.21696564}
 }
 ```

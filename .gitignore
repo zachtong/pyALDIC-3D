@@ -54,6 +54,13 @@ test_data/
 # ---------------------------------------------------------------------------
 examples/
 
+# quickstart/ IS committed: the public sample dataset (Stereo-DIC Challenge 1.0,
+# Sample 3, three frames), published with the author's approval in 1.2.0. Only
+# the output of running it stays local: results/ from the command line, out/
+# from the application (its default output folder, holding the ROI mask).
+quickstart/results/
+quickstart/out/
+
 # IDE / editor
 .vscode/
 .idea/

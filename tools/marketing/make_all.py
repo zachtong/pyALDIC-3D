@@ -29,6 +29,7 @@ GENERATORS: tuple[tuple[str, str], ...] = (
     ("fig_calibration.py", "calibration.png"),
     ("fig_surface_3d.py", "surface_3d.png + surface_orbit.gif"),
     ("gen_gui_shots.py", "main_page.png, strain_window.png, export_window.png, i18n_zh.png"),
+    ("gen_quickstart_shot.py", "quickstart_result.jpg"),
 )
 
 

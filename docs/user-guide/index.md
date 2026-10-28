@@ -8,8 +8,13 @@ point cloud.
 
 This guide walks through the graphical workflow from left to right, chapter by
 chapter, and documents every control against the shipping code. It documents
-pyALDIC-3D **1.0.x**.
+pyALDIC-3D **1.2.x**.
 
+> **New to pyALDIC-3D?** Start with the
+> [quickstart](../../quickstart/README.md): a real stereo dataset in this
+> repository and a step-by-step walkthrough of one analysis, about five minutes
+> from loading the images to the 3D result.
+>
 > **New to 3D-DIC?** Read [Overview](01-overview.md) first, then
 > [Installation & launching](02-installation-launching.md), then
 > [Calibration](04-calibration.md) — a calibrated stereo rig is a prerequisite
