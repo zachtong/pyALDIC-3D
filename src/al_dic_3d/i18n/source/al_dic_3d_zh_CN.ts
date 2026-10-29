@@ -1233,122 +1233,122 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="140"/>
         <source>Export Results</source>
         <translation>导出结果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="146"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="147"/>
         <source>OUTPUT FOLDER</source>
         <translation>输出文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="149"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="150"/>
         <source>Select output folder…</source>
         <translation>选择输出文件夹…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="151"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="152"/>
         <source>Browse…</source>
         <translation>浏览…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="152"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
         <source>Choose the folder all exports are written into</source>
         <translation>选择所有导出内容写入的文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="155"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="156"/>
         <source>Open Folder</source>
         <translation>打开文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="156"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="157"/>
         <source>Open the output folder in the file explorer</source>
         <translation>在文件资源管理器中打开输出文件夹</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="168"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="169"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="169"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="170"/>
         <source>Images</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="170"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="171"/>
         <source>Animation</source>
         <translation>动画</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="171"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="172"/>
         <source>Preview &amp; Colorbar</source>
         <translation>预览与色条</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="172"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="173"/>
         <source>3D View</source>
         <translation>3D 视图</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="176"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="177"/>
         <source>Numeric results: field-selective NPZ / MAT / CSV tables plus PLY / VTU meshes for external tools.</source>
         <translation>数值结果：可按场变量选择的 NPZ / MAT / CSV 表格，以及供外部工具使用的 PLY / VTU 网格。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="180"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
         <translation>按相机渲染的场叠加图 PNG 图像（每帧一张），使用“预览与色条”样式。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
         <translation>场叠加图跨帧的 GIF / MP4 动画，使用“预览与色条”样式。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="188"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="189"/>
         <source>WYSIWYG style source: the colorbar and margins configured here are used by every Images / Animation export.</source>
         <translation>所见即所得的样式来源：此处配置的色条与边距将用于所有图像/动画导出。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="461"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
         <source>Export Running</source>
         <translation>导出进行中</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="463"/>
         <source>An export is still running — cancel it and close?</source>
         <translation>仍有导出任务在运行 — 取消并关闭？</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="465"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="467"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="498"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="499"/>
         <source>Folder does not exist: {0}</source>
         <translation>文件夹不存在：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="204"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="205"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="192"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="193"/>
         <source>Offscreen renders of the 3D surface as images, a deforming animation or a turntable, from your current 3D view.</source>
         <translation>3D 曲面的离屏渲染，可导出为图像、变形动画或环绕动画，使用您当前的 3D 视角。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="485"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="486"/>
         <source>Choose output folder</source>
         <translation>选择输出文件夹</translation>
     </message>
@@ -1849,72 +1849,72 @@ frames.</source>
 <context>
     <name>LeftSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="82"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="83"/>
         <source>IMAGES</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="89"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="90"/>
         <source>Drop LEFT camera
 folder or click</source>
         <translation>拖入左相机文件夹
 或点击选择</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="90"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="91"/>
         <source>Drop RIGHT camera
 folder or click</source>
         <translation>拖入右相机文件夹
 或点击选择</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="95"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="96"/>
         <source>Natural Sort (1, 2, …, 10)</source>
         <translation>自然排序 (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="98"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="99"/>
         <source>Sort file names numerically (img2 before img10). Default on; turn off for strict alphabetical order. Applies to the next folder load.</source>
         <translation>按数字大小排序文件名（img2 在 img10 之前）。默认开启；关闭则使用严格字母序。对下一次加载的文件夹生效。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="116"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="687"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="117"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="710"/>
         <source>No images loaded</source>
         <translation>尚未加载图像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="142"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="143"/>
         <source>CALIBRATION</source>
         <translation>标定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="146"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="147"/>
         <source>WORKFLOW TYPE</source>
         <translation>工作流类型</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="153"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="154"/>
         <source>INITIAL GUESS</source>
         <translation>初始猜测</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="157"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="158"/>
         <source>REGION OF INTEREST</source>
         <translation>感兴趣区域</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="161"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="162"/>
         <source>PARAMETERS</source>
         <translation>参数</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="165"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="166"/>
         <source>ADVANCED</source>
         <translation>高级</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="231"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="232"/>
         <source>Incremental: each frame is compared to the previous reference frame.
 Suitable for large accumulated deformation, required for large rotations.
 
@@ -1927,12 +1927,12 @@ Accurate for small, monotonic deformation only.</source>
 仅适用于小的、单调的变形。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="250"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="251"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="252"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1950,23 +1950,23 @@ AL-DIC：全局 FEM 正则化的增广拉格朗日方法。
 噪声图像，或对应变精度要求高的场景。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="261"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="262"/>
         <source>Solver</source>
         <translation>求解器</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="335"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="359"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="336"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="360"/>
         <source>bbox: not set</source>
         <translation>包围盒：未设置</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="362"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="363"/>
         <source>bbox: {0}–{1}, {2}–{3} px</source>
         <translation>包围盒：{0}–{1}，{2}–{3} 像素</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="382"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="383"/>
         <source>IC-GN subset window size in pixels (odd number). Default 33.
 Larger = more robust on sparse speckle, smoother fields;
 smaller = finer spatial detail but noisier. The subset must
@@ -1976,32 +1976,32 @@ span several speckles.</source>
 子集必须覆盖若干散斑。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="226"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="227"/>
         <source>Accumulative</source>
         <translation>累积式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="227"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="228"/>
         <source>Incremental</source>
         <translation>增量式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="238"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="239"/>
         <source>Tracking Mode</source>
         <translation>追踪模式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="317"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="318"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>在左相机第 1 帧上绘制——所有后续帧与右相机都由它推算。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="388"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="389"/>
         <source>Subset Size</source>
         <translation>子集尺寸</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="396"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="397"/>
         <source>Node spacing in pixels (power of 2). Default 16. Smaller =
 denser measurement grid and longer runs; larger = faster but
 coarser fields. Typically ¼–½ of the Subset Size.</source>
@@ -2009,32 +2009,55 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
 更大 = 更快但场更粗糙。通常取子集尺寸的 1/4 到 1/2。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="401"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="402"/>
         <source>Subset Step</source>
         <translation>子集步长</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="407"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="408"/>
         <source>Stereo Search</source>
         <translation>立体搜索</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="417"/>
+        <source>off</source>
+        <translation>关</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 3 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>极线带：左右匹配只在标定为每个节点预测的极线
+两侧这么多像素以内搜索，沿极线方向的范围为
+立体搜索距离，因此极线外的相似纹理不会被误选。
+默认 3 px；不会窄于极线限制；为 0 时改用
+正方形窗口搜索。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="427"/>
+        <source>Epipolar Band</source>
+        <translation>极线带</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="440"/>
         <source>Temporal Search</source>
         <translation>时序搜索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="426"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
         <source>Mesh refinement</source>
         <translation>网格加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="433"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="453"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>在掩膜边界（孔洞）处加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="436"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="456"/>
         <source>Quadtree-subdivide mesh elements crossing interior mask
 holes so the mesh hugs the hole edges. Default off (uniform
 grid); enable when the ROI mask has cut-outs whose rims you
@@ -2043,12 +2066,12 @@ care about.</source>
 默认关闭（均匀网格）；当 ROI 掩膜有需要关注边缘的挖空时可启用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="443"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
         <source>Refine at ROI edges</source>
         <translation>在 ROI 边缘处加密</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="466"/>
         <source>Quadtree-subdivide mesh elements along the outer ROI
 boundary. Default off; enable for curved / irregular ROI
 outlines where the uniform grid staircases.</source>
@@ -2056,7 +2079,7 @@ outlines where the uniform grid staircases.</source>
 默认关闭；ROI 轮廓弯曲/不规则、均匀网格出现锯齿时可启用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="458"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="478"/>
         <source>How aggressively refined elements shrink: the minimum element
 is step / 2^level. Default 1 (light); 3 is heavy — finer
 boundary detail but many more nodes and a slower run.</source>
@@ -2064,20 +2087,12 @@ boundary detail but many more nodes and a slower run.</source>
 默认 1（轻度）；3 为重度 — 边界细节更精细，但节点大幅增加、运行更慢。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="483"/>
         <source>Refinement Level</source>
         <translation>加密级别</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="575"/>
-        <source>NCC search half-width (pixels) around each node for the
-left-to-right stereo match. Set larger than the largest
-expected stereo disparity.</source>
-        <translation>左→右立体匹配时围绕每个节点的 NCC 搜索半宽（像素）。
-应大于预期的最大立体视差。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="580"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="603"/>
         <source>Half-width (pixels) of the temporal FFT integer search that seeds
 each per-frame match. Set comfortably larger than the expected
 inter-frame motion; with Auto-expand on (default) the engine can
@@ -2087,7 +2102,7 @@ still grow the search past this on a boundary-clipped peak.</source>
 峰值触及搜索边界时引擎仍可将搜索范围扩大到超过此值。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="596"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="619"/>
         <source>Current images: the engine starts the FFT search clamped to
 {0} px (max(10, min(H, W) / 4 - subset)); Auto-expand can grow
 it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
@@ -2096,7 +2111,7 @@ it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
 可将其增大到 {1} px（max(32, min(H, W) / 2)）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="618"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Inactive with the current Initial Guess / Tracking Mode: the
 temporal FFT runs only when Initial Guess = FFT, or at reference
 switches in Incremental mode; in Accumulative + Starting Point /
@@ -2106,19 +2121,19 @@ Previous frame no FFT runs, so this control has no effect.</source>
 种子点 / 上一帧下不会运行 FFT，因此此控件不起作用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="592"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="615"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>当前图像：超过 {0} px 的取值无法再扩大搜索
 （搜索窗口在图像边界处被裁剪）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="267"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="268"/>
         <source>Extra filters (correlation, outliers)</source>
         <translation>额外过滤（相关性、离群点）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="270"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="271"/>
         <source>Post-run filters: drop points whose correlation (ZNSSD),
 reprojection error or 3D-outlier distance is too poor.
 Default off (keep every tracked point); enable for noisy
@@ -2131,37 +2146,47 @@ reports how many points each filter removed.</source>
 每个过滤器剔除的点数。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="634"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="597"/>
+        <source>How far (pixels) the left-to-right stereo match searches around
+each node&apos;s expected position: along the epipolar line, or in a
+square window when the Epipolar Band is off. Set it larger than
+the error expected in that position.</source>
+        <translation>左右立体匹配在每个节点的预期位置周围搜索的
+距离（像素）：沿极线方向搜索；极线带关闭时
+在正方形窗口内搜索。应大于该预期位置可能的误差。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="657"/>
         <source>No images found in {0}</source>
         <translation>在 {0} 中未找到图像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="642"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
         <source>left camera</source>
         <translation>左相机</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="642"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
         <source>right camera</source>
         <translation>右相机</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="645"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="668"/>
         <source>This folder holds both cameras ({0}): using its {1} images for the {2}</source>
         <translation>该文件夹包含两个相机的图像（{0}）：将其中 {1} 张用于{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="656"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="679"/>
         <source>{0}: {1} images from {2}</source>
         <translation>{0}：从 {2} 载入 {1} 张图像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="692"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="715"/>
         <source>Paired: {0} frames per camera</source>
         <translation>已配对：每相机 {0} 帧</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="698"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="721"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>数量不匹配：左 {0} 帧，右 {1} 帧</translation>
     </message>

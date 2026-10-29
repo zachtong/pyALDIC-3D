@@ -31,7 +31,12 @@ from al_dic_3d.matching.contracts import (
 )
 from al_dic_3d.matching.diagnostics import frame_row, stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara, match_points
-from al_dic_3d.matching.stereo import accept_field, accept_links, stereo_match_pair
+from al_dic_3d.matching.stereo import (
+    accept_field,
+    accept_links,
+    search_band_px,
+    stereo_match_pair,
+)
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
     effective_seed_points,
@@ -207,6 +212,8 @@ class StereoEachFrameStrategy:
                     search_radius=self.stereo_search,
                     frame_idx=0,
                     seed_u0=stereo_prior,
+                    rig=rig,
+                    band_px=search_band_px(cfg.stereo_band_px, cfg.stereo_epipolar_max_px),
                 )
                 field, n_rz, n_re = accept_field(
                     field,

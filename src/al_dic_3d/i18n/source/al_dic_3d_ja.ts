@@ -1232,122 +1232,122 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="140"/>
         <source>Export Results</source>
         <translation>結果をエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="146"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="147"/>
         <source>OUTPUT FOLDER</source>
         <translation>出力フォルダ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="149"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="150"/>
         <source>Select output folder…</source>
         <translation>出力フォルダを選択…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="151"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="152"/>
         <source>Browse…</source>
         <translation>参照…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="152"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
         <source>Choose the folder all exports are written into</source>
         <translation>すべてのエクスポートの書き込み先フォルダーを選択します</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="155"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="156"/>
         <source>Open Folder</source>
         <translation>フォルダを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="156"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="157"/>
         <source>Open the output folder in the file explorer</source>
         <translation>出力フォルダーをエクスプローラーで開きます</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="168"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="169"/>
         <source>Data</source>
         <translation>データ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="169"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="170"/>
         <source>Images</source>
         <translation>画像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="170"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="171"/>
         <source>Animation</source>
         <translation>アニメーション</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="171"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="172"/>
         <source>Preview &amp; Colorbar</source>
         <translation>プレビューとカラーバー</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="172"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="173"/>
         <source>3D View</source>
         <translation>3D ビュー</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="176"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="177"/>
         <source>Numeric results: field-selective NPZ / MAT / CSV tables plus PLY / VTU meshes for external tools.</source>
         <translation>数値結果: フィールドを選択できる NPZ / MAT / CSV テーブルと、外部ツール向けの PLY / VTU メッシュ。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="180"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
         <translation>カメラごとのフィールドオーバーレイを PNG 画像として書き出します（各フレーム 1 枚、「プレビューとカラーバー」のスタイルを使用）。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
         <translation>フィールドオーバーレイのフレーム間 GIF / MP4 アニメーション（「プレビューとカラーバー」のスタイルを使用）。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="188"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="189"/>
         <source>WYSIWYG style source: the colorbar and margins configured here are used by every Images / Animation export.</source>
         <translation>WYSIWYG のスタイル設定元: ここで設定したカラーバーと余白が、すべての画像／アニメーションのエクスポートに使われます。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="461"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
         <source>Export Running</source>
         <translation>エクスポート実行中</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="463"/>
         <source>An export is still running — cancel it and close?</source>
         <translation>エクスポートが実行中です — キャンセルして閉じますか？</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="465"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
         <source>Yes</source>
         <translation>はい</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="467"/>
         <source>No</source>
         <translation>いいえ</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="498"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="499"/>
         <source>Folder does not exist: {0}</source>
         <translation>フォルダーが存在しません：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="204"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="205"/>
         <source>Close</source>
         <translation>閉じる</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="192"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="193"/>
         <source>Offscreen renders of the 3D surface as images, a deforming animation or a turntable, from your current 3D view.</source>
         <translation>3D 表面のオフスクリーンレンダリング。現在の 3D ビューの視点で、画像・変形アニメーション・ターンテーブルとして書き出します。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="485"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="486"/>
         <source>Choose output folder</source>
         <translation>出力フォルダを選択</translation>
     </message>
@@ -1852,72 +1852,72 @@ frames.</source>
 <context>
     <name>LeftSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="82"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="83"/>
         <source>IMAGES</source>
         <translation>画像</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="89"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="90"/>
         <source>Drop LEFT camera
 folder or click</source>
         <translation>左カメラのフォルダを
 ドロップまたはクリック</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="90"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="91"/>
         <source>Drop RIGHT camera
 folder or click</source>
         <translation>右カメラのフォルダを
 ドロップまたはクリック</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="95"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="96"/>
         <source>Natural Sort (1, 2, …, 10)</source>
         <translation>自然順ソート (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="98"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="99"/>
         <source>Sort file names numerically (img2 before img10). Default on; turn off for strict alphabetical order. Applies to the next folder load.</source>
         <translation>ファイル名を数値順に並べ替えます（img2 が img10 の前）。既定はオン。オフにすると厳密なアルファベット順になります。次のフォルダー読み込みから適用されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="116"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="687"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="117"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="710"/>
         <source>No images loaded</source>
         <translation>画像が読み込まれていません</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="142"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="143"/>
         <source>CALIBRATION</source>
         <translation>キャリブレーション</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="146"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="147"/>
         <source>WORKFLOW TYPE</source>
         <translation>ワークフロー種別</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="153"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="154"/>
         <source>INITIAL GUESS</source>
         <translation>初期推定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="157"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="158"/>
         <source>REGION OF INTEREST</source>
         <translation>関心領域</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="161"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="162"/>
         <source>PARAMETERS</source>
         <translation>パラメータ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="165"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="166"/>
         <source>ADVANCED</source>
         <translation>詳細設定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="231"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="232"/>
         <source>Incremental: each frame is compared to the previous reference frame.
 Suitable for large accumulated deformation, required for large rotations.
 
@@ -1930,12 +1930,12 @@ Accurate for small, monotonic deformation only.</source>
 小さく単調な変形にのみ適します。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="250"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="251"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="252"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1952,23 +1952,23 @@ AL-DIC: 全体 FEM 正則化付き拡張ラグランジュ。
 大変形・ノイズ画像・ひずみ精度重視の場合に最適です。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="261"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="262"/>
         <source>Solver</source>
         <translation>ソルバー</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="335"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="359"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="336"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="360"/>
         <source>bbox: not set</source>
         <translation>境界ボックス: 未設定</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="362"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="363"/>
         <source>bbox: {0}–{1}, {2}–{3} px</source>
         <translation>境界ボックス: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="382"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="383"/>
         <source>IC-GN subset window size in pixels (odd number). Default 33.
 Larger = more robust on sparse speckle, smoother fields;
 smaller = finer spatial detail but noisier. The subset must
@@ -1978,32 +1978,32 @@ span several speckles.</source>
 サブセットは複数のスペックルを含む必要があります。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="226"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="227"/>
         <source>Accumulative</source>
         <translation>累積式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="227"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="228"/>
         <source>Incremental</source>
         <translation>逐次式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="238"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="239"/>
         <source>Tracking Mode</source>
         <translation>追跡モード</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="317"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="318"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>左カメラの第 1 フレームに描画します——以降のフレームと右カメラはそこから導かれます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="388"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="389"/>
         <source>Subset Size</source>
         <translation>サブセットサイズ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="396"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="397"/>
         <source>Node spacing in pixels (power of 2). Default 16. Smaller =
 denser measurement grid and longer runs; larger = faster but
 coarser fields. Typically ¼–½ of the Subset Size.</source>
@@ -2011,32 +2011,55 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
 大きいほど速い代わりに場が粗くなります。通常はサブセットサイズの 1/4〜1/2。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="401"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="402"/>
         <source>Subset Step</source>
         <translation>サブセットステップ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="407"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="408"/>
         <source>Stereo Search</source>
         <translation>ステレオ探索</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="417"/>
+        <source>off</source>
+        <translation>オフ</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 3 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>エピポーラ帯：左右の対応は、キャリブレーションが各節点に
+予測する線からこの画素数以内だけを、線に沿ってはステレオ
+探索の距離だけ探索するため、線から外れた似た模様を選ぶ
+ことはありません。既定 3 px。エピポーラ制限より狭く
+なりません。0 の場合は正方形ウィンドウで探索します。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="427"/>
+        <source>Epipolar Band</source>
+        <translation>エピポーラ帯</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="440"/>
         <source>Temporal Search</source>
         <translation>時系列探索</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="426"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
         <source>Mesh refinement</source>
         <translation>メッシュ細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="433"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="453"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>マスク境界（穴）で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="436"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="456"/>
         <source>Quadtree-subdivide mesh elements crossing interior mask
 holes so the mesh hugs the hole edges. Default off (uniform
 grid); enable when the ROI mask has cut-outs whose rims you
@@ -2045,12 +2068,12 @@ care about.</source>
 既定はオフ（一様グリッド）。ROI マスクに縁が重要な切り抜きがある場合に有効化してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="443"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
         <source>Refine at ROI edges</source>
         <translation>ROI の縁で細分化</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="466"/>
         <source>Quadtree-subdivide mesh elements along the outer ROI
 boundary. Default off; enable for curved / irregular ROI
 outlines where the uniform grid staircases.</source>
@@ -2058,7 +2081,7 @@ outlines where the uniform grid staircases.</source>
 既定はオフ。ROI の輪郭が曲線的・不規則で、一様グリッドが階段状になる場合に有効化してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="458"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="478"/>
         <source>How aggressively refined elements shrink: the minimum element
 is step / 2^level. Default 1 (light); 3 is heavy — finer
 boundary detail but many more nodes and a slower run.</source>
@@ -2066,20 +2089,12 @@ boundary detail but many more nodes and a slower run.</source>
 既定は 1（軽度）。3 は重度で、境界の細部は精細になりますが節点が大幅に増え実行が遅くなります。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="483"/>
         <source>Refinement Level</source>
         <translation>細分化レベル</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="575"/>
-        <source>NCC search half-width (pixels) around each node for the
-left-to-right stereo match. Set larger than the largest
-expected stereo disparity.</source>
-        <translation>左→右ステレオマッチングで各ノード周りに取る NCC 探索半幅（ピクセル）。
-想定される最大の視差より大きく設定してください。</translation>
-    </message>
-    <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="580"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="603"/>
         <source>Half-width (pixels) of the temporal FFT integer search that seeds
 each per-frame match. Set comfortably larger than the expected
 inter-frame motion; with Auto-expand on (default) the engine can
@@ -2090,7 +2105,7 @@ still grow the search past this on a boundary-clipped peak.</source>
 値を超えて広げることができます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="596"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="619"/>
         <source>Current images: the engine starts the FFT search clamped to
 {0} px (max(10, min(H, W) / 4 - subset)); Auto-expand can grow
 it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
@@ -2099,7 +2114,7 @@ it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
 されると、自動拡大により {1} px（max(32, min(H, W) / 2)）まで拡大できます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="618"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Inactive with the current Initial Guess / Tracking Mode: the
 temporal FFT runs only when Initial Guess = FFT, or at reference
 switches in Incremental mode; in Accumulative + Starting Point /
@@ -2110,19 +2125,19 @@ Previous frame no FFT runs, so this control has no effect.</source>
 コントロールは効果がありません。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="592"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="615"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>現在の画像では {0} px を超える値にしても探索範囲は広がりません
 （探索ウィンドウは画像境界でクリップされます）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="267"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="268"/>
         <source>Extra filters (correlation, outliers)</source>
         <translation>追加フィルター（相関・外れ値）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="270"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="271"/>
         <source>Post-run filters: drop points whose correlation (ZNSSD),
 reprojection error or 3D-outlier distance is too poor.
 Default off (keep every tracked point); enable for noisy
@@ -2135,37 +2150,48 @@ reports how many points each filter removed.</source>
 各フィルターが除外した点の数はログに表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="634"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="597"/>
+        <source>How far (pixels) the left-to-right stereo match searches around
+each node&apos;s expected position: along the epipolar line, or in a
+square window when the Epipolar Band is off. Set it larger than
+the error expected in that position.</source>
+        <translation>左右ステレオ対応が各節点の予想位置の周りを探索する距離
+（画素）：エピポーラ線に沿って探索し、エピポーラ帯がオフの
+ときは正方形ウィンドウで探索します。その予想位置の誤差より
+大きく設定してください。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="657"/>
         <source>No images found in {0}</source>
         <translation>{0} に画像が見つかりません</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="642"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
         <source>left camera</source>
         <translation>左カメラ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="642"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
         <source>right camera</source>
         <translation>右カメラ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="645"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="668"/>
         <source>This folder holds both cameras ({0}): using its {1} images for the {2}</source>
         <translation>このフォルダーには両方のカメラの画像があります（{0}）：{2}には {1} 枚を使います</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="656"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="679"/>
         <source>{0}: {1} images from {2}</source>
         <translation>{0}：{2} から画像 {1} 枚</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="692"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="715"/>
         <source>Paired: {0} frames per camera</source>
         <translation>ペアリング済み：各カメラ {0} フレーム</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="698"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="721"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>不一致：左 {0} フレーム、右 {1} フレーム</translation>
     </message>

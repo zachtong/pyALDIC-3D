@@ -68,7 +68,7 @@ def test_config_defaults_and_frozen():
     cfg = CorrespondenceConfig()
     assert cfg.strategy == "track_both"
     assert cfg.stereo_solver == "local_only"
-    assert cfg.epipolar_seed is True
+    assert cfg.stereo_band_px == 3.0
     assert isinstance(cfg.quality, QualityGate)
     with pytest.raises(AttributeError):
         cfg.strategy = "other"  # type: ignore[misc]

@@ -208,7 +208,9 @@ class CorrespondenceConfig:
     schedule_L: FrameSchedule | None = None   # None → derive from reference_mode
     schedule_R: FrameSchedule | None = None   # track_both only
     stereo_solver: Literal["local_only", "full_aldic"] = "local_only"
-    epipolar_seed: bool = True                # bound FFT search along epipolar band
+    stereo_band_px: float = 3.0               # frame-1 NCC seed search: epipolar band
+                                              # half-width (px); 0 = square window
+                                              # (was the never-wired epipolar_seed flag)
     disparity_offset: tuple[float, float] | None = None  # coarse prior, big baselines
     refresh_interval: int | None = None       # adaptive: periodic re-anchor
     quality: QualityGate = QualityGate()      # znssd_max, reproj_max_px, min_valid_frac

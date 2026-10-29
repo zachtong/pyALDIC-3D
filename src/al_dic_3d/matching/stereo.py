@@ -6,6 +6,12 @@ one with an integer NCC disparity (``cv2.matchTemplate`` TM_CCOEFF_NORMED,
 honoring a coarse ``disparity_offset`` prior for wide baselines), then refine to
 sub-pixel with the scattered-point local IC-GN primitive :func:`match_points`.
 
+With a calibrated rig the integer search runs along each point's epipolar line
+(a band ``band_px`` wide, ``search_radius`` long) instead of a square window:
+the match lies on the line up to the calibration error, and only its position
+along the line depends on the unknown depth. The images are never rectified;
+the line is traced through the full distortion model and linearised locally.
+
 Reference = LEFT image, deformed = RIGHT image; the displacement solved IS the
 left->right disparity, so ``right_pts == left_pts + d`` (01 §E). Invalid points
 propagate as ``NaN`` with ``valid=False``.
@@ -23,6 +29,121 @@ from al_dic_3d.matching.primitives import match_points
 # Points per task of the threaded NCC seed search.
 _NCC_SEED_CHUNK = 256
 
+#: Default half-width (px) of the epipolar band the frame-1 seed search scans;
+#: 0 searches the full square window. A genuine link sits ~0.1 px from its line
+#: on a good calibration; the band is never narrower than the epipolar limit
+#: (:func:`search_band_px`), so a link the limit would accept can be found.
+STEREO_BAND_PX = 3.0
+
+#: (foot points (n, 2), unit tangents (n, 2), half-widths px (n,) or scalar).
+Band = tuple[NDArray[np.float64], NDArray[np.float64], "float | NDArray[np.float64]"]
+
+
+def search_band_px(band_px: float | None, epipolar_max_px: float | None) -> float:
+    """The band half-width to search, or 0 for the square window.
+
+    The band trusts the calibration, so it is off (0) whenever the epipolar
+    check is off; otherwise it is never narrower than the epipolar limit.
+    """
+    band = float(band_px or 0.0)
+    limit = float(epipolar_max_px or 0.0)
+    if not (np.isfinite(band) and np.isfinite(limit)) or band <= 0 or limit <= 0:
+        return 0.0
+    return max(band, limit)
+
+
+def epipolar_line_frames(
+    rig,
+    left_pts: NDArray[np.float64],
+    centres: NDArray[np.float64],
+    cam_left: str = "L",
+    cam_right: str = "R",
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Each left point's right-image epipolar line, linearised near its search centre.
+
+    Returns ``(foot, tangent)``: the point of the epipolar curve (raw pixels,
+    full distortion model) at the depth that best explains ``centres``, and the
+    curve's unit tangent there. Rows are NaN where a point or centre is not
+    finite or the best depth is not in front of the camera.
+    """
+    foot, tangent, _ = _line_frames(rig, left_pts, centres, cam_left, cam_right, search=None)
+    return foot, tangent
+
+
+def epipolar_band(
+    rig,
+    left_pts: NDArray[np.float64],
+    centres: NDArray[np.float64],
+    search: int,
+    band_px: float,
+    cam_left: str = "L",
+    cam_right: str = "R",
+) -> Band:
+    """The band the seed search scans for each point (see :func:`_ncc_seed`).
+
+    The straight band along the tangent is widened, point by point, by how far
+    the true (distorted) epipolar curve bows away from that tangent within
+    ``search`` px of the foot, so a strongly distorted lens and a long search
+    keep the curve inside the band.
+    """
+    foot, tangent, bow = _line_frames(rig, left_pts, centres, cam_left, cam_right, search=search)
+    return foot, tangent, float(band_px) + np.nan_to_num(bow, nan=0.0)
+
+
+def _line_frames(rig, left_pts, centres, cam_left, cam_right, *, search):
+    """``(foot, tangent, bow)``; ``bow`` (n,) is 0 without ``search``."""
+    from al_dic_3d.calibration import project_points, undistort_points
+
+    pl = np.asarray(left_pts, dtype=np.float64).reshape(-1, 2)
+    pc = np.asarray(centres, dtype=np.float64).reshape(-1, 2)
+    n = pl.shape[0]
+    foot = np.full((n, 2), np.nan)
+    tangent = np.full((n, 2), np.nan)
+    bow = np.zeros(n)
+    ok = np.isfinite(pl).all(axis=1) & np.isfinite(pc).all(axis=1)
+    if not ok.any():
+        return foot, tangent, bow
+    intr_l, intr_r = rig.cameras[cam_left], rig.cameras[cam_right]
+    R_l, T_l = rig.pose(cam_left)
+    R_r, T_r = rig.pose(cam_right)
+    R = R_r @ R_l.T  # X_R = R X_L + T
+    T = T_r - R @ T_l
+    m = int(ok.sum())
+    ray = np.column_stack([undistort_points(pl[ok], intr_l), np.ones(m)]) @ R.T
+    xr = undistort_points(pc[ok], intr_r)
+    # Depth along the left ray whose right projection is nearest the centre:
+    # (R x_L lam + T)_xy - x_R (R x_L lam + T)_z = 0, solved in least squares.
+    a = ray[:, :2] - xr * ray[:, 2:3]
+    b = T[None, :2] - xr * T[2]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        lam = -(a * b).sum(axis=1) / (a * a).sum(axis=1)
+
+    def project(scale) -> NDArray[np.float64]:
+        pts = (lam * scale)[:, None] * ray + T[None, :]
+        return project_points(pts, intr_r, np.eye(3), np.zeros(3))
+
+    good = np.isfinite(lam) & (lam > 0)
+    step = project(1.0 + 1e-3) - project(1.0 - 1e-3)
+    norm = np.linalg.norm(step, axis=1, keepdims=True)
+    good &= np.isfinite(norm[:, 0]) & (norm[:, 0] > 0)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        t = step / norm
+    f = project(1.0)
+    idx = np.flatnonzero(ok)
+    foot[idx[good]] = f[good]
+    tangent[idx[good]] = t[good]
+    if search:
+        # Depth change that moves the projection ~search px, then the distance
+        # of the curve's points there from the tangent line through the foot.
+        with np.errstate(invalid="ignore", divide="ignore"):
+            ds = np.clip(float(search) * 2e-3 / norm[:, 0], 0.0, 0.9)
+        dev = np.zeros(m)
+        for sign in (-1.0, 1.0):
+            rel = project(1.0 + sign * ds) - f
+            dev = np.fmax(dev, np.abs(rel[:, 0] * t[:, 1] - rel[:, 1] * t[:, 0]))
+        bow[idx[good]] = dev[good]
+    return foot, tangent, bow
+
 
 def _ncc_seed(
     left: NDArray[np.float64],
@@ -31,6 +152,7 @@ def _ncc_seed(
     offset: tuple[float, float] | NDArray[np.float64],
     search: int,
     half: int,
+    band: Band | None = None,
 ) -> tuple[NDArray[np.float64], NDArray[np.bool_]]:
     """Per-point integer disparity via local NCC template matching.
 
@@ -38,9 +160,12 @@ def _ncc_seed(
     inside a ``+/- search`` window of ``right`` centered at ``round(p + offset)``.
     ``offset`` is one ``(dx, dy)`` for every point, or an ``(n, 2)`` array of
     per-point centres (the automatic disparity prior; non-finite rows centre on
-    zero disparity). Returns ``(seed (n,2), ok (n,))`` — the integer
-    ``[du, dv]`` seed and whether the template/search windows fit inside both
-    images.
+    zero disparity). With ``band = (foot, tangent, width)`` only the positions
+    within ``width`` px (one value, or one per point) of the point's epipolar
+    line and ``search`` px along it of ``foot`` are candidates
+    (:func:`epipolar_band`). Returns
+    ``(seed (n,2), ok (n,))`` — the integer ``[du, dv]`` seed and whether the
+    template and search windows fit inside both images.
     """
     import cv2
 
@@ -59,6 +184,7 @@ def _ncc_seed(
     side = 2 * half + 1  # template edge
     seed = np.zeros((n, 2), dtype=np.float64)
     ok = np.zeros(n, dtype=bool)
+    geo = None if band is None else _BandGeometry(band, search, half, rf.shape)
 
     def one(i: int) -> None:
         x, y = points[i]
@@ -69,6 +195,13 @@ def _ncc_seed(
         if xi - half < 0 or yi - half < 0 or xi + half >= wL or yi + half >= hL:
             return
         tmpl = lf[yi - half : yi + half + 1, xi - half : xi + half + 1]
+
+        if geo is not None and geo.usable[i]:
+            hit = geo.peak(i, rf, tmpl)
+            if hit is not None:
+                seed[i] = (hit[0] - x, hit[1] - y)
+                ok[i] = True
+            return
 
         # Search window in the RIGHT image, centered at round(p + offset) and
         # CLAMPED to image bounds (asymmetric near edges, like seed_single_point_fft)
@@ -116,6 +249,68 @@ def _ncc_seed(
     return seed, ok
 
 
+class _BandGeometry:
+    """Every point's band, laid out once (vectorised) for the per-point search.
+
+    A band is the segment ``foot ± search·t`` widened by ``width`` px to both
+    sides. Its pixel box (template centres that fit in the image) is matched in
+    one ``cv2.matchTemplate`` call; for a slanted band the NCC map is then masked
+    to the band. A band within half a pixel of its box (the usual side-by-side or
+    stacked rig, whose lines run nearly along the image axes) needs no mask.
+    """
+
+    def __init__(self, band: Band, search: int, half: int, shape: tuple[int, int]) -> None:
+        foot, tangent, width = band
+        h, w = shape
+        self.usable = np.isfinite(foot).all(axis=1) & np.isfinite(tangent).all(axis=1)
+        f = np.where(self.usable[:, None], foot, 0.0)
+        t = np.where(self.usable[:, None], tangent, np.array([1.0, 0.0]))
+        along = float(search) * t
+        widths = np.broadcast_to(np.asarray(width, dtype=np.float64), (t.shape[0],))
+        across = widths[:, None] * np.column_stack([-t[:, 1], t[:, 0]])
+        corners = np.stack(
+            [f - along - across, f + along - across, f + along + across, f - along + across], axis=1
+        )
+        self.x0 = np.maximum(half, np.floor(corners[..., 0].min(axis=1))).astype(np.int64)
+        self.x1 = np.minimum(w - 1 - half, np.ceil(corners[..., 0].max(axis=1))).astype(np.int64)
+        self.y0 = np.maximum(half, np.floor(corners[..., 1].min(axis=1))).astype(np.int64)
+        self.y1 = np.minimum(h - 1 - half, np.ceil(corners[..., 1].max(axis=1))).astype(np.int64)
+        origin = np.stack([self.x0, self.y0], axis=1)[:, None, :]
+        # Outlines in the NCC map's frame, 1/16 px precision (cv2 shift=4).
+        self.quads = np.round((corners - origin) * 16).astype(np.int32)
+        self.ends = np.round((np.stack([f - along, f + along], axis=1) - origin) * 16).astype(
+            np.int32
+        )
+        self.boxed = float(search) * np.minimum(np.abs(t[:, 0]), np.abs(t[:, 1])) <= 0.5
+        self.half = int(half)
+
+    def peak(
+        self, i: int, rf: NDArray[np.float32], tmpl: NDArray[np.float32]
+    ) -> tuple[int, int] | None:
+        """Template-centre pixel of the best NCC inside band ``i``, or None if none fits."""
+        import cv2
+
+        x0, x1, y0, y1 = int(self.x0[i]), int(self.x1[i]), int(self.y0[i]), int(self.y1[i])
+        if x1 < x0 or y1 < y0:
+            return None
+        hf = self.half
+        ncc = cv2.matchTemplate(
+            rf[y0 - hf : y1 + hf + 1, x0 - hf : x1 + hf + 1], tmpl, cv2.TM_CCOEFF_NORMED
+        )
+        if self.boxed[i]:
+            _, _, _, (col, row) = cv2.minMaxLoc(ncc)
+        else:
+            allowed = np.zeros(ncc.shape, dtype=np.uint8)
+            cv2.fillConvexPoly(allowed, self.quads[i], 1, cv2.LINE_8, 4)
+            # The line itself, so that a band thinner than a pixel keeps candidates.
+            a, b = self.ends[i]
+            cv2.line(allowed, (int(a[0]), int(a[1])), (int(b[0]), int(b[1])), 1, 1, cv2.LINE_8, 4)
+            _, _, _, (col, row) = cv2.minMaxLoc(ncc, mask=allowed)
+            if col < 0:  # the band lies wholly off the image
+                return None
+        return x0 + col, y0 + row
+
+
 def stereo_match_pair(
     left: NDArray[np.float64],
     right: NDArray[np.float64],
@@ -127,6 +322,8 @@ def stereo_match_pair(
     tol: float = 1e-3,
     frame_idx: int = 0,
     seed_u0: NDArray[np.float64] | None = None,
+    rig=None,
+    band_px: float = 0.0,
 ) -> DisparityField:
     """Match reference left points into the right image (frame-1 stereo).
 
@@ -140,7 +337,8 @@ def stereo_match_pair(
         disparity_offset: coarse ``(dx, dy)`` prior recentering the NCC search
             (for large baselines), or an ``(n, 2)`` per-point centre (see
             :mod:`al_dic_3d.matching.disparity_prior`). ``None`` -> zero offset.
-        search_radius: NCC half-window (pixels) around the (offset) center.
+        search_radius: NCC half-window (pixels) around the (offset) center; with
+            a band, the half-length searched along the epipolar line.
         tol: IC-GN convergence tolerance (``1e-3``, matching StereoMatch_STAQ).
         frame_idx: frame this disparity belongs to (``0`` for the frame-1 match).
         seed_u0: optional ``(n, 2)`` per-point disparity prior from multi-seed
@@ -148,6 +346,10 @@ def stereo_match_pair(
             integer NCC seed for that point (a strong, spatially-varying prior
             for wide baselines); NaN rows keep the per-point NCC seed. ``None``
             (the default, single-seed / FFT path) is byte-identical to before.
+        rig, band_px: with a calibrated ``rig`` and ``band_px > 0`` the NCC
+            search covers only the positions within ``band_px`` of each point's
+            epipolar line (see :func:`search_band_px` for the width to pass);
+            otherwise the square window.
 
     Returns:
         A :class:`DisparityField` with ``left_pts``, disparity ``d`` (``right_pts
@@ -160,8 +362,16 @@ def stereo_match_pair(
     half = int(para.winsize) // 2
     offset = (0.0, 0.0) if disparity_offset is None else disparity_offset
 
-    # (1) integer NCC seed per point (spatially-varying disparity prior).
-    seed, seed_ok = _ncc_seed(left, right, pts, offset, int(search_radius), half)
+    # (1) integer NCC seed per point (spatially-varying disparity prior), along
+    # the epipolar line when the rig is known.
+    band = None
+    if rig is not None and band_px and band_px > 0:
+        off = np.asarray(offset, dtype=np.float64)
+        if off.ndim == 1:
+            off = np.tile(off.reshape(2), (pts.shape[0], 1))
+        off = np.where(np.isfinite(off), off, 0.0)
+        band = epipolar_band(rig, pts, pts + off, int(search_radius), float(band_px))
+    seed, seed_ok = _ncc_seed(left, right, pts, offset, int(search_radius), half, band=band)
 
     # (1b) override with the propagated per-point disparity where it exists — a
     # far stronger prior than the recentred NCC search on wide-baseline gradients.

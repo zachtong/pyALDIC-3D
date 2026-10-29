@@ -73,6 +73,7 @@ _DRAFT_PARAM_FIELDS = (
     "winstepsize",
     "winsize_min",
     "stereo_search",
+    "stereo_band_px",
     "fft_search",
     "use_global_step",
     "admm_max_iter",

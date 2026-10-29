@@ -4959,8 +4959,7 @@ _S_PLACE_TIP = (
     "frame 1 to ADD a point; right-click removes the nearest; Esc exits."
 )
 _S_WRONG_VIEW = (
-    "Starting points are placed on the LEFT camera, frame 1 — "
-    "switch there to add a point"
+    "Starting points are placed on the LEFT camera, frame 1 — switch there to add a point"
 )
 
 _BATCH_S: dict[str, dict[str, str]] = {
@@ -5127,6 +5126,10 @@ def _load_batch_file(name: str) -> dict[str, dict[str, str]]:
 
 # Calibration diagnostics (WP6 of the 2026-09-14 calibration brief).
 for _loc, _entries in _load_batch_file("i18n_batch_calib.py").items():
+    TRANSLATIONS[_loc].update(_entries)
+
+# Epipolar-band stereo search (the Epipolar Band setting).
+for _loc, _entries in _load_batch_file("i18n_batch_epipolar.py").items():
     TRANSLATIONS[_loc].update(_entries)
 
 

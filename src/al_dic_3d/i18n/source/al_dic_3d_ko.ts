@@ -1232,122 +1232,122 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>ExportDialog</name>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="139"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="140"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="146"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="147"/>
         <source>OUTPUT FOLDER</source>
         <translation>출력 폴더</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="149"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="150"/>
         <source>Select output folder…</source>
         <translation>출력 폴더 선택…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="151"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="152"/>
         <source>Browse…</source>
         <translation>찾아보기…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="152"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="153"/>
         <source>Choose the folder all exports are written into</source>
         <translation>모든 내보내기가 저장될 폴더를 선택합니다</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="155"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="156"/>
         <source>Open Folder</source>
         <translation>폴더 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="156"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="157"/>
         <source>Open the output folder in the file explorer</source>
         <translation>출력 폴더를 파일 탐색기에서 엽니다</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="168"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="169"/>
         <source>Data</source>
         <translation>데이터</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="169"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="170"/>
         <source>Images</source>
         <translation>이미지</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="170"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="171"/>
         <source>Animation</source>
         <translation>애니메이션</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="171"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="172"/>
         <source>Preview &amp; Colorbar</source>
         <translation>미리보기 및 컬러바</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="172"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="173"/>
         <source>3D View</source>
         <translation>3D 보기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="176"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="177"/>
         <source>Numeric results: field-selective NPZ / MAT / CSV tables plus PLY / VTU meshes for external tools.</source>
         <translation>수치 결과: 필드를 선택할 수 있는 NPZ / MAT / CSV 테이블과 외부 도구용 PLY / VTU 메시.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="180"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="181"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
         <translation>카메라별 필드 오버레이를 프레임당 한 장의 PNG 이미지로 렌더링합니다('미리보기와 컬러바' 스타일 사용).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="185"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
         <translation>프레임 전반의 필드 오버레이 GIF / MP4 애니메이션('미리보기와 컬러바' 스타일 사용).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="188"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="189"/>
         <source>WYSIWYG style source: the colorbar and margins configured here are used by every Images / Animation export.</source>
         <translation>WYSIWYG 스타일 소스: 여기서 설정한 컬러바와 여백이 모든 이미지/애니메이션 내보내기에 사용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="461"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
         <source>Export Running</source>
         <translation>내보내기 진행 중</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="463"/>
         <source>An export is still running — cancel it and close?</source>
         <translation>내보내기가 아직 실행 중입니다 — 취소하고 닫을까요?</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="465"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
         <source>Yes</source>
         <translation>예</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="467"/>
         <source>No</source>
         <translation>아니요</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="498"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="499"/>
         <source>Folder does not exist: {0}</source>
         <translation>폴더가 존재하지 않습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="204"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="205"/>
         <source>Close</source>
         <translation>닫기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="192"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="193"/>
         <source>Offscreen renders of the 3D surface as images, a deforming animation or a turntable, from your current 3D view.</source>
         <translation>현재 3D 뷰의 시점으로 3D 표면을 오프스크린 렌더링하여 이미지, 변형 애니메이션 또는 턴테이블로 내보냅니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="485"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="486"/>
         <source>Choose output folder</source>
         <translation>출력 폴더 선택</translation>
     </message>
@@ -1852,72 +1852,72 @@ frames.</source>
 <context>
     <name>LeftSidebar3D</name>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="82"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="83"/>
         <source>IMAGES</source>
         <translation>이미지</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="89"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="90"/>
         <source>Drop LEFT camera
 folder or click</source>
         <translation>왼쪽 카메라 폴더를
 끌어놓거나 클릭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="90"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="91"/>
         <source>Drop RIGHT camera
 folder or click</source>
         <translation>오른쪽 카메라 폴더를
 끌어놓거나 클릭</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="95"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="96"/>
         <source>Natural Sort (1, 2, …, 10)</source>
         <translation>자연 정렬 (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="98"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="99"/>
         <source>Sort file names numerically (img2 before img10). Default on; turn off for strict alphabetical order. Applies to the next folder load.</source>
         <translation>파일 이름을 숫자 순으로 정렬합니다(img2가 img10보다 앞). 기본 켜짐; 끄면 엄격한 알파벳 순입니다. 다음 폴더 불러오기부터 적용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="116"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="687"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="117"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="710"/>
         <source>No images loaded</source>
         <translation>이미지가 로드되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="142"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="143"/>
         <source>CALIBRATION</source>
         <translation>보정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="146"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="147"/>
         <source>WORKFLOW TYPE</source>
         <translation>워크플로 유형</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="153"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="154"/>
         <source>INITIAL GUESS</source>
         <translation>초기 추정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="157"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="158"/>
         <source>REGION OF INTEREST</source>
         <translation>관심 영역</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="161"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="162"/>
         <source>PARAMETERS</source>
         <translation>매개변수</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="165"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="166"/>
         <source>ADVANCED</source>
         <translation>고급 설정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="231"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="232"/>
         <source>Incremental: each frame is compared to the previous reference frame.
 Suitable for large accumulated deformation, required for large rotations.
 
@@ -1930,12 +1930,12 @@ Accurate for small, monotonic deformation only.</source>
 작고 단조로운 변형에만 정확합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="249"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="250"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="251"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="252"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1953,23 +1953,23 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
 노이즈 이미지, 변형률 정확도가 중요한 경우에 적합합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="261"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="262"/>
         <source>Solver</source>
         <translation>솔버</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="335"/>
-        <location filename="../../gui/panels/left_sidebar.py" line="359"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="336"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="360"/>
         <source>bbox: not set</source>
         <translation>경계 상자: 미설정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="362"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="363"/>
         <source>bbox: {0}–{1}, {2}–{3} px</source>
         <translation>경계 상자: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="382"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="383"/>
         <source>IC-GN subset window size in pixels (odd number). Default 33.
 Larger = more robust on sparse speckle, smoother fields;
 smaller = finer spatial detail but noisier. The subset must
@@ -1979,32 +1979,32 @@ span several speckles.</source>
 서브셋은 여러 스페클을 포함해야 합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="226"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="227"/>
         <source>Accumulative</source>
         <translation>누적형</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="227"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="228"/>
         <source>Incremental</source>
         <translation>증분형</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="238"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="239"/>
         <source>Tracking Mode</source>
         <translation>추적 모드</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="317"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="318"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>왼쪽 카메라 1번 프레임에 그립니다 — 이후 프레임과 오른쪽 카메라는 여기서 유도됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="388"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="389"/>
         <source>Subset Size</source>
         <translation>서브셋 크기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="396"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="397"/>
         <source>Node spacing in pixels (power of 2). Default 16. Smaller =
 denser measurement grid and longer runs; larger = faster but
 coarser fields. Typically ¼–½ of the Subset Size.</source>
@@ -2012,32 +2012,55 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
 클수록 빠르지만 필드가 거칠어집니다. 보통 서브셋 크기의 1/4~1/2.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="401"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="402"/>
         <source>Subset Step</source>
         <translation>서브셋 간격</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="407"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="408"/>
         <source>Stereo Search</source>
         <translation>스테레오 탐색</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="417"/>
+        <source>off</source>
+        <translation>끔</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 3 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>에피폴라 밴드: 좌우 매칭은 캘리브레이션이 각 노드에 대해
+예측한 선에서 이 픽셀 수 이내만, 선을 따라서는 스테레오
+탐색 거리만큼만 탐색하므로 선 밖의 비슷한 무늬를 잘못
+고르지 않습니다. 기본값 3 px, 에피폴라 한계보다 좁아지지
+않으며, 0이면 정사각형 창에서 탐색합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="427"/>
+        <source>Epipolar Band</source>
+        <translation>에피폴라 밴드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="440"/>
         <source>Temporal Search</source>
         <translation>시간 탐색</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="426"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
         <source>Mesh refinement</source>
         <translation>메시 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="433"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="453"/>
         <source>Refine at mask boundaries (holes)</source>
         <translation>마스크 경계(구멍)에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="436"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="456"/>
         <source>Quadtree-subdivide mesh elements crossing interior mask
 holes so the mesh hugs the hole edges. Default off (uniform
 grid); enable when the ROI mask has cut-outs whose rims you
@@ -2046,12 +2069,12 @@ care about.</source>
 기본 꺼짐(균일 격자); ROI 마스크에 가장자리가 중요한 구멍이 있을 때 켜세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="443"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
         <source>Refine at ROI edges</source>
         <translation>ROI 가장자리에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="446"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="466"/>
         <source>Quadtree-subdivide mesh elements along the outer ROI
 boundary. Default off; enable for curved / irregular ROI
 outlines where the uniform grid staircases.</source>
@@ -2059,7 +2082,7 @@ outlines where the uniform grid staircases.</source>
 기본 꺼짐; ROI 윤곽이 곡선/불규칙하여 균일 격자가 계단 모양이 될 때 켜세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="458"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="478"/>
         <source>How aggressively refined elements shrink: the minimum element
 is step / 2^level. Default 1 (light); 3 is heavy — finer
 boundary detail but many more nodes and a slower run.</source>
@@ -2067,20 +2090,12 @@ boundary detail but many more nodes and a slower run.</source>
 기본 1(가벼움); 3은 강함 — 경계 세부가 더 정밀해지지만 노드가 크게 늘고 실행이 느려집니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="463"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="483"/>
         <source>Refinement Level</source>
         <translation>세분화 레벨</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="575"/>
-        <source>NCC search half-width (pixels) around each node for the
-left-to-right stereo match. Set larger than the largest
-expected stereo disparity.</source>
-        <translation>좌→우 스테레오 매칭에서 각 노드 주위의 NCC 탐색 반폭(픽셀).
-예상되는 최대 시차보다 크게 설정하십시오.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="580"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="603"/>
         <source>Half-width (pixels) of the temporal FFT integer search that seeds
 each per-frame match. Set comfortably larger than the expected
 inter-frame motion; with Auto-expand on (default) the engine can
@@ -2091,7 +2106,7 @@ still grow the search past this on a boundary-clipped peak.</source>
 이 값 이상으로 넓힐 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="596"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="619"/>
         <source>Current images: the engine starts the FFT search clamped to
 {0} px (max(10, min(H, W) / 4 - subset)); Auto-expand can grow
 it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
@@ -2100,7 +2115,7 @@ it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
 자동 확장이 이를 {1} px(max(32, min(H, W) / 2))까지 늘릴 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="618"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Inactive with the current Initial Guess / Tracking Mode: the
 temporal FFT runs only when Initial Guess = FFT, or at reference
 switches in Incremental mode; in Accumulative + Starting Point /
@@ -2111,19 +2126,19 @@ Previous frame no FFT runs, so this control has no effect.</source>
 이 컨트롤은 효과가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="592"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="615"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>현재 이미지에서는 {0} px를 초과해도 탐색이 더 넓어지지 않습니다
 (탐색 창이 이미지 경계에서 잘립니다).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="267"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="268"/>
         <source>Extra filters (correlation, outliers)</source>
         <translation>추가 필터(상관, 이상치)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="270"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="271"/>
         <source>Post-run filters: drop points whose correlation (ZNSSD),
 reprojection error or 3D-outlier distance is too poor.
 Default off (keep every tracked point); enable for noisy
@@ -2136,37 +2151,48 @@ reports how many points each filter removed.</source>
 각 필터가 제거한 점의 수는 로그에 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="634"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="597"/>
+        <source>How far (pixels) the left-to-right stereo match searches around
+each node&apos;s expected position: along the epipolar line, or in a
+square window when the Epipolar Band is off. Set it larger than
+the error expected in that position.</source>
+        <translation>좌우 스테레오 매칭이 각 노드의 예상 위치 주변을 탐색하는
+거리(픽셀): 에피폴라 선을 따라 탐색하며, 에피폴라 밴드가
+꺼져 있으면 정사각형 창에서 탐색합니다. 그 위치의 예상
+오차보다 크게 설정하십시오.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="657"/>
         <source>No images found in {0}</source>
         <translation>{0}에서 이미지를 찾을 수 없습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="642"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
         <source>left camera</source>
         <translation>왼쪽 카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="642"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
         <source>right camera</source>
         <translation>오른쪽 카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="645"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="668"/>
         <source>This folder holds both cameras ({0}): using its {1} images for the {2}</source>
         <translation>이 폴더에는 두 카메라의 이미지가 모두 있습니다({0}). {2}에 이미지 {1}개를 사용합니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="656"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="679"/>
         <source>{0}: {1} images from {2}</source>
         <translation>{0}: {2}에서 이미지 {1}개</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="692"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="715"/>
         <source>Paired: {0} frames per camera</source>
         <translation>페어링됨: 카메라당 {0} 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="698"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="721"/>
         <source>Mismatch: {0} left vs {1} right</source>
         <translation>불일치: 왼쪽 {0} / 오른쪽 {1} 프레임</translation>
     </message>

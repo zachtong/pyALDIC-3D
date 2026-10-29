@@ -13,6 +13,7 @@ glue, not one of the mode-/strategy-agnostic downstream compute modules.
 from __future__ import annotations
 
 import glob
+import math
 import os
 import re
 from collections.abc import Callable, Sequence
@@ -57,6 +58,9 @@ if TYPE_CHECKING:
     from al_dic.core.data_structures import DICMesh
 
 ProgressFn = Callable[[float, str], None]
+
+#: Widest epipolar band ``[matching].stereo_band_px`` accepts (px).
+_MAX_BAND_PX = 1000.0
 
 
 @dataclass(frozen=True)
@@ -122,6 +126,9 @@ class RunConfig:
     # links above this ZNSSD or further than this from their epipolar line (px).
     stereo_znssd_max: float = 0.6
     stereo_epipolar_max_px: float = 2.0
+    # Frame-1 stereo seed search: half-width (px) of the epipolar band scanned
+    # along each point's line, ``stereo_search`` long; 0 = square window.
+    stereo_band_px: float = 3.0
     # P3.6 opt-in: track both cameras concurrently (track_both strategy).
     # ~2x faster on the numba/numpy-heavy engine, doubles peak memory.
     # TOML: [matching].parallel_cameras. Results are identical either way.
@@ -221,6 +228,12 @@ def load_config(path: str | Path) -> RunConfig:
     # always see seed_points[0] as seed_point.
     if seed_point is None and seed_points:
         seed_point = seed_points[0]
+    band_px = float(match.get("stereo_band_px", 3.0))
+    if not (math.isfinite(band_px) and 0.0 <= band_px <= _MAX_BAND_PX):
+        raise ValueError(
+            f"[matching].stereo_band_px must be between 0 and {_MAX_BAND_PX:.0f} px, "
+            f"got {band_px!r}"
+        )
     seq = table.get("sequence", {})
     out = table.get("output", {})
     qual = table.get("quality", {})
@@ -260,6 +273,7 @@ def load_config(path: str | Path) -> RunConfig:
         temporal_gate_znssd=float(match.get("temporal_gate_znssd", 1.0)),
         stereo_znssd_max=float(match.get("stereo_znssd_max", 0.6)),
         stereo_epipolar_max_px=float(match.get("stereo_epipolar_max_px", 2.0)),
+        stereo_band_px=band_px,
         parallel_cameras=bool(match.get("parallel_cameras", False)),
         refine_inner=bool(match.get("refine_inner", False)),
         refine_outer=bool(match.get("refine_outer", False)),
@@ -639,6 +653,7 @@ def run_pipeline(
         seed_points=tuple(getattr(cfg, "seed_points", ()) or ()),
         stereo_znssd_max=float(cfg.stereo_znssd_max),
         stereo_epipolar_max_px=float(cfg.stereo_epipolar_max_px),
+        stereo_band_px=float(cfg.stereo_band_px),
         complete_partial_prefix=bool(complete_partial),
     )
     cs = strategy.compute(seq, rig, mesh_L, corr_cfg, progress=progress, stop=stop)
@@ -757,6 +772,7 @@ def run_pipeline(
             "temporal_gate_znssd": float(cfg.temporal_gate_znssd),
             "stereo_znssd_max": float(cfg.stereo_znssd_max),
             "stereo_epipolar_max_px": float(cfg.stereo_epipolar_max_px),
+            "stereo_band_px": float(cfg.stereo_band_px),
             "roi": [int(v) for v in cfg.roi],
         },
         "diagnostics": [dict(r) for r in cs.diagnostics],

@@ -34,7 +34,7 @@ from al_dic_3d.matching.contracts import (
 from al_dic_3d.matching.diagnostics import stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara
 from al_dic_3d.matching.right_roi import right_camera_masks, rim_width
-from al_dic_3d.matching.stereo import accept_field, stereo_match_pair
+from al_dic_3d.matching.stereo import accept_field, search_band_px, stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
     effective_seed_points,
@@ -299,6 +299,8 @@ class TrackBothStrategy:
             disparity_offset=stereo_centre,
             search_radius=self.stereo_search,
             seed_u0=stereo_prior,
+            rig=rig,
+            band_px=search_band_px(cfg.stereo_band_px, cfg.stereo_epipolar_max_px),
         )
         # H4 (fix batch V): converged is not accepted — drop false locks by
         # correlation quality and epipolar consistency before anything is tracked.

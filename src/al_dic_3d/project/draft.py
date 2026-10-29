@@ -95,6 +95,7 @@ class ProjectDraft:
     winstepsize: int = 16
     winsize_min: int = 8
     stereo_search: int = 48
+    stereo_band_px: float = 3.0  # epipolar band half-width (px); 0 = square window
     disparity_offset: tuple[float, float] | None = None
     # Initial guess (F2): the GUI default is "seed" — the user clicks ONE point
     # on the LEFT camera, frame 1 (seed_point); it seeds BOTH the stereo L->R
@@ -151,6 +152,7 @@ class ProjectDraft:
         "winstepsize",
         "winsize_min",
         "stereo_search",
+        "stereo_band_px",
         "disparity_offset",
         "init_guess",
         "seed_point",
@@ -328,6 +330,7 @@ class ProjectDraft:
             winstepsize=self.winstepsize,
             winsize_min=self.winsize_min,
             stereo_search=self.stereo_search,
+            stereo_band_px=float(self.stereo_band_px),
             disparity_offset=self.disparity_offset,
             init_guess=self.init_guess,
             seed_point=self._effective_seed_point(),

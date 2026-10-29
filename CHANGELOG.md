@@ -30,6 +30,19 @@ section for that version (see `docs/RELEASING.md`).
   nodes than before, so their points can move by a few hundredths of a
   millimetre; coverage and accuracy are unchanged on the synthetic tests.
 
+### Added
+
+- **Epipolar band for the frame-1 stereo search.** Each node's left/right match
+  is searched along its epipolar line, within **Epipolar Band** pixels of it
+  (PARAMETERS, default 3 px, never narrower than the Epipolar limit; config
+  `[matching].stereo_band_px`) and **Stereo Search** pixels along it, instead
+  of in a square window. A look-alike patch off the line can no longer be
+  picked, and on Stereo-DIC Challenge 1.0 Sample 3 the seed search takes
+  0.70 s instead of 0.93 s for 25,000 nodes, with the same links. 0 restores
+  the square window; so does turning the Epipolar limit off. The unused
+  `epipolar_seed` field of `CorrespondenceConfig` is replaced by
+  `stereo_band_px`.
+
 ## [1.2.1] — 2026-10-28
 
 1.2.0 shipped without its Windows installer; this release adds it. The

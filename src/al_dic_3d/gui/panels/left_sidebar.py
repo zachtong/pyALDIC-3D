@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 from al_dic.gui.theme import COLORS
 from al_dic.gui.widgets.collapsible_section import CollapsibleSection
+from al_dic.gui.widgets.double_spin import LocaleSafeDoubleSpinBox
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -406,6 +407,25 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
         self._search_spin.setSuffix(" px")
         layout.addLayout(self._param_row(self.tr("Stereo Search"), self._search_spin))
 
+        # Half-width of the epipolar band the stereo seed search scans.
+        self._band_spin = LocaleSafeDoubleSpinBox()
+        self._band_spin.setDecimals(1)
+        self._band_spin.setRange(0.0, 50.0)
+        self._band_spin.setSingleStep(0.5)
+        self._band_spin.setValue(3.0)
+        self._band_spin.setSuffix(" px")
+        self._band_spin.setSpecialValueText(self.tr("off"))
+        self._band_spin.setToolTip(
+            self.tr(
+                "Epipolar band: the left-to-right match is searched only within\n"
+                "this many pixels of the line the calibration predicts for each\n"
+                "node, over the Stereo Search distance along it, so a look-alike\n"
+                "off the line cannot be picked. Default 3 px; never narrower\n"
+                "than the Epipolar limit; 0 searches a square window instead."
+            )
+        )
+        layout.addLayout(self._param_row(self.tr("Epipolar Band"), self._band_spin))
+
         # Temporal FFT seeding half-width: must cover the largest per-frame
         # motion (auto-expand only fires on boundary-clipped peaks, not on the
         # in-bounds noise peaks a decorrelated jump produces). The ⓘ mirrors
@@ -468,6 +488,7 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
         self._subset_spin.valueChanged.connect(self._on_subset_display_changed)
         self._step_combo.currentTextChanged.connect(self._apply_params)
         self._search_spin.valueChanged.connect(self._apply_params)
+        self._band_spin.valueChanged.connect(self._apply_params)
         self._temporal_spin.valueChanged.connect(self._apply_params)
         self._refine_inner_cb.toggled.connect(self._apply_params)
         self._refine_outer_cb.toggled.connect(self._apply_params)
@@ -526,6 +547,7 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
         # Engine invariant: winsize_min <= winstepsize (2D auto-clamps too).
         draft.winsize_min = min(8, draft.winstepsize)
         draft.stereo_search = int(self._search_spin.value())
+        draft.stereo_band_px = float(self._band_spin.value())
         draft.fft_search = int(self._temporal_spin.value())
         draft.fft_auto_expand = self._fft_expand_cb.isChecked()  # Q8
         draft.admm_max_iter = int(self._admm_spin.value())
@@ -572,9 +594,10 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
         The stereo NCC window is clamped at the image borders per point.
         """
         stereo_tip = self.tr(
-            "NCC search half-width (pixels) around each node for the\n"
-            "left-to-right stereo match. Set larger than the largest\n"
-            "expected stereo disparity."
+            "How far (pixels) the left-to-right stereo match searches around\n"
+            "each node's expected position: along the epipolar line, or in a\n"
+            "square window when the Epipolar Band is off. Set it larger than\n"
+            "the error expected in that position."
         )
         temporal_tip = self.tr(
             "Half-width (pixels) of the temporal FFT integer search that seeds\n"
@@ -722,6 +745,7 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
             self._subset_spin,
             self._step_combo,
             self._search_spin,
+            self._band_spin,
             self._temporal_spin,
             self._admm_spin,
             self._parallel_cb,
@@ -749,6 +773,7 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
         draft.winsize_min = min(8, step)  # engine invariant: winsize_min <= step
         self._step_combo.setCurrentText(str(step))
         self._search_spin.setValue(draft.stereo_search)
+        self._band_spin.setValue(float(getattr(draft, "stereo_band_px", 3.0)))
         self._temporal_spin.setValue(draft.fft_search)
         self._admm_spin.setValue(draft.admm_max_iter)
         self._admm_spin.setEnabled(draft.use_global_step)

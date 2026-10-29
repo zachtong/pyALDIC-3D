@@ -34,16 +34,37 @@ nodes = a denser field, but runtime grows quadratically. Config key:
 
 ## Stereo Search
 
-Half-width (in pixels) of the per-node search window of the frame-1 stereo
-match (LEFT to RIGHT). Spinbox range **4–400**, default **48 px**. Config key:
-`[matching].stereo_search = 48`.
+How far (in pixels) the per-node search of the frame-1 stereo match (LEFT to
+RIGHT) reaches from each node's expected position: along the node's epipolar
+line, or in a square window when the Epipolar Band is off. Spinbox range
+**4–400**, default **48 px**. Config key: `[matching].stereo_search = 48`.
 
-It is **not** the largest disparity the match can find. The window is centred
+It is **not** the largest disparity the match can find. The search is centred
 where the disparity is expected: at the match of a placed Starting Point, or,
 without one, at the disparity measured from probe patches over the whole right
-image (see [Initial guess](06-initial-guess.md)). The window only has to cover
-how much the disparity varies around that centre; widen it for strongly curved
-or tilted specimens.
+image (see [Initial guess](06-initial-guess.md)). It only has to cover how much
+the disparity varies around that centre; widen it for strongly curved or tilted
+specimens.
+
+## Epipolar Band
+
+A left point's match lies on its epipolar line in the right image, the line
+the calibration predicts; only its position along the line depends on the
+depth. The per-node search therefore scans a band along that line: **Epipolar
+Band** pixels to each side of it and **Stereo Search** pixels along it. A
+look-alike patch off the line cannot be picked, and with the usual side-by-side
+or stacked cameras, whose lines run nearly along the image rows or columns,
+far fewer positions are compared. Spinbox range **0–50 px**, default **3 px**;
+**0** (*off*) searches the square window instead. Config key:
+`[matching].stereo_band_px = 3.0`.
+
+The band is never narrower than the **Epipolar limit** (see Result checks
+below), so a match the limit would accept can always be found: with a poor
+calibration, raise the Epipolar limit and the band follows. Turning the
+Epipolar limit off also turns the band off, since both trust the calibration.
+The line is traced through the full lens-distortion model and the band widens
+where the distorted line bends away from a straight one; the images are not
+rectified.
 
 ## Temporal Search
 
