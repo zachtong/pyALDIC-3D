@@ -8,7 +8,7 @@ point cloud.
 
 This guide walks through the graphical workflow from left to right, chapter by
 chapter, and documents every control against the shipping code. It documents
-pyALDIC-3D **1.2.x**.
+pyALDIC-3D **1.3.x**.
 
 > **New to pyALDIC-3D?** Start with the
 > [quickstart](../../quickstart/README.md): a real stereo dataset in this

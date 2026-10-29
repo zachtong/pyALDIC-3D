@@ -26,8 +26,8 @@ authors:
     affiliation: The University of Texas at Austin
     orcid: "https://orcid.org/0009-0008-6807-0757"
 license: BSD-3-Clause
-version: 1.2.1
-date-released: "2026-10-28"
+version: 1.3.0
+date-released: "2026-10-29"
 repository-code: "https://github.com/zachtong/pyALDIC-3D"
 url: "https://github.com/zachtong/pyALDIC-3D"
 doi: 10.5281/zenodo.21696564

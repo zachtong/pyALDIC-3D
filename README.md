@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://github.com/zachtong/pyALDIC-3D/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/zachtong/pyALDIC-3D/ci.yml?style=flat-square&label=CI" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/tests-1189-22c55e?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-1241-22c55e?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/Python-3.10+-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/GUI-PySide6-41cd52?style=flat-square" alt="PySide6"/>
   <img src="https://img.shields.io/badge/3D-PyVista%2FVTK-blue?style=flat-square" alt="PyVista"/>
@@ -184,7 +184,7 @@ export.
 ### Eight languages, and a headless CLI
 
 The entire interface is translated into **English, 简体中文, 繁體中文, 日本語, 한국어,
-Deutsch, Français and Español** (788 strings × 7 locales, 100% filled, pseudo-locale
+Deutsch, Français and Español** (791 strings × 7 locales, 100% filled, pseudo-locale
 scan clean). And when you don't want an interface at all, `al-dic-3d run config.toml`
 drives the same pipeline from a TOML file on a headless server — Qt and OpenGL imports
 are lazy, so the compute path never needs a display.
@@ -206,7 +206,7 @@ are lazy, so the compute path never needs a display.
 | **GUI** | <mark>**Built-in desktop**</mark> | Built-in (MATLAB)¹ | Script-driven¹ | Built-in desktop (basic cases)³ | Built-in desktop | Built-in desktop | Built-in (MATLAB)¹ |
 | **Platform** | <mark>**Windows, macOS, Linux**</mark> | MATLAB R2024a+¹ | Windows (only OS tested)¹ | Windows, macOS, Linux | Windows only | Windows only | MATLAB¹ |
 | **Cost / licence** | <mark>**Free · BSD-3 · no MATLAB**</mark> | Free · MIT¹ | Free · Apache-2.0¹ | Free · BSD-3 | Commercial | Commercial | Free · BSD-3¹ |
-| **Latest release**² | <mark>**v1.2.1 (2026)**</mark> | No tagged release | v1.1.0 (2021) | v3.0-beta.8 (2023) | VIC-3D 11 | MatchID 2026.2 | v1.2.2 (2017) |
+| **Latest release**² | <mark>**v1.3.0 (2026)**</mark> | No tagged release | v1.1.0 (2021) | v3.0-beta.8 (2023) | VIC-3D 11 | MatchID 2026.2 | v1.2.2 (2017) |
 | **UI languages** | <mark>**8**</mark> | Not documented | Not documented | Not documented | Not documented | Not documented | Not documented |
 | **Cameras** | 2 (N-camera post-v1) | 2 | **Up to 12+** | ≤ 10 in code, no documented workflow³ | **Up to 16** | **Vendor: no limit** | n/a |
 
@@ -291,7 +291,7 @@ pip install al-dic-3d
 ```
 
 **Windows, no Python:** a self-contained installer
-(`pyALDIC-3D-1.2.1-win64-setup.exe`, ~197 MB — Python, Qt, VTK and all
+(`pyALDIC-3D-1.3.0-win64-setup.exe`, ~197 MB — Python, Qt, VTK and all
 dependencies bundled) is attached to the
 [latest release](https://github.com/zachtong/pyALDIC-3D/releases/latest).
 It installs per-user (no admin prompt) and registers `.aldic3d` files.
@@ -400,7 +400,7 @@ src/al_dic_3d/
 ├── self_test.py    The installation / frozen-bundle check (`self-test`)
 └── cli.py          `al-dic-3d` console script (run · gui · calibrate · demo · self-test)
 
-tests/              123 test files, 1189 tests
+tests/              125 test files, 1241 tests
 quickstart/         A real stereo dataset and a step-by-step first analysis
 tools/marketing/    Generators for every figure in this README (headless, reproducible)
 ```
@@ -415,7 +415,7 @@ and `i18n` may touch Qt or OpenGL.
 <summary><b>Testing</b></summary>
 
 ```bash
-pytest                                   # everything (1189 tests)
+pytest                                   # everything (1241 tests)
 pytest -n auto                           # parallel
 pytest tests/test_parity_gate.py         # the MATLAB-parity gates
 ruff check . && ruff format .
@@ -515,7 +515,7 @@ repository"* button from it), every version is archived on Zenodo under the conc
              pyALDIC platform},
   year    = {2026},
   url     = {https://github.com/zachtong/pyALDIC-3D},
-  version = {1.2.1},
+  version = {1.3.0},
   doi     = {10.5281/zenodo.21696564}
 }
 ```

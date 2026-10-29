@@ -11,6 +11,14 @@ section for that version (see `docs/RELEASING.md`).
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-10-29
+
+The right camera now follows the region of interest drawn on the left one, so a
+region drawn on the left camera alone no longer costs whole frames on a dark
+background, and the left/right match is searched along each point's epipolar
+line. Both came out of verifying the fix for
+[#1](https://github.com/zachtong/pyALDIC-3D/issues/1).
+
 ### Fixed
 
 - **With the region of interest on the left camera only, the right camera
@@ -453,7 +461,8 @@ as a Windows installer on the GitHub release, and archived on Zenodo
   without Python: a per-user install that needs no administrator rights. It is
   not code-signed, so SmartScreen asks for confirmation on first run.
 
-[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.0.2...v1.1.0

@@ -94,7 +94,7 @@ al-dic-3d --version
 prints the name and the installed version, for example:
 
 ```
-al-dic-3d 1.2.1
+al-dic-3d 1.3.0
 ```
 
 To check that an installation works end to end — images and videos in
