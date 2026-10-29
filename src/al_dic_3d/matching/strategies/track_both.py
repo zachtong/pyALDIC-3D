@@ -24,7 +24,6 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
-from numpy.typing import NDArray
 
 from al_dic_3d.matching.contracts import (
     INVALID,
@@ -34,6 +33,7 @@ from al_dic_3d.matching.contracts import (
 )
 from al_dic_3d.matching.diagnostics import stereo_rows, temporal_rows
 from al_dic_3d.matching.primitives import make_dicpara
+from al_dic_3d.matching.right_roi import right_camera_masks, rim_width
 from al_dic_3d.matching.stereo import accept_field, stereo_match_pair
 from al_dic_3d.matching.strategies._common import (
     bbox_roi,
@@ -54,7 +54,6 @@ from al_dic_3d.matching.temporal import (
     finish_track,
     node_spacing,
     note_zero_fill,
-    reference_frame_masks,
     resample_to_points,
     temporal_track,
     track_engine,
@@ -184,47 +183,6 @@ def _track_prefix(frames, mesh, para, n_keep, n_frames, *, masks=None, u0=None, 
         stopped_at_frame=int(n_keep),
         stop_reason=reason or "Computation cancelled by user.",
     )
-
-
-def _derive_right_barrier(
-    mask_left: NDArray[np.float64],
-    coords_left: NDArray[np.float64],
-    right_pts: NDArray[np.float64],
-    mesh_right: DICMesh,
-    out_shape: tuple[int, int],
-) -> NDArray[np.float64] | None:
-    """Warp the LEFT crack barrier into the RIGHT camera (Batch C, C2), or None.
-
-    In the common configuration the user draws the ROI (with its thin crack
-    barrier) on the LEFT camera only, so the right camera would bridge/smooth
-    the crack. The frame-1 stereo correspondence ``coords_left -> right_pts``
-    warps the left mask into right pixel space (reusing
-    :func:`al_dic_3d.viz3d.maskwarp.warp_mask_left_to_right`, the same machinery
-    the renderer uses). The result is returned ONLY when it actually cuts the
-    fresh right grid — i.e. a thin barrier really is present — so a crack-free /
-    plain-ROI run derives nothing and the right track stays byte-identical.
-    """
-    import warnings
-
-    from al_dic_3d.matching.crack_mesh import mask_cuts_mesh
-    from al_dic_3d.viz3d.maskwarp import warp_mask_left_to_right
-
-    try:
-        warped = warp_mask_left_to_right(
-            np.asarray(mask_left, dtype=np.float64) > 0.5, coords_left, right_pts, out_shape
-        )
-    except Exception as exc:  # noqa: BLE001 - warp failure must not kill the run
-        warnings.warn(
-            f"could not warp the left crack barrier into the right camera "
-            f"({type(exc).__name__}: {exc}); the right track is not crack-aware.",
-            UserWarning,
-            stacklevel=2,
-        )
-        return None
-    if warped is None:
-        return None
-    barrier = warped.astype(np.float64)
-    return barrier if mask_cuts_mesh(mesh_right, barrier) else None
 
 
 @register_strategy
@@ -382,8 +340,23 @@ class TrackBothStrategy:
         setup_note(progress, "Setup: right-camera mesh and initial guess")
         valid_rp = np.isfinite(right_pts).all(axis=1)
         roi_R = bbox_roi(right_pts[valid_rp], img_h, img_w, margin=self.winsize)
-        mask_R1 = seq.mask("R", 0)
-        right_masks = mask_stream(seq, "R")
+        # Without masks of its own the right camera takes the left masks
+        # through the frame-1 links (reference frames only, as on the left):
+        # an unmasked bounding-box grid let textureless background nodes
+        # escalate the engine's FFT search until a whole frame failed. The rim
+        # keeps every grid node whose subset reaches the region and the next
+        # node ring, which carry the outermost links. The same warp carries a
+        # left crack barrier, which then cuts mesh_R below.
+        mask_R1, right_masks, right_note = right_camera_masks(
+            seq,
+            coords_L,
+            right_pts,
+            reference_mode=cfg.reference_mode,
+            schedule=cfg.schedule_R,
+            rim_px=rim_width(self.winsize, self.winstepsize),
+        )
+        if right_note:
+            setup_note(progress, f"Setup: {right_note}")
         para_R = make_dicpara(
             img_size=(img_h, img_w),
             roi=roi_R,
@@ -400,23 +373,10 @@ class TrackBothStrategy:
         )
         mesh_R = build_grid_mesh(para_R, img_h, img_w)
         # Batch C item 1 + C2: cut the right camera's external mesh at any thin
-        # crack barrier. When only the LEFT mask carries the barrier (the common
-        # config the runner auto-derives) the right reference mask is None here;
-        # warp the left barrier into the right camera through the frame-1
-        # correspondence so the RIGHT mesh is cut AND the right per-frame masks
-        # feed the engine's crack-aware cumulative composition. Gated on the
-        # warped mask actually cutting the fresh right grid, so crack-free /
-        # plain-ROI runs leave mesh_R and the right mask stream byte-identical.
+        # crack barrier its reference mask carries (warped from the left one
+        # when the user drew the barrier on the left camera only).
         from al_dic_3d.matching.crack_mesh import cut_mesh_at_barriers
 
-        if mask_R1 is None and mask_L1 is not None:
-            warped_R = _derive_right_barrier(mask_L1, coords_L, right_pts, mesh_R, (img_h, img_w))
-            if warped_R is not None:
-                mask_R1 = warped_R
-                # Frame-1 geometry: reference frames only, like the left ROI.
-                right_masks = reference_frame_masks(
-                    warped_R, n_frames, cfg.reference_mode, cfg.schedule_R
-                )
         mesh_R = cut_mesh_at_barriers(mesh_R, mask_R1)
         # The right camera's seeds are the placed left seeds mapped into the
         # right frame (per-seed L->R NCC); the single-seed prior (seed + offset)

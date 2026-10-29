@@ -229,12 +229,12 @@ def test_strain_crack_exclusion_engines_agree():
 # ---------------------------------------------------------------------------
 
 
-def test_c2_derive_right_barrier_warps_left_crack():
+def test_c2_right_roi_carries_a_left_crack_into_the_right_camera():
     """A LEFT-only crack barrier warps into the right camera and cuts mesh_R;
-    a plain rectangular ROI (no thin barrier) derives NOTHING (byte-identity)."""
+    a plain rectangular ROI warps to its footprint without cutting the grid."""
     pytest.importorskip("cv2")
     from al_dic_3d.matching.crack_mesh import mask_cuts_mesh
-    from al_dic_3d.matching.strategies.track_both import _derive_right_barrier
+    from al_dic_3d.matching.right_roi import derive_right_roi
 
     h = w = 240
     para_L = make_dicpara(img_size=(h, w), roi=(48, 168, 48, 168), winstepsize=16)
@@ -251,17 +251,23 @@ def test_c2_derive_right_barrier_warps_left_crack():
     left_mask = np.ones((h, w), dtype=np.float64)
     left_mask[:, xcrack - 1 : xcrack + 2] = 0.0
 
-    barrier = _derive_right_barrier(left_mask, coords_L, right_pts, mesh_R, (h, w))
-    assert barrier is not None, "a warped left crack must cut the fresh right grid"
-    assert mask_cuts_mesh(mesh_R, barrier)
-    masked_cols = np.flatnonzero((barrier < 0.5).any(axis=0))
+    barrier = derive_right_roi(left_mask, coords_L, right_pts, (h, w))
+    assert barrier is not None
+    assert mask_cuts_mesh(mesh_R, barrier), "a warped left crack must cut the fresh right grid"
+    inside = barrier[int(right_pts[:, 1].min()) : int(right_pts[:, 1].max()) + 1]
+    masked_cols = np.flatnonzero(
+        (inside < 0.5).all(axis=0) & (np.arange(w) > right_pts[:, 0].min())
+    )
+    masked_cols = masked_cols[masked_cols < right_pts[:, 0].max()]
     assert masked_cols.size > 0
     assert abs(masked_cols.mean() - (xcrack + disparity)) < 12, "warped crack near xcrack+disparity"
 
-    # A plain rectangular ROI (no interior thin band) -> None -> right unchanged.
+    # A plain rectangular ROI (no interior thin band) maps to its footprint and
+    # does not cut the grid.
     roi_only = np.zeros((h, w), dtype=np.float64)
     roi_only[48:168, 48:168] = 1.0
-    assert _derive_right_barrier(roi_only, coords_L, right_pts, mesh_R, (h, w)) is None
+    footprint = derive_right_roi(roi_only, coords_L, right_pts, (h, w))
+    assert footprint is not None and not mask_cuts_mesh(mesh_R, footprint)
 
 
 def _stereo_scene(n_frames: int = 2, img: int = 220):
@@ -353,12 +359,21 @@ def test_c2_track_both_right_camera_crack_aware(monkeypatch):
     assert len(r_masks) == cs.n_frames
     assert (np.asarray(r_masks[0]) < 0.5).any(), "warped right mask carries the crack barrier"
 
-    # Crack-free (no left mask): the right track's masks stay None (byte-identical).
+    # Crack-free (no left mask): the right track masks the footprint of its
+    # links on the reference frame only, with no barrier inside it.
+    from al_dic_3d.matching.crack_mesh import mask_cuts_mesh
+
     seq_plain = StereoSequence(
         providers={"L": ArrayFrameProvider(left), "R": ArrayFrameProvider(right)}
     )
-    captured_plain, _cs = _run_track_both_capturing_masks(seq_plain, rig, mesh_L, monkeypatch)
-    assert captured_plain[1] is None, "crack-free run must leave the right mask stream None"
+    captured_plain, cs_plain = _run_track_both_capturing_masks(seq_plain, rig, mesh_L, monkeypatch)
+    r_plain = captured_plain[1]
+    assert r_plain is not None and len(r_plain) == cs_plain.n_frames
+    xr = cs_plain.xR[0][np.isfinite(cs_plain.xR[0]).all(axis=1)]
+    yi, xi = np.round(xr[:, 1]).astype(int), np.round(xr[:, 0]).astype(int)
+    assert np.asarray(r_plain[0])[yi, xi].min() == 1.0, "every right link lies in the footprint"
+    assert not mask_cuts_mesh(build_grid_mesh(para, img, img), np.asarray(r_plain[0]))
+    assert np.asarray(r_plain[1]).min() == 1.0, "later frames are not masked (accumulative)"
 
 
 # ---------------------------------------------------------------------------

@@ -82,22 +82,32 @@ def test_make_dicpara_binarizes_the_reference_mask():
 # --------------------------------------------------------------------------- #
 
 
-def test_full_frame_0_255_mask_files_match_the_unmasked_run(tmp_path):
+def _same_points(a, b) -> None:
+    p0, p1 = a.reconstruction.points, b.reconstruction.points
+    assert np.array_equal(np.isfinite(p0), np.isfinite(p1))
+    fin = np.isfinite(p0)
+    assert np.max(np.abs(p0[fin] - p1[fin])) < 1e-9
+
+
+def test_full_frame_0_255_mask_files_match_0_1_and_unmasked_runs(tmp_path):
     scene = synth_stereo.build_scene(tmp_path, n_frames=3)
     cfg = load_config(synth_stereo.write_config(tmp_path, scene))
     left0 = sorted(tmp_path.glob("L_*.png"))[0]
     h, w = cv2.imread(str(left0), cv2.IMREAD_UNCHANGED).shape[:2]
-    full = np.full((h, w), 255, np.uint8)
     for k in range(3):
-        _write(tmp_path / f"mL_{k:03d}.png", full)
-        _write(tmp_path / f"mR_{k:03d}.png", full)
+        for cam in "LR":
+            _write(tmp_path / f"m{cam}_{k:03d}.png", np.full((h, w), 255, np.uint8))
+            _write(tmp_path / f"o{cam}_{k:03d}.png", np.ones((h, w), np.uint8))
 
-    base = run_pipeline(cfg)
-    masked = run_pipeline(dataclasses.replace(cfg, left_masks="mL_*.png", right_masks="mR_*.png"))
-
-    p0 = base.reconstruction.points
-    p1 = masked.reconstruction.points
-    assert np.array_equal(np.isfinite(p0), np.isfinite(p1))
-    fin = np.isfinite(p0)
-    # Before the fix: ~62% stereo yield and a ~10x larger 3D error on this scene.
-    assert np.max(np.abs(p0[fin] - p1[fin])) < 1e-9
+    # Before the fix 0/255 files gave ~62% stereo yield and a ~10x larger 3D
+    # error on this scene than the same masks saved as 0/1.
+    _same_points(
+        run_pipeline(dataclasses.replace(cfg, left_masks="mL_*.png", right_masks="mR_*.png")),
+        run_pipeline(dataclasses.replace(cfg, left_masks="oL_*.png", right_masks="oR_*.png")),
+    )
+    # Left masks only: the right camera derives its region from them, as it
+    # does from the left mesh when there are no masks at all.
+    _same_points(
+        run_pipeline(dataclasses.replace(cfg, left_masks="mL_*.png")),
+        run_pipeline(cfg),
+    )

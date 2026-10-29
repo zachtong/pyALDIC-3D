@@ -70,6 +70,17 @@ image size, and refuses the folder otherwise (the log says why). When no ROI
 has been drawn yet, the first left mask becomes the ROI. The status line shows
 how many masks each camera has, and they are saved with the project.
 
+## The right camera's region
+
+Without right-camera masks, the right camera tracks the **left region seen
+through the frame-1 left/right match**: the ROI (or the left per-frame masks)
+carried into the right image, on the same frames as on the left, plus a rim of
+half a subset or one node step, whichever is larger, so the nodes that support
+the outermost points are kept (a thin crack gets no rim and keeps cutting the
+grid). The background further out is left out: on a dark, nearly textureless
+background, background nodes could otherwise make the engine's search fail on a
+whole frame. When right-camera masks are imported they are used as given.
+
 ## Mesh preview and subset hover
 
 The canvas toolbar has two view toggles that make the ROI concrete:

@@ -11,6 +11,25 @@ section for that version (see `docs/RELEASING.md`).
 
 ## [Unreleased]
 
+### Fixed
+
+- **With the region of interest on the left camera only, the right camera
+  could lose whole frames.** The right camera tracked the whole bounding box
+  of its frame-1 matches, background included. On a dark, nearly textureless
+  background a few background nodes landed their FFT peak on the search
+  boundary, the engine then widened the search for every node up to half the
+  image, and the first deformed frame (in incremental mode: any frame) solved
+  no node. 1.2.x dropped that frame; a two-frame run, and 1.1.0, stopped with
+  "2D engine solved NO nodes". The right camera now tracks the left region seen
+  through the frame-1 match, on the same frames as the left, plus a rim of half
+  a subset or one node step, whichever is larger
+  ([#1](https://github.com/zachtong/pyALDIC-3D/issues/1)). On a synthetic strip
+  like the one in #1 the first deformed frame keeps 98 % of its points instead
+  of none (accumulative; 91 % in incremental mode). Right-camera masks you
+  import are used as given. Runs without right-camera masks track fewer right
+  nodes than before, so their points can move by a few hundredths of a
+  millimetre; coverage and accuracy are unchanged on the synthetic tests.
+
 ## [1.2.1] — 2026-10-28
 
 1.2.0 shipped without its Windows installer; this release adds it. The

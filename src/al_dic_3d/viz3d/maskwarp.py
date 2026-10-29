@@ -23,8 +23,9 @@ rim, and on a real rig ~12 % of the right nodes (the boundary ones) fell
 outside it, dropping them from the right camera's auto colour range.
 ``fill_to_hull=True`` fills those samples with their nearest valid neighbour
 before upsampling and clips to the exact hull instead. The display paths use it
-through :func:`right_camera_mask`; the compute default is unchanged so the
-track-both crack-barrier derivation stays byte-identical.
+through :func:`right_camera_mask`, and so does the right camera's tracked region
+(:mod:`al_dic_3d.matching.right_roi`), which adds ``extrapolate=True`` for a
+later frame's mask that reaches past the frame-1 links.
 """
 
 from __future__ import annotations
@@ -66,6 +67,7 @@ def warp_mask_left_to_right(
     *,
     grid_step: int = _GRID_STEP,
     fill_to_hull: bool = False,
+    extrapolate: bool = False,
 ) -> NDArray[np.bool_] | None:
     """Warp a left-frame-1 boolean mask into right-frame-1 pixel space.
 
@@ -78,6 +80,10 @@ def warp_mask_left_to_right(
         fill_to_hull: keep the support up to the exact correspondence hull
             instead of losing up to ``grid_step`` px at the rim (see the module
             docstring). Default False = the legacy compute behaviour.
+        extrapolate: carry the mapping past the correspondence hull with the
+            nearest valid displacement, for a mask that reaches beyond the
+            frame-1 links (a later frame's mask). Uses the nearest fill of
+            ``fill_to_hull`` without its clip to the hull.
 
     Returns:
         ``(H, W)`` boolean right mask, or ``None`` when the correspondence is
@@ -119,9 +125,10 @@ def warp_mask_left_to_right(
     if not np.isfinite(dx).any():
         return None
 
-    if fill_to_hull:
+    if fill_to_hull or extrapolate:
         # Nearest-valid fill keeps the bilinear upsampling finite right up to
-        # the hull; the exact hull below then decides the support boundary.
+        # the hull; the exact hull below then decides the support boundary
+        # (unless extrapolating, which keeps the filled mapping everywhere).
         invalid = ~(np.isfinite(dx) & np.isfinite(dy))
         src_x = (gxx + _fill_nan_nearest(dx, invalid)).astype(np.float32)
         src_y = (gyy + _fill_nan_nearest(dy, invalid)).astype(np.float32)
@@ -141,7 +148,7 @@ def warp_mask_left_to_right(
         borderMode=cv2.BORDER_CONSTANT,
         borderValue=0,
     ).astype(bool)
-    if fill_to_hull:
+    if fill_to_hull and not extrapolate:
         warped &= _hull_mask(xr[finite], (h, w))
     return warped
 
