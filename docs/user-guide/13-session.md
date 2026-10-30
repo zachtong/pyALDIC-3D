@@ -75,7 +75,7 @@ The persisted `view_state` restores: `display_field`, `colormap`, `color_auto`,
 `current_frame`, `display_unit`, `frame_rate` (and whether you set one:
 without it velocity is shown per frame), the mesh overlay
 `mesh_line_color` / `mesh_line_width`, and the canvas toolbar toggles
-`show_grid` / `show_subset` / `view_3d` — so a project reopens on the view you
+`show_roi` / `show_grid` / `show_subset` / `view_3d` — so a project reopens on the view you
 left it on, 3D page included.
 
 > Whether the **3D View** page was showing is persisted (`view_3d`), but its

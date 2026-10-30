@@ -83,8 +83,14 @@ whole frame. When right-camera masks are imported they are used as given.
 
 ## Mesh preview and subset hover
 
-The canvas toolbar has two view toggles that make the ROI concrete:
+The canvas toolbar has three view toggles that make the ROI concrete:
 
+- **Show ROI** (on by default) — shows the drawn ROI (blue) and the refinement
+  zones (cyan). They are drawn on the LEFT camera's frame 1, so they appear only
+  there — not on the right camera or on a deformed frame, where they would be in
+  the wrong place. The toggle turns **off when an analysis finishes**, so the
+  results are not tinted blue; drawing with any ROI or brush tool turns it back
+  on. Hiding it never changes the ROI itself (unlike **Clear ROI**).
 - **Show Grid** (on by default) — overlays the computational mesh on the
   reference view (LEFT camera, frame 1). It is rebuilt live from the current
   Subset Step and refinement settings by the *same* `build_reference_mesh` the

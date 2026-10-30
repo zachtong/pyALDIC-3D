@@ -846,12 +846,12 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>축소 (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Show Grid</source>
         <translation>격자 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <location filename="../../gui/panels/canvas_area.py" line="138"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -861,7 +861,7 @@ Default on; turn off to declutter the canvas.</source>
 기본 켜짐. 캔버스를 깔끔하게 하려면 끄세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="135"/>
+        <location filename="../../gui/panels/canvas_area.py" line="151"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -869,7 +869,7 @@ whether the subset spans enough speckle texture.</source>
 '그리드 표시'가 필요합니다. 서브셋이 충분한 스페클 텍스처를 포함하는지 판단하는 데 사용하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="148"/>
+        <location filename="../../gui/panels/canvas_area.py" line="164"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -877,57 +877,73 @@ to the 2D image view. Requires results.</source>
 체크를 해제하면 2D 이미지 뷰로 돌아갑니다. 결과가 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="132"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Show Subset</source>
         <translation>서브셋 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="145"/>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <source>Show ROI</source>
+        <translation>ROI 표시</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="125"/>
+        <source>Show the drawn region of interest (blue) and refinement zones
+on the reference view (left camera, frame 1). Turned off when
+an analysis finishes so the results are not tinted; drawing
+with an ROI or brush tool turns it back on.</source>
+        <translation>기준 뷰(왼쪽 카메라, 프레임 1)에 그린 관심 영역(파란색)과
+세분화 영역을 표시합니다. 분석이 끝나면 결과에 색이
+겹치지 않도록 자동으로 꺼지고, ROI 도구나 브러시로
+그리면 다시 켜집니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="161"/>
         <source>3D View</source>
         <translation>3D 보기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="325"/>
+        <location filename="../../gui/panels/canvas_area.py" line="343"/>
         <source>Load images before importing an ROI mask</source>
         <translation>ROI 마스크를 가져오기 전에 이미지를 불러오세요</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="330"/>
+        <location filename="../../gui/panels/canvas_area.py" line="348"/>
         <source>Could not import the mask: {0}</source>
         <translation>마스크를 가져올 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="333"/>
+        <location filename="../../gui/panels/canvas_area.py" line="351"/>
         <source>ROI mask imported from {0}</source>
         <translation>{0}에서 ROI 마스크를 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="338"/>
+        <location filename="../../gui/panels/canvas_area.py" line="356"/>
         <source>No ROI mask to save — draw one first</source>
         <translation>저장할 ROI 마스크가 없습니다 — 먼저 그리세요</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>Save Mask</source>
         <translation>마스크 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 이미지 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="353"/>
+        <location filename="../../gui/panels/canvas_area.py" line="371"/>
         <source>Could not save the mask: {0}</source>
         <translation>마스크를 저장할 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="356"/>
+        <location filename="../../gui/panels/canvas_area.py" line="374"/>
         <source>ROI mask saved to {0}</source>
         <translation>ROI 마스크를 {0}에 저장했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="542"/>
+        <location filename="../../gui/panels/canvas_area.py" line="576"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>분석에서 유효한 점이 없습니다 — 표시할 내용이 없습니다. 로그를 확인하십시오.</translation>
     </message>
@@ -940,17 +956,17 @@ to the 2D image view. Requires results.</source>
         <translation>ROI를 오른쪽 카메라로 옮길 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="206"/>
+        <location filename="../../gui/panels/canvas_render.py" line="207"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="213"/>
+        <location filename="../../gui/panels/canvas_render.py" line="214"/>
         <source>Selected field is not available.</source>
         <translation>선택한 필드를 사용할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="398"/>
+        <location filename="../../gui/panels/canvas_render.py" line="399"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>오버레이를 그릴 수 없습니다: {0}</translation>
     </message>
@@ -978,37 +994,37 @@ to the 2D image view. Requires results.</source>
         <translation>({0}, {1})의 시드점을 제거했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="169"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="170"/>
         <source>Fit</source>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="171"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="172"/>
         <source>Zoom to 100%</source>
         <translation>100%로 확대</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="174"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="175"/>
         <source>Copy image to clipboard</source>
         <translation>이미지를 클립보드로 복사</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="177"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="178"/>
         <source>Clear ROI</source>
         <translation>ROI 지우기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="180"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="181"/>
         <source>Clear seed points</source>
         <translation>시드점 지우기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="190"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="191"/>
         <source>Canvas image copied to the clipboard</source>
         <translation>캔버스 이미지를 클립보드에 복사했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="205"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="206"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>

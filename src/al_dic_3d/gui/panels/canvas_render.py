@@ -186,6 +186,7 @@ class CanvasRenderMixin:
 
         self._render_overlay(k)
         self._sync_roi()
+        self._apply_mask_layer_visibility()
         self._sync_seed_marker()
 
     def _on_frame_landed(self, _path: str, resized: bool) -> None:

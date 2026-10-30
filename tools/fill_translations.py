@@ -5136,6 +5136,10 @@ for _loc, _entries in _load_batch_file("i18n_batch_epipolar.py").items():
 for _loc, _entries in _load_batch_file("i18n_batch_rbm.py").items():
     TRANSLATIONS[_loc].update(_entries)
 
+# Canvas view (Show ROI toggle, 3D View controls).
+for _loc, _entries in _load_batch_file("i18n_batch_view.py").items():
+    TRANSLATIONS[_loc].update(_entries)
+
 
 def main() -> int:
     ok = True

@@ -847,12 +847,12 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>缩小 (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Show Grid</source>
         <translation>显示网格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <location filename="../../gui/panels/canvas_area.py" line="138"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -862,7 +862,7 @@ Default on; turn off to declutter the canvas.</source>
 默认开启；关闭可让画布更简洁。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="135"/>
+        <location filename="../../gui/panels/canvas_area.py" line="151"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -870,7 +870,7 @@ whether the subset spans enough speckle texture.</source>
 需要先开启“显示网格”。可用来判断子集是否覆盖足够的散斑纹理。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="148"/>
+        <location filename="../../gui/panels/canvas_area.py" line="164"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -878,57 +878,73 @@ to the 2D image view. Requires results.</source>
 取消勾选可返回 2D 图像视图。需要有结果。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="132"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Show Subset</source>
         <translation>显示子集</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="145"/>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <source>Show ROI</source>
+        <translation>显示 ROI</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="125"/>
+        <source>Show the drawn region of interest (blue) and refinement zones
+on the reference view (left camera, frame 1). Turned off when
+an analysis finishes so the results are not tinted; drawing
+with an ROI or brush tool turns it back on.</source>
+        <translation>在参考视图（左相机第 1 帧）上显示绘制的感兴趣区域（蓝色）
+和细化区域。分析完成时自动关闭，
+以免结果被染上颜色；使用 ROI 或画笔工具
+绘制时会重新打开。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="161"/>
         <source>3D View</source>
         <translation>3D 视图</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="325"/>
+        <location filename="../../gui/panels/canvas_area.py" line="343"/>
         <source>Load images before importing an ROI mask</source>
         <translation>请先加载图像，再导入 ROI 掩膜</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="330"/>
+        <location filename="../../gui/panels/canvas_area.py" line="348"/>
         <source>Could not import the mask: {0}</source>
         <translation>无法导入掩膜：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="333"/>
+        <location filename="../../gui/panels/canvas_area.py" line="351"/>
         <source>ROI mask imported from {0}</source>
         <translation>已从 {0} 导入 ROI 掩膜</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="338"/>
+        <location filename="../../gui/panels/canvas_area.py" line="356"/>
         <source>No ROI mask to save — draw one first</source>
         <translation>没有可保存的 ROI 掩膜——请先绘制</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>Save Mask</source>
         <translation>保存掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 图像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="353"/>
+        <location filename="../../gui/panels/canvas_area.py" line="371"/>
         <source>Could not save the mask: {0}</source>
         <translation>无法保存掩膜：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="356"/>
+        <location filename="../../gui/panels/canvas_area.py" line="374"/>
         <source>ROI mask saved to {0}</source>
         <translation>ROI 掩膜已保存到 {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="542"/>
+        <location filename="../../gui/panels/canvas_area.py" line="576"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>分析未产生任何有效点——没有可显示的内容。请查看日志。</translation>
     </message>
@@ -941,17 +957,17 @@ to the 2D image view. Requires results.</source>
         <translation>无法将 ROI 映射到右相机：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="206"/>
+        <location filename="../../gui/panels/canvas_render.py" line="207"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 视图 — 运行分析后即可查看重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="213"/>
+        <location filename="../../gui/panels/canvas_render.py" line="214"/>
         <source>Selected field is not available.</source>
         <translation>所选场变量不可用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="398"/>
+        <location filename="../../gui/panels/canvas_render.py" line="399"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>无法绘制叠加层：{0}</translation>
     </message>
@@ -979,37 +995,37 @@ to the 2D image view. Requires results.</source>
         <translation>已移除位于 ({0}, {1}) 的种子点</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="169"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="170"/>
         <source>Fit</source>
         <translation>适配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="171"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="172"/>
         <source>Zoom to 100%</source>
         <translation>缩放至 100%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="174"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="175"/>
         <source>Copy image to clipboard</source>
         <translation>复制图像到剪贴板</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="177"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="178"/>
         <source>Clear ROI</source>
         <translation>清除 ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="180"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="181"/>
         <source>Clear seed points</source>
         <translation>清除种子点</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="190"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="191"/>
         <source>Canvas image copied to the clipboard</source>
         <translation>画布图像已复制到剪贴板</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="205"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="206"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>

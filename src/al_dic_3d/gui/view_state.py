@@ -16,8 +16,8 @@ capture covers exactly this list and that a session round trip reproduces it.
 
 from __future__ import annotations
 
-# Toolbar toggles owned by CanvasArea3D (Show Grid / Show Subset / 3D View).
-CANVAS_VIEW_KEYS = ("show_grid", "show_subset", "view_3d")
+# Toolbar toggles owned by CanvasArea3D (Show ROI / Show Grid / Show Subset / 3D View).
+CANVAS_VIEW_KEYS = ("show_roi", "show_grid", "show_subset", "view_3d")
 
 # Every key a saved view_state carries.
 VIEW_STATE_KEYS = (
@@ -42,6 +42,7 @@ VIEW_STATE_KEYS = (
 def capture_canvas(canvas) -> dict:
     """The central canvas's share of a ``view_state``: :data:`CANVAS_VIEW_KEYS`."""
     return {
+        "show_roi": canvas._roi_cb.isChecked(),
         "show_grid": canvas._grid_cb.isChecked(),
         "show_subset": canvas._subset_cb.isChecked(),
         "view_3d": canvas._view3d_cb.isChecked(),
@@ -57,6 +58,8 @@ def apply_to_canvas(canvas, vs: dict) -> None:
     hiding it forces Show Subset off, and the 3D page last so it renders with the
     field/colormap the sidebar has already restored.
     """
+    roi = canvas._roi_cb
+    roi.setChecked(bool(vs.get("show_roi", roi.isChecked())))
     grid, subset, view3d = canvas._grid_cb, canvas._subset_cb, canvas._view3d_cb
     grid.setChecked(bool(vs.get("show_grid", grid.isChecked())))
     if grid.isChecked():  # else the grid toggle already forced Show Subset off

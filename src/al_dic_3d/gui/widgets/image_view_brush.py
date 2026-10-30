@@ -39,6 +39,7 @@ class BrushToolMixin:
     if TYPE_CHECKING:  # attributes/signals owned by ImageCanvas3D
         _bg_item: QGraphicsPixmapItem
         _brush_item: QGraphicsPixmapItem
+        _roi_mask_item: QGraphicsPixmapItem
         _brush_mask: np.ndarray | None
         _brush_rgba: np.ndarray | None
         _brush_radius: int
@@ -46,6 +47,15 @@ class BrushToolMixin:
         _brush_last: tuple[int, int] | None
         _tool: str
         brush_changed: SignalInstance
+
+    def set_mask_layers_visible(self, visible: bool) -> None:
+        """Show or hide the ROI and refinement-brush layers.
+
+        Only the visibility changes: the rasterized pixmaps are kept, so showing
+        them again costs nothing (P2.6).
+        """
+        self._roi_mask_item.setVisible(bool(visible))
+        self._brush_item.setVisible(bool(visible))
 
     def set_brush_tool(self, mode: str, radius: int | None = None) -> None:
         """Arm the freehand refinement brush ('paint' adds, 'erase' removes)."""

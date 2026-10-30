@@ -127,6 +127,7 @@ class CanvasToolsMixin:
 
     def set_refine_brush(self, mode: str, radius: int) -> None:
         """Arm the canvas refinement brush ('paint' or 'erase') at ``radius`` px."""
+        self._roi_cb.setChecked(True)  # painting zones shows the mask layers
         self._canvas.set_brush_tool(mode, radius)
 
     def set_brush_radius(self, radius: int) -> None:

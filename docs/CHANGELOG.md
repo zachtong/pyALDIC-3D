@@ -41,6 +41,13 @@ GitHub release notes for a tag are this file's section for that version.
 
 ### Fixed
 
+- **The drawn ROI no longer covers the results** (canvas toolbar, new **Show
+  ROI** toggle). The blue ROI and the cyan refinement zones stayed on top of
+  every view after a run — tinting the field, and sitting at their frame-1 place
+  on deformed frames and on the right camera — with no way to hide them short of
+  clearing the ROI. They now show only on the left camera's frame 1, switch off
+  when an analysis finishes, come back when you draw, and the toggle is saved
+  with the project.
 - The test suite no longer depends on how OpenCV rounds on a given computer.
   A test compared two exact copies of the same patch, and the last bit of the
   arithmetic chose between them, so it failed on some machines.

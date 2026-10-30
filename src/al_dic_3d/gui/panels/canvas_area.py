@@ -116,6 +116,22 @@ class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
             tb.addWidget(b)
         tb.addStretch()
 
+        # The drawn ROI (and refinement zones) belong to the LEFT frame-1 image:
+        # shown there only, and switched off once a run finishes (2D parity) so
+        # the results are not tinted blue; any ROI or brush tool turns it on.
+        self._roi_cb = QCheckBox(self.tr("Show ROI"))
+        self._roi_cb.setToolTip(
+            self.tr(
+                "Show the drawn region of interest (blue) and refinement zones\n"
+                "on the reference view (left camera, frame 1). Turned off when\n"
+                "an analysis finishes so the results are not tinted; drawing\n"
+                "with an ROI or brush tool turns it back on."
+            )
+        )
+        self._roi_cb.setChecked(True)
+        self._roi_cb.toggled.connect(lambda _on: self._apply_mask_layer_visibility())
+        tb.addWidget(self._roi_cb)
+
         self._grid_cb = QCheckBox(self.tr("Show Grid"))
         self._grid_cb.setToolTip(
             self.tr(
@@ -240,6 +256,7 @@ class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
         signals.roi_changed.connect(self._on_roi_changed)
         signals.params_changed.connect(self._on_params_changed)
         signals.calibration_changed.connect(self._invalidate_rig)
+        signals.run_state_changed.connect(self._on_run_state)
 
     @property
     def canvas(self) -> ImageCanvas3D:
@@ -283,6 +300,7 @@ class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
 
     def start_shape_tool(self, shape: str, mode: str) -> None:
         """Arm a one-shot ROI drawing tool on the canvas (from the toolbar)."""
+        self._roi_cb.setChecked(True)  # editing the ROI shows it
         self._ensure_roi_ctrl()
         self._canvas.set_tool(shape, mode)
 
@@ -491,6 +509,22 @@ class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
         self._mesh_overlay.set_hover_node(min_idx, float(self.controller.state.draft.winsize))
 
     # ---- view mode ---------------------------------------------------------------
+
+    def _on_run_state(self, state: str) -> None:
+        if state == "done":  # results take over the canvas (2D parity)
+            self._roi_cb.setChecked(False)
+
+    def _apply_mask_layer_visibility(self) -> None:
+        """ROI / brush layers: on the 2D LEFT frame-1 image only, when Show ROI is on."""
+        has_result = self.controller.state.result is not None
+        s = self.signals
+        frame1_background = s.current_frame == 0 or (has_result and not s.show_deformed)
+        self._canvas.set_mask_layers_visible(
+            self._roi_cb.isChecked()
+            and self._stack.currentIndex() == 0
+            and s.current_camera == "L"
+            and frame1_background
+        )
 
     def _on_view_mode(self, use_3d: bool) -> None:
         self._stack.setCurrentIndex(1 if use_3d else 0)

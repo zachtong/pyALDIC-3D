@@ -848,12 +848,12 @@ Rueda: zoom · Arrastre con botón derecho/central: desplazar · Espacio: modo d
         <translation>Alejar (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Show Grid</source>
         <translation>Mostrar cuadrícula</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <location filename="../../gui/panels/canvas_area.py" line="138"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -864,7 +864,7 @@ y los ajustes de refinado — la malla mostrada es la de la ejecución.
 Activado por defecto; desactívelo para despejar el lienzo.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="135"/>
+        <location filename="../../gui/panels/canvas_area.py" line="151"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -873,7 +873,7 @@ de correlación (el cuadro Tamaño de subset). Requiere «Mostrar cuadrícula».
 juzgar si el subset abarca suficiente textura de moteado.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="148"/>
+        <location filename="../../gui/panels/canvas_area.py" line="164"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -882,57 +882,73 @@ seleccionado, con los conos de las cámaras). Desmarque para volver a la vista d
 imagen 2D. Requiere resultados.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="132"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Show Subset</source>
         <translation>Mostrar subconjunto</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="145"/>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <source>Show ROI</source>
+        <translation>Mostrar ROI</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="125"/>
+        <source>Show the drawn region of interest (blue) and refinement zones
+on the reference view (left camera, frame 1). Turned off when
+an analysis finishes so the results are not tinted; drawing
+with an ROI or brush tool turns it back on.</source>
+        <translation>Muestra la región de interés dibujada (azul) y las zonas de refinamiento
+sobre la vista de referencia (cámara izquierda, fotograma 1). Se apaga al
+terminar un análisis para no teñir los resultados; dibujar con una
+herramienta de ROI o el pincel la vuelve a encender.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="161"/>
         <source>3D View</source>
         <translation>Vista 3D</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="325"/>
+        <location filename="../../gui/panels/canvas_area.py" line="343"/>
         <source>Load images before importing an ROI mask</source>
         <translation>Cargue las imágenes antes de importar una máscara ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="330"/>
+        <location filename="../../gui/panels/canvas_area.py" line="348"/>
         <source>Could not import the mask: {0}</source>
         <translation>No se pudo importar la máscara: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="333"/>
+        <location filename="../../gui/panels/canvas_area.py" line="351"/>
         <source>ROI mask imported from {0}</source>
         <translation>Máscara ROI importada desde {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="338"/>
+        <location filename="../../gui/panels/canvas_area.py" line="356"/>
         <source>No ROI mask to save — draw one first</source>
         <translation>No hay máscara ROI que guardar — dibuje una primero</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>Save Mask</source>
         <translation>Guardar máscara</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>PNG image (*.png)</source>
         <translation>Imagen PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="353"/>
+        <location filename="../../gui/panels/canvas_area.py" line="371"/>
         <source>Could not save the mask: {0}</source>
         <translation>No se pudo guardar la máscara: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="356"/>
+        <location filename="../../gui/panels/canvas_area.py" line="374"/>
         <source>ROI mask saved to {0}</source>
         <translation>Máscara ROI guardada en {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="542"/>
+        <location filename="../../gui/panels/canvas_area.py" line="576"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>El análisis no produjo puntos válidos — nada que mostrar. Consulte el registro.</translation>
     </message>
@@ -945,17 +961,17 @@ imagen 2D. Requiere resultados.</translation>
         <translation>No se pudo trasladar la ROI a la cámara derecha: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="206"/>
+        <location filename="../../gui/panels/canvas_render.py" line="207"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>Vista 3D — ejecute un análisis para ver la superficie reconstruida.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="213"/>
+        <location filename="../../gui/panels/canvas_render.py" line="214"/>
         <source>Selected field is not available.</source>
         <translation>El campo seleccionado no está disponible.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="398"/>
+        <location filename="../../gui/panels/canvas_render.py" line="399"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>No se pudo dibujar la superposición: {0}</translation>
     </message>
@@ -983,37 +999,37 @@ imagen 2D. Requiere resultados.</translation>
         <translation>Punto de inicio en ({0}, {1}) eliminado</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="169"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="170"/>
         <source>Fit</source>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="171"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="172"/>
         <source>Zoom to 100%</source>
         <translation>Zoom al 100 %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="174"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="175"/>
         <source>Copy image to clipboard</source>
         <translation>Copiar la imagen al portapapeles</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="177"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="178"/>
         <source>Clear ROI</source>
         <translation>Borrar la ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="180"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="181"/>
         <source>Clear seed points</source>
         <translation>Borrar los puntos de inicio</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="190"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="191"/>
         <source>Canvas image copied to the clipboard</source>
         <translation>Imagen del lienzo copiada al portapapeles</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="205"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="206"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>

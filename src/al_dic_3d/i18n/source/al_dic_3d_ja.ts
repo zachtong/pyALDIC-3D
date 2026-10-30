@@ -846,12 +846,12 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>縮小 (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="119"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Show Grid</source>
         <translation>グリッドを表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <location filename="../../gui/panels/canvas_area.py" line="138"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -861,7 +861,7 @@ Default on; turn off to declutter the canvas.</source>
 既定はオン。キャンバスを整理したいときはオフにします。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="135"/>
+        <location filename="../../gui/panels/canvas_area.py" line="151"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -869,7 +869,7 @@ whether the subset spans enough speckle texture.</source>
 「グリッド表示」が必要です。サブセットが十分なスペックル模様を含むかの判断に使えます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="148"/>
+        <location filename="../../gui/panels/canvas_area.py" line="164"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -877,57 +877,73 @@ to the 2D image view. Requires results.</source>
 オフにすると 2D 画像ビューに戻ります。結果が必要です。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="132"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Show Subset</source>
         <translation>サブセットを表示</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="145"/>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
+        <source>Show ROI</source>
+        <translation>ROI を表示</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="125"/>
+        <source>Show the drawn region of interest (blue) and refinement zones
+on the reference view (left camera, frame 1). Turned off when
+an analysis finishes so the results are not tinted; drawing
+with an ROI or brush tool turns it back on.</source>
+        <translation>参照ビュー（左カメラ、フレーム 1）に、描画した関心領域（青）
+と細分化領域を表示します。解析が終わると、結果に色が
+重ならないよう自動でオフになります。ROI ツールや
+ブラシで描くと再びオンになります。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/canvas_area.py" line="161"/>
         <source>3D View</source>
         <translation>3D ビュー</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="325"/>
+        <location filename="../../gui/panels/canvas_area.py" line="343"/>
         <source>Load images before importing an ROI mask</source>
         <translation>ROI マスクを読み込む前に画像を読み込んでください</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="330"/>
+        <location filename="../../gui/panels/canvas_area.py" line="348"/>
         <source>Could not import the mask: {0}</source>
         <translation>マスクを読み込めませんでした：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="333"/>
+        <location filename="../../gui/panels/canvas_area.py" line="351"/>
         <source>ROI mask imported from {0}</source>
         <translation>{0} から ROI マスクを読み込みました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="338"/>
+        <location filename="../../gui/panels/canvas_area.py" line="356"/>
         <source>No ROI mask to save — draw one first</source>
         <translation>保存する ROI マスクがありません — 先に描いてください</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>Save Mask</source>
         <translation>マスクを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="346"/>
+        <location filename="../../gui/panels/canvas_area.py" line="364"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 画像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="353"/>
+        <location filename="../../gui/panels/canvas_area.py" line="371"/>
         <source>Could not save the mask: {0}</source>
         <translation>マスクを保存できませんでした：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="356"/>
+        <location filename="../../gui/panels/canvas_area.py" line="374"/>
         <source>ROI mask saved to {0}</source>
         <translation>ROI マスクを {0} に保存しました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="542"/>
+        <location filename="../../gui/panels/canvas_area.py" line="576"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>解析で有効な点が得られませんでした — 表示できる内容がありません。ログを確認してください。</translation>
     </message>
@@ -940,17 +956,17 @@ to the 2D image view. Requires results.</source>
         <translation>ROI を右カメラに写せませんでした：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="206"/>
+        <location filename="../../gui/panels/canvas_render.py" line="207"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="213"/>
+        <location filename="../../gui/panels/canvas_render.py" line="214"/>
         <source>Selected field is not available.</source>
         <translation>選択した項目は利用できません。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="398"/>
+        <location filename="../../gui/panels/canvas_render.py" line="399"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>オーバーレイを描画できませんでした：{0}</translation>
     </message>
@@ -978,37 +994,37 @@ to the 2D image view. Requires results.</source>
         <translation>({0}, {1}) のシード点を削除しました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="169"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="170"/>
         <source>Fit</source>
         <translation>フィット</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="171"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="172"/>
         <source>Zoom to 100%</source>
         <translation>100% にズーム</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="174"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="175"/>
         <source>Copy image to clipboard</source>
         <translation>画像をクリップボードにコピー</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="177"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="178"/>
         <source>Clear ROI</source>
         <translation>ROI をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="180"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="181"/>
         <source>Clear seed points</source>
         <translation>シード点をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="190"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="191"/>
         <source>Canvas image copied to the clipboard</source>
         <translation>キャンバスの画像をクリップボードにコピーしました</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="205"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="206"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
