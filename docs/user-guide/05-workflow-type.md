@@ -119,9 +119,9 @@ For long sequences, prefer **Every N Frames**. Keep **Every Frame** for short
 sequences, or for motion too large to correlate across several frames.
 
 With per-frame masks, update the reference rarely. At each update, the mesh
-cells outside that frame's mask are dropped, and al-dic 0.7 does not restore
-them at later updates. Incremental needs an ROI only on frame 1. Each later
-reference frame reuses that outline, so when the specimen moves far beyond it,
-add per-frame masks.
+cells outside that frame's mask are dropped, and the current al-dic engine
+does not restore them at later updates. Incremental needs an ROI only on
+frame 1. Each later reference frame reuses that outline, so when the
+specimen moves far beyond it, add per-frame masks.
 
 Next: [Initial guess & Starting Points →](06-initial-guess.md)
