@@ -108,9 +108,17 @@ class StrainController3D:
         )
 
     def apply(self, strain: StrainResult3D) -> RunResult:
-        """Replace ``state.result`` with a copy carrying ``strain`` (frozen-safe)."""
+        """Replace ``state.result`` with a copy carrying ``strain`` (frozen-safe).
+
+        The rigid-motion setting it was computed under is recorded with it, so
+        a later change of that setting shows the strain as stale.
+        """
+        from al_dic_3d.run_rigid import rigid_motion_signature
+
         state = self._workflow.state
-        new_result = replace(self._require_result(), strain=strain)
+        result = self._require_result()
+        meta = {**result.meta, "strain_rigid_motion": rigid_motion_signature(result)}
+        new_result = replace(result, strain=strain, meta=meta)
         state.result = new_result
         state.mark_dirty()
         return new_result

@@ -821,39 +821,39 @@ fx {1:.0f}  fy {2:.0f}  |  línea base {3:.1f} mm</translation>
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="92"/>
+        <location filename="../../gui/panels/canvas_area.py" line="93"/>
         <source>Fit</source>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="95"/>
+        <location filename="../../gui/panels/canvas_area.py" line="96"/>
         <source>Fit the image to the viewport (Ctrl+0)</source>
         <translation>Ajustar la imagen a la vista (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="102"/>
+        <location filename="../../gui/panels/canvas_area.py" line="103"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>Zoom actual — haga clic para restablecer al 100 % (píxeles 1:1).
 Rueda: zoom · Arrastre con botón derecho/central: desplazar · Espacio: modo desplazamiento</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="109"/>
+        <location filename="../../gui/panels/canvas_area.py" line="110"/>
         <source>Zoom in (Ctrl+=)</source>
         <translation>Acercar (Ctrl+=)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Zoom out (Ctrl+-)</source>
         <translation>Alejar (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="119"/>
         <source>Show Grid</source>
         <translation>Mostrar cuadrícula</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="121"/>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -864,7 +864,7 @@ y los ajustes de refinado — la malla mostrada es la de la ejecución.
 Activado por defecto; desactívelo para despejar el lienzo.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="134"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -873,7 +873,7 @@ de correlación (el cuadro Tamaño de subset). Requiere «Mostrar cuadrícula».
 juzgar si el subset abarca suficiente textura de moteado.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="147"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -882,57 +882,57 @@ seleccionado, con los conos de las cámaras). Desmarque para volver a la vista d
 imagen 2D. Requiere resultados.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="131"/>
+        <location filename="../../gui/panels/canvas_area.py" line="132"/>
         <source>Show Subset</source>
         <translation>Mostrar subconjunto</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="144"/>
+        <location filename="../../gui/panels/canvas_area.py" line="145"/>
         <source>3D View</source>
         <translation>Vista 3D</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="323"/>
+        <location filename="../../gui/panels/canvas_area.py" line="325"/>
         <source>Load images before importing an ROI mask</source>
         <translation>Cargue las imágenes antes de importar una máscara ROI</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="328"/>
+        <location filename="../../gui/panels/canvas_area.py" line="330"/>
         <source>Could not import the mask: {0}</source>
         <translation>No se pudo importar la máscara: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="331"/>
+        <location filename="../../gui/panels/canvas_area.py" line="333"/>
         <source>ROI mask imported from {0}</source>
         <translation>Máscara ROI importada desde {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="336"/>
+        <location filename="../../gui/panels/canvas_area.py" line="338"/>
         <source>No ROI mask to save — draw one first</source>
         <translation>No hay máscara ROI que guardar — dibuje una primero</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="344"/>
+        <location filename="../../gui/panels/canvas_area.py" line="346"/>
         <source>Save Mask</source>
         <translation>Guardar máscara</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="344"/>
+        <location filename="../../gui/panels/canvas_area.py" line="346"/>
         <source>PNG image (*.png)</source>
         <translation>Imagen PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="351"/>
+        <location filename="../../gui/panels/canvas_area.py" line="353"/>
         <source>Could not save the mask: {0}</source>
         <translation>No se pudo guardar la máscara: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="354"/>
+        <location filename="../../gui/panels/canvas_area.py" line="356"/>
         <source>ROI mask saved to {0}</source>
         <translation>Máscara ROI guardada en {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="540"/>
+        <location filename="../../gui/panels/canvas_area.py" line="542"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>El análisis no produjo puntos válidos — nada que mostrar. Consulte el registro.</translation>
     </message>
@@ -940,22 +940,22 @@ imagen 2D. Requiere resultados.</translation>
 <context>
     <name>CanvasRenderMixin</name>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="67"/>
+        <location filename="../../gui/panels/canvas_render.py" line="68"/>
         <source>Could not map the ROI into the right camera: {0}</source>
         <translation>No se pudo trasladar la ROI a la cámara derecha: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="204"/>
+        <location filename="../../gui/panels/canvas_render.py" line="206"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>Vista 3D — ejecute un análisis para ver la superficie reconstruida.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="211"/>
+        <location filename="../../gui/panels/canvas_render.py" line="213"/>
         <source>Selected field is not available.</source>
         <translation>El campo seleccionado no está disponible.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="396"/>
+        <location filename="../../gui/panels/canvas_render.py" line="398"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>No se pudo dibujar la superposición: {0}</translation>
     </message>
@@ -1317,27 +1317,27 @@ imagen 2D. Requiere resultados.</translation>
         <translation>Fuente de estilo WYSIWYG: la barra de color y los márgenes configurados aquí se usan en cada exportación de imágenes / animaciones.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="464"/>
         <source>Export Running</source>
         <translation>Exportación en curso</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="463"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="465"/>
         <source>An export is still running — cancel it and close?</source>
         <translation>Una exportación sigue en curso: ¿cancelarla y cerrar?</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="468"/>
         <source>Yes</source>
         <translation>Sí</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="467"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="469"/>
         <source>No</source>
         <translation>No</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="499"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="501"/>
         <source>Folder does not exist: {0}</source>
         <translation>La carpeta no existe: {0}</translation>
     </message>
@@ -1352,7 +1352,7 @@ imagen 2D. Requiere resultados.</translation>
         <translation>Renderizados fuera de pantalla de la superficie 3D como imágenes, animación de deformación o rotación orbital, desde su vista 3D actual.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="486"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="488"/>
         <source>Choose output folder</source>
         <translation>Elegir carpeta de salida</translation>
     </message>
@@ -2366,14 +2366,14 @@ desactivada. Debe superar el error esperado en esa posición.</translation>
     <message>
         <location filename="../../gui/main_window.py" line="284"/>
         <location filename="../../gui/main_window.py" line="300"/>
-        <location filename="../../gui/main_window.py" line="677"/>
+        <location filename="../../gui/main_window.py" line="684"/>
         <source>Yes</source>
         <translation>Sí</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="285"/>
         <location filename="../../gui/main_window.py" line="301"/>
-        <location filename="../../gui/main_window.py" line="678"/>
+        <location filename="../../gui/main_window.py" line="685"/>
         <source>No</source>
         <translation>No</translation>
     </message>
@@ -2404,8 +2404,8 @@ desactivada. Debe superar el error esperado en esa posición.</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="341"/>
-        <location filename="../../gui/main_window.py" line="593"/>
-        <location filename="../../gui/main_window.py" line="679"/>
+        <location filename="../../gui/main_window.py" line="600"/>
+        <location filename="../../gui/main_window.py" line="686"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
@@ -2491,38 +2491,43 @@ desactivada. Debe superar el error esperado en esa posición.</translation>
         <translation>Archivo de calibración encontrado en {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="572"/>
+        <location filename="../../gui/main_window.py" line="574"/>
         <source>The calibration file was not found; using the copy saved in the project: {0}</source>
         <translation>No se encontró el archivo de calibración; se usa la copia guardada en el proyecto: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="583"/>
+        <location filename="../../gui/main_window.py" line="578"/>
+        <source>The rigid motion was not removed (the results are shown as measured): {0}</source>
+        <translation>No se eliminó el movimiento de sólido rígido (resultados tal como se midieron): {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="590"/>
         <source>Images Not Found</source>
         <translation>Imágenes no encontradas</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="586"/>
+        <location filename="../../gui/main_window.py" line="593"/>
         <source>Some of this project&apos;s images cannot be found. Open it anyway? Results stay viewable and exportable; running again needs the images.</source>
         <translation>No se encuentran algunas imágenes de este proyecto. ¿Abrirlo de todos modos? Los resultados se pueden ver y exportar; para volver a ejecutarlo se necesitan las imágenes.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="592"/>
+        <location filename="../../gui/main_window.py" line="599"/>
         <source>Open anyway</source>
         <translation>Abrir de todos modos</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="601"/>
-        <location filename="../../gui/main_window.py" line="611"/>
+        <location filename="../../gui/main_window.py" line="608"/>
+        <location filename="../../gui/main_window.py" line="618"/>
         <source>Locate Images</source>
         <translation>Localizar imágenes</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="603"/>
+        <location filename="../../gui/main_window.py" line="610"/>
         <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
         <translation>La carpeta seleccionada no contiene los fotogramas de la cámara {0} de este proyecto. Elija la carpeta con los archivos de imagen originales, o cancele para abortar la apertura.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="613"/>
+        <location filename="../../gui/main_window.py" line="620"/>
         <source>The image folder saved with this project was not found:
 {0}
 
@@ -2533,42 +2538,42 @@ Select the folder that now contains the camera {1} frames (file names must match
 Seleccione la carpeta que ahora contiene los fotogramas de la cámara {1} (los nombres de archivo deben coincidir).</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="620"/>
+        <location filename="../../gui/main_window.py" line="627"/>
         <source>Locate images for camera {0}</source>
         <translation>Localizar imágenes de la cámara {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="662"/>
+        <location filename="../../gui/main_window.py" line="669"/>
         <source>Include Results?</source>
         <translation>¿Incluir resultados?</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="663"/>
+        <location filename="../../gui/main_window.py" line="670"/>
         <source>Include the analysis results in this project file?</source>
         <translation>¿Incluir los resultados del análisis en este archivo de proyecto?</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="666"/>
+        <location filename="../../gui/main_window.py" line="673"/>
         <source>Including results (about {0} uncompressed) lets you reopen the project without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>Incluir los resultados (aprox. {0} sin comprimir) permite reabrir el proyecto sin recalcular. Elija No para guardar un archivo pequeño de solo configuración, fácil de compartir.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="704"/>
+        <location filename="../../gui/main_window.py" line="711"/>
         <source>unknown size</source>
         <translation>tamaño desconocido</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="714"/>
+        <location filename="../../gui/main_window.py" line="721"/>
         <source>Saving project…</source>
         <translation>Guardando el proyecto…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="718"/>
+        <location filename="../../gui/main_window.py" line="725"/>
         <source>Could not save the project: {0}</source>
         <translation>No se pudo guardar el proyecto: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="722"/>
+        <location filename="../../gui/main_window.py" line="729"/>
         <source>Could not save the project:
 {0}
 
@@ -2583,7 +2588,7 @@ The previous version of the file, if any, is unchanged.</source>
 La versión anterior del archivo, si existe, no ha cambiado.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="730"/>
+        <location filename="../../gui/main_window.py" line="737"/>
         <source>Saved {0}</source>
         <translation>{0} guardado</translation>
     </message>
@@ -2610,13 +2615,13 @@ La versión anterior del archivo, si existe, no ha cambiado.</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="493"/>
-        <location filename="../../gui/main_window.py" line="648"/>
+        <location filename="../../gui/main_window.py" line="655"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>Proyecto pyALDIC-3D (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="646"/>
-        <location filename="../../gui/main_window.py" line="720"/>
+        <location filename="../../gui/main_window.py" line="653"/>
+        <location filename="../../gui/main_window.py" line="727"/>
         <source>Save Project</source>
         <translation>Guardar proyecto</translation>
     </message>
@@ -3622,6 +3627,113 @@ El registro tiene los detalles.</translation>
     </message>
 </context>
 <context>
+    <name>RigidMotion</name>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="17"/>
+        <source>translation</source>
+        <translation>traslación</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="19"/>
+        <source>translation + rotation</source>
+        <translation>traslación + rotación</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="21"/>
+        <source>off</source>
+        <translation>desactivado</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="30"/>
+        <source> · rigid motion removed ({0})</source>
+        <translation> · movimiento rígido eliminado ({0})</translation>
+    </message>
+</context>
+<context>
+    <name>RigidMotionPanel3D</name>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="51"/>
+        <source>Remove</source>
+        <translation>Eliminar</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Off</source>
+        <translation>Desactivado</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Translation only</source>
+        <translation>Solo traslación</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Translation + rotation</source>
+        <translation>Traslación + rotación</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="61"/>
+        <source>Remove each frame&apos;s best-fit rigid-body motion (relative to frame 1)
+from the displacement everywhere: the field maps, the 3D view,
+the strain and every export. Green-Lagrange strain is unchanged
+by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
+        <translation>Elimina en todas partes el movimiento de sólido rígido mejor ajustado
+de cada fotograma (respecto al fotograma 1): mapas de campo, vista 3D,
+deformación y cada exportación. La deformación de Green-Lagrange
+no cambia; el desplazamiento y las pendientes ∂w/∂x, ∂w/∂y sí.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="80"/>
+        <source>+ Rectangle</source>
+        <translation>+ Rectángulo</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="81"/>
+        <source>+ Polygon</source>
+        <translation>+ Polígono</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="82"/>
+        <source>− Rectangle</source>
+        <translation>− Rectángulo</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="83"/>
+        <source>− Polygon</source>
+        <translation>− Polígono</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="89"/>
+        <source>Add an area to the fit region (drawn on frame 1)</source>
+        <translation>Añadir un área a la región de ajuste (dibujada en el fotograma 1)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="91"/>
+        <source>Remove an area from the fit region</source>
+        <translation>Quitar un área de la región de ajuste</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="98"/>
+        <source>Use all valid points</source>
+        <translation>Usar todos los puntos válidos</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="100"/>
+        <source>Clear the drawn region: fit on every valid point</source>
+        <translation>Borrar la región dibujada: ajustar con todos los puntos válidos</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="104"/>
+        <source>Show fit region</source>
+        <translation>Mostrar la región de ajuste</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="115"/>
+        <source>Per frame: shift of the fitted points&apos; centroid ΔX/ΔY/ΔZ (µm), rotation θ (mrad), fit residual RMS (µm), points used N.</source>
+        <translation>Por fotograma: desplazamiento del centroide de los puntos ajustados ΔX/ΔY/ΔZ (µm), rotación θ (mrad), residuo del ajuste RMS (µm), puntos usados N.</translation>
+    </message>
+</context>
+<context>
     <name>RunSummaryMixin</name>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="25"/>
@@ -3768,39 +3880,84 @@ El registro tiene los detalles.</translation>
 <context>
     <name>StrainFieldSelector3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="46"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="51"/>
+        <source>U — displacement along the world X axis (left camera)</source>
+        <translation>U — desplazamiento según el eje X del sistema mundo (cámara izquierda)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="52"/>
+        <source>V — displacement along the world Y axis (left camera)</source>
+        <translation>V — desplazamiento según el eje Y del sistema mundo (cámara izquierda)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="53"/>
+        <source>W — displacement along the world Z axis (left camera)</source>
+        <translation>W — desplazamiento según el eje Z del sistema mundo (cámara izquierda)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="54"/>
+        <source>|D| — displacement magnitude</source>
+        <translation>|D| — magnitud del desplazamiento</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="55"/>
+        <source>∂w/∂x — out-of-plane slope along the strain frame&apos;s x axis</source>
+        <translation>∂w/∂x — pendiente fuera del plano según el eje x del sistema de deformación</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="56"/>
+        <source>∂w/∂y — out-of-plane slope along the strain frame&apos;s y axis</source>
+        <translation>∂w/∂y — pendiente fuera del plano según el eje y del sistema de deformación</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="59"/>
         <source>εxx — normal strain along the strain frame&apos;s x axis</source>
         <translation>εxx — deformación normal según el eje x del sistema de deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="47"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="60"/>
         <source>εyy — normal strain along the strain frame&apos;s y axis</source>
         <translation>εyy — deformación normal según el eje y del sistema de deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="48"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="61"/>
         <source>εxy — in-plane shear strain (tensor component)</source>
         <translation>εxy — deformación cortante en el plano (componente tensorial)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="49"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="62"/>
         <source>ε₁ — major principal strain (largest in-plane eigenvalue)</source>
         <translation>ε₁ — deformación principal mayor (mayor autovalor en el plano)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="50"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="63"/>
         <source>ε₂ — minor principal strain (smallest in-plane eigenvalue)</source>
         <translation>ε₂ — deformación principal menor (menor autovalor en el plano)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="51"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="64"/>
         <source>γ max — maximum shear strain, (ε₁ − ε₂) / 2</source>
         <translation>γ max — deformación cortante máxima, (ε₁ − ε₂) / 2</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="52"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="65"/>
         <source>von Mises — equivalent strain (plane-stress invariant)</source>
         <translation>von Mises — deformación equivalente (invariante de tensión plana)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="71"/>
+        <source>Displacement</source>
+        <translation>Desplazamiento</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="72"/>
+        <source>Slope</source>
+        <translation>Pendiente</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="73"/>
+        <source>Strain</source>
+        <translation>Deformación</translation>
     </message>
 </context>
 <context>
@@ -4043,9 +4200,77 @@ sobre la malla de referencia).
 <context>
     <name>StrainRenderMixin</name>
     <message>
-        <location filename="../../gui/strain_canvas.py" line="230"/>
+        <location filename="../../gui/strain_canvas.py" line="245"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>No se pudo dibujar la superposición: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>StrainRigidMotionMixin</name>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="59"/>
+        <source>RIGID MOTION</source>
+        <translation>MOVIMIENTO DE SÓLIDO RÍGIDO</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="82"/>
+        <source>Run 3D analysis first — no results to post-process.</source>
+        <translation>Ejecute primero el análisis 3D — no hay resultados para posprocesar.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="105"/>
+        <source>Rigid motion not removed: {0}</source>
+        <translation>Movimiento de sólido rígido no eliminado: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="147"/>
+        <source>Fit region: all valid points</source>
+        <translation>Región de ajuste: todos los puntos válidos</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="149"/>
+        <source>Fit region: drawn</source>
+        <translation>Región de ajuste: dibujada</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="151"/>
+        <source>Fit region: drawn ({0} nodes)</source>
+        <translation>Región de ajuste: dibujada ({0} nodos)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="154"/>
+        <source>Rigid motion is not removed.</source>
+        <translation>No se elimina el movimiento de sólido rígido.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="157"/>
+        <source>Removed ({0}), fitted on {1} points.</source>
+        <translation>Eliminado ({0}), ajustado con {1} puntos.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="162"/>
+        <source>the fit region does not cover this run</source>
+        <translation>la región de ajuste no cubre este análisis</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="163"/>
+        <source>Not removed: {0}</source>
+        <translation>No eliminado: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="165"/>
+        <source>It will be removed once the analysis has run.</source>
+        <translation>Se eliminará cuando se haya ejecutado el análisis.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="166"/>
+        <source>Not fitted on this frame: {0}</source>
+        <translation>No ajustado en este fotograma: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="169"/>
+        <source>⚠ Rigid-motion setting changed -- click Compute Strain</source>
+        <translation>⚠ Ajuste de movimiento rígido modificado — haga clic en «Calcular deformación»</translation>
     </message>
 </context>
 <context>
@@ -4114,179 +4339,179 @@ sobre la malla de referencia).
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="111"/>
+        <location filename="../../gui/strain_window.py" line="115"/>
         <source>Strain Post-Processing</source>
         <translation>Post-procesado de deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="151"/>
+        <location filename="../../gui/strain_window.py" line="156"/>
         <source>STRAIN PARAMETERS</source>
         <translation>PARÁMETROS DE DEFORMACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="161"/>
+        <location filename="../../gui/strain_window.py" line="166"/>
         <source>Compute Strain</source>
         <translation>Calcular deformación</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="167"/>
+        <location filename="../../gui/strain_window.py" line="172"/>
         <source>Export Results</source>
         <translation>Exportar resultados</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="171"/>
-        <location filename="../../gui/strain_window.py" line="680"/>
+        <location filename="../../gui/strain_window.py" line="176"/>
+        <location filename="../../gui/strain_window.py" line="694"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>Exportar resultados de desplazamiento y deformación a NPZ / MAT / CSV</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="190"/>
+        <location filename="../../gui/strain_window.py" line="195"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="192"/>
+        <location filename="../../gui/strain_window.py" line="197"/>
         <source>Stop the strain computation at the next frame.</source>
         <translation>Detener el cálculo de deformación en el siguiente fotograma.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="201"/>
+        <location filename="../../gui/strain_window.py" line="206"/>
         <source>FIELD</source>
         <translation>CAMPO</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="207"/>
+        <location filename="../../gui/strain_window.py" line="212"/>
         <source>VISUALIZATION</source>
         <translation>VISUALIZACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="211"/>
+        <location filename="../../gui/strain_window.py" line="216"/>
         <source>LOG</source>
         <translation>REGISTRO</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="334"/>
+        <location filename="../../gui/strain_window.py" line="339"/>
         <source>Computation Running</source>
         <translation>Cálculo en ejecución</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="335"/>
+        <location filename="../../gui/strain_window.py" line="340"/>
         <source>A strain computation is running — cancel it and close?</source>
         <translation>Hay un cálculo de deformación en ejecución — ¿cancelarlo y cerrar?</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="340"/>
+        <location filename="../../gui/strain_window.py" line="345"/>
         <source>Yes</source>
         <translation>Sí</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="341"/>
+        <location filename="../../gui/strain_window.py" line="346"/>
         <source>No</source>
         <translation>No</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="401"/>
-        <location filename="../../gui/strain_window.py" line="466"/>
-        <location filename="../../gui/strain_window.py" line="580"/>
+        <location filename="../../gui/strain_window.py" line="406"/>
+        <location filename="../../gui/strain_window.py" line="473"/>
+        <location filename="../../gui/strain_window.py" line="588"/>
         <source>Strain compute failed: {0}</source>
         <translation>Fallo en el cálculo de deformación: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="413"/>
-        <location filename="../../gui/strain_window.py" line="543"/>
+        <location filename="../../gui/strain_window.py" line="418"/>
+        <location filename="../../gui/strain_window.py" line="550"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>Ejecute primero el análisis 3D — no hay resultados para posprocesar.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="416"/>
-        <location filename="../../gui/strain_window.py" line="554"/>
-        <location filename="../../gui/strain_window.py" line="582"/>
+        <location filename="../../gui/strain_window.py" line="421"/>
+        <location filename="../../gui/strain_window.py" line="562"/>
+        <location filename="../../gui/strain_window.py" line="590"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>Haga clic en el origen, luego +X, luego +Y en la imagen</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="423"/>
+        <location filename="../../gui/strain_window.py" line="429"/>
         <source>Computing strain…</source>
         <translation>Calculando deformación…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="440"/>
+        <location filename="../../gui/strain_window.py" line="446"/>
         <source>Cancelling…</source>
         <translation>Cancelando…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="445"/>
+        <location filename="../../gui/strain_window.py" line="451"/>
         <source>Computing strain… {0}%</source>
         <translation>Calculando deformación… {0}%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="464"/>
         <source>Complete</source>
         <translation>Completado</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>Strain computation cancelled.</source>
         <translation>Cálculo de deformación cancelado.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="476"/>
+        <location filename="../../gui/strain_window.py" line="483"/>
         <source>Strain computation complete.</source>
         <translation>Cálculo de deformación completado.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="481"/>
+        <location filename="../../gui/strain_window.py" line="488"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ Parámetros modificados — haga clic en «Calcular deformación»</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="565"/>
+        <location filename="../../gui/strain_window.py" line="573"/>
         <source>No valid point near the click — pick on the result field</source>
         <translation>No hay un punto válido cerca del clic — elija sobre el campo de resultados</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="573"/>
-        <location filename="../../gui/strain_window.py" line="590"/>
+        <location filename="../../gui/strain_window.py" line="581"/>
+        <location filename="../../gui/strain_window.py" line="598"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 puntos elegidos</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="592"/>
+        <location filename="../../gui/strain_window.py" line="600"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="665"/>
+        <location filename="../../gui/strain_window.py" line="679"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>Ejecute primero un análisis 3D — la deformación necesita resultados de desplazamiento.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="669"/>
+        <location filename="../../gui/strain_window.py" line="683"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>Elija primero los 3 puntos del sistema de la probeta (origen, +X, +Y).</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="674"/>
+        <location filename="../../gui/strain_window.py" line="688"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>Calcular la deformación superficial de Green-Lagrange a partir del campo de desplazamiento con los parámetros anteriores.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="684"/>
+        <location filename="../../gui/strain_window.py" line="698"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>Ejecute primero un análisis — todavía no hay resultados.</translation>
     </message>
@@ -4455,29 +4680,30 @@ velocidad por fotograma.</translation>
 <context>
     <name>ZoomBar</name>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="60"/>
+        <location filename="../../gui/widgets/strain_support.py" line="81"/>
         <source>Fit</source>
+        <extracomment>The rigid-motion fit region&apos;s fill (amber), distinct from the blue ROI.</extracomment>
         <translation>Ajustar</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="61"/>
+        <location filename="../../gui/widgets/strain_support.py" line="82"/>
         <source>Fit image to viewport</source>
         <translation>Ajustar la imagen a la vista</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="68"/>
+        <location filename="../../gui/widgets/strain_support.py" line="89"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>Zoom actual — haga clic para restablecer al 100 % (píxeles 1:1).
 Rueda: zoom · Arrastre con botón derecho/central: desplazar · Espacio: modo desplazamiento</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="74"/>
+        <location filename="../../gui/widgets/strain_support.py" line="95"/>
         <source>Zoom in</source>
         <translation>Acercar</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="78"/>
+        <location filename="../../gui/widgets/strain_support.py" line="99"/>
         <source>Zoom out</source>
         <translation>Alejar</translation>
     </message>

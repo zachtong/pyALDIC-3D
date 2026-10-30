@@ -11,7 +11,10 @@ through a PRIVATE :class:`VizController3D` (namespaced ``strain_window:<field>``
   generation-tagged worker render when heavy — the last overlay stays up);
 * the node step is the RUN's (:func:`run_node_step`), never the live draft;
 * the drawn ROI is converted to bool once per ROI array (identity cache) and
-  doubles as the crack barrier without a full-image float copy.
+  doubles as the crack barrier without a full-image float copy;
+* displacement fields render before any strain exists, in the project's display
+  unit (read-only: a project-wide preference, not the main window's view state),
+  and every label carries the "rigid motion removed" suffix when it applies.
 
 Methods run in the context of ``StrainWindow3D`` and use its attributes; this
 module carries no user-facing strings except the log line it relays.
@@ -25,6 +28,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from al_dic_3d.gui.controllers.viz_controller import VizController3D
+from al_dic_3d.gui.display_units import display_field_key, field_display_factor, field_label
+from al_dic_3d.gui.rigid_motion_text import rigid_motion_label_suffix
+from al_dic_3d.gui.state import STRAIN_WINDOW_DISP_FIELDS
 from al_dic_3d.gui.strain_render import prepare_strain_render, trim_count
 from al_dic_3d.gui.widgets.frame_prefetcher import FramePrefetcher
 from al_dic_3d.gui.widgets.overlay_presenter import (
@@ -33,7 +39,6 @@ from al_dic_3d.gui.widgets.overlay_presenter import (
     OverlayRequest,
     pump_until,
 )
-from al_dic_3d.gui.widgets.strain_field_selector import STRAIN_FIELD_LABELS
 from al_dic_3d.viz3d.raster import overlay_origin
 from al_dic_3d.viz3d.runstep import run_node_step
 
@@ -104,6 +109,15 @@ class StrainRenderMixin:
         self._roi_bool = (drawn, mask)
         return mask
 
+    def _display_unit(self) -> str:
+        """The project's displacement display unit (read-only)."""
+        return str(getattr(self.signals, "display_unit", "mm"))
+
+    def _overlay_label(self, field: str) -> str:
+        """Colorbar label: field + unit, plus the rigid-motion suffix when removed."""
+        result = self.controller.state.result
+        return field_label(field, self._display_unit()) + rigid_motion_label_suffix(result)
+
     # ---- rendering -------------------------------------------------------------
 
     def _try_load_background(self, img_idx: int) -> None:
@@ -151,14 +165,14 @@ class StrainRenderMixin:
         self._try_load_background(k if show_deformed else 0)
 
         strain = result.strain
-        if strain is None:
+        field = self._field_selector.current_field()
+        if strain is None and field not in STRAIN_WINDOW_DISP_FIELDS:
             self._clear_overlay()
             return
-
-        field = self._field_selector.current_field()
-        # Q4: live 'Trimmed: N nodes' readout — derived from strain_valid after a
-        # reload where n_trimmed did not persist (C3-3), so it never blanks.
-        self._param_panel.set_trim_readout(trim_count(strain, k), int(strain.n_pts))
+        if strain is not None:
+            # Q4: live 'Trimmed: N nodes' readout — derived from strain_valid after
+            # a reload where n_trimmed did not persist (C3-3), so it never blanks.
+            self._param_panel.set_trim_readout(trim_count(strain, k), int(strain.n_pts))
         crack_aware = bool(result.meta.get("crack_aware", False))  # item 5 indicator
         self._param_panel.set_crack_aware(crack_aware)
         # Geometry follows the deformed toggle; values stay those of frame k.
@@ -179,6 +193,7 @@ class StrainRenderMixin:
             auto_range_on=self._auto_range_cb.isChecked(),
             manual_vmin=self._vmin_spin.value(),
             manual_vmax=self._vmax_spin.value(),
+            value_scale=field_display_factor(field, self._display_unit()),
         )
         barrier = rd.barrier_mask
         self._last_rendered = (rd.vmin, rd.vmax)
@@ -191,7 +206,7 @@ class StrainRenderMixin:
         cmap = self._cmap_combo.currentText()
         req = OverlayRequest(
             frame_idx=k,
-            field_name=f"strain_window:{field}",
+            field_name=f"strain_window:{display_field_key(field, self._display_unit(), 1.0)}",
             nodes=rd.pts,
             values=rd.vals,
             img_shape=(h, w),
@@ -205,7 +220,7 @@ class StrainRenderMixin:
             ref_pts=rd.ref_pts,
             barrier_mask=barrier,
         )
-        label = STRAIN_FIELD_LABELS.get(field, field)
+        label = self._overlay_label(field)
         self._overlays.request(
             req,
             partial(self._apply_strain_overlay, cmap, rd.vmin, rd.vmax, label),

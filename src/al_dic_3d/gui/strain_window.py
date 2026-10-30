@@ -14,8 +14,8 @@ Decoupling contracts (mirroring the 2D window, enforced by tests):
 * Owns its own field selector / colormap / range / opacity — never reads or
   writes the main window's display state on ``GuiSignals``.
 * Reads ``controller.state.result`` and writes back ONLY through
-  :class:`StrainController3D` (``dataclasses.replace`` on the frozen result),
-  then emits ``signals.results_changed``.
+  :class:`StrainController3D` (``dataclasses.replace`` on the frozen result)
+  and the RIGID MOTION section's controller, then emits ``signals.results_changed``.
 
 The coordinate-system control (surface tangent plane / left camera frame /
 custom 3-point specimen frame) is the key 3D addition; the 3-point pick flow
@@ -25,6 +25,7 @@ nearest valid node of the reference mesh.
 
 from __future__ import annotations
 
+import weakref
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -52,6 +53,7 @@ from PySide6.QtWidgets import (
 from al_dic_3d.gui.controllers.strain_controller import StrainController3D
 from al_dic_3d.gui.state import GuiSignals
 from al_dic_3d.gui.strain_canvas import StrainRenderMixin
+from al_dic_3d.gui.strain_rigid_motion import StrainRigidMotionMixin
 from al_dic_3d.gui.widgets.strain_field_selector import StrainFieldSelector3D
 from al_dic_3d.gui.widgets.strain_navigator import StrainNavigator3D
 from al_dic_3d.gui.widgets.strain_param_panel import StrainParamPanel3D
@@ -79,7 +81,7 @@ def initial_window_size(avail_width: int, avail_height: int) -> tuple[int, int]:
     )
 
 
-class StrainWindow3D(StrainRenderMixin, QMainWindow):
+class StrainWindow3D(StrainRigidMotionMixin, StrainRenderMixin, QMainWindow):
     """Independent strain post-processing window (full 2D clone, 3D data).
 
     Rendering (frames + dense overlay, off the GUI thread when heavy — V-view)
@@ -102,7 +104,9 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
         # PRIVATE display state — never mirrored to GuiSignals.
         self._frame = 0
         self._last_rendered: tuple[float, float] = (0.0, 1.0)
-        self._recon_id: int | None = None  # detects a NEW run vs a strain writeback
+        # The run on display, by its correspondence: a strain writeback or a
+        # rigid-motion swap keeps it, a new run or an opened project replaces it.
+        self._run_ref: weakref.ref | None = None
 
         # 3-point specimen pick state.
         self._pick_nodes: list[int] = []
@@ -148,6 +152,7 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
         right.setContentsMargins(0, 0, 0, 0)
         right.setSpacing(6)
 
+        right.addWidget(self._init_rigid_motion())  # RIGID MOTION (strain_rigid_motion.py)
         self._params_section = CollapsibleSection(self.tr("STRAIN PARAMETERS"), expanded=True)
         # H3: the VSG readout converts with the RUN's node step, not the draft's.
         self._param_panel = StrainParamPanel3D(winstepsize=self._run_step())
@@ -418,6 +423,7 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
         if self._worker is not None and self._worker.isRunning():
             return
         self._compute_btn.setEnabled(False)
+        self._rbm_panel.set_controls_enabled(False)  # no swap under a running compute
         self._progress.setValue(0)
         self._progress.setVisible(True)
         self._progress_lbl.setText(self.tr("Computing strain…"))
@@ -448,6 +454,7 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
         self._progress.setVisible(False)
         self._progress_lbl.setVisible(False)
         self._cancel_btn.setVisible(False)
+        self._refresh_rigid_motion()  # unlocks the RIGID MOTION controls
 
     def _on_worker_finished(self, strain: StrainResult3D) -> None:
         # Writeback on the main thread (frozen replace + one notification).
@@ -542,6 +549,7 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
         if self.controller.state.result is None:
             self._log(self.tr("Run 3D analysis first — no results to post-process."), "warning")
             return
+        self._canvas.set_tool("select")  # a fit-region tool and picking never overlap
         self._clear_pick_markers()
         self._pick_nodes = []
         self._param_panel.set_specimen_R(None)
@@ -625,11 +633,10 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
             dlg.close()  # an idle export dialog still showing the old result
         self._viz_ctrl.clear_all()
         self._param_panel.set_winstepsize(self._run_step())
-        recon_id = None if result is None else id(result.reconstruction)
-        if recon_id != self._recon_id:
-            # A genuinely new run (not our strain writeback): picked nodes and
-            # the specimen frame belong to the old mesh — drop them.
-            self._recon_id = recon_id
+        if not self._same_run(result):
+            # A genuinely new run (not a strain writeback or rigid-motion swap):
+            # picked nodes and the specimen frame belong to the old mesh.
+            self._run_ref = None if result is None else weakref.ref(result.correspondence)
             self._cancel_pick()
             self._param_panel.set_specimen_R(None)
             self._param_panel.set_pick_status("")
@@ -643,6 +650,7 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
     def _refresh_from_result(self) -> None:
         result = self.controller.state.result
         has_strain = result is not None and result.strain is not None
+        self._field_selector.set_displacement_available(result is not None)
         self._field_selector.set_fields_available(has_strain)
         # R1.2 (2D 01ed129): Export follows RESULTS, not strain — the shared
         # dialog exports displacement too (session reload / pre-compute).
@@ -651,11 +659,17 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
         # R1.4: physical node spacing feeds the panel's VSG size readout.
         self._param_panel.set_node_spacing_mm(self._strain_ctrl.node_spacing_mm())
         self._refresh_action_tooltips()
-        if self._recon_id is None and result is not None:
-            self._recon_id = id(result.reconstruction)
+        if self._run_ref is None and result is not None:
+            self._run_ref = weakref.ref(result.correspondence)
         n = self._frame_count()
         self._frame = max(0, min(self._frame, max(0, n - 1)))
         self._nav.set_state(n, self._frame)
+        self._refresh_rigid_motion()
+
+    def _same_run(self, result) -> bool:
+        """``result`` belongs to the run on display (same correspondence object)."""
+        shown = None if self._run_ref is None else self._run_ref()
+        return (None if result is None else result.correspondence) is shown
 
     def _refresh_action_tooltips(self) -> None:
         """G2.1 stateful tooltips: disabled Compute / Export explain themselves."""
@@ -690,6 +704,7 @@ class StrainWindow3D(StrainRenderMixin, QMainWindow):
 
     def _on_frame_nav(self, value: int) -> None:
         self._frame = int(value)
+        self._rbm_panel.set_current_frame(self._frame)
         self._render()
 
     def _on_auto_range(self, checked: bool) -> None:

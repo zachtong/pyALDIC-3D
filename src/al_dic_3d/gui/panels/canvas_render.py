@@ -25,6 +25,7 @@ import numpy as np
 
 from al_dic_3d.gui.controllers.viz_controller import VizController3D, auto_range, visible_values
 from al_dic_3d.gui.display_units import display_field_key, field_display_factor, field_label
+from al_dic_3d.gui.rigid_motion_text import rigid_motion_label_suffix
 from al_dic_3d.gui.widgets.frame_prefetcher import FramePrefetcher
 from al_dic_3d.gui.widgets.overlay_presenter import (
     FrameShower,
@@ -119,7 +120,8 @@ class CanvasRenderMixin:
     def _display_label(self) -> str:
         """Colorbar / scalar-bar label: velocity is per frame until a rate is set."""
         s = self.signals
-        return field_label(s.display_field, s.display_unit, per_frame=not s.frame_rate_known)
+        label = field_label(s.display_field, s.display_unit, per_frame=not s.frame_rate_known)
+        return label + rigid_motion_label_suffix(self.controller.state.result)
 
     def _run_step(self, result) -> int:
         """The node step of the run that produced ``result`` (memoised per result)."""

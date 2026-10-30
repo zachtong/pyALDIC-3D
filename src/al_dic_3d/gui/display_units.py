@@ -34,6 +34,11 @@ STRAIN_LABELS = {
 }
 
 
+#: Out-of-plane slopes of the strain fit: dimensionless, shown in mrad (= µm/mm).
+SLOPE_LABELS = {"dwdx": "∂w/∂x", "dwdy": "∂w/∂y"}
+SLOPE_FACTOR = 1000.0
+
+
 def unit_factor(unit: str) -> float:
     """mm -> ``unit`` multiplier (1.0 for unknown units, i.e. stay mm)."""
     return UNIT_FACTORS.get(unit, 1.0)
@@ -43,6 +48,8 @@ def field_display_factor(field: str, unit: str) -> float:
     """Scale factor applied to ``field``'s raw (mm-native) values for display."""
     if field in DISPLACEMENT_UNIT_FIELDS or field == VELOCITY_FIELD:
         return unit_factor(unit)
+    if field in SLOPE_LABELS:
+        return SLOPE_FACTOR  # rad -> mrad
     return 1.0  # strain and anything else: dimensionless / untouched
 
 
@@ -58,6 +65,8 @@ def field_label(field: str, unit: str, per_frame: bool = False) -> str:
         return f"|V| ({unit}/frame)" if per_frame else f"|V| ({unit}/s)"
     if field in DISPLACEMENT_UNIT_FIELDS:
         return f"{field} ({unit})"
+    if field in SLOPE_LABELS:
+        return f"{SLOPE_LABELS[field]} (mrad)"
     return STRAIN_LABELS.get(field, field)
 
 

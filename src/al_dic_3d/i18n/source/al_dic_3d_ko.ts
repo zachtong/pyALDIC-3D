@@ -819,39 +819,39 @@ fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="92"/>
+        <location filename="../../gui/panels/canvas_area.py" line="93"/>
         <source>Fit</source>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="95"/>
+        <location filename="../../gui/panels/canvas_area.py" line="96"/>
         <source>Fit the image to the viewport (Ctrl+0)</source>
         <translation>이미지를 뷰포트에 맞춤 (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="102"/>
+        <location filename="../../gui/panels/canvas_area.py" line="103"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>현재 확대율 — 클릭하면 100%(1:1 픽셀)로 재설정됩니다.
 휠: 확대/축소 · 오른쪽/가운데 드래그: 이동 · 스페이스: 이동 모드</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="109"/>
+        <location filename="../../gui/panels/canvas_area.py" line="110"/>
         <source>Zoom in (Ctrl+=)</source>
         <translation>확대 (Ctrl+=)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Zoom out (Ctrl+-)</source>
         <translation>축소 (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="119"/>
         <source>Show Grid</source>
         <translation>격자 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="121"/>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -861,7 +861,7 @@ Default on; turn off to declutter the canvas.</source>
 기본 켜짐. 캔버스를 깔끔하게 하려면 끄세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="134"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -869,7 +869,7 @@ whether the subset spans enough speckle texture.</source>
 '그리드 표시'가 필요합니다. 서브셋이 충분한 스페클 텍스처를 포함하는지 판단하는 데 사용하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="147"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -877,57 +877,57 @@ to the 2D image view. Requires results.</source>
 체크를 해제하면 2D 이미지 뷰로 돌아갑니다. 결과가 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="131"/>
+        <location filename="../../gui/panels/canvas_area.py" line="132"/>
         <source>Show Subset</source>
         <translation>서브셋 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="144"/>
+        <location filename="../../gui/panels/canvas_area.py" line="145"/>
         <source>3D View</source>
         <translation>3D 보기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="323"/>
+        <location filename="../../gui/panels/canvas_area.py" line="325"/>
         <source>Load images before importing an ROI mask</source>
         <translation>ROI 마스크를 가져오기 전에 이미지를 불러오세요</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="328"/>
+        <location filename="../../gui/panels/canvas_area.py" line="330"/>
         <source>Could not import the mask: {0}</source>
         <translation>마스크를 가져올 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="331"/>
+        <location filename="../../gui/panels/canvas_area.py" line="333"/>
         <source>ROI mask imported from {0}</source>
         <translation>{0}에서 ROI 마스크를 가져왔습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="336"/>
+        <location filename="../../gui/panels/canvas_area.py" line="338"/>
         <source>No ROI mask to save — draw one first</source>
         <translation>저장할 ROI 마스크가 없습니다 — 먼저 그리세요</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="344"/>
+        <location filename="../../gui/panels/canvas_area.py" line="346"/>
         <source>Save Mask</source>
         <translation>마스크 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="344"/>
+        <location filename="../../gui/panels/canvas_area.py" line="346"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 이미지 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="351"/>
+        <location filename="../../gui/panels/canvas_area.py" line="353"/>
         <source>Could not save the mask: {0}</source>
         <translation>마스크를 저장할 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="354"/>
+        <location filename="../../gui/panels/canvas_area.py" line="356"/>
         <source>ROI mask saved to {0}</source>
         <translation>ROI 마스크를 {0}에 저장했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="540"/>
+        <location filename="../../gui/panels/canvas_area.py" line="542"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>분석에서 유효한 점이 없습니다 — 표시할 내용이 없습니다. 로그를 확인하십시오.</translation>
     </message>
@@ -935,22 +935,22 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>CanvasRenderMixin</name>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="67"/>
+        <location filename="../../gui/panels/canvas_render.py" line="68"/>
         <source>Could not map the ROI into the right camera: {0}</source>
         <translation>ROI를 오른쪽 카메라로 옮길 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="204"/>
+        <location filename="../../gui/panels/canvas_render.py" line="206"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="211"/>
+        <location filename="../../gui/panels/canvas_render.py" line="213"/>
         <source>Selected field is not available.</source>
         <translation>선택한 필드를 사용할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="396"/>
+        <location filename="../../gui/panels/canvas_render.py" line="398"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>오버레이를 그릴 수 없습니다: {0}</translation>
     </message>
@@ -1312,27 +1312,27 @@ to the 2D image view. Requires results.</source>
         <translation>WYSIWYG 스타일 소스: 여기서 설정한 컬러바와 여백이 모든 이미지/애니메이션 내보내기에 사용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="464"/>
         <source>Export Running</source>
         <translation>내보내기 진행 중</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="463"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="465"/>
         <source>An export is still running — cancel it and close?</source>
         <translation>내보내기가 아직 실행 중입니다 — 취소하고 닫을까요?</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="468"/>
         <source>Yes</source>
         <translation>예</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="467"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="469"/>
         <source>No</source>
         <translation>아니요</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="499"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="501"/>
         <source>Folder does not exist: {0}</source>
         <translation>폴더가 존재하지 않습니다: {0}</translation>
     </message>
@@ -1347,7 +1347,7 @@ to the 2D image view. Requires results.</source>
         <translation>현재 3D 뷰의 시점으로 3D 표면을 오프스크린 렌더링하여 이미지, 변형 애니메이션 또는 턴테이블로 내보냅니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="486"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="488"/>
         <source>Choose output folder</source>
         <translation>출력 폴더 선택</translation>
     </message>
@@ -2353,14 +2353,14 @@ the error expected in that position.</source>
     <message>
         <location filename="../../gui/main_window.py" line="284"/>
         <location filename="../../gui/main_window.py" line="300"/>
-        <location filename="../../gui/main_window.py" line="677"/>
+        <location filename="../../gui/main_window.py" line="684"/>
         <source>Yes</source>
         <translation>예</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="285"/>
         <location filename="../../gui/main_window.py" line="301"/>
-        <location filename="../../gui/main_window.py" line="678"/>
+        <location filename="../../gui/main_window.py" line="685"/>
         <source>No</source>
         <translation>아니요</translation>
     </message>
@@ -2391,8 +2391,8 @@ the error expected in that position.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="341"/>
-        <location filename="../../gui/main_window.py" line="593"/>
-        <location filename="../../gui/main_window.py" line="679"/>
+        <location filename="../../gui/main_window.py" line="600"/>
+        <location filename="../../gui/main_window.py" line="686"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
@@ -2478,38 +2478,43 @@ the error expected in that position.</source>
         <translation>캘리브레이션 파일을 찾았습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="572"/>
+        <location filename="../../gui/main_window.py" line="574"/>
         <source>The calibration file was not found; using the copy saved in the project: {0}</source>
         <translation>캘리브레이션 파일을 찾지 못해 프로젝트에 저장된 사본을 사용합니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="583"/>
+        <location filename="../../gui/main_window.py" line="578"/>
+        <source>The rigid motion was not removed (the results are shown as measured): {0}</source>
+        <translation>강체 운동을 제거하지 않았습니다(결과는 측정값 그대로 표시): {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="590"/>
         <source>Images Not Found</source>
         <translation>이미지를 찾을 수 없음</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="586"/>
+        <location filename="../../gui/main_window.py" line="593"/>
         <source>Some of this project&apos;s images cannot be found. Open it anyway? Results stay viewable and exportable; running again needs the images.</source>
         <translation>이 프로젝트의 일부 이미지를 찾을 수 없습니다. 그래도 열까요? 결과는 보고 내보낼 수 있지만 다시 실행하려면 이미지가 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="592"/>
+        <location filename="../../gui/main_window.py" line="599"/>
         <source>Open anyway</source>
         <translation>그래도 열기</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="601"/>
-        <location filename="../../gui/main_window.py" line="611"/>
+        <location filename="../../gui/main_window.py" line="608"/>
+        <location filename="../../gui/main_window.py" line="618"/>
         <source>Locate Images</source>
         <translation>이미지 위치 지정</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="603"/>
+        <location filename="../../gui/main_window.py" line="610"/>
         <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
         <translation>선택한 폴더에 이 프로젝트의 카메라 {0} 프레임이 없습니다. 원본 이미지 파일이 있는 폴더를 선택하거나, 취소하여 열기를 중단하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="613"/>
+        <location filename="../../gui/main_window.py" line="620"/>
         <source>The image folder saved with this project was not found:
 {0}
 
@@ -2520,42 +2525,42 @@ Select the folder that now contains the camera {1} frames (file names must match
 현재 카메라 {1} 프레임이 있는 폴더를 선택하세요(파일 이름이 일치해야 합니다).</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="620"/>
+        <location filename="../../gui/main_window.py" line="627"/>
         <source>Locate images for camera {0}</source>
         <translation>카메라 {0} 이미지 위치 지정</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="662"/>
+        <location filename="../../gui/main_window.py" line="669"/>
         <source>Include Results?</source>
         <translation>결과를 포함할까요?</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="663"/>
+        <location filename="../../gui/main_window.py" line="670"/>
         <source>Include the analysis results in this project file?</source>
         <translation>이 프로젝트 파일에 분석 결과를 포함하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="666"/>
+        <location filename="../../gui/main_window.py" line="673"/>
         <source>Including results (about {0} uncompressed) lets you reopen the project without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>결과를 포함하면(비압축 약 {0}) 재계산 없이 프로젝트를 다시 열 수 있습니다. '아니요'를 선택하면 공유용의 작은 구성 전용 파일을 저장합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="704"/>
+        <location filename="../../gui/main_window.py" line="711"/>
         <source>unknown size</source>
         <translation>크기 알 수 없음</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="714"/>
+        <location filename="../../gui/main_window.py" line="721"/>
         <source>Saving project…</source>
         <translation>프로젝트 저장 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="718"/>
+        <location filename="../../gui/main_window.py" line="725"/>
         <source>Could not save the project: {0}</source>
         <translation>프로젝트를 저장할 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="722"/>
+        <location filename="../../gui/main_window.py" line="729"/>
         <source>Could not save the project:
 {0}
 
@@ -2570,7 +2575,7 @@ The previous version of the file, if any, is unchanged.</source>
 이전 버전의 파일(있는 경우)은 그대로입니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="730"/>
+        <location filename="../../gui/main_window.py" line="737"/>
         <source>Saved {0}</source>
         <translation>{0}을(를) 저장했습니다</translation>
     </message>
@@ -2597,13 +2602,13 @@ The previous version of the file, if any, is unchanged.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="493"/>
-        <location filename="../../gui/main_window.py" line="648"/>
+        <location filename="../../gui/main_window.py" line="655"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 프로젝트 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="646"/>
-        <location filename="../../gui/main_window.py" line="720"/>
+        <location filename="../../gui/main_window.py" line="653"/>
+        <location filename="../../gui/main_window.py" line="727"/>
         <source>Save Project</source>
         <translation>프로젝트 저장</translation>
     </message>
@@ -3605,6 +3610,113 @@ The log has the details.</source>
     </message>
 </context>
 <context>
+    <name>RigidMotion</name>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="17"/>
+        <source>translation</source>
+        <translation>병진</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="19"/>
+        <source>translation + rotation</source>
+        <translation>병진 + 회전</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="21"/>
+        <source>off</source>
+        <translation>끔</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="30"/>
+        <source> · rigid motion removed ({0})</source>
+        <translation> · 강체 운동 제거됨({0})</translation>
+    </message>
+</context>
+<context>
+    <name>RigidMotionPanel3D</name>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="51"/>
+        <source>Remove</source>
+        <translation>제거</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Off</source>
+        <translation>끔</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Translation only</source>
+        <translation>병진만</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Translation + rotation</source>
+        <translation>병진 + 회전</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="61"/>
+        <source>Remove each frame&apos;s best-fit rigid-body motion (relative to frame 1)
+from the displacement everywhere: the field maps, the 3D view,
+the strain and every export. Green-Lagrange strain is unchanged
+by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
+        <translation>각 프레임(프레임 1 기준)의 최적 강체 운동을 모든 곳의
+변위에서 제거합니다: 필드 맵, 3D 뷰, 변형률, 모든 내보내기.
+Green-Lagrange 변형률은 변하지 않지만,
+변위와 기울기 ∂w/∂x, ∂w/∂y는 달라집니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="80"/>
+        <source>+ Rectangle</source>
+        <translation>+ 사각형</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="81"/>
+        <source>+ Polygon</source>
+        <translation>+ 다각형</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="82"/>
+        <source>− Rectangle</source>
+        <translation>− 사각형</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="83"/>
+        <source>− Polygon</source>
+        <translation>− 다각형</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="89"/>
+        <source>Add an area to the fit region (drawn on frame 1)</source>
+        <translation>피팅 영역에 범위 추가(프레임 1에서 그림)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="91"/>
+        <source>Remove an area from the fit region</source>
+        <translation>피팅 영역에서 범위 제외</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="98"/>
+        <source>Use all valid points</source>
+        <translation>모든 유효 점 사용</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="100"/>
+        <source>Clear the drawn region: fit on every valid point</source>
+        <translation>그린 영역 지우기: 모든 유효 점으로 피팅</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="104"/>
+        <source>Show fit region</source>
+        <translation>피팅 영역 표시</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="115"/>
+        <source>Per frame: shift of the fitted points&apos; centroid ΔX/ΔY/ΔZ (µm), rotation θ (mrad), fit residual RMS (µm), points used N.</source>
+        <translation>프레임별: 피팅 점 중심의 이동 ΔX/ΔY/ΔZ(µm), 회전 θ(mrad), 피팅 잔차 RMS(µm), 사용된 점 수 N.</translation>
+    </message>
+</context>
+<context>
     <name>RunSummaryMixin</name>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="25"/>
@@ -3751,39 +3863,84 @@ The log has the details.</source>
 <context>
     <name>StrainFieldSelector3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="46"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="51"/>
+        <source>U — displacement along the world X axis (left camera)</source>
+        <translation>U — 월드 좌표계 X축 방향 변위(왼쪽 카메라)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="52"/>
+        <source>V — displacement along the world Y axis (left camera)</source>
+        <translation>V — 월드 좌표계 Y축 방향 변위(왼쪽 카메라)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="53"/>
+        <source>W — displacement along the world Z axis (left camera)</source>
+        <translation>W — 월드 좌표계 Z축 방향 변위(왼쪽 카메라)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="54"/>
+        <source>|D| — displacement magnitude</source>
+        <translation>|D| — 변위 크기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="55"/>
+        <source>∂w/∂x — out-of-plane slope along the strain frame&apos;s x axis</source>
+        <translation>∂w/∂x — 변형률 좌표계 x축 방향의 면외 기울기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="56"/>
+        <source>∂w/∂y — out-of-plane slope along the strain frame&apos;s y axis</source>
+        <translation>∂w/∂y — 변형률 좌표계 y축 방향의 면외 기울기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="59"/>
         <source>εxx — normal strain along the strain frame&apos;s x axis</source>
         <translation>εxx — 변형률 좌표계 x축 방향의 수직 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="47"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="60"/>
         <source>εyy — normal strain along the strain frame&apos;s y axis</source>
         <translation>εyy — 변형률 좌표계 y축 방향의 수직 변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="48"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="61"/>
         <source>εxy — in-plane shear strain (tensor component)</source>
         <translation>εxy — 면내 전단 변형률(텐서 성분)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="49"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="62"/>
         <source>ε₁ — major principal strain (largest in-plane eigenvalue)</source>
         <translation>ε₁ — 최대 주 변형률(면내 최대 고유값)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="50"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="63"/>
         <source>ε₂ — minor principal strain (smallest in-plane eigenvalue)</source>
         <translation>ε₂ — 최소 주 변형률(면내 최소 고유값)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="51"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="64"/>
         <source>γ max — maximum shear strain, (ε₁ − ε₂) / 2</source>
         <translation>γ max — 최대 전단 변형률, (ε₁ − ε₂) / 2</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="52"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="65"/>
         <source>von Mises — equivalent strain (plane-stress invariant)</source>
         <translation>von Mises — 등가 변형률(평면 응력 불변량)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="71"/>
+        <source>Displacement</source>
+        <translation>변위</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="72"/>
+        <source>Slope</source>
+        <translation>기울기</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="73"/>
+        <source>Strain</source>
+        <translation>변형률</translation>
     </message>
 </context>
 <context>
@@ -4022,9 +4179,77 @@ on the reference grid).
 <context>
     <name>StrainRenderMixin</name>
     <message>
-        <location filename="../../gui/strain_canvas.py" line="230"/>
+        <location filename="../../gui/strain_canvas.py" line="245"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>오버레이를 그릴 수 없습니다: {0}</translation>
+    </message>
+</context>
+<context>
+    <name>StrainRigidMotionMixin</name>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="59"/>
+        <source>RIGID MOTION</source>
+        <translation>강체 운동</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="82"/>
+        <source>Run 3D analysis first — no results to post-process.</source>
+        <translation>먼저 3D 분석을 실행하세요 — 후처리할 결과가 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="105"/>
+        <source>Rigid motion not removed: {0}</source>
+        <translation>강체 운동을 제거하지 않음: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="147"/>
+        <source>Fit region: all valid points</source>
+        <translation>피팅 영역: 모든 유효 점</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="149"/>
+        <source>Fit region: drawn</source>
+        <translation>피팅 영역: 그림</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="151"/>
+        <source>Fit region: drawn ({0} nodes)</source>
+        <translation>피팅 영역: 그림({0}개 노드)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="154"/>
+        <source>Rigid motion is not removed.</source>
+        <translation>강체 운동을 제거하지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="157"/>
+        <source>Removed ({0}), fitted on {1} points.</source>
+        <translation>제거됨({0}), {1}개 점으로 피팅.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="162"/>
+        <source>the fit region does not cover this run</source>
+        <translation>피팅 영역이 이번 분석을 덮지 않습니다</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="163"/>
+        <source>Not removed: {0}</source>
+        <translation>제거되지 않음: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="165"/>
+        <source>It will be removed once the analysis has run.</source>
+        <translation>분석을 실행하면 제거됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="166"/>
+        <source>Not fitted on this frame: {0}</source>
+        <translation>이 프레임은 피팅되지 않음: {0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="169"/>
+        <source>⚠ Rigid-motion setting changed -- click Compute Strain</source>
+        <translation>⚠ 강체 운동 설정이 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
 </context>
 <context>
@@ -4093,179 +4318,179 @@ on the reference grid).
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="111"/>
+        <location filename="../../gui/strain_window.py" line="115"/>
         <source>Strain Post-Processing</source>
         <translation>변형률 후처리</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="151"/>
+        <location filename="../../gui/strain_window.py" line="156"/>
         <source>STRAIN PARAMETERS</source>
         <translation>변형률 매개변수</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="161"/>
+        <location filename="../../gui/strain_window.py" line="166"/>
         <source>Compute Strain</source>
         <translation>변형률 계산</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="167"/>
+        <location filename="../../gui/strain_window.py" line="172"/>
         <source>Export Results</source>
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="171"/>
-        <location filename="../../gui/strain_window.py" line="680"/>
+        <location filename="../../gui/strain_window.py" line="176"/>
+        <location filename="../../gui/strain_window.py" line="694"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>변위 및 변형률 결과를 NPZ / MAT / CSV로 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="190"/>
+        <location filename="../../gui/strain_window.py" line="195"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="192"/>
+        <location filename="../../gui/strain_window.py" line="197"/>
         <source>Stop the strain computation at the next frame.</source>
         <translation>다음 프레임에서 변형률 계산을 중지합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="201"/>
+        <location filename="../../gui/strain_window.py" line="206"/>
         <source>FIELD</source>
         <translation>표시 필드</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="207"/>
+        <location filename="../../gui/strain_window.py" line="212"/>
         <source>VISUALIZATION</source>
         <translation>시각화</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="211"/>
+        <location filename="../../gui/strain_window.py" line="216"/>
         <source>LOG</source>
         <translation>로그</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="334"/>
+        <location filename="../../gui/strain_window.py" line="339"/>
         <source>Computation Running</source>
         <translation>계산 실행 중</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="335"/>
+        <location filename="../../gui/strain_window.py" line="340"/>
         <source>A strain computation is running — cancel it and close?</source>
         <translation>변형률 계산이 실행 중입니다 — 취소하고 닫을까요?</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="340"/>
+        <location filename="../../gui/strain_window.py" line="345"/>
         <source>Yes</source>
         <translation>예</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="341"/>
+        <location filename="../../gui/strain_window.py" line="346"/>
         <source>No</source>
         <translation>아니요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="401"/>
-        <location filename="../../gui/strain_window.py" line="466"/>
-        <location filename="../../gui/strain_window.py" line="580"/>
+        <location filename="../../gui/strain_window.py" line="406"/>
+        <location filename="../../gui/strain_window.py" line="473"/>
+        <location filename="../../gui/strain_window.py" line="588"/>
         <source>Strain compute failed: {0}</source>
         <translation>변형률 계산 실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="413"/>
-        <location filename="../../gui/strain_window.py" line="543"/>
+        <location filename="../../gui/strain_window.py" line="418"/>
+        <location filename="../../gui/strain_window.py" line="550"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>먼저 3D 분석을 실행하세요 — 후처리할 결과가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="416"/>
-        <location filename="../../gui/strain_window.py" line="554"/>
-        <location filename="../../gui/strain_window.py" line="582"/>
+        <location filename="../../gui/strain_window.py" line="421"/>
+        <location filename="../../gui/strain_window.py" line="562"/>
+        <location filename="../../gui/strain_window.py" line="590"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>이미지에서 원점, +X, +Y 순서로 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="423"/>
+        <location filename="../../gui/strain_window.py" line="429"/>
         <source>Computing strain…</source>
         <translation>변형률 계산 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="440"/>
+        <location filename="../../gui/strain_window.py" line="446"/>
         <source>Cancelling…</source>
         <translation>취소하는 중…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="445"/>
+        <location filename="../../gui/strain_window.py" line="451"/>
         <source>Computing strain… {0}%</source>
         <translation>변형률 계산 중… {0}%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="464"/>
         <source>Complete</source>
         <translation>완료</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>Strain computation cancelled.</source>
         <translation>변형률 계산이 취소되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="476"/>
+        <location filename="../../gui/strain_window.py" line="483"/>
         <source>Strain computation complete.</source>
         <translation>변형률 계산 완료.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="481"/>
+        <location filename="../../gui/strain_window.py" line="488"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="565"/>
+        <location filename="../../gui/strain_window.py" line="573"/>
         <source>No valid point near the click — pick on the result field</source>
         <translation>클릭한 곳 근처에 유효한 점이 없습니다 — 결과 필드 위에서 고르세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="573"/>
-        <location filename="../../gui/strain_window.py" line="590"/>
+        <location filename="../../gui/strain_window.py" line="581"/>
+        <location filename="../../gui/strain_window.py" line="598"/>
         <source>Picked {0}/3 points</source>
         <translation>{0}/3 점 선택됨</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="592"/>
+        <location filename="../../gui/strain_window.py" line="600"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="665"/>
+        <location filename="../../gui/strain_window.py" line="679"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>먼저 3D 분석을 실행하세요 — 변형률에는 변위 결과가 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="669"/>
+        <location filename="../../gui/strain_window.py" line="683"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>먼저 시편 좌표계의 3점(원점, +X, +Y)을 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="674"/>
+        <location filename="../../gui/strain_window.py" line="688"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>위의 매개변수로 변위장에서 Green-Lagrange 표면 변형률을 계산합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="684"/>
+        <location filename="../../gui/strain_window.py" line="698"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>먼저 분석을 실행하세요 — 아직 결과가 없습니다.</translation>
     </message>
@@ -4433,29 +4658,30 @@ velocity per frame.</source>
 <context>
     <name>ZoomBar</name>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="60"/>
+        <location filename="../../gui/widgets/strain_support.py" line="81"/>
         <source>Fit</source>
+        <extracomment>The rigid-motion fit region&apos;s fill (amber), distinct from the blue ROI.</extracomment>
         <translation>맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="61"/>
+        <location filename="../../gui/widgets/strain_support.py" line="82"/>
         <source>Fit image to viewport</source>
         <translation>이미지를 뷰포트에 맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="68"/>
+        <location filename="../../gui/widgets/strain_support.py" line="89"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>현재 확대율 — 클릭하면 100%(1:1 픽셀)로 재설정됩니다.
 휠: 확대/축소 · 오른쪽/가운데 드래그: 이동 · 스페이스: 이동 모드</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="74"/>
+        <location filename="../../gui/widgets/strain_support.py" line="95"/>
         <source>Zoom in</source>
         <translation>확대</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="78"/>
+        <location filename="../../gui/widgets/strain_support.py" line="99"/>
         <source>Zoom out</source>
         <translation>축소</translation>
     </message>

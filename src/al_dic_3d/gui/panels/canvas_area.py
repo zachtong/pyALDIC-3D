@@ -19,6 +19,7 @@ draft's exact parameters, so preview == pipeline.
 
 from __future__ import annotations
 
+import weakref
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -181,6 +182,7 @@ class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
         )
         self._empty_notice.setVisible(False)
         self._result_empty = False
+        self._run_ref: weakref.ref | None = None  # the run on display (its correspondence)
         self._init_empty_hint()  # G3.3: quick-start text until the first image
         self._canvas.viewport().installEventFilter(self)
         self._rig_cache = None  # loaded lazily for the 3D frusta
@@ -544,10 +546,19 @@ class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
         self._viz_ctrl.clear_all()
         self._mag_cache.clear()
         self._vel_cache.clear()
-        self._right_mask_dirty = True
-        # P2.4: new results are the ONLY event that re-frames the 3D camera.
-        self._view3d.request_camera_reset()
+        if not self._shows_same_run(result):
+            self._right_mask_dirty = True
+            # P2.4: a NEW run is the only event that re-frames the 3D camera; a
+            # strain writeback or a rigid-motion on/off keeps the view to compare.
+            self._view3d.request_camera_reset()
         self.render()
+
+    def _shows_same_run(self, result) -> bool:
+        """``result`` is the run already shown (same correspondence); remember it."""
+        current = None if result is None else result.correspondence
+        shown = None if self._run_ref is None else self._run_ref()
+        self._run_ref = None if current is None else weakref.ref(current)
+        return current is not None and current is shown
 
     # ---- rendering: see CanvasRenderMixin (canvas_render.py) --------------------
 

@@ -159,7 +159,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     <message>
         <location filename="../../gui/widgets/advanced_section.py" line="140"/>
         <source>off</source>
-        <translation>關</translation>
+        <translation>關閉</translation>
     </message>
 </context>
 <context>
@@ -820,39 +820,39 @@ fx {1:.0f}  fy {2:.0f}  |  基線 {3:.1f} mm</translation>
 <context>
     <name>CanvasArea3D</name>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="92"/>
+        <location filename="../../gui/panels/canvas_area.py" line="93"/>
         <source>Fit</source>
         <translation>適配</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="95"/>
+        <location filename="../../gui/panels/canvas_area.py" line="96"/>
         <source>Fit the image to the viewport (Ctrl+0)</source>
         <translation>將影像適配到視口 (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="102"/>
+        <location filename="../../gui/panels/canvas_area.py" line="103"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>當前縮放 — 點擊恢復 100%（1:1 像素）。
 滾輪：縮放 · 右鍵/中鍵拖動：平移 · 空白鍵：平移模式</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="109"/>
+        <location filename="../../gui/panels/canvas_area.py" line="110"/>
         <source>Zoom in (Ctrl+=)</source>
         <translation>放大 (Ctrl+=)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="113"/>
+        <location filename="../../gui/panels/canvas_area.py" line="114"/>
         <source>Zoom out (Ctrl+-)</source>
         <translation>縮小 (Ctrl+-)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="118"/>
+        <location filename="../../gui/panels/canvas_area.py" line="119"/>
         <source>Show Grid</source>
         <translation>顯示網格</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="121"/>
+        <location filename="../../gui/panels/canvas_area.py" line="122"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -862,7 +862,7 @@ Default on; turn off to declutter the canvas.</source>
 預設開啟；關閉可讓畫布更簡潔。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="134"/>
+        <location filename="../../gui/panels/canvas_area.py" line="135"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -870,7 +870,7 @@ whether the subset spans enough speckle texture.</source>
 需先開啟「顯示網格」。可用來判斷子集是否涵蓋足夠的散斑紋理。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="147"/>
+        <location filename="../../gui/panels/canvas_area.py" line="148"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -878,57 +878,57 @@ to the 2D image view. Requires results.</source>
 取消勾選可返回 2D 影像視圖。需要有結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="131"/>
+        <location filename="../../gui/panels/canvas_area.py" line="132"/>
         <source>Show Subset</source>
         <translation>顯示子集</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="144"/>
+        <location filename="../../gui/panels/canvas_area.py" line="145"/>
         <source>3D View</source>
         <translation>3D 檢視</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="323"/>
+        <location filename="../../gui/panels/canvas_area.py" line="325"/>
         <source>Load images before importing an ROI mask</source>
         <translation>請先載入影像，再匯入 ROI 遮罩</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="328"/>
+        <location filename="../../gui/panels/canvas_area.py" line="330"/>
         <source>Could not import the mask: {0}</source>
         <translation>無法匯入遮罩：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="331"/>
+        <location filename="../../gui/panels/canvas_area.py" line="333"/>
         <source>ROI mask imported from {0}</source>
         <translation>已從 {0} 匯入 ROI 遮罩</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="336"/>
+        <location filename="../../gui/panels/canvas_area.py" line="338"/>
         <source>No ROI mask to save — draw one first</source>
         <translation>沒有可儲存的 ROI 遮罩——請先繪製</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="344"/>
+        <location filename="../../gui/panels/canvas_area.py" line="346"/>
         <source>Save Mask</source>
         <translation>儲存掩模</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="344"/>
+        <location filename="../../gui/panels/canvas_area.py" line="346"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 影像 (*.png)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="351"/>
+        <location filename="../../gui/panels/canvas_area.py" line="353"/>
         <source>Could not save the mask: {0}</source>
         <translation>無法儲存遮罩：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="354"/>
+        <location filename="../../gui/panels/canvas_area.py" line="356"/>
         <source>ROI mask saved to {0}</source>
         <translation>ROI 遮罩已儲存到 {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="540"/>
+        <location filename="../../gui/panels/canvas_area.py" line="542"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>分析未產生任何有效點——沒有可顯示的內容。請查看日誌。</translation>
     </message>
@@ -936,22 +936,22 @@ to the 2D image view. Requires results.</source>
 <context>
     <name>CanvasRenderMixin</name>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="67"/>
+        <location filename="../../gui/panels/canvas_render.py" line="68"/>
         <source>Could not map the ROI into the right camera: {0}</source>
         <translation>無法將 ROI 映射到右相機：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="204"/>
+        <location filename="../../gui/panels/canvas_render.py" line="206"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 檢視 — 執行分析後即可檢視重建曲面。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="211"/>
+        <location filename="../../gui/panels/canvas_render.py" line="213"/>
         <source>Selected field is not available.</source>
         <translation>所選場變量不可用。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="396"/>
+        <location filename="../../gui/panels/canvas_render.py" line="398"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>無法繪製疊加層：{0}</translation>
     </message>
@@ -1313,27 +1313,27 @@ to the 2D image view. Requires results.</source>
         <translation>所見即所得的樣式來源：此處設定的色條與邊距將用於所有影像/動畫匯出。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="462"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="464"/>
         <source>Export Running</source>
         <translation>匯出進行中</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="463"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="465"/>
         <source>An export is still running — cancel it and close?</source>
         <translation>仍有匯出工作正在執行 — 取消並關閉？</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="466"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="468"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="467"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="469"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="499"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="501"/>
         <source>Folder does not exist: {0}</source>
         <translation>資料夾不存在：{0}</translation>
     </message>
@@ -1348,7 +1348,7 @@ to the 2D image view. Requires results.</source>
         <translation>3D 曲面的離屏渲染，可匯出為影像、變形動畫或環繞動畫，使用您目前的 3D 視角。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="486"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="488"/>
         <source>Choose output folder</source>
         <translation>選擇輸出資料夾</translation>
     </message>
@@ -2021,7 +2021,7 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="417"/>
         <source>off</source>
-        <translation>關</translation>
+        <translation>關閉</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="427"/>
@@ -2347,14 +2347,14 @@ the error expected in that position.</source>
     <message>
         <location filename="../../gui/main_window.py" line="284"/>
         <location filename="../../gui/main_window.py" line="300"/>
-        <location filename="../../gui/main_window.py" line="677"/>
+        <location filename="../../gui/main_window.py" line="684"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="285"/>
         <location filename="../../gui/main_window.py" line="301"/>
-        <location filename="../../gui/main_window.py" line="678"/>
+        <location filename="../../gui/main_window.py" line="685"/>
         <source>No</source>
         <translation>否</translation>
     </message>
@@ -2385,8 +2385,8 @@ the error expected in that position.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="341"/>
-        <location filename="../../gui/main_window.py" line="593"/>
-        <location filename="../../gui/main_window.py" line="679"/>
+        <location filename="../../gui/main_window.py" line="600"/>
+        <location filename="../../gui/main_window.py" line="686"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2472,38 +2472,43 @@ the error expected in that position.</source>
         <translation>已在 {0} 找到標定檔案</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="572"/>
+        <location filename="../../gui/main_window.py" line="574"/>
         <source>The calibration file was not found; using the copy saved in the project: {0}</source>
         <translation>未找到標定檔案；改用專案中儲存的副本：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="583"/>
+        <location filename="../../gui/main_window.py" line="578"/>
+        <source>The rigid motion was not removed (the results are shown as measured): {0}</source>
+        <translation>未去除剛體運動（結果按量測值顯示）：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/main_window.py" line="590"/>
         <source>Images Not Found</source>
         <translation>找不到影像</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="586"/>
+        <location filename="../../gui/main_window.py" line="593"/>
         <source>Some of this project&apos;s images cannot be found. Open it anyway? Results stay viewable and exportable; running again needs the images.</source>
         <translation>找不到本專案的部分影像。仍要開啟嗎？結果仍可檢視和匯出；重新執行需要這些影像。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="592"/>
+        <location filename="../../gui/main_window.py" line="599"/>
         <source>Open anyway</source>
         <translation>仍然開啟</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="601"/>
-        <location filename="../../gui/main_window.py" line="611"/>
+        <location filename="../../gui/main_window.py" line="608"/>
+        <location filename="../../gui/main_window.py" line="618"/>
         <source>Locate Images</source>
         <translation>定位影像</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="603"/>
+        <location filename="../../gui/main_window.py" line="610"/>
         <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
         <translation>所選資料夾中不包含本專案相機 {0} 的影像幀。請選擇存放原始影像檔案的資料夾，或取消以中止開啟。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="613"/>
+        <location filename="../../gui/main_window.py" line="620"/>
         <source>The image folder saved with this project was not found:
 {0}
 
@@ -2514,42 +2519,42 @@ Select the folder that now contains the camera {1} frames (file names must match
 請選擇目前存放相機 {1} 影像幀的資料夾（檔案名稱必須一致）。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="620"/>
+        <location filename="../../gui/main_window.py" line="627"/>
         <source>Locate images for camera {0}</source>
         <translation>定位相機 {0} 的影像</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="662"/>
+        <location filename="../../gui/main_window.py" line="669"/>
         <source>Include Results?</source>
         <translation>包含結果？</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="663"/>
+        <location filename="../../gui/main_window.py" line="670"/>
         <source>Include the analysis results in this project file?</source>
         <translation>在此專案檔案中包含分析結果嗎？</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="666"/>
+        <location filename="../../gui/main_window.py" line="673"/>
         <source>Including results (about {0} uncompressed) lets you reopen the project without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>包含結果（未壓縮約 {0}）可在重新開啟專案時無需重新計算。選擇「否」則儲存一個便於分享的小型純設定檔。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="704"/>
+        <location filename="../../gui/main_window.py" line="711"/>
         <source>unknown size</source>
         <translation>未知大小</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="714"/>
+        <location filename="../../gui/main_window.py" line="721"/>
         <source>Saving project…</source>
         <translation>正在儲存專案…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="718"/>
+        <location filename="../../gui/main_window.py" line="725"/>
         <source>Could not save the project: {0}</source>
         <translation>無法儲存專案：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="722"/>
+        <location filename="../../gui/main_window.py" line="729"/>
         <source>Could not save the project:
 {0}
 
@@ -2564,7 +2569,7 @@ The previous version of the file, if any, is unchanged.</source>
 該檔案的舊版本（如有）保持不變。</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="730"/>
+        <location filename="../../gui/main_window.py" line="737"/>
         <source>Saved {0}</source>
         <translation>已儲存 {0}</translation>
     </message>
@@ -2591,13 +2596,13 @@ The previous version of the file, if any, is unchanged.</source>
     </message>
     <message>
         <location filename="../../gui/main_window.py" line="493"/>
-        <location filename="../../gui/main_window.py" line="648"/>
+        <location filename="../../gui/main_window.py" line="655"/>
         <source>pyALDIC-3D project (*.aldic3d)</source>
         <translation>pyALDIC-3D 專案 (*.aldic3d)</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="646"/>
-        <location filename="../../gui/main_window.py" line="720"/>
+        <location filename="../../gui/main_window.py" line="653"/>
+        <location filename="../../gui/main_window.py" line="727"/>
         <source>Save Project</source>
         <translation>儲存專案</translation>
     </message>
@@ -3598,6 +3603,112 @@ The log has the details.</source>
     </message>
 </context>
 <context>
+    <name>RigidMotion</name>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="17"/>
+        <source>translation</source>
+        <translation>平移</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="19"/>
+        <source>translation + rotation</source>
+        <translation>平移 + 轉動</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="21"/>
+        <source>off</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <location filename="../../gui/rigid_motion_text.py" line="30"/>
+        <source> · rigid motion removed ({0})</source>
+        <translation> · 已去除剛體運動（{0}）</translation>
+    </message>
+</context>
+<context>
+    <name>RigidMotionPanel3D</name>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="51"/>
+        <source>Remove</source>
+        <translation>去除</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Off</source>
+        <translation>關閉</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Translation only</source>
+        <translation>僅平移</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="55"/>
+        <source>Translation + rotation</source>
+        <translation>平移 + 轉動</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="61"/>
+        <source>Remove each frame&apos;s best-fit rigid-body motion (relative to frame 1)
+from the displacement everywhere: the field maps, the 3D view,
+the strain and every export. Green-Lagrange strain is unchanged
+by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
+        <translation>從各處的位移中去除每幀（相對第 1 幀）的最佳擬合剛體運動：
+場圖、3D 視圖、應變以及所有匯出。Green-Lagrange 應變
+不受其影響；位移和斜率 ∂w/∂x、∂w/∂y 會隨之變化。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="80"/>
+        <source>+ Rectangle</source>
+        <translation>+ 矩形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="81"/>
+        <source>+ Polygon</source>
+        <translation>+ 多邊形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="82"/>
+        <source>− Rectangle</source>
+        <translation>− 矩形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="83"/>
+        <source>− Polygon</source>
+        <translation>− 多邊形</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="89"/>
+        <source>Add an area to the fit region (drawn on frame 1)</source>
+        <translation>向擬合區域新增一塊區域（在第 1 幀上繪製）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="91"/>
+        <source>Remove an area from the fit region</source>
+        <translation>從擬合區域挖除一塊區域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="98"/>
+        <source>Use all valid points</source>
+        <translation>使用全部有效點</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="100"/>
+        <source>Clear the drawn region: fit on every valid point</source>
+        <translation>清除繪製的區域：在全部有效點上擬合</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="104"/>
+        <source>Show fit region</source>
+        <translation>顯示擬合區域</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="115"/>
+        <source>Per frame: shift of the fitted points&apos; centroid ΔX/ΔY/ΔZ (µm), rotation θ (mrad), fit residual RMS (µm), points used N.</source>
+        <translation>逐幀：擬合點形心的位移 ΔX/ΔY/ΔZ（µm）、轉角 θ（mrad）、擬合殘差 RMS（µm）、所用點數 N。</translation>
+    </message>
+</context>
+<context>
     <name>RunSummaryMixin</name>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="25"/>
@@ -3744,39 +3855,84 @@ The log has the details.</source>
 <context>
     <name>StrainFieldSelector3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="46"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="51"/>
+        <source>U — displacement along the world X axis (left camera)</source>
+        <translation>U — 沿世界座標系 X 軸的位移（左相機）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="52"/>
+        <source>V — displacement along the world Y axis (left camera)</source>
+        <translation>V — 沿世界座標系 Y 軸的位移（左相機）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="53"/>
+        <source>W — displacement along the world Z axis (left camera)</source>
+        <translation>W — 沿世界座標系 Z 軸的位移（左相機）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="54"/>
+        <source>|D| — displacement magnitude</source>
+        <translation>|D| — 位移大小</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="55"/>
+        <source>∂w/∂x — out-of-plane slope along the strain frame&apos;s x axis</source>
+        <translation>∂w/∂x — 沿應變座標系 x 軸的離面斜率</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="56"/>
+        <source>∂w/∂y — out-of-plane slope along the strain frame&apos;s y axis</source>
+        <translation>∂w/∂y — 沿應變座標系 y 軸的離面斜率</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="59"/>
         <source>εxx — normal strain along the strain frame&apos;s x axis</source>
         <translation>εxx — 沿應變座標系 x 軸的正應變</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="47"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="60"/>
         <source>εyy — normal strain along the strain frame&apos;s y axis</source>
         <translation>εyy — 沿應變座標系 y 軸的正應變</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="48"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="61"/>
         <source>εxy — in-plane shear strain (tensor component)</source>
         <translation>εxy — 面內剪應變（張量分量）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="49"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="62"/>
         <source>ε₁ — major principal strain (largest in-plane eigenvalue)</source>
         <translation>ε₁ — 最大主應變（面內最大特徵值）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="50"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="63"/>
         <source>ε₂ — minor principal strain (smallest in-plane eigenvalue)</source>
         <translation>ε₂ — 最小主應變（面內最小特徵值）</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="51"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="64"/>
         <source>γ max — maximum shear strain, (ε₁ − ε₂) / 2</source>
         <translation>γ max — 最大剪應變，(ε₁ − ε₂) / 2</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_field_selector.py" line="52"/>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="65"/>
         <source>von Mises — equivalent strain (plane-stress invariant)</source>
         <translation>von Mises — 等效應變（平面應力不變量）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="71"/>
+        <source>Displacement</source>
+        <translation>位移</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="72"/>
+        <source>Slope</source>
+        <translation>斜率</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/strain_field_selector.py" line="73"/>
+        <source>Strain</source>
+        <translation>應變</translation>
     </message>
 </context>
 <context>
@@ -4014,9 +4170,77 @@ on the reference grid).
 <context>
     <name>StrainRenderMixin</name>
     <message>
-        <location filename="../../gui/strain_canvas.py" line="230"/>
+        <location filename="../../gui/strain_canvas.py" line="245"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>無法繪製疊加層：{0}</translation>
+    </message>
+</context>
+<context>
+    <name>StrainRigidMotionMixin</name>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="59"/>
+        <source>RIGID MOTION</source>
+        <translation>剛體運動</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="82"/>
+        <source>Run 3D analysis first — no results to post-process.</source>
+        <translation>請先執行 3D 分析——沒有可後處理的結果。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="105"/>
+        <source>Rigid motion not removed: {0}</source>
+        <translation>未去除剛體運動：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="147"/>
+        <source>Fit region: all valid points</source>
+        <translation>擬合區域：全部有效點</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="149"/>
+        <source>Fit region: drawn</source>
+        <translation>擬合區域：已繪製</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="151"/>
+        <source>Fit region: drawn ({0} nodes)</source>
+        <translation>擬合區域：已繪製（{0} 個節點）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="154"/>
+        <source>Rigid motion is not removed.</source>
+        <translation>未去除剛體運動。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="157"/>
+        <source>Removed ({0}), fitted on {1} points.</source>
+        <translation>已去除（{0}），基於 {1} 個點擬合。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="162"/>
+        <source>the fit region does not cover this run</source>
+        <translation>擬合區域沒有覆蓋本次運算</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="163"/>
+        <source>Not removed: {0}</source>
+        <translation>未去除：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="165"/>
+        <source>It will be removed once the analysis has run.</source>
+        <translation>執行分析後將去除剛體運動。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="166"/>
+        <source>Not fitted on this frame: {0}</source>
+        <translation>此幀未能擬合：{0}</translation>
+    </message>
+    <message>
+        <location filename="../../gui/strain_rigid_motion.py" line="169"/>
+        <source>⚠ Rigid-motion setting changed -- click Compute Strain</source>
+        <translation>⚠ 剛體運動設定已變更 — 請點擊「計算應變」</translation>
     </message>
 </context>
 <context>
@@ -4085,179 +4309,179 @@ on the reference grid).
 <context>
     <name>StrainWindow3D</name>
     <message>
-        <location filename="../../gui/strain_window.py" line="111"/>
+        <location filename="../../gui/strain_window.py" line="115"/>
         <source>Strain Post-Processing</source>
         <translation>應變後處理</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="151"/>
+        <location filename="../../gui/strain_window.py" line="156"/>
         <source>STRAIN PARAMETERS</source>
         <translation>應變參數</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="161"/>
+        <location filename="../../gui/strain_window.py" line="166"/>
         <source>Compute Strain</source>
         <translation>計算應變</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="167"/>
+        <location filename="../../gui/strain_window.py" line="172"/>
         <source>Export Results</source>
         <translation>匯出結果</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="171"/>
-        <location filename="../../gui/strain_window.py" line="680"/>
+        <location filename="../../gui/strain_window.py" line="176"/>
+        <location filename="../../gui/strain_window.py" line="694"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>將位移和應變結果匯出為 NPZ / MAT / CSV</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="190"/>
+        <location filename="../../gui/strain_window.py" line="195"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="192"/>
+        <location filename="../../gui/strain_window.py" line="197"/>
         <source>Stop the strain computation at the next frame.</source>
         <translation>在下一幀處停止應變計算。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="201"/>
+        <location filename="../../gui/strain_window.py" line="206"/>
         <source>FIELD</source>
         <translation>場變量</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="207"/>
+        <location filename="../../gui/strain_window.py" line="212"/>
         <source>VISUALIZATION</source>
         <translation>可視化</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="211"/>
+        <location filename="../../gui/strain_window.py" line="216"/>
         <source>LOG</source>
         <translation>日誌</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="334"/>
+        <location filename="../../gui/strain_window.py" line="339"/>
         <source>Computation Running</source>
         <translation>計算執行中</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="335"/>
+        <location filename="../../gui/strain_window.py" line="340"/>
         <source>A strain computation is running — cancel it and close?</source>
         <translation>應變計算正在執行——是否取消並關閉？</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="340"/>
+        <location filename="../../gui/strain_window.py" line="345"/>
         <source>Yes</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="341"/>
+        <location filename="../../gui/strain_window.py" line="346"/>
         <source>No</source>
         <translation>否</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="401"/>
-        <location filename="../../gui/strain_window.py" line="466"/>
-        <location filename="../../gui/strain_window.py" line="580"/>
+        <location filename="../../gui/strain_window.py" line="406"/>
+        <location filename="../../gui/strain_window.py" line="473"/>
+        <location filename="../../gui/strain_window.py" line="588"/>
         <source>Strain compute failed: {0}</source>
         <translation>應變計算失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="413"/>
-        <location filename="../../gui/strain_window.py" line="543"/>
+        <location filename="../../gui/strain_window.py" line="418"/>
+        <location filename="../../gui/strain_window.py" line="550"/>
         <source>Run 3D analysis first — no results to post-process.</source>
         <translation>請先執行 3D 分析——沒有可後處理的結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="416"/>
-        <location filename="../../gui/strain_window.py" line="554"/>
-        <location filename="../../gui/strain_window.py" line="582"/>
+        <location filename="../../gui/strain_window.py" line="421"/>
+        <location filename="../../gui/strain_window.py" line="562"/>
+        <location filename="../../gui/strain_window.py" line="590"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>請在影像上依次點擊原點、+X 點、+Y 點</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="423"/>
+        <location filename="../../gui/strain_window.py" line="429"/>
         <source>Computing strain…</source>
         <translation>正在計算應變…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="440"/>
+        <location filename="../../gui/strain_window.py" line="446"/>
         <source>Cancelling…</source>
         <translation>正在取消…</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="445"/>
+        <location filename="../../gui/strain_window.py" line="451"/>
         <source>Computing strain… {0}%</source>
         <translation>正在計算應變… {0}%</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="457"/>
+        <location filename="../../gui/strain_window.py" line="464"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="471"/>
+        <location filename="../../gui/strain_window.py" line="478"/>
         <source>Strain computation cancelled.</source>
         <translation>應變計算已取消。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="476"/>
+        <location filename="../../gui/strain_window.py" line="483"/>
         <source>Strain computation complete.</source>
         <translation>應變計算完成。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="481"/>
+        <location filename="../../gui/strain_window.py" line="488"/>
         <source>⚠ Params changed -- click Compute Strain</source>
         <translation>⚠ 參數已變更 — 請點擊「計算應變」</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="565"/>
+        <location filename="../../gui/strain_window.py" line="573"/>
         <source>No valid point near the click — pick on the result field</source>
         <translation>點擊處附近沒有有效點——請在結果場上選取</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="573"/>
-        <location filename="../../gui/strain_window.py" line="590"/>
+        <location filename="../../gui/strain_window.py" line="581"/>
+        <location filename="../../gui/strain_window.py" line="598"/>
         <source>Picked {0}/3 points</source>
         <translation>已拾取 {0}/3 個點</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="592"/>
+        <location filename="../../gui/strain_window.py" line="600"/>
         <source>x→{0}  y→{1}  z→{2}</source>
         <translation>x→{0}  y→{1}  z→{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+X</source>
         <translation>+X</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="603"/>
+        <location filename="../../gui/strain_window.py" line="611"/>
         <source>+Y</source>
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="665"/>
+        <location filename="../../gui/strain_window.py" line="679"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>請先執行 3D 分析 — 應變計算需要位移結果。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="669"/>
+        <location filename="../../gui/strain_window.py" line="683"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>請先揀取 3 個試件座標系點（原點、+X、+Y）。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="674"/>
+        <location filename="../../gui/strain_window.py" line="688"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>使用上方參數由位移場計算 Green-Lagrange 表面應變。</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="684"/>
+        <location filename="../../gui/strain_window.py" line="698"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>請先執行分析 — 目前還沒有結果。</translation>
     </message>
@@ -4425,29 +4649,30 @@ velocity per frame.</source>
 <context>
     <name>ZoomBar</name>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="60"/>
+        <location filename="../../gui/widgets/strain_support.py" line="81"/>
         <source>Fit</source>
+        <extracomment>The rigid-motion fit region&apos;s fill (amber), distinct from the blue ROI.</extracomment>
         <translation>適配</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="61"/>
+        <location filename="../../gui/widgets/strain_support.py" line="82"/>
         <source>Fit image to viewport</source>
         <translation>將影像適配到視口</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="68"/>
+        <location filename="../../gui/widgets/strain_support.py" line="89"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>當前縮放 — 點擊恢復 100%（1:1 像素）。
 滾輪：縮放 · 右鍵/中鍵拖動：平移 · 空白鍵：平移模式</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="74"/>
+        <location filename="../../gui/widgets/strain_support.py" line="95"/>
         <source>Zoom in</source>
         <translation>放大</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="78"/>
+        <location filename="../../gui/widgets/strain_support.py" line="99"/>
         <source>Zoom out</source>
         <translation>縮小</translation>
     </message>

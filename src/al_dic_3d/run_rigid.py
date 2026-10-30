@@ -10,6 +10,7 @@ pipeline (``[rigid_motion]`` in the config), the GUI and session loading.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -109,6 +110,21 @@ def rigid_motion_meta(state: RigidMotionState) -> dict:
     meta = state.fit.to_meta()
     meta["region"] = "all" if state.region is None else "drawn"
     return meta
+
+
+def rigid_motion_signature(result: RunResult) -> str:
+    """Names the rigid-motion setting a result carries (``"off"`` when none).
+
+    Recorded with a computed strain so the Strain window can tell, even after a
+    reload, that the strain was computed under a different setting.
+    """
+    state = getattr(result, "rigid_motion", None)
+    if state is None:
+        return "off"
+    if state.region is None:
+        return f"{state.fit.mode}:all"
+    bits = np.packbits(np.asarray(state.region, dtype=bool)).tobytes()
+    return f"{state.fit.mode}:{hashlib.sha1(bits).hexdigest()[:16]}"
 
 
 def raw_reconstruction(result: RunResult) -> Reconstruction3D:

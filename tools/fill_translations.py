@@ -5132,6 +5132,10 @@ for _loc, _entries in _load_batch_file("i18n_batch_calib.py").items():
 for _loc, _entries in _load_batch_file("i18n_batch_epipolar.py").items():
     TRANSLATIONS[_loc].update(_entries)
 
+# Rigid-motion removal (Strain window RIGID MOTION section, field groups, labels).
+for _loc, _entries in _load_batch_file("i18n_batch_rbm.py").items():
+    TRANSLATIONS[_loc].update(_entries)
+
 
 def main() -> int:
     ok = True

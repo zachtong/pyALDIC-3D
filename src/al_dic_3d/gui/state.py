@@ -18,6 +18,10 @@ from PySide6.QtCore import QObject, Signal
 # per-frame velocity magnitude, display-derived) + surface strain.
 DISPLACEMENT_FIELDS = ("U", "V", "W", "mag", "velocity")
 STRAIN_FIELDS_UI = ("exx", "eyy", "exy", "e1", "e2", "max_shear", "von_mises")
+# Strain-window fields beyond strain: the displacement (shown before any strain
+# is computed) and the out-of-plane slopes of the strain fit (dwdx / dwdy).
+STRAIN_WINDOW_DISP_FIELDS = ("U", "V", "W", "mag")
+SLOPE_FIELDS_UI = ("dwdx", "dwdy")
 
 
 class GuiSignals(QObject):

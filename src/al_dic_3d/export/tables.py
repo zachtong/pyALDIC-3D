@@ -34,6 +34,8 @@ ProgressCb = Callable[[int, int, str], None]
 # Selectable field ids -> (source, column/attr)
 DISPLACEMENT_IDS = ("U", "V", "W", "mag")
 STRAIN_IDS = ("exx", "eyy", "exy", "e1", "e2", "max_shear", "von_mises")
+#: Out-of-plane slopes of the strain fit (radians); shown by the strain window.
+SLOPE_IDS = ("dwdx", "dwdy")
 #: Per-frame speed |D_k - D_(k-1)| in mm/FRAME (NaN at frame 1). Display-derived
 #: (the canvas "Vel" field); media exports scale it to unit/s via ``value_scale``.
 VELOCITY_ID = "velocity"
@@ -54,7 +56,7 @@ def field_frame(result: RunResult, field: str, k: int) -> np.ndarray | None:
         if k <= 0:
             return np.full(disp.shape[1], np.nan, dtype=np.float64)
         return np.linalg.norm(disp[k] - disp[k - 1], axis=1)
-    if field in STRAIN_IDS and result.strain is not None:
+    if (field in STRAIN_IDS or field in SLOPE_IDS) and result.strain is not None:
         return getattr(result.strain, field)[k]
     if field == "strain_valid" and result.strain is not None:
         valid = getattr(result.strain, "strain_valid", None)
@@ -76,7 +78,8 @@ def display_field_frame(
     results pass through :func:`field_frame` unchanged.
     """
     vals = field_frame(result, field, k)
-    if vals is None or field not in STRAIN_IDS or result.strain is None:
+    from_strain_fit = field in STRAIN_IDS or field in SLOPE_IDS
+    if vals is None or not from_strain_fit or result.strain is None:
         return vals
     valid = getattr(result.strain, "strain_valid", None)
     if valid is None:

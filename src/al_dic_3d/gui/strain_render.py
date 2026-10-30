@@ -60,6 +60,7 @@ def prepare_strain_render(
     auto_range_on: bool,
     manual_vmin: float,
     manual_vmax: float,
+    value_scale: float = 1.0,
 ) -> StrainRenderData:
     """The strain window's per-frame render inputs (values, geometry, range).
 
@@ -72,9 +73,13 @@ def prepare_strain_render(
       (item 4); the deformed crack is not warped, so no barrier there.
     * the range is the 2-98 percentile of the VISIBLE nodes (2D parity) when auto,
       else the caller's manual bounds.
+    * ``value_scale`` converts to the display unit (displacement mm -> unit,
+      slopes rad -> mrad) before the range is taken.
     """
     cs = result.correspondence
     vals = display_field_frame(result, field, k, deformed=deformed)
+    if value_scale != 1.0:
+        vals = vals * value_scale
     pts = cs.xL[k] if deformed else cs.xL[0]
     ref_pts = cs.xL[0]
     ref_uv = None

@@ -14,19 +14,40 @@ import threading
 from al_dic.gui.icons import icon_maximize, icon_zoom_in, icon_zoom_out
 from al_dic.gui.theme import COLORS
 from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QPushButton, QWidget
 
 from al_dic_3d.gui.widgets.image_view import ImageCanvas3D
 
+#: The rigid-motion fit region's fill (amber), distinct from the blue ROI.
+_FIT_REGION_RGBA = (245, 158, 11, 90)
+
 
 class PickCanvas(ImageCanvas3D):
-    """Read-only canvas with an optional 3-point pick mode (no ROI tools armed)."""
+    """Strain-window canvas: the 3-point pick mode and the fit-region drawing.
+
+    Its ROI tools draw the rigid-motion fit region (an attached private
+    controller), shown in amber so it is never mistaken for the analysis ROI.
+    """
 
     point_picked = Signal(float, float)  # scene (x, y) of a left click in pick mode
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._pick_mode = False
+        self._region_visible = True
+
+    def set_region_visible(self, on: bool) -> None:
+        self._region_visible = bool(on)
+
+    def update_roi_overlay(self) -> None:
+        """The fit region in amber (hidden when switched off or empty)."""
+        mask = self._roi_ctrl.mask if self._roi_ctrl is not None else None
+        if not self._region_visible or mask is None or not mask.any():
+            self._roi_mask_item.setPixmap(QPixmap())
+            return
+        self._roi_mask_item.setPixmap(self._mask_overlay_pixmap(mask, _FIT_REGION_RGBA))
+        self._roi_mask_item.setPos(0, 0)
 
     def set_pick_mode(self, on: bool) -> None:
         self._pick_mode = bool(on)

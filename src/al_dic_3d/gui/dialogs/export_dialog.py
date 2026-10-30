@@ -291,17 +291,19 @@ class ExportDialog(QDialog):
         frame rate was given, per frame (labelled so) until then.
         """
         from al_dic_3d.gui.display_units import field_display_factor, field_label
+        from al_dic_3d.gui.rigid_motion_text import rigid_motion_label_suffix
 
         unit = self.hint.display_unit or "mm"
         scale = float(field_display_factor(field_id, unit))
+        suffix = rigid_motion_label_suffix(self._result)  # figures say what the canvas says
         if field_id != VELOCITY_ID:
-            return scale, field_label(field_id, unit)
+            return scale, field_label(field_id, unit) + suffix
         if self.hint.frame_rate_known:
-            return scale * float(self.hint.frame_rate), field_label(field_id, unit)
+            return scale * float(self.hint.frame_rate), field_label(field_id, unit) + suffix
         try:
-            return scale, field_label(field_id, unit, per_frame=True)
+            return scale, field_label(field_id, unit, per_frame=True) + suffix
         except TypeError:  # a display_units without the per-frame label
-            return scale, f"|V| ({unit}/frame)"
+            return scale, f"|V| ({unit}/frame)" + suffix
 
     def seed_range(self, field_id: str) -> tuple[float, float]:
         """A starting fixed range for *field_id* (display units).

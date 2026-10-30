@@ -567,11 +567,18 @@ class MainWindow3D(MainMenuMixin, QMainWindow):
             self.signals.log.emit(self.tr("Calibration file found at {0}").format(calib), "info")
         for note in getattr(state, "open_notes", []):
             prefix = "calibration restored from the project file: "
+            rbm_prefix = "rigid motion not removed: "
+            level = "info"
             if note.startswith(prefix):
                 note = self.tr(
                     "The calibration file was not found; using the copy saved in the project: {0}"
                 ).format(note[len(prefix) :])
-            self.signals.log.emit(note, "info")
+            elif note.startswith(rbm_prefix):
+                note = self.tr(
+                    "The rigid motion was not removed (the results are shown as measured): {0}"
+                ).format(note[len(rbm_prefix) :])
+                level = "warning"
+            self.signals.log.emit(note, level)
         if any(m.new_dir is not None for m in moves) or calib is not None:
             state.mark_dirty()  # the rewritten draft should reach the next save
         return True
