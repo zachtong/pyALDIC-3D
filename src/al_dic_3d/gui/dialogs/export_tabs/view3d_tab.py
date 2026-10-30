@@ -11,8 +11,11 @@ Consistency with the interactive 3D view (fix batch V, M4): Auto range is the
 view's per-frame 2nd-98th percentile over the nodes inside the ROI, a fixed
 range can be typed (prefilled from the canvas when this is the canvas field),
 the surface honours the drawn ROI, values and the scalar-bar title follow the
-canvas's display unit, and the camera is the user's current 3D view when the
-main window supplies one (the isometric default otherwise).
+canvas's display unit (the "rigid motion removed" wording is a corner note, as
+in the view), and the camera, deformation magnification and shading are the
+user's current 3D view's when the main window supplies them (without a 3D view
+camera the surface is framed from the left camera; without its options, true
+scale and lit).
 """
 
 from __future__ import annotations
@@ -48,6 +51,7 @@ from al_dic_3d.gui.dialogs.export_tabs.common import (
     FrameRangeRow,
     RangeSpinBox,
 )
+from al_dic_3d.gui.rigid_motion_text import rigid_motion_label_suffix
 
 if TYPE_CHECKING:
     from al_dic_3d.gui.dialogs.export_dialog import ExportDialog
@@ -285,6 +289,13 @@ class View3DTab(ExportTabBase):
         result = dialog.result
         field_id = self._field()
         value_scale, field_label = dialog.field_display(field_id)
+        # Like the 3D view: a short scalar-bar title (a long one runs off the
+        # image) and the "rigid motion removed" wording as a corner note.
+        suffix = rigid_motion_label_suffix(result)
+        note = ""
+        if suffix and field_label.endswith(suffix):
+            field_label, note = field_label.removesuffix(suffix), suffix.removeprefix(" · ")
+        view_opts = dialog.view3d_options()  # read now, on the GUI thread
         common = dict(
             window_size=tuple(self._resolution_combo.currentData()),
             cmap=self._cmap_combo.currentText(),
@@ -298,6 +309,11 @@ class View3DTab(ExportTabBase):
             camera=dialog.view3d_camera(),
             value_scale=value_scale,
             field_label=field_label,
+            # The 3D view's deformation magnification and shading (WYSIWYG).
+            magnification=view_opts.magnification,
+            normal_only=view_opts.normal_only,
+            shading=view_opts.shading,
+            note=note,
         )
         fmt = str(self._format_combo.currentData())
         frame_step = self._step_spin.value()

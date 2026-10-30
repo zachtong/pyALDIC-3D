@@ -69,6 +69,9 @@ class _Plotter:
     def remove_actor(self, actor, render=True):
         self._hit("remove_actor")
 
+    def reset_camera_clipping_range(self):
+        self._hit("reset_camera_clipping_range")
+
     def reset_camera(self, render=True, bounds=None):
         self._hit("reset_camera", bounds=bounds, camera=self.camera_position)
 
@@ -174,6 +177,15 @@ def test_changing_an_option_rerenders_from_the_last_frame(qapp):
     assert fp.names().count("add_mesh") == before + 1
     last = [kw for name, kw in fp.calls if name == "add_mesh"][-1]
     assert last["lighting"] is False  # shading off: the exact colormap colours
+    view.close()
+
+
+def test_scrubbing_refits_the_clipping_range(qapp):
+    view, fp = _view_with_fake(qapp)
+    ref, cur, rc = _plate()
+    _show(view, cur, rc, ref)
+    _show(view, cur + [0.0, 0.0, -0.5], rc, ref)  # same topology: the in-place path
+    assert fp.names()[-2:] == ["reset_camera_clipping_range", "render"]
     view.close()
 
 

@@ -27,7 +27,10 @@ GitHub release notes for a tag are this file's section for that version.
   the specimen (Camera, Normal, Side, Iso) and Reset, a PNG save, a deformation
   magnification with an Auto pick and an out-of-plane-only switch (the colours
   keep the true values), the frame-1 reference shape as a wireframe, the camera
-  frusta on demand and a shading switch, plus an orientation triad.
+  frusta on demand and a shading switch, plus an orientation triad. The 3D
+  exports (Export, 3D View) follow the view's magnification and shading, are
+  lit like it, and without a 3D View camera frame the surface from the left
+  camera instead of an isometric view from behind.
 - **The Strain window shows displacement and out-of-plane slopes** (FIELD).
   `U`, `V`, `W` and `|D|` are available as soon as a run exists, and the
   slopes `∂w/∂x`, `∂w/∂y` of the strain fit (in mrad) once strain is computed.

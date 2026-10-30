@@ -11,10 +11,20 @@ worker threads and headless runs.
 Consistency with the interactive view (fix batch V, M4): the colour range is
 the view's rule — per frame, the 2nd-98th percentile of the nodes inside the
 ROI (:func:`view3d_color_range`), or the user's fixed range; the surface honours
-the ROI; the camera is the user's view when the caller passes one (the
-isometric default otherwise); values/labels follow the display unit through
-``value_scale`` / ``field_label``. An encoder that cannot open raises, and a
-cancelled animation is deleted rather than reported as written.
+the ROI; values/labels follow the display unit through ``value_scale`` /
+``field_label``. An encoder that cannot open raises, and a cancelled animation
+is deleted rather than reported as written.
+
+Export parity with the reworked 3D View (the set-up is shared through
+:mod:`al_dic_3d.viz3d.view_setup`): the camera is the user's view when the
+caller passes one, else the view's first framing — from the LEFT camera with
+image-up up, fitted to the surface bounds; the surface is lit and smooth-shaded
+like the view's Shading option (``shading=False``: the exact colormap colours);
+the scalar bar is the view's fitted one, its title kept short (``note`` carries
+the rigid-motion wording as a corner text); and the geometry follows the view's
+deformation magnification (``magnification`` / ``normal_only``, the colours
+stay the true values). The lights are never removed: a scene rebuild swaps the
+surface actor only (``plotter.clear()`` drops the light kit -> unlit frames).
 
 pyvista/VTK is imported lazily inside functions (architecture test enforced).
 
@@ -54,6 +64,13 @@ from al_dic_3d.export.utils import ensure_dir, frame_tag
 from al_dic_3d.viz3d.fieldmap import auto_range as _percentile_range
 from al_dic_3d.viz3d.fieldmap import visible_values
 from al_dic_3d.viz3d.surface import build_surface_polydata
+from al_dic_3d.viz3d.view_setup import (
+    magnify,
+    preset_camera,
+    safe_clim,
+    scalar_bar_args,
+    tick_format,
+)
 
 if TYPE_CHECKING:
     from al_dic_3d.runner import RunResult
@@ -62,6 +79,10 @@ ProgressCb = Callable[[int, int, str], None]
 
 # Window-size presets offered by the 3D View tab (W, H).
 VIEW3D_RESOLUTIONS = ((1024, 768), (1280, 960), (1920, 1080), (800, 600))
+
+# The 3D View's lit material (its Shading option): mostly diffuse, so the shape
+# reads, with enough ambient that faces turned away keep their colours.
+_LIT_MATERIAL = {"ambient": 0.3, "diffuse": 0.7, "specular": 0.1}
 
 __all__ = [
     "VIEW3D_RESOLUTIONS",
@@ -118,17 +139,6 @@ def view3d_color_range(
     return _percentile_range(visible_values(values, ref_coords, roi_mask))
 
 
-def _safe_clim(lo: float, hi: float) -> tuple[float, float]:
-    """A renderable colour range (VTK rejects an empty or non-finite one)."""
-    lo, hi = float(lo), float(hi)
-    if not (np.isfinite(lo) and np.isfinite(hi)):
-        return 0.0, 1.0
-    if hi > lo:
-        return lo, hi
-    pad = max(abs(lo) * 1e-6, 1e-12)
-    return lo - pad, hi + pad
-
-
 def _make_plotter(window_size: tuple[int, int], background: str):
     import pyvista as pv
 
@@ -137,27 +147,72 @@ def _make_plotter(window_size: tuple[int, int], background: str):
     return pl
 
 
-def _add_surface(pl, surf, field_label: str, cmap: str, vmin: float, vmax: float):
-    fg = "black"
+def _add_surface(
+    pl, surf, field_label: str, cmap: str, vmin: float, vmax: float, *, shading: bool = True
+):
+    """The coloured surface as the 3D View draws it (lit + smooth, fitted scalar bar)."""
     return pl.add_mesh(
         surf,
         scalars=field_label,
         cmap=cmap,
         clim=(vmin, vmax),
         show_edges=False,
-        scalar_bar_args={"title": field_label, "color": fg, "vertical": True},
+        lighting=shading,
+        smooth_shading=shading,
+        scalar_bar_args=scalar_bar_args(field_label, "black", vmin, vmax),
+        render=False,  # the screenshot renders
+        **(_LIT_MATERIAL if shading else {}),
     )
 
 
-def _set_clim(actor, clim: tuple[float, float]) -> None:
-    """Move a live actor's colour range (the in-place update path)."""
-    mapper = getattr(actor, "mapper", None)
-    if mapper is None:
+def _add_note(pl, note: str) -> None:
+    """The 3D View's corner note (e.g. rigid motion removed); the bar title stays short."""
+    if note:
+        pl.add_text(note, position="upper_left", font_size=9, color="dimgray")
+
+
+def _frame_camera(pl, surf, camera: CameraTuple | None) -> None:
+    """Point the camera: the user's view, else the 3D View's first framing.
+
+    The default looks from the LEFT camera with image-up (world -y) up and fits
+    the surface bounds only — what the interactive view opens with. (The old
+    isometric default looked at the specimen from behind.)
+    """
+    if camera is not None:
+        pl.camera_position = camera
         return
-    mapper.scalar_range = clim
-    lut = getattr(mapper, "lookup_table", None)
-    if lut is not None:
-        lut.scalar_range = clim  # the scalar bar follows the lookup table
+    framing = preset_camera("camera", np.asarray(surf.points))
+    if framing is not None:
+        pl.camera_position = framing
+    pl.reset_camera(render=False, bounds=surf.bounds)
+
+
+def _geometry(
+    ref_points: NDArray | None, points: NDArray, magnification: float, normal_only: bool
+) -> NDArray:
+    """The drawn shape: ``points`` magnified about ``ref_points`` like the 3D View."""
+    if ref_points is None:
+        if magnification != 1.0 or normal_only:
+            raise ValueError("a deformation magnification needs the reference points")
+        return points
+    return magnify(ref_points, points, magnification, normal_only=normal_only)
+
+
+def _set_clim(pl, actor, title: str, clim: tuple[float, float]) -> None:
+    """Move a live actor's colour range and its scalar bar's ticks (in-place path)."""
+    mapper = getattr(actor, "mapper", None)
+    if mapper is not None:
+        mapper.scalar_range = clim
+        lut = getattr(mapper, "lookup_table", None)
+        if lut is not None:
+            lut.scalar_range = clim  # the scalar bar follows the lookup table
+    try:
+        bar = pl.scalar_bars[title]
+    except KeyError:  # no scalar bar to relabel
+        return
+    # The tick decimals follow THIS frame's range (the view rebuilds on a new
+    # format): the first frame's could print a later, narrower range as 0.0.
+    bar.SetLabelFormat(tick_format(*clim))
 
 
 def _screenshot_bgr(pl) -> NDArray[np.uint8]:
@@ -166,6 +221,10 @@ def _screenshot_bgr(pl) -> NDArray[np.uint8]:
     # screenshot() on the first call — without this every sequence frame after
     # the first was a copy of it (fix batch V; the turntable's copy of this bug
     # was fixed in 1bfe769).
+    # A render does NOT refit the clipping range either: a surface that moved
+    # (a deforming or magnified sequence) or a camera that orbited would be cut
+    # by near/far planes fitted to the first frame.
+    pl.reset_camera_clipping_range()
     pl.render()
     img = pl.screenshot(return_img=True)  # (H, W, 3) RGB
     return np.ascontiguousarray(img[:, :, ::-1])  # -> BGR
@@ -190,24 +249,36 @@ def render_view3d_frame(
     background: str = "white",
     barrier_mask: NDArray | None = None,
     roi_mask: NDArray | None = None,
+    ref_points: NDArray | None = None,
+    magnification: float = 1.0,
+    normal_only: bool = False,
+    shading: bool = True,
+    note: str = "",
 ) -> NDArray[np.uint8] | None:
     """Render one 3D surface frame offscreen -> BGR uint8 array.
 
     ``camera`` is a pyvista ``(position, focal_point, view_up)`` tuple; the
-    default is the isometric view. ``roi_mask`` knocks out cells outside the
-    drawn ROI; ``barrier_mask`` (Batch C item 4) drops crack-bridging cells.
+    default is the 3D View's first framing (from the left camera, fitted to
+    the surface). ``roi_mask`` knocks out cells outside the drawn ROI;
+    ``barrier_mask`` (Batch C item 4) drops crack-bridging cells.
+    ``magnification`` / ``normal_only`` exaggerate the shape change about
+    ``ref_points`` (the frame-1 surface, required for any magnification) like
+    the 3D View; ``shading`` lights the surface (off: exact colormap colours);
+    ``note`` is the view's short corner text (e.g. rigid motion removed).
     Returns None when no surface can be built.
+
+    Raises:
+        ValueError: a magnification was asked for without ``ref_points``.
     """
-    surf = build_surface(points_3d, values, field_label, ref_coords, barrier_mask, roi_mask)
+    geometry = _geometry(ref_points, points_3d, magnification, normal_only)
+    surf = build_surface(geometry, values, field_label, ref_coords, barrier_mask, roi_mask)
     if surf is None:
         return None
     pl = _make_plotter(window_size, background)
     try:
-        _add_surface(pl, surf, field_label, cmap, *_safe_clim(vmin, vmax))
-        if camera is not None:
-            pl.camera_position = camera
-        else:
-            pl.view_isometric()
+        _add_surface(pl, surf, field_label, cmap, *safe_clim(vmin, vmax), shading=shading)
+        _add_note(pl, note)
+        _frame_camera(pl, surf, camera)
         return _screenshot_bgr(pl)
     finally:
         pl.close()
@@ -262,6 +333,10 @@ def export_view3d_frames(
     roi_mask: NDArray | None = None,
     value_scale: float = 1.0,
     field_label: str | None = None,
+    magnification: float = 1.0,
+    normal_only: bool = False,
+    shading: bool = True,
+    note: str = "",
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
 ) -> ExportOutcome:
@@ -277,12 +352,21 @@ def export_view3d_frames(
             ROI (the interactive view's rule) when True; the explicit
             ``vmin``/``vmax`` (display units) otherwise.
         camera: fixed ``(position, focal_point, view_up)`` for every frame —
-            pass the user's 3D-view camera — or None for the isometric view.
+            pass the user's 3D-view camera — or None for the 3D View's first
+            framing (from the left camera, fitted to the first drawn surface).
+            The camera is set once and persists, so the animation never jumps.
         write_frames: write ``{field}/frame_XX.png`` per frame.
         animation_format: ``"mp4"`` / ``"gif"`` to also stream the frames into
             ``{field}.{ext}``; None disables the animation.
         value_scale / field_label: display-unit factor applied to the values
             and the scalar-bar title (default: native mm label).
+        magnification / normal_only: the 3D View's deformation magnification —
+            frame ``k`` is drawn as ``P1 + magnification * (Pk - P1)``
+            (optionally only the out-of-plane part); colours stay true values.
+        shading: lit, smooth-shaded surface like the 3D View (off: the exact
+            colormap colours).
+        note: the 3D View's short corner text (e.g. that rigid motion is
+            removed), so the scalar-bar title stays short enough to fit.
         stop_event: cooperative cancel — checked before every frame.
         progress_cb: ``(frames_done, total_frames, label)``.
 
@@ -300,8 +384,10 @@ def export_view3d_frames(
     frame's surface topology matches the previous one (same points/faces —
     the common case; the NaN pattern rarely changes), the live mesh's points,
     scalars and colour range are updated in place like the interactive
-    ``View3D`` (P2.4); otherwise the scene is rebuilt on the same plotter.
-    Each frame's field values are computed ONCE (range and render share them).
+    ``View3D`` (P2.4); otherwise the surface actor (with its scalar bar) is
+    swapped on the same plotter — never ``clear()``, which would also remove
+    the light kit and leave every later frame unlit. Each frame's field values
+    are computed ONCE (range and render share them).
     """
     from al_dic_3d.pathsafe import imwrite_unicode
 
@@ -338,9 +424,8 @@ def export_view3d_frames(
             if vals is not None:
                 if value_scale != 1.0:
                     vals = vals * float(value_scale)
-                surf = build_surface(
-                    rec.points[k], vals, label, result.ref_coords, barrier, roi_mask
-                )
+                geometry = _geometry(rec.points[0], rec.points[k], magnification, normal_only)
+                surf = build_surface(geometry, vals, label, result.ref_coords, barrier, roi_mask)
             if surf is None:
                 outcome.skipped.append(f"{field_id} {tag}")
                 if animation_format is not None:
@@ -350,11 +435,12 @@ def export_view3d_frames(
                         writer.append(_blank_frame(writer))
             else:
                 if auto_range:
-                    clim = _safe_clim(*view3d_color_range(vals, result.ref_coords, roi_mask))
+                    clim = safe_clim(*view3d_color_range(vals, result.ref_coords, roi_mask))
                 else:
-                    clim = _safe_clim(vmin, vmax)
+                    clim = safe_clim(vmin, vmax)
                 if pl is None:
                     pl = _make_plotter(window_size, background="white")
+                    _add_note(pl, note)  # kept for the whole sequence
                 if (
                     live_surf is not None
                     and live_surf.n_points == surf.n_points
@@ -364,15 +450,17 @@ def export_view3d_frames(
                     # Same topology: mutate the live mesh (camera persists).
                     live_surf.points[:] = surf.points
                     live_surf[label][:] = surf[label]
-                    _set_clim(actor, clim)
+                    _set_clim(pl, actor, label, clim)
                 else:
-                    pl.clear()
-                    actor = _add_surface(pl, surf, label, cmap, *clim)
+                    if actor is not None:
+                        # Swap only our surface (its scalar bar goes with it):
+                        # clear() would drop the lights -> unlit frames.
+                        pl.remove_actor(actor, render=False)
+                        pl.scalar_bars.clear()
+                    actor = _add_surface(pl, surf, label, cmap, *clim, shading=shading)
+                    if live_surf is None:  # the first drawn frame: frame once
+                        _frame_camera(pl, surf, camera)
                     live_surf = surf
-                    if camera is not None:
-                        pl.camera_position = camera
-                    else:
-                        pl.view_isometric()
                 img = _screenshot_bgr(pl)
                 drawn += 1
                 if frames_dir is not None:
@@ -432,6 +520,10 @@ def export_view3d_turntable(
     camera: CameraTuple | None = None,
     value_scale: float = 1.0,
     field_label: str | None = None,
+    magnification: float = 1.0,
+    normal_only: bool = False,
+    shading: bool = True,
+    note: str = "",
     stop_event: threading.Event | None = None,
     progress_cb: ProgressCb | None = None,
 ) -> ExportOutcome:
@@ -439,9 +531,12 @@ def export_view3d_turntable(
 
     One offscreen plotter is built once; the camera azimuth advances by
     ``360 / n_orbit`` per rendered frame, starting from ``camera`` (the user's
-    view) when given, else the isometric view. The colour range is frame
-    ``frame_k``'s percentile inside ``roi_mask`` (or the fixed range); the ROI
-    bounds the surface and doubles as the crack barrier on a crack-aware run.
+    view) when given, else the 3D View's first framing (from the left camera,
+    fitted to the surface). The colour range is frame ``frame_k``'s percentile
+    inside ``roi_mask`` (or the fixed range); the ROI bounds the surface and
+    doubles as the crack barrier on a crack-aware run. ``magnification`` /
+    ``normal_only`` / ``shading`` / ``note`` draw the surface like the 3D View
+    (see :func:`export_view3d_frames`).
 
     Returns:
         An :class:`ExportOutcome` with the animation path; empty with
@@ -463,13 +558,14 @@ def export_view3d_turntable(
     if value_scale != 1.0:
         vals = vals * float(value_scale)
     if auto_range:
-        clim = _safe_clim(*view3d_color_range(vals, result.ref_coords, roi_mask))
+        clim = safe_clim(*view3d_color_range(vals, result.ref_coords, roi_mask))
     else:
-        clim = _safe_clim(vmin, vmax)
+        clim = safe_clim(vmin, vmax)
 
     label = field_label or colorbar_label(field_id)
+    points = result.reconstruction.points
     surf = build_surface(
-        result.reconstruction.points[frame_k],
+        _geometry(points[0], points[frame_k], magnification, normal_only),
         vals,
         label,
         result.ref_coords,
@@ -484,11 +580,9 @@ def export_view3d_turntable(
     pl = _make_plotter(window_size, "white")
     writer: StreamingAnimWriter | None = None
     try:
-        _add_surface(pl, surf, label, cmap, *clim)
-        if camera is not None:
-            pl.camera_position = camera
-        else:
-            pl.view_isometric()
+        _add_surface(pl, surf, label, cmap, *clim, shading=shading)
+        _add_note(pl, note)
+        _frame_camera(pl, surf, camera)
         step_deg = 360.0 / n_orbit
         for i in range(n_orbit):
             if stop_requested(stop_event):

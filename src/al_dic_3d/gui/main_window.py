@@ -91,8 +91,9 @@ class MainWindow3D(MainMenuMixin, QMainWindow):
 
         self._right = RightSidebar3D(self.controller, self.signals)
         layout.addWidget(self._right, stretch=0)
-        # The 3D export frames the surface the way the 3D view shows it.
+        # The 3D export frames and draws the surface the way the 3D view shows it.
         self._right.set_view3d_camera_provider(self._canvas_area.view3d_camera)
+        self._right.set_view3d_options_provider(self._canvas_area.view3d_options)
 
         # ROI toolbox <-> canvas drawing tools (2D toolbar idiom): a shape
         # selection arms a one-shot canvas tool; the commit/cancel resets the

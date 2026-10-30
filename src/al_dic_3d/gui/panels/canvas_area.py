@@ -270,6 +270,14 @@ class CanvasArea3D(CanvasRenderMixin, CanvasToolsMixin, QWidget):
         """The interactive 3D view's camera, for the 3D export (None: not shown)."""
         return self._view3d.camera_position()
 
+    def view3d_options(self):
+        """The 3D view's display options (magnification, shading...) for the 3D export.
+
+        Its toolbar holds the defaults until the user changes them, so a 3D view
+        never shown exports at true scale, lit.
+        """
+        return self._view3d.options()
+
     def toggle_playback(self) -> None:
         """Space shortcut relay (G2.5): play/pause the frame navigator."""
         self._frame_nav.toggle_playback()

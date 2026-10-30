@@ -58,6 +58,7 @@ from al_dic_3d.gui.dialogs.export_tabs import (
     PreviewTab,
     View3DTab,
 )
+from al_dic_3d.gui.widgets.view3d_toolbar import View3DOptions
 
 if TYPE_CHECKING:
     from al_dic_3d.export import CameraTuple, ColorbarStyle
@@ -115,7 +116,9 @@ class ExportDialog(QDialog):
     :attr:`result` (read-only) and :meth:`matches` — rebuild the dialog when
     ``not dialog.matches(state.result)``; :meth:`is_busy` tells whether an
     export is still running. ``camera_provider`` (optional) returns the
-    interactive 3D view's current camera, read at export time.
+    interactive 3D view's current camera and ``view3d_options_provider``
+    (optional) its display options (magnification, shading...), both read at
+    export time.
     """
 
     def __init__(
@@ -127,6 +130,7 @@ class ExportDialog(QDialog):
         draft: ProjectDraft | None = None,
         hint: VizExportHint | None = None,
         camera_provider: Callable[[], Any] | None = None,
+        view3d_options_provider: Callable[[], Any] | None = None,
     ) -> None:
         super().__init__(parent)
         self._result = result
@@ -134,6 +138,7 @@ class ExportDialog(QDialog):
         self.draft = draft
         self.hint = hint if hint is not None else VizExportHint()
         self._camera_provider = camera_provider
+        self._view3d_options_provider = view3d_options_provider
         self._mask_lock = threading.Lock()
         self._roi_cache: tuple[object, np.ndarray] | None = None  # (source array, bool)
         self._right_cache: tuple[object, np.ndarray | None] | None = None
@@ -334,13 +339,28 @@ class ExportDialog(QDialog):
         if self._camera_provider is not None:
             try:
                 live = self._camera_provider()
-            except Exception:  # noqa: BLE001 - no 3D view: isometric default
+            except Exception:  # noqa: BLE001 - no 3D view: the default framing
                 live = None
             cam = _camera_tuple(live) if live is not None else None
             if cam is not None:
                 return cam
         snap = self.hint.view3d_camera
         return _camera_tuple(snap) if snap is not None else None
+
+    def view3d_options(self) -> View3DOptions:
+        """The interactive 3D view's display options now (provider), else the defaults.
+
+        The defaults (true scale, lit) apply without a provider (the strain
+        window) or when the provider has no options to give.
+        """
+        if self._view3d_options_provider is not None:
+            try:
+                live = self._view3d_options_provider()
+            except Exception:  # noqa: BLE001 - no 3D view: the defaults
+                live = None
+            if isinstance(live, View3DOptions):
+                return live
+        return View3DOptions()
 
     def export_target(self) -> tuple[Path, str, str] | None:
         """(folder, prefix, FRESH timestamp) for one export click, or None."""

@@ -321,11 +321,20 @@ def test_view3d_tab_passes_camera_units_roi_and_fixed_range(qapp, tmp_path, monk
 
     monkeypatch.setattr(export_mod, "export_view3d_frames", fake_frames)
     monkeypatch.setattr(export_mod, "export_view3d_turntable", fake_turntable)
+    from al_dic_3d.gui.widgets.view3d_toolbar import View3DOptions
+
     cam = ((1.0, 2.0, 3.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+    view_opts = View3DOptions(magnification=50.0, normal_only=True, shading=False)
     hint = VizExportHint(
         current_field="W", auto_range=False, vmin=-2.0, vmax=3.0, display_unit="µm"
     )
-    dlg = _dialog(grid_result(), tmp_path, hint=hint, camera_provider=lambda: cam)
+    dlg = _dialog(
+        grid_result(),
+        tmp_path,
+        hint=hint,
+        camera_provider=lambda: cam,
+        view3d_options_provider=lambda: view_opts,
+    )
     tab = dlg._view3d_tab
     assert tab._field_combo.currentData() == "W"
     tab._turntable_check.setChecked(True)
@@ -338,6 +347,76 @@ def test_view3d_tab_passes_camera_units_roi_and_fixed_range(qapp, tmp_path, monk
         assert kw["field_label"] == "W (µm)"
         assert kw["auto_range"] is False and (kw["vmin"], kw["vmax"]) == (-2.0, 3.0)
         assert kw["roi_mask"] is not None
+        # The 3D view's magnification and shading (WYSIWYG).
+        assert kw["magnification"] == 50.0 and kw["normal_only"] is True
+        assert kw["shading"] is False
+    dlg.close()
+
+
+def test_view3d_options_fall_back_to_the_defaults(qapp, tmp_path, monkeypatch):
+    import al_dic_3d.export as export_mod
+    from al_dic_3d.gui.widgets.view3d_toolbar import View3DOptions
+
+    dlg = _dialog(grid_result(), tmp_path)  # no provider (the strain window)
+    assert dlg.view3d_options() == View3DOptions()
+    calls: dict = {}
+
+    def fake_frames(*args, **kwargs):
+        calls["frames"] = kwargs
+        return export_mod.ExportOutcome()
+
+    monkeypatch.setattr(export_mod, "export_view3d_frames", fake_frames)
+    dlg._view3d_tab.start_export()
+    assert dlg.wait_for_export()
+    kw = calls["frames"]
+    assert (kw["magnification"], kw["normal_only"], kw["shading"]) == (1.0, False, True)
+    dlg.close()
+
+    def broken():
+        raise RuntimeError("the 3D view is gone")
+
+    for provider in (lambda: None, broken):
+        dlg = _dialog(grid_result(), tmp_path, view3d_options_provider=provider)
+        assert dlg.view3d_options() == View3DOptions()
+        dlg.close()
+
+
+def test_view3d_tab_keeps_the_bar_title_short_with_rigid_motion_removed(
+    qapp, tmp_path, monkeypatch
+):
+    import al_dic_3d.export as export_mod
+    from al_dic_3d.gui.rigid_motion_text import rigid_motion_label_suffix
+    from al_dic_3d.run_rigid import with_rigid_motion
+
+    calls: dict = {}
+
+    def fake_frames(*args, **kwargs):
+        calls["frames"] = kwargs
+        return export_mod.ExportOutcome()
+
+    monkeypatch.setattr(export_mod, "export_view3d_frames", fake_frames)
+    result = with_rigid_motion(grid_result(), "translation", None)
+    suffix = rigid_motion_label_suffix(result)
+    assert suffix  # a corrected result
+    dlg = _dialog(result, tmp_path, hint=VizExportHint(current_field="W", display_unit="µm"))
+    assert dlg.field_display("W")[1] == "W (µm)" + suffix  # 2D figures keep the long label
+    dlg._view3d_tab.start_export()
+    assert dlg.wait_for_export()
+    kw = calls["frames"]
+    # The 3D view's split: a short bar title, the wording as a corner note.
+    assert kw["field_label"] == "W (µm)"
+    assert kw["note"] == suffix.removeprefix(" · ") and "rigid motion" in kw["note"]
+    dlg.close()
+
+
+def test_view3d_options_are_read_live_from_the_provider(qapp, tmp_path):
+    from al_dic_3d.gui.widgets.view3d_toolbar import View3DOptions
+
+    live = {"opts": View3DOptions(magnification=10.0)}
+    dlg = _dialog(grid_result(), tmp_path, view3d_options_provider=lambda: live["opts"])
+    assert dlg.view3d_options() is live["opts"]
+    live["opts"] = View3DOptions(magnification=200.0, shading=False)  # changed after opening
+    assert dlg.view3d_options() == View3DOptions(magnification=200.0, shading=False)
     dlg.close()
 
 

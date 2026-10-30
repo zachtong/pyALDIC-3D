@@ -338,6 +338,9 @@ class _FakePlotter:
     def remove_actor(self, actor, render=True):
         self.calls.append("remove_actor")
 
+    def reset_camera_clipping_range(self):
+        self.calls.append("reset_camera_clipping_range")
+
     def add_text(self, *_a, **_kw):
         self.calls.append("add_text")
         return object()

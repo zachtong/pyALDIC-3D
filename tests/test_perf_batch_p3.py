@@ -135,8 +135,11 @@ class _FakePlotter:
         self.camera_position = None
         self.add_mesh_calls = 0
         self.clear_calls = 0
+        self.remove_calls = 0
         self.iso_calls = 0
+        self.reset_bounds: list = []
         self.closed = False
+        self.scalar_bars: dict = {}  # pyvista's title -> scalar bar (none here)
 
     def clear(self):
         self.clear_calls += 1
@@ -144,6 +147,12 @@ class _FakePlotter:
     def add_mesh(self, mesh, **_kw):
         self.add_mesh_calls += 1
         return SimpleNamespace(mapper=None)
+
+    def remove_actor(self, actor, render=True):
+        self.remove_calls += 1
+
+    def reset_camera(self, render=True, bounds=None):
+        self.reset_bounds.append(bounds)
 
     def view_isometric(self):
         self.iso_calls += 1
@@ -192,9 +201,14 @@ def test_export_view3d_frames_single_plotter_in_place(tmp_path, monkeypatch):
     assert len(paths) == 4  # one PNG per frame
     assert len(made) == 1 and made[0].closed  # ONE plotter for the sequence
     # Frames 0-2 share topology (one add_mesh + in-place updates); frame 3's
-    # NaN point changes the faces and takes the rebuild path.
+    # NaN point changes the faces and takes the rebuild path, which swaps the
+    # surface actor on the same scene — never clear() (it drops the lights).
     assert made[0].add_mesh_calls == 2
-    assert made[0].iso_calls == 2  # camera re-framed only on rebuilds
+    assert made[0].remove_calls == 1 and made[0].clear_calls == 0
+    # The camera is framed ONCE, on the first drawn surface (from the left
+    # camera, fitted to its bounds), and kept through the rebuild.
+    assert made[0].iso_calls == 0
+    assert len(made[0].reset_bounds) == 1 and made[0].reset_bounds[0] is not None
     # Hoisted values (P3.2): field_frame ran ONCE per frame — the color-range
     # pass and the render loop share the same arrays (was 2x per frame).
     assert len(field_calls) == 4

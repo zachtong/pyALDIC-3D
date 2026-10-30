@@ -472,6 +472,9 @@ class View3D(QWidget):
             self._actor.mapper.lookup_table.scalar_range = (float(vmin), float(vmax))
         except Exception:  # noqa: BLE001 - colorbar range is decoration-level
             pass
+        # The near/far planes do not follow moved points on their own: a magnified
+        # or deforming surface would be cut at the old clipping range.
+        self._plotter.reset_camera_clipping_range()
         self._plotter.render()
 
     def _rebuild_scene(self, surf, key: tuple, vmin: float, vmax: float, extras: tuple) -> None:

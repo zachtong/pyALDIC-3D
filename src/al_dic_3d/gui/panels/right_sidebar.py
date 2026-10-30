@@ -361,6 +361,7 @@ class RightSidebar3D(RunSummaryMixin, QWidget):
         self.signals.results_changed.connect(self._refresh_stale)
         self.signals.results_changed.connect(self._close_stale_export_dialog)
         self._view3d_camera_provider = None
+        self._view3d_options_provider = None
         self.signals.run_state_changed.connect(lambda _s: self._refresh_result_buttons())
 
         self._timer = QTimer(self)
@@ -750,6 +751,7 @@ class RightSidebar3D(RunSummaryMixin, QWidget):
             draft=state.draft,
             hint=hint,
             camera_provider=self._view3d_camera_provider,
+            view3d_options_provider=self._view3d_options_provider,
         )
         # DeleteOnClose + destroyed-hook keeps the singleton reuse safe: the
         # reference is dropped the moment Qt tears the dialog down -- but only
@@ -773,6 +775,10 @@ class RightSidebar3D(RunSummaryMixin, QWidget):
     def set_view3d_camera_provider(self, provider) -> None:
         """``provider() -> camera | None``: the 3D view's camera for 3D exports."""
         self._view3d_camera_provider = provider
+
+    def set_view3d_options_provider(self, provider) -> None:
+        """``provider() -> View3DOptions | None``: the 3D view's magnification/shading."""
+        self._view3d_options_provider = provider
 
     def close_export_dialog(self) -> bool:
         """Close the non-modal export dialog if open (main-window close cascade).

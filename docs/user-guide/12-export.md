@@ -215,8 +215,12 @@ Render the interactive 3D surface offscreen:
   `1024 × 768` (default), `1280 × 960`, `1920 × 1080`, `800 × 600`.
 - **Auto** range (on: each frame's 2nd–98th percentile inside the ROI, the
   interactive view's rule) or fixed **Min** / **Max**.
-- The surface is limited to the ROI, and the camera is the one of the
-  interactive 3D view when it is open (otherwise an isometric view).
+- The export draws the surface the way the 3D View shows it: limited to the
+  ROI, with the 3D View's camera, deformation magnification (the colours keep
+  the true values) and shading. Without a 3D View camera (the view was never
+  opened, or new results were not shown yet) the surface is framed from the
+  left camera, image-up up. When rigid motion is removed, *rigid motion
+  removed* is a note in the top-left corner, as in the view.
 - **Frame sequence** group:
   - **Per-frame image sequence (PNG)** — on by default.
   - **Animation** — on by default; **MP4** (default) / **GIF**, **Frames per

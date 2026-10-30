@@ -70,9 +70,25 @@ def test_export_dialog_reads_the_live_3d_camera(qapp):
     win = MainWindow3D()
     provider = win._right._view3d_camera_provider
     assert provider is not None
-    assert provider() is None  # nothing rendered: the export uses its isometric view
+    assert provider() is None  # nothing rendered: the export frames from the left camera
     view = win._canvas_area._view3d
     _show_surface(view)
     assert provider() == CAMERA
     _drop_stub(view)
+    win.close()
+
+
+def test_export_dialog_reads_the_live_3d_view_options(qapp):
+    from al_dic_3d.gui.widgets.view3d_toolbar import View3DOptions
+
+    win = MainWindow3D()
+    provider = win._right._view3d_options_provider
+    assert provider is not None
+    assert provider() == View3DOptions()  # the toolbar's defaults: true scale, lit
+    toolbar = win._canvas_area._view3d._toolbar
+    toolbar.set_magnification(100.0)
+    toolbar._normal_only.setChecked(True)
+    toolbar._shading.setChecked(False)
+    opts = provider()
+    assert (opts.magnification, opts.normal_only, opts.shading) == (100.0, True, False)
     win.close()

@@ -82,6 +82,9 @@ class _Plotter:
     def remove_actor(self, actor, render=True):
         self._hit("remove_actor")
 
+    def reset_camera_clipping_range(self):
+        self._hit("reset_camera_clipping_range")
+
     def add_text(self, *_a, **_kw):
         self._hit("add_text")
         return object()
