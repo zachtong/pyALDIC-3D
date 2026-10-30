@@ -271,7 +271,10 @@ def test_crash_dialog_content(qapp):
     box = app_mod.build_crash_dialog(ValueError, ValueError("bad value"), tb, log_file=log)
     try:
         assert box.icon() == QMessageBox.Icon.Critical
-        assert box.windowTitle() == "pyALDIC-3D has hit an error"
+        # Qt ignores a message box's window title on macOS (Apple's guidelines),
+        # so there the text below is the headline.
+        expected_title = "" if sys.platform == "darwin" else "pyALDIC-3D has hit an error"
+        assert box.windowTitle() == expected_title
         assert "unexpected error" in box.text()
         assert str(log) in box.informativeText()
         assert box.detailedText().startswith("ValueError: bad value")
