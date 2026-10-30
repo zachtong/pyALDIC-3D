@@ -57,6 +57,11 @@ def test_run_parameters_are_recorded_in_the_result(tmp_path):
     rp = result.meta["run_params"]
     assert rp["winstepsize"] == cfg.winstepsize and rp["winsize"] == cfg.winsize
     assert rp["reference_mode"] == cfg.reference_mode and rp["strategy"] == cfg.strategy
+    # What the collapse advice needs: how often the reference moved, and
+    # whether the user gave per-frame masks (a drawn ROI alone is not).
+    assert rp["ref_update_mode"] == cfg.ref_update_mode
+    assert rp["ref_update_n"] == cfg.ref_update_n
+    assert rp["per_frame_masks"] is False
     json.dumps(rp)  # JSON-safe for the session file and the parameters export
 
 
@@ -88,7 +93,40 @@ def test_a_validity_collapse_comes_with_advice():
 
     collapsed = summary([0.97, 0.9, 0.05, 0.02])
     assert collapse_advice(collapsed, "accumulative") == "incremental"
-    assert collapse_advice(collapsed, "incremental") == "masks"
     assert collapse_advice(summary([0.97, 0.9, 0.8, 0.7]), "accumulative") is None
     lines = summary_lines(collapsed, stopped={"run_params": {"reference_mode": "accumulative"}})
     assert any("incremental" in text for _, text in lines)
+
+
+def test_an_incremental_collapse_never_repeats_what_the_user_already_did():
+    """A notched specimen pulled to failure (136 frames): incremental,
+    every frame, per-frame masks kept 21 % of the points by the end and the log
+    advised ... per-frame masks. Each reference update adds a small tracking
+    error (and drops mesh cells outside that frame's mask), so the advice for a
+    collapse under frequent updates is fewer updates or accumulative."""
+    from al_dic_3d.matching.diagnostics import RunSummary, collapse_advice, summary_lines
+
+    collapsed = RunSummary(
+        n_frames=4,
+        n_pts=100,
+        valid_frac=(0.97, 0.9, 0.05, 0.02),
+        median_valid_frac=0.05,
+        low_frames=(),
+        all_empty=False,
+        stereo_n_pts=None,
+        stereo_n_valid=None,
+        gated_by_cam={},
+    )
+    advice = lambda **kw: collapse_advice(collapsed, "incremental", **kw)  # noqa: E731
+    assert advice() == "fewer_updates"  # an old result without the fields: every frame
+    assert advice(ref_update_mode="every_frame") == "fewer_updates"
+    assert advice(ref_update_mode="every_frame", per_frame_masks=True) == "fewer_updates"
+    assert advice(ref_update_mode="every_n", per_frame_masks=True) == "fewer_updates"
+    # Rare updates without masks: a valid region that changes is the likely cause.
+    assert advice(ref_update_mode="every_n", per_frame_masks=False) == "masks"
+    assert advice(ref_update_mode="custom", per_frame_masks=False) == "masks"
+
+    meta = {"run_params": {"reference_mode": "incremental", "ref_update_mode": "every_frame"}}
+    text = " ".join(t for _, t in summary_lines(collapsed, stopped=meta))
+    assert "every_n" in text and "accumulative" in text
+    assert "per-frame masks" not in text

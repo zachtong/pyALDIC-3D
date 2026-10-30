@@ -14,7 +14,8 @@ The **Tracking Mode** combo:
   and current subsets drift apart under large cumulative motion.
 - **Incremental** — each frame is correlated against a rolling reference frame,
   and the per-segment displacements are composed into cumulative output.
-  Required for large rotations or large cumulative strain. Slightly slower.
+  Needed when accumulative tracking loses the points (large rotations, strain
+  too large to correlate against frame 1). Slightly slower.
 
 Config key: `[matching].reference_mode = "accumulative" | "incremental"`.
 
@@ -27,12 +28,16 @@ Config key: `[matching].reference_mode = "accumulative" | "incremental"`.
 A **Reference Update** sub-section appears **only when Tracking Mode =
 Incremental**. It controls when the rolling reference refreshes:
 
-- **Every Frame** (default) — the reference resets every frame; most robust for
-  large deformation. Only frame 1 needs an ROI; each later reference frame
-  reuses that outline unchanged, so if the specimen moves far beyond it, import
-  per-frame masks (see [Region of interest](07-region-of-interest.md)).
-- **Every N Frames** — the reference resets every *N* frames. An **Update every**
-  spinbox appears (range **2–100**, default **2**, suffix *frames*).
+- **Every Frame** (default) — the reference resets every frame, so each match
+  only has to follow one frame's motion. Each reset, though, adds a small
+  tracking error, and over a long sequence these errors add up (see *Which
+  combination to pick?* below). Only frame 1 needs an ROI; each later reference
+  frame reuses that outline unchanged, so if the specimen moves far beyond it,
+  import per-frame masks (see [Region of interest](07-region-of-interest.md)).
+- **Every N Frames** — the reference resets every *N* frames: fewer resets, so
+  less accumulated error, as long as the images still correlate across *N*
+  frames of motion. An **Update every** spinbox appears (range **2–100**,
+  default **2**, suffix *frames*).
 - **Custom Frames** — type a comma-separated list of 0-based reference-frame
   indices (placeholder *e.g. 5, 10, 20 (0-based frame indices)*). Frame 0 is
   always a reference.
@@ -96,14 +101,27 @@ memory. Results are identical either way. Config key
 
 | Experiment | Tracking | Reference Update |
 |------------|----------|------------------|
-| Small, monotonic deformation | Accumulative | — |
-| Large cumulative strain | Incremental | Every Frame |
-| Large rigid rotation | Incremental | Every Frame |
-| Dynamic event / impact | Incremental | Every Frame |
-| Quasi-static with known load steps | Incremental | Every N / Custom |
+| Small or moderate, smoothly loaded deformation | Accumulative | — |
+| Large cumulative strain | Accumulative first; Incremental if it loses points | Every N Frames |
+| Large rigid rotation | Incremental | Every N Frames |
+| Dynamic event / impact (large jumps between frames) | Incremental | Every Frame |
+| Quasi-static with known load steps | Incremental | Custom |
 
-When in doubt, **Incremental + Every Frame** handles any deformation magnitude.
-It needs an ROI only on frame 1, but each later reference frame reuses that
-outline, so when the specimen moves far beyond it, add per-frame masks.
+**Start with Accumulative.** Each reference update adds a small tracking error
+(about a hundredth of a pixel), and the errors add up over a sequence.
+One example is a 136-frame tension test pulled to failure, with per-frame masks.
+Incremental + Every Frame lost most points by the end. Every 10 Frames did
+better. Accumulative kept 82 % of the points up to the fracture, and needed no
+Starting Point for it.
+
+Switch to Incremental when accumulative validity collapses (the log says so).
+For long sequences, prefer **Every N Frames**. Keep **Every Frame** for short
+sequences, or for motion too large to correlate across several frames.
+
+With per-frame masks, update the reference rarely. At each update, the mesh
+cells outside that frame's mask are dropped, and al-dic 0.7 does not restore
+them at later updates. Incremental needs an ROI only on frame 1. Each later
+reference frame reuses that outline, so when the specimen moves far beyond it,
+add per-frame masks.
 
 Next: [Initial guess & Starting Points →](06-initial-guess.md)

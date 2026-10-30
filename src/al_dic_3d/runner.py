@@ -685,6 +685,10 @@ def run_pipeline(
         "run_params": {
             "strategy": cfg.strategy,
             "reference_mode": cfg.reference_mode,
+            "ref_update_mode": cfg.ref_update_mode,
+            "ref_update_n": int(cfg.ref_update_n),
+            # User-given per-frame left masks (a drawn ROI alone is not).
+            "per_frame_masks": cfg.left_masks is not None,
             "winsize": int(cfg.winsize),
             "winstepsize": int(cfg.winstepsize),
             "winsize_min": int(cfg.winsize_min),

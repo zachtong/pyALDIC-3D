@@ -34,7 +34,7 @@ STRAIN_LABELS = {
 }
 
 
-#: Out-of-plane slopes of the strain fit: dimensionless, shown in mrad (= µm/mm).
+# Out-of-plane slopes of the strain fit: dimensionless, shown in mrad (= µm/mm).
 SLOPE_LABELS = {"dwdx": "∂w/∂x", "dwdy": "∂w/∂y"}
 SLOPE_FACTOR = 1000.0
 

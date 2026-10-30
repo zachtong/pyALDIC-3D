@@ -64,6 +64,14 @@ GitHub release notes for a tag are this file's section for that version.
   clearing the ROI. They now show only on the left camera's frame 1, switch off
   when an analysis finishes, come back when you draw, and the toggle is saved
   with the project.
+- **The run log's advice after a validity collapse in incremental mode.** When
+  an incremental run with the reference updated every frame lost most of its
+  points, the log advised importing per-frame masks — also when they were
+  already imported. Each reference update adds a small tracking error and, over
+  a long sequence, these errors add up, so the log now suggests fewer updates
+  (**Every N Frames**) or **Accumulative**. The run records its reference-update
+  policy and whether per-frame masks were used (in the parameters export too).
+  The user guide no longer calls **Incremental + Every Frame** the safe default.
 - The test suite no longer depends on how OpenCV rounds on a given computer.
   A test compared two exact copies of the same patch, and the last bit of the
   arithmetic chose between them, so it failed on some machines.

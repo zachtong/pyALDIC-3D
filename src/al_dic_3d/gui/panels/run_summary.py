@@ -79,8 +79,13 @@ class RunSummaryMixin:
                 self._append_log(template.format(n), "info")
         from al_dic_3d.matching.diagnostics import collapse_advice
 
-        mode = (meta.get("run_params") or {}).get("reference_mode")
-        advice = collapse_advice(s, mode)
+        run_params = meta.get("run_params") or {}
+        advice = collapse_advice(
+            s,
+            run_params.get("reference_mode"),
+            run_params.get("ref_update_mode"),
+            bool(run_params.get("per_frame_masks", False)),
+        )
         if advice is not None:
             start = f"{s.valid_frac[1] * 100:.0f}"
             worst = f"{min(s.valid_frac[2:]) * 100:.0f}"
@@ -89,6 +94,13 @@ class RunSummaryMixin:
                     "Validity falls from {0}% (frame 1) to {1}%: tracking every frame "
                     "against frame 1 cannot follow large deformation. Try WORKFLOW "
                     "TYPE > Incremental."
+                )
+            elif advice == "fewer_updates":
+                text = self.tr(
+                    "Validity falls from {0}% (frame 1) to {1}%: every reference update "
+                    "adds a small tracking error, and over a long sequence they add up. "
+                    "Try fewer updates (Reference Update > Every N Frames, e.g. 10) or "
+                    "WORKFLOW TYPE > Accumulative."
                 )
             else:
                 text = self.tr(

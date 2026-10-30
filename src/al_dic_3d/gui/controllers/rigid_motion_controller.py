@@ -24,7 +24,7 @@ STATE_WAITING = "waiting"  # on, but there is no run result yet
 STATE_REMOVED = "removed"  # the displayed result has it removed
 STATE_NOT_REMOVED = "not_removed"  # on, but the region cannot be fitted on this run
 
-#: Margin (px) around the nodes when a result does not record its image size.
+# Margin (px) around the nodes when a result does not record its image size.
 _SHAPE_MARGIN = 64
 
 

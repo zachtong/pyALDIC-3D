@@ -76,7 +76,11 @@ few points tells you *why*. Representative messages:
 - *Validity falls from X% (frame 1) to Y%: …* — the run kept most points at
   first and then lost them. In accumulative mode the message suggests the
   incremental mode (tracking every frame against frame 1 cannot follow large
-  deformation); otherwise it suggests per-frame masks.
+  deformation). In incremental mode with the reference updated every frame, or
+  with per-frame masks already imported, it suggests fewer reference updates
+  (**Every N Frames**) or **Accumulative**: each update adds a small tracking
+  error, and over a long sequence these errors add up. Otherwise (rare updates
+  and no per-frame masks) it suggests per-frame masks.
 - *Analysis complete — F frames, median validity Z%* — the success summary,
   with *K frame(s) below T% (see above)* when frames were flagged.
 

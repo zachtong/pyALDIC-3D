@@ -52,8 +52,12 @@ check rejects links that disagree with it) or at a disparity that varies more
 than **Stereo Search** covers; placing a Starting Point helps. Temporal validity
 that decays over frames points at motion exceeding the search / seed,
 decorrelation, or (for large deformation or rotation) the wrong tracking mode —
-switch to **Incremental + Every Frame** ([Workflow type](05-workflow-type.md));
-the log suggests this when validity collapses in accumulative mode. For a
+switch to **Incremental** ([Workflow type](05-workflow-type.md)); the log
+suggests this when validity collapses in accumulative mode. If validity decays
+in incremental mode instead, update the reference less often (**Every N
+Frames**, e.g. 10) or try **Accumulative**: every reference update adds a small
+tracking error, and over a long sequence these errors add up (the log suggests
+this too). For a
 specimen strained close to failure, raising **ADVANCED > Result checks >
 Tracking check** (for example to 1.5) keeps more of the strongly deformed
 points ([Parameters](08-parameters.md)). Enabling **Extra filters** will remove

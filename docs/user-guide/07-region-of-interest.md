@@ -63,7 +63,9 @@ Later frames are not masked, so material may move out of the frame-1 outline
 and still be tracked. The one exception is **Incremental** tracking: each later
 *reference* frame reuses the frame-1 outline unchanged (as in the 2D app), so
 if the specimen moves or deforms far beyond that outline, import per-frame
-masks.
+masks — and then update the reference rarely (**Every N Frames**), because each
+update drops the mesh cells outside that frame's mask for the rest of the run
+(see [Workflow type](05-workflow-type.md)).
 
 The import checks that there is one mask per frame and that the masks have the
 image size, and refuses the folder otherwise (the log says why). When no ROI

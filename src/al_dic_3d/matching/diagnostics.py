@@ -179,20 +179,41 @@ def summarize_run(
     )
 
 
-def collapse_advice(summary: RunSummary, reference_mode: str | None) -> str | None:
-    """``"incremental"`` / ``"masks"`` when validity collapses over the sequence.
+def collapse_advice(
+    summary: RunSummary,
+    reference_mode: str | None,
+    ref_update_mode: str | None = None,
+    per_frame_masks: bool = False,
+) -> str | None:
+    """``"incremental"`` / ``"fewer_updates"`` / ``"masks"`` when validity collapses.
 
     Fix batch V: on a specimen pulled to failure the GUI defaults (every frame
     tracked against frame 1) keep ~70 % of the nodes in frame 1 and ~2 % from
     frame 10 on, and nothing told the user why. A collapse is the first
     deformed frame reasonably valid (>= 30 %) and some later frame below a
-    quarter of it. In accumulative mode the advice is the incremental mode;
-    otherwise per-frame masks (a valid region that changes, e.g. a crack).
+    quarter of it.
+
+    * accumulative -> the incremental mode;
+    * incremental with a reference update every frame, or with per-frame masks
+      already given -> fewer updates (or accumulative): each update adds a small
+      tracking error that sums over the sequence, and with per-frame masks the
+      engine drops the mesh cells outside each new reference's mask for good
+      (a notched specimen pulled to failure, 136 frames: every frame + masks
+      kept 21 % of the points at the end, accumulative 82 %);
+    * incremental with rare updates and no per-frame masks -> per-frame masks
+      (a valid region that changes, e.g. a crack).
+
+    ``ref_update_mode=None`` (a result saved before it was recorded) reads as
+    the default, every frame.
     """
     vf = summary.valid_frac
     if len(vf) < 3 or vf[1] < 0.3 or min(vf[2:]) >= 0.25 * vf[1]:
         return None
-    return "incremental" if reference_mode == "accumulative" else "masks"
+    if reference_mode == "accumulative":
+        return "incremental"
+    if ref_update_mode in (None, "every_frame") or per_frame_masks:
+        return "fewer_updates"
+    return "masks"
 
 
 def summary_lines(
@@ -251,8 +272,13 @@ def summary_lines(
             n = int(gates.get(key, 0))
             if n:
                 lines.append(("info", f"{label} removed {n} positions"))
-    mode = ((stopped or {}).get("run_params") or {}).get("reference_mode")
-    advice = collapse_advice(summary, mode)
+    run_params = (stopped or {}).get("run_params") or {}
+    advice = collapse_advice(
+        summary,
+        run_params.get("reference_mode"),
+        run_params.get("ref_update_mode"),
+        bool(run_params.get("per_frame_masks", False)),
+    )
     if advice is not None:
         worst = min(summary.valid_frac[2:]) * 100
         start = summary.valid_frac[1] * 100
@@ -261,6 +287,13 @@ def summary_lines(
                 f"validity falls from {start:.0f}% (frame 1) to {worst:.0f}%: tracking every "
                 "frame against frame 1 cannot follow large deformation; try "
                 'reference_mode = "incremental" (GUI: WORKFLOW TYPE > Incremental)'
+            )
+        elif advice == "fewer_updates":
+            text = (
+                f"validity falls from {start:.0f}% (frame 1) to {worst:.0f}%: every reference "
+                "update adds a small tracking error and these add up over a long sequence; "
+                'try fewer updates (ref_update_mode = "every_n", e.g. ref_update_n = 10) '
+                'or reference_mode = "accumulative"'
             )
         else:
             text = (

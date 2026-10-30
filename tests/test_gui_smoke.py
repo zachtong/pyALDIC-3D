@@ -436,6 +436,34 @@ def test_run_summary_reports_stopped_early(qapp, scene):
     win.close()
 
 
+def test_an_incremental_collapse_advises_fewer_reference_updates(qapp, scene):
+    # A specimen pulled to failure: incremental + every frame + per-frame masks
+    # lost most points and the log advised importing per-frame masks, which the
+    # user had already done.
+    from dataclasses import replace
+
+    win = _loaded_window(scene)
+    win.controller.run()
+    result = win.controller.state.result
+    points = result.reconstruction.points.copy()
+    points[2:] = np.nan  # validity collapses after frame 1
+    meta = dict(result.meta)
+    meta["run_params"] = dict(
+        meta["run_params"],
+        reference_mode="incremental",
+        ref_update_mode="every_frame",
+        per_frame_masks=True,
+    )
+    win.controller.state.result = replace(
+        result, reconstruction=replace(result.reconstruction, points=points), meta=meta
+    )
+    win._right._on_done()
+    text = win._right._console.toPlainText()
+    assert "Every N Frames" in text and "Accumulative" in text
+    assert "import per-frame masks" not in text
+    win.close()
+
+
 def test_empty_result_logs_error_and_shows_canvas_notice(qapp, scene):
     # F3.1 empty-result guard: all-NaN reconstruction -> explicit error line
     # in the log + a visible notice on the canvas, never silent nothing.

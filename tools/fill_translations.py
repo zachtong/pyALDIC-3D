@@ -5140,6 +5140,10 @@ for _loc, _entries in _load_batch_file("i18n_batch_rbm.py").items():
 for _loc, _entries in _load_batch_file("i18n_batch_view.py").items():
     TRANSLATIONS[_loc].update(_entries)
 
+# Run-log advice (validity collapse under frequent reference updates).
+for _loc, _entries in _load_batch_file("i18n_batch_advice.py").items():
+    TRANSLATIONS[_loc].update(_entries)
+
 
 def main() -> int:
     ok = True
