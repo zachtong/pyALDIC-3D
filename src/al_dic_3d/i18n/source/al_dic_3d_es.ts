@@ -971,7 +971,7 @@ herramienta de ROI o el pincel la vuelve a encender.</translation>
         <translation>El campo seleccionado no está disponible.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="399"/>
+        <location filename="../../gui/panels/canvas_render.py" line="405"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>No se pudo dibujar la superposición: {0}</translation>
     </message>
@@ -4574,25 +4574,40 @@ velocidad por fotograma.</translation>
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="129"/>
+        <location filename="../../gui/widgets/view3d.py" line="156"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>Vista 3D — ejecute un análisis para ver la superficie reconstruida.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="170"/>
-        <location filename="../../gui/widgets/view3d.py" line="259"/>
+        <location filename="../../gui/widgets/view3d.py" line="226"/>
+        <location filename="../../gui/widgets/view3d.py" line="362"/>
         <source>3D view unavailable: {0}</source>
         <translation>Vista 3D no disponible: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="232"/>
+        <location filename="../../gui/widgets/view3d.py" line="310"/>
         <source>Starting the 3D view…</source>
         <translation>Iniciando la vista 3D…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="264"/>
+        <location filename="../../gui/widgets/view3d.py" line="367"/>
         <source>No valid 3D points in this frame — nothing to display.</source>
         <translation>No hay puntos 3D válidos en este fotograma — nada que mostrar.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="409"/>
+        <source>Save 3D view image</source>
+        <translation>Guardar imagen de la vista 3D</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="411"/>
+        <source>PNG image (*.png)</source>
+        <translation>Imagen PNG (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="419"/>
+        <source>Could not save the image: {0}</source>
+        <translation>No se pudo guardar la imagen: {0}</translation>
     </message>
 </context>
 <context>
@@ -4691,6 +4706,135 @@ velocidad por fotograma.</translation>
         <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="281"/>
         <source>Nothing selected to export.</source>
         <translation>No hay nada seleccionado para exportar.</translation>
+    </message>
+</context>
+<context>
+    <name>View3DToolbar</name>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="54"/>
+        <source>Reset</source>
+        <translation>Restablecer</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="54"/>
+        <source>Back to the view from the left camera, framed</source>
+        <translation>Volver a la vista de la cámara izquierda, encuadrada</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="55"/>
+        <source>Camera</source>
+        <translation>Cámara</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="55"/>
+        <source>Look from the left camera (as in the images)</source>
+        <translation>Ver desde la cámara izquierda (como en las imágenes)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="56"/>
+        <source>Normal</source>
+        <translation>Normal</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="56"/>
+        <source>Look straight at the specimen surface</source>
+        <translation>Mirar la superficie de la probeta de frente</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="57"/>
+        <source>Side</source>
+        <translation>Lateral</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="57"/>
+        <source>Edge-on: the out-of-plane profile</source>
+        <translation>De canto: el perfil fuera del plano</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="58"/>
+        <source>Iso</source>
+        <translation>Iso</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="58"/>
+        <source>Oblique view of the specimen</source>
+        <translation>Vista oblicua de la probeta</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="67"/>
+        <source>Save image…</source>
+        <translation>Guardar imagen…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="68"/>
+        <source>Save the 3D view as a PNG image</source>
+        <translation>Guardar la vista 3D como imagen PNG</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="76"/>
+        <source>Deformation ×</source>
+        <translation>Deformación ×</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="82"/>
+        <source>Exaggerate the displacement in the 3D geometry (reference shape plus
+factor × displacement) so a micron-scale change is visible. The
+colours always show the true values.</source>
+        <translation>Exagera el desplazamiento en la geometría 3D (forma de referencia más
+factor × desplazamiento) para que se vea un cambio micrométrico.
+Los colores muestran siempre los valores reales.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="91"/>
+        <source>Auto</source>
+        <translation>Auto</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="92"/>
+        <source>Pick a factor that makes the change visible</source>
+        <translation>Elegir un factor que haga visible el cambio</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="97"/>
+        <source>Out-of-plane only</source>
+        <translation>Solo fuera del plano</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="99"/>
+        <source>Exaggerate only the displacement along the specimen normal
+(in-plane noise stays at true scale)</source>
+        <translation>Exagerar solo el desplazamiento según la normal de la probeta
+(el ruido en el plano se queda a escala real)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="105"/>
+        <source>Reference shape</source>
+        <translation>Forma de referencia</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="105"/>
+        <source>Show the frame-1 surface as a wireframe</source>
+        <translation>Mostrar la superficie del fotograma 1 como malla de alambre</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="108"/>
+        <source>Cameras</source>
+        <translation>Cámaras</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="108"/>
+        <source>Show the two camera frusta (zooms the view out)</source>
+        <translation>Mostrar las dos pirámides de las cámaras (aleja la vista)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="111"/>
+        <source>Shading</source>
+        <translation>Sombreado</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="112"/>
+        <source>Light the surface so its shape reads; off shows the exact colormap colours</source>
+        <translation>Iluminar la superficie para leer su forma; apagado da los colores exactos</translation>
     </message>
 </context>
 <context>

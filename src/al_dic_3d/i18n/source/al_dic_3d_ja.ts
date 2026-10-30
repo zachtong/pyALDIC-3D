@@ -966,7 +966,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>選択した項目は利用できません。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="399"/>
+        <location filename="../../gui/panels/canvas_render.py" line="405"/>
         <source>Could not draw the overlay: {0}</source>
         <translation>オーバーレイを描画できませんでした：{0}</translation>
     </message>
@@ -4551,25 +4551,40 @@ velocity per frame.</source>
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="129"/>
+        <location filename="../../gui/widgets/view3d.py" line="156"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D ビュー — 解析を実行すると再構成曲面が表示されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="170"/>
-        <location filename="../../gui/widgets/view3d.py" line="259"/>
+        <location filename="../../gui/widgets/view3d.py" line="226"/>
+        <location filename="../../gui/widgets/view3d.py" line="362"/>
         <source>3D view unavailable: {0}</source>
         <translation>3D ビューを利用できません：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="232"/>
+        <location filename="../../gui/widgets/view3d.py" line="310"/>
         <source>Starting the 3D view…</source>
         <translation>3D ビューを起動しています…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="264"/>
+        <location filename="../../gui/widgets/view3d.py" line="367"/>
         <source>No valid 3D points in this frame — nothing to display.</source>
         <translation>このフレームに有効な 3D 点がありません — 表示できる内容がありません。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="409"/>
+        <source>Save 3D view image</source>
+        <translation>3D ビュー画像を保存</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="411"/>
+        <source>PNG image (*.png)</source>
+        <translation>PNG 画像 (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d.py" line="419"/>
+        <source>Could not save the image: {0}</source>
+        <translation>画像を保存できませんでした：{0}</translation>
     </message>
 </context>
 <context>
@@ -4668,6 +4683,135 @@ velocity per frame.</source>
         <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="281"/>
         <source>Nothing selected to export.</source>
         <translation>エクスポートする項目が選択されていません。</translation>
+    </message>
+</context>
+<context>
+    <name>View3DToolbar</name>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="54"/>
+        <source>Reset</source>
+        <translation>リセット</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="54"/>
+        <source>Back to the view from the left camera, framed</source>
+        <translation>左カメラからの視点に戻して全体を表示</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="55"/>
+        <source>Camera</source>
+        <translation>カメラ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="55"/>
+        <source>Look from the left camera (as in the images)</source>
+        <translation>左カメラから見る（画像と同じ向き）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="56"/>
+        <source>Normal</source>
+        <translation>正面</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="56"/>
+        <source>Look straight at the specimen surface</source>
+        <translation>試験片の表面を真正面から見る</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="57"/>
+        <source>Side</source>
+        <translation>側面</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="57"/>
+        <source>Edge-on: the out-of-plane profile</source>
+        <translation>真横から：面外の輪郭</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="58"/>
+        <source>Iso</source>
+        <translation>等角</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="58"/>
+        <source>Oblique view of the specimen</source>
+        <translation>試験片の斜め方向からのビュー</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="67"/>
+        <source>Save image…</source>
+        <translation>画像を保存…</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="68"/>
+        <source>Save the 3D view as a PNG image</source>
+        <translation>3D ビューを PNG 画像として保存</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="76"/>
+        <source>Deformation ×</source>
+        <translation>変形倍率 ×</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="82"/>
+        <source>Exaggerate the displacement in the 3D geometry (reference shape plus
+factor × displacement) so a micron-scale change is visible. The
+colours always show the true values.</source>
+        <translation>3D 形状の変位を誇張します（参照形状 +
+倍率 × 変位）。ミクロン単位の変化も見えます。
+色は常に実際の値を表します。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="91"/>
+        <source>Auto</source>
+        <translation>自動</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="92"/>
+        <source>Pick a factor that makes the change visible</source>
+        <translation>変化が見える倍率を自動で選ぶ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="97"/>
+        <source>Out-of-plane only</source>
+        <translation>面外のみ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="99"/>
+        <source>Exaggerate only the displacement along the specimen normal
+(in-plane noise stays at true scale)</source>
+        <translation>試験片の法線方向の変位だけを誇張
+（面内のノイズは実寸のまま）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="105"/>
+        <source>Reference shape</source>
+        <translation>参照形状</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="105"/>
+        <source>Show the frame-1 surface as a wireframe</source>
+        <translation>フレーム 1 の表面をワイヤーフレームで表示</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="108"/>
+        <source>Cameras</source>
+        <translation>カメラ</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="108"/>
+        <source>Show the two camera frusta (zooms the view out)</source>
+        <translation>2 台のカメラの視錐台を表示（ビューが縮小）</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="111"/>
+        <source>Shading</source>
+        <translation>陰影</translation>
+    </message>
+    <message>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="112"/>
+        <source>Light the surface so its shape reads; off shows the exact colormap colours</source>
+        <translation>表面に光を当てて形を見やすく。オフで色マップの正確な色</translation>
     </message>
 </context>
 <context>

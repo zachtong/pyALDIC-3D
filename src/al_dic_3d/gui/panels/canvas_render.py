@@ -233,10 +233,14 @@ class CanvasRenderMixin:
         # barrier (the bool mask itself — no full-image float copy, H6); the
         # frame-independent filtered cells are cached in viz3d.surface.
         crack = roi_mask is not None and bool(result.meta.get("crack_aware", False))
+        s = self.signals
+        # The scalar-bar title stays short; "rigid motion removed" is a corner note.
+        suffix = rigid_motion_label_suffix(result)
+        title = field_label(s.display_field, s.display_unit, per_frame=not s.frame_rate_known)
         self._view3d.update_view(
             result.reconstruction.points[k],
             vals,
-            field_label=self._display_label(),
+            field_label=title,
             cmap=self.signals.colormap,
             vmin=vmin,
             vmax=vmax,
@@ -244,6 +248,8 @@ class CanvasRenderMixin:
             ref_coords=result.ref_coords,
             roi_mask=roi_mask,
             barrier_mask=roi_mask if crack else None,
+            ref_points=result.reconstruction.points[0],  # magnification / reference shape
+            note=suffix.removeprefix(" · "),
         )
 
     def _clear_overlay(self) -> None:

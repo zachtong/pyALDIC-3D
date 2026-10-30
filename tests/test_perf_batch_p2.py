@@ -323,6 +323,7 @@ class _FakePlotter:
     def __init__(self):
         self.camera_position = ("initial", "camera", "pose")
         self.calls: list[str] = []
+        self.scalar_bars = SimpleNamespace(clear=lambda: None)
 
     def clear(self):
         self.calls.append("clear")
@@ -331,8 +332,15 @@ class _FakePlotter:
         self.calls.append("add_mesh")
         return _FakeActor()
 
-    def reset_camera(self):
+    def reset_camera(self, render=True, bounds=None):
         self.calls.append("reset_camera")
+
+    def remove_actor(self, actor, render=True):
+        self.calls.append("remove_actor")
+
+    def add_text(self, *_a, **_kw):
+        self.calls.append("add_text")
+        return object()
 
     def render(self):
         self.calls.append("render")

@@ -70,13 +70,37 @@ result (the same in the 3D view and in exported images).
 ## The 3D View
 
 The canvas toolbar has a **3D View** checkbox (it needs existing results; the
-3D libraries are part of every installation). Checking it switches the canvas from the 2D image view to the
-**reconstructed 3D surface**, coloured by the selected field and shown with the
-two **camera frusta** so you can see the rig geometry. Uncheck it to return to
-the 2D view. Without results it shows *3D view — run an analysis to see the
-reconstructed surface.* The first time you check it, the 3D libraries load
-(about a second; *Starting the 3D view…* and a busy cursor show it). The 3D
-export uses the camera you set here ([Export](12-export.md)).
+3D libraries are part of every installation). Checking it switches the canvas
+from the 2D image view to the **reconstructed 3D surface**, coloured by the
+selected field with the same colormap and range as the 2D map. Uncheck it to
+return to the 2D view. Without results it shows *3D view — run an analysis to
+see the reconstructed surface.* The first time you check it, the 3D libraries
+load (about a second; *Starting the 3D view…* and a busy cursor show it).
+
+It opens looking **from the left camera**, oriented like the images, and framed
+on the surface. The toolbar above the view:
+
+- **Reset** returns to that view. **Camera**, **Normal** (square onto the
+  specimen), **Side** (edge-on: the out-of-plane profile) and **Iso** (oblique)
+  are aligned to the specimen's best-fit plane, so they work for a tilted
+  specimen too. **Save image…** writes the view as a PNG.
+- **Deformation ×** exaggerates the shape: reference surface + factor ×
+  displacement, so a change of a few micrometres becomes visible. The colours
+  always show the true values. **Auto** picks a factor that makes the change
+  about a tenth of the specimen size; **Out-of-plane only** exaggerates just the
+  displacement along the specimen normal, so in-plane noise does not turn into
+  spikes at large factors.
+- **Reference shape** draws the frame-1 surface as a wireframe, to compare the
+  shape against. **Cameras** shows the two camera frusta (off by default: the
+  rig is far larger than most specimens and would shrink the surface to a
+  speck). **Shading** lights the surface so its shape reads; switch it off for
+  the exact colormap colours.
+
+Mouse: left-drag rotates, right-drag or the wheel zooms, middle-drag (or
+Shift + left-drag) pans. The triad in the corner shows the world axes (the left
+camera's: x right, y down, z into the scene). When rigid-body motion is removed,
+the view says so in its corner. The 3D export uses the camera you set here
+([Export](12-export.md)).
 
 ## Frame navigator
 

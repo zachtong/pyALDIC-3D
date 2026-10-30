@@ -55,6 +55,7 @@ class _Plotter:
         self.camera_position = ("c",)
         self.fail_on = fail_on
         self.interactor = QWidget()
+        self.scalar_bars = SimpleNamespace(clear=lambda: None)
 
     def _hit(self, name, **kw):
         self.calls.append((name, kw))
@@ -75,8 +76,21 @@ class _Plotter:
             )
         )
 
-    def reset_camera(self):
+    def reset_camera(self, render=True, bounds=None):
         self._hit("reset_camera")
+
+    def remove_actor(self, actor, render=True):
+        self._hit("remove_actor")
+
+    def add_text(self, *_a, **_kw):
+        self._hit("add_text")
+        return object()
+
+    def clear_events_for_key(self, key):
+        self._hit("clear_events_for_key")
+
+    def add_axes(self, **_kw):
+        self._hit("add_axes")
 
     def render(self):
         self._hit("render")
@@ -119,6 +133,7 @@ def test_scene_rebuild_renders_once(qapp):
     view = View3D()
     plotter = _Plotter()
     view._plotter = plotter
+    view._toolbar._cameras.setChecked(True)  # the frusta are off by default
     rig = SimpleNamespace(pose=lambda cam: (np.eye(3), np.zeros(3)))
     pts, vals, ref = _grid()
     view.update_view(

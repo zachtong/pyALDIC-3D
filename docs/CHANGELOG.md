@@ -23,6 +23,11 @@ GitHub release notes for a tag are this file's section for that version.
   `points3D_raw` (archive schema 4), and the project keeps the measured data
   and re-applies the setting when it opens. Green-Lagrange strain is unchanged
   by the removal; the displacement and the out-of-plane slopes are not.
+- **The 3D View has its own toolbar** (canvas, 3D View). View presets aligned to
+  the specimen (Camera, Normal, Side, Iso) and Reset, a PNG save, a deformation
+  magnification with an Auto pick and an out-of-plane-only switch (the colours
+  keep the true values), the frame-1 reference shape as a wireframe, the camera
+  frusta on demand and a shading switch, plus an orientation triad.
 - **The Strain window shows displacement and out-of-plane slopes** (FIELD).
   `U`, `V`, `W` and `|D|` are available as soon as a run exists, and the
   slopes `∂w/∂x`, `∂w/∂y` of the strain fit (in mrad) once strain is computed.
@@ -41,6 +46,14 @@ GitHub release notes for a tag are this file's section for that version.
 
 ### Fixed
 
+- **The 3D View shows the specimen properly.** It opened looking at the back of
+  the specimen with the image upside down, framed on the camera frusta so the
+  surface was a speck, and unlit — a scene rebuild removed the lights. It now
+  opens from the left camera with image-up up, framed on the surface, lit and
+  smoothly shaded; the scalar bar fits and labels its ticks to the range; an
+  all-zero first frame no longer collapses the colour range; a message (no
+  results, field not available) replaces the scene instead of sitting under a
+  stale one; and pyvista's stray keys are gone ('q' used to break the view).
 - **The drawn ROI no longer covers the results** (canvas toolbar, new **Show
   ROI** toggle). The blue ROI and the cyan refinement zones stayed on top of
   every view after a run — tinting the field, and sitting at their frame-1 place
