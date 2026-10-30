@@ -29,7 +29,7 @@ crashing.
 
 The historical `[gui]` / `[viz3d]` extras remain as no-op compatibility
 aliases for older instructions. `[dev]` (`pytest`, `pytest-xdist`, `ruff`,
-`pre-commit`, `psutil`, `h5py`) is for running the test suite and the report tooling.
+`psutil`) is for running the test suite.
 
 Only one OpenCV package may be installed: `opencv-python` (a dependency) or
 `opencv-python-headless`, not both — they overwrite each other's `cv2`.
@@ -50,8 +50,7 @@ pin from the sibling source, then install this package editable:
 
 ```bash
 pip install -e ../pyALDIC          # 2D engine, editable (0.7.2 up to 1.0.x)
-pip install -e ".[dev]"            # this package + pytest/ruff/pre-commit
-pre-commit install                 # optional: enable hooks
+pip install -e ".[dev]"            # this package + pytest/ruff
 ```
 
 ## Launching the GUI

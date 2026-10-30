@@ -79,6 +79,7 @@ desktop.ini
 # ---------------------------------------------------------------------------
 CLAUDE.md
 .claude/
+.pre-commit-config.yaml
 tasks/
 paper_softwareX/
 docs/architecture/

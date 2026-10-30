@@ -10,7 +10,7 @@ name: Build Windows Installer
 #
 # Kept out of publish.yml on purpose: an installer failure must never block the
 # PyPI release. Both run off the same tag; publish.yml creates the Release (with
-# the CHANGELOG.md notes), and the attach job below waits for it.
+# the docs/CHANGELOG.md notes), and the attach job below waits for it.
 #
 # Three ways in:
 #   * push a v* tag        -> build, test, attach to that tag's Release
@@ -153,7 +153,7 @@ jobs:
           TAG: ${{ github.event.inputs.tag || github.ref_name }}
         # publish.yml creates the Release after the PyPI upload (which may wait
         # for approval of the 'pypi' environment), so poll for it rather than
-        # creating one here: only publish.yml writes the notes from CHANGELOG.md,
+        # creating one here: only publish.yml writes the notes from docs/CHANGELOG.md,
         # and only a Release published after PyPI should mint the Zenodo DOI.
         run: |
           found=""

@@ -493,7 +493,7 @@ For research collaboration, confidential data, or one-on-one consulting:
   calibration, ROI, running, strain, export, sessions, troubleshooting.
 - **Reference notes** — [`docs/COORDINATES.md`](docs/COORDINATES.md) (coordinate
   conventions), [`docs/strain3d_math.md`](docs/strain3d_math.md) (surface-strain method).
-- **Release notes** — [`CHANGELOG.md`](CHANGELOG.md).
+- **Release notes** — [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 
 ---
 
@@ -555,7 +555,7 @@ The last entry is a **preprint under review**, not peer-reviewed yet.
 
 ## Contributing
 
-Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome — see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## Acknowledgments
 

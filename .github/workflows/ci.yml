@@ -20,8 +20,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install ruff
-        # Pinned to the rev in .pre-commit-config.yaml -- bump the two together,
-        # so a new ruff release cannot turn an unchanged tree red.
+        # Pinned so a new ruff release cannot turn an unchanged tree red.
         run: python -m pip install "ruff==0.15.20"
 
       - name: ruff check
@@ -75,7 +74,7 @@ jobs:
         # al-dic resolves from PyPI to the newest release inside the range
         # pyproject.toml declares (the `bounds` job below pins each end); the
         # sibling 2D repo is never touched in CI. [dev] brings pytest,
-        # pytest-xdist, ruff, pre-commit, PySide6, psutil and h5py.
+        # pytest-xdist, ruff, PySide6 and psutil.
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"

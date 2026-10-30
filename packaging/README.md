@@ -99,7 +99,7 @@ never blocks the PyPI release.
 | `rthook_numba.py` | runtime hook: `NUMBA_CACHE_DIR` → `%LOCALAPPDATA%\pyALDIC-3D\numba_cache` (the install dir is read-only; JIT caches must live somewhere writable). |
 | `rthook_qt.py` | runtime hook: `QT_API=pyside6` so qtpy/pyvistaqt never probe for other bindings. |
 | `installer.iss` | Inno Setup 6 script (per-user default, `.aldic3d` association task, online user-guide shortcut). The version is injected with `/DMyAppVersion`. |
-| `extract_changelog.py` | prints one version's `CHANGELOG.md` section; `publish.yml` uses it as the GitHub release body. |
+| `extract_changelog.py` | prints one version's `docs/CHANGELOG.md` section; `publish.yml` uses it as the GitHub release body. |
 | `assets/pyaldic3d.ico` | multi-resolution app icon (16–256 px, currently the shared pyALDIC family icon; drop in a 3D-specific `.ico` here to rebrand). |
 
 ## What the frozen bundle contains (and why)

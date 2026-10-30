@@ -22,8 +22,7 @@ patch.
 ```bash
 git clone https://github.com/zachtong/pyALDIC-3D.git
 cd pyALDIC-3D
-pip install -e ".[dev]"      # app + pytest, ruff, pre-commit, matplotlib
-pre-commit install           # optional but recommended
+pip install -e ".[dev]"      # app + pytest, ruff
 pytest                       # the full suite should be green before you start
 ```
 
@@ -75,4 +74,4 @@ illustrates, say so in the pull request so the figure can be regenerated.
 ## Licence
 
 By contributing you agree that your contribution is licensed under the
-project's [BSD 3-Clause](LICENSE) licence.
+project's [BSD 3-Clause](../LICENSE) licence.

@@ -1,4 +1,4 @@
-"""Print one version's section of CHANGELOG.md, for use as GitHub release notes.
+"""Print one version's section of docs/CHANGELOG.md, for use as GitHub release notes.
 
     python packaging/extract_changelog.py 1.2.0              # or v1.2.0
     python packaging/extract_changelog.py 1.2.0 -o notes.md  # write a file
@@ -23,7 +23,7 @@ import re
 import sys
 from pathlib import Path
 
-DEFAULT_CHANGELOG = Path(__file__).resolve().parent.parent / "CHANGELOG.md"
+DEFAULT_CHANGELOG = Path(__file__).resolve().parent.parent / "docs" / "CHANGELOG.md"
 
 # "## [1.2.0] — 2026-08-01", "## [1.2.0] - 2026-08-01", "## 1.2.0", "## [Unreleased]".
 # "### ..." never matches: the character after "##" must be whitespace.
@@ -106,14 +106,14 @@ def release_notes(text: str, version: str) -> str | None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Print one version's CHANGELOG.md section (GitHub release notes)."
+        description="Print one version's docs/CHANGELOG.md section (GitHub release notes)."
     )
     parser.add_argument("version", help="version to extract: 1.2.0, v1.2.0 or Unreleased")
     parser.add_argument(
         "--changelog",
         type=Path,
         default=DEFAULT_CHANGELOG,
-        help="changelog file (default: CHANGELOG.md at the repository root)",
+        help="changelog file (default: docs/CHANGELOG.md)",
     )
     parser.add_argument("-o", "--output", type=Path, help="write the notes here, not to stdout")
     args = parser.parse_args(argv)
