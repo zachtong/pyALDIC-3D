@@ -20,7 +20,7 @@ from al_dic_3d.matching.contracts import INVALID
 from al_dic_3d.reconstruct.reconstruction import Reconstruction3D
 
 
-def _rebuilt(
+def rebuild_reconstruction(
     points: NDArray[np.float64],
     reproj: NDArray[np.float64],
     source: NDArray[np.uint8],
@@ -47,7 +47,7 @@ def apply_reproj_gate(rec: Reconstruction3D, max_reproj: float) -> Reconstructio
     points[bad] = np.nan
     reproj[bad] = np.nan
     source[bad] = INVALID
-    return _rebuilt(points, reproj, source)
+    return rebuild_reconstruction(points, reproj, source)
 
 
 def remove_3d_outliers(
@@ -102,4 +102,4 @@ def remove_3d_outliers(
             reproj[k, outlier] = np.nan
             source[k, outlier] = INVALID
 
-    return _rebuilt(points, reproj, source)
+    return rebuild_reconstruction(points, reproj, source)
