@@ -222,7 +222,7 @@ def test_field_stack_matches_per_frame_loop():
 def test_runner_arrays_schema3_single_canonical_strain_keys():
     from al_dic_3d.runner import ARCHIVE_SCHEMA, _arrays
 
-    assert ARCHIVE_SCHEMA == 3
+    assert ARCHIVE_SCHEMA == 4
     result = _grid_result()
     arrays = _arrays(result)
     for name in ("exx", "eyy", "von_mises", "dwdx", "dwdy"):

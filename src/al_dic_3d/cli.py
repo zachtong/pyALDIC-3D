@@ -288,15 +288,20 @@ def _run_command(args: argparse.Namespace) -> int:
 
     # F3.1: post-run failure accounting — every silent kill becomes a line.
     from al_dic_3d.matching.diagnostics import summarize_run, summary_lines
+    from al_dic_3d.run_rigid import raw_reconstruction
+    from al_dic_3d.run_rigid import summary_lines as rigid_motion_lines
 
     summary = summarize_run(
-        result.correspondence, result.reconstruction.points, n_eligible=m.get("n_pts_in_roi")
+        result.correspondence, raw_reconstruction(result).points, n_eligible=m.get("n_pts_in_roi")
     )
     for level, msg in summary_lines(summary, m.get("gates"), stopped=m):
         if level in ("warning", "error"):
             _say(f"{level}: {msg}", err=True)
         else:
             _say(msg)
+    if result.rigid_motion is not None:
+        for line in rigid_motion_lines(result.rigid_motion):
+            _say(line)
 
     for key in ("params", *formats):
         if key in paths:

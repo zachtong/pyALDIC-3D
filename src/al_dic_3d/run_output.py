@@ -27,7 +27,11 @@ RESULT_FORMATS = ("npz", "mat", "csv", "ply", "vtu")
 # ``dwdy``). Schema 3 (Batch C item 3) adds an OPTIONAL ``strain_valid``
 # ``(n_frames, n_pts)`` bool stack (edge-trim UNION crack-trim) alongside the
 # now-DENSE strain values; readers that ignore unknown keys are unaffected.
-ARCHIVE_SCHEMA = 3
+# Schema 4 adds, only while rigid motion is removed, the per-frame fit
+# (``rbm_mode`` / ``rbm_rotation`` / ``rbm_translation`` / ``rbm_centroid_shift``
+# / ``rbm_rms`` / ``rbm_n_used``) and the measured ``points3D_raw``; the usual
+# keys then hold the corrected values.
+ARCHIVE_SCHEMA = 4
 
 
 def _arrays(result: RunResult) -> dict:

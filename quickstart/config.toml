@@ -25,6 +25,10 @@ reference_mode = "incremental"       # each frame against the previous one (larg
 [strain]
 enabled = true
 
+# [rigid_motion]                     # optional: remove each frame's rigid-body motion
+# mode = "rigid"                     # "off" | "translation" | "rigid" (translation + rotation)
+# region_mask = "fit_region.png"     # optional: fit only inside this mask (left frame 1)
+
 [output]
 dir = "results"
 prefix = "d_specimen"

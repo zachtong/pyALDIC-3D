@@ -155,8 +155,12 @@ def test_crack_barrier_survives_the_round_trip(tmp_path):
 
 
 def test_mask_members_are_deflated_pngs(tmp_path):
-    """Both masks are optional, DEFLATE-compressed PNG members of the zip."""
-    draft = ProjectDraft(roi_mask_array=_shaped_roi_mask(), refinement_mask_array=_brush_mask())
+    """Every mask is an optional, DEFLATE-compressed PNG member of the zip."""
+    draft = ProjectDraft(
+        roi_mask_array=_shaped_roi_mask(),
+        refinement_mask_array=_brush_mask(),
+        rigid_motion_region_array=_brush_mask(),
+    )
     path = save_session(AppState3D(draft=draft), tmp_path / "members.aldic3d")
 
     with zipfile.ZipFile(path) as zf:
@@ -278,6 +282,8 @@ DRAFT_DISTINCTIVE: dict[str, object] = {
     "refinement_mask_array": _brush_mask(),
     "compute_strain": False,
     "strain_size": 11,
+    "rigid_motion_mode": "translation",
+    "rigid_motion_region_array": _brush_mask(),
     "output_dir": Path("out") / "runA",
     "output_prefix": "zbatch",
 }
@@ -365,6 +371,8 @@ CONFIG_DISTINCTIVE: dict[str, object] = {
     "compute_strain": True,
     "strain_size": 11,
     "strain_smooth_sigma": 1.5,
+    "rigid_motion_mode": "rigid",
+    "rigid_motion_region": Path("out") / "rigid_motion_region.png",
     "ignore_memory_check": True,
     "output_prefix": "zbatch",
     "cam_left": "cam0",

@@ -140,6 +140,12 @@ class WorkflowController:
             raise ProjectSwitchedDuringRun(
                 "the project was replaced while its analysis was running; result discarded"
             )
+        # The rigid-motion setting may have been edited (Strain window) while the
+        # run was going: the live draft wins. An unusable region keeps the raw
+        # result; the Strain window's rigid-motion panel reports why.
+        from al_dic_3d.run_rigid import with_draft_rigid_motion
+
+        result, _why = with_draft_rigid_motion(result, state.draft)
         state.result = result
         state.mark_dirty()
         state.workflow_step = STEP_RESULTS

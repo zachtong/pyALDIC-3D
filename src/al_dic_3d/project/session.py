@@ -51,13 +51,14 @@ _RESULTS_NAME = "results.npz"
 _MASK_MEMBERS = {
     "roi_mask_array": "roi_mask.png",
     "refinement_mask_array": "refinement_mask.png",
+    "rigid_motion_region_array": "rigid_motion_region.png",
 }
 # Fix batch V (M8): the calibration file travels inside the bundle, so a
 # project opened on another machine (or after the file moved) still has it.
 _CALIB_PREFIX = "calibration/"
 _CALIB_EMBED_MAX_BYTES = 50 * 2**20
 _PATH_FIELDS = ("calibration_file", "output_dir", "base_dir")
-_OPT_PATH_FIELDS = ("refinement_mask", "roi_mask")  # Path | None on RunConfig
+_OPT_PATH_FIELDS = ("refinement_mask", "roi_mask", "rigid_motion_region")  # Path | None
 
 
 class SessionError(Exception):
@@ -213,7 +214,11 @@ _STRAIN_PREFIX = "strain_"
 
 
 def _result_arrays(result) -> dict:
-    cs, rec = result.correspondence, result.reconstruction
+    from al_dic_3d.run_rigid import raw_reconstruction
+
+    # The MEASURED reconstruction is saved; a removed rigid motion is re-derived
+    # from the saved draft settings on open (load_session), never baked in.
+    cs, rec = result.correspondence, raw_reconstruction(result)
     arrays = {
         "strategy": np.asarray(result.strategy),
         "ref_coords": result.ref_coords,
@@ -457,6 +462,12 @@ def load_session(path: str | Path) -> AppState3D:
             data.result_arrays, data.result_arrays["ref_coords"], strategy, meta
         )
     notes: list[str] = []
+    if result is not None:  # the saved arrays are raw: re-derive any removed rigid motion
+        from al_dic_3d.run_rigid import with_draft_rigid_motion
+
+        result, why = with_draft_rigid_motion(result, data.draft)
+        if why:
+            notes.append(f"rigid motion not removed: {why}")
     calib = data.draft.calibration_file
     missing = calib is None or not Path(calib).is_file()
     if data.calibration_blob is not None and missing:

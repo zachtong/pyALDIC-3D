@@ -19,7 +19,6 @@ import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
@@ -37,25 +36,31 @@ except ModuleNotFoundError:  # pragma: no cover - py3.10 path, exercised in CI
 from al_dic_3d import memcheck
 from al_dic_3d.calibration import load_calibration
 from al_dic_3d.matching import CorrespondenceConfig, apply_znssd_gate, get_strategy
-from al_dic_3d.matching.primitives import make_dicpara
-from al_dic_3d.matching.temporal import build_grid_mesh
 from al_dic_3d.reconstruct import (
     Reconstruction3D,
     apply_reproj_gate,
     reconstruct_correspondence,
     remove_3d_outliers,
 )
+from al_dic_3d.run_mesh import (  # noqa: F401 - re-exported: runner is their public home
+    build_reference_mesh,
+)
+from al_dic_3d.run_mesh import mesh_for_config as _build_reference_mesh
 from al_dic_3d.run_output import (  # noqa: F401 - re-exported: runner is their public home
     ARCHIVE_SCHEMA,
     RESULT_FORMATS,
     _arrays,
     write_results,
 )
+from al_dic_3d.run_rigid import (
+    config_fit_region,
+    parse_config_section,
+    region_nodes,
+    remove_from_reconstruction,
+    rigid_motion_meta,
+)
 from al_dic_3d.sequence import LazyFrameProvider, LazyMaskList, StereoSequence, load_gray
 from al_dic_3d.strain3d import compute_surface_strain
-
-if TYPE_CHECKING:
-    from al_dic.core.data_structures import DICMesh
 
 ProgressFn = Callable[[float, str], None]
 
@@ -145,6 +150,11 @@ class RunConfig:
     compute_strain: bool = False
     strain_size: int = 5
     strain_smooth_sigma: float = 0.0
+    # Rigid-body-motion removal after reconstruction (al_dic_3d.run_rigid):
+    # "off" | "translation" | "rigid"; the optional region mask (left frame 1,
+    # > 0 = fit here) limits the fit. TOML: [rigid_motion].mode / .region_mask.
+    rigid_motion_mode: str = "off"
+    rigid_motion_region: Path | None = None
     # Skip the fail-fast RAM pre-check (P1.4). TOML: [advanced].ignore_memory_check
     # (also accepted under [matching] for one-table configs).
     ignore_memory_check: bool = False
@@ -164,6 +174,9 @@ class RunResult:
     reconstruction: Reconstruction3D
     strain: object | None = None  # StrainResult3D if computed, else None
     meta: dict = field(default_factory=dict)
+    # RigidMotionState while rigid motion is removed: ``reconstruction`` is then
+    # the corrected one and this keeps the measured one (al_dic_3d.run_rigid).
+    rigid_motion: object | None = None
 
 
 # --- config loading ----------------------------------------------------------
@@ -239,6 +252,7 @@ def load_config(path: str | Path) -> RunConfig:
     qual = table.get("quality", {})
     strain = table.get("strain", {})
     advanced = table.get("advanced", {})
+    rbm_mode, rbm_region = parse_config_section(table, _resolve)
 
     return RunConfig(
         calibration_file=_resolve(str(_require(table, "calibration", "file"))),
@@ -289,6 +303,8 @@ def load_config(path: str | Path) -> RunConfig:
         compute_strain=bool(strain.get("enabled", False)),
         strain_size=int(strain.get("strain_size", 5)),
         strain_smooth_sigma=float(strain.get("smooth_sigma", 0.0)),
+        rigid_motion_mode=rbm_mode,
+        rigid_motion_region=rbm_region,
         ignore_memory_check=bool(
             advanced.get("ignore_memory_check", match.get("ignore_memory_check", False))
         ),
@@ -381,107 +397,6 @@ def _open_masks(spec: str | Sequence[str] | None, base: Path) -> LazyMaskList | 
 # --- pipeline ----------------------------------------------------------------
 
 
-def build_reference_mesh(
-    img_h: int,
-    img_w: int,
-    roi: tuple[int, int, int, int],
-    *,
-    winsize: int = 32,
-    winstepsize: int = 16,
-    winsize_min: int = 8,
-    refine_inner: bool = False,
-    refine_outer: bool = False,
-    refinement_level: int = 1,
-    refinement_brush: NDArray[np.float64] | None = None,
-    mask: NDArray[np.float64] | None = None,
-) -> DICMesh:
-    """The frame-1 LEFT reference mesh: uniform grid, optionally quadtree-refined.
-
-    Refinement follows the 2D app's levers verbatim (build_refinement_policy):
-    inner mask-boundary / outer ROI-edge / user-painted brush criteria with
-    min element size ``max(2, winstepsize // 2**level)``. The refined mesh is
-    built ONCE and passed to the strategies as the external mesh — the engine's
-    per-frame refinement hook is deliberately NOT used (the mesh-built-once
-    invariant; MATLAB's acc-mode per-frame quadtree is identical per frame
-    anyway).
-
-    Plain-args and Qt-free on purpose: the GUI's live mesh PREVIEW calls this
-    exact function with the draft's parameters, so preview == pipeline.
-
-    Args:
-        roi: ``(xmin, xmax, ymin, ymax)`` pixel bounds of the grid.
-        refinement_brush: optional ``(H, W)`` user-painted refine-here mask
-            (``> 0`` = refine), already in frame-1 left image coordinates.
-        mask: optional ``(H, W)`` float frame-1 left ROI mask (1 = valid) used
-            by the refinement criteria/trim.
-    """
-    para = make_dicpara(
-        img_size=(img_h, img_w),
-        roi=roi,
-        winsize=winsize,
-        winstepsize=winstepsize,
-        winsize_min=winsize_min,
-    )
-    mesh = build_grid_mesh(para, img_h, img_w)
-
-    if not (refine_inner or refine_outer or refinement_brush is not None):
-        return mesh
-
-    # See docs/DEPENDS_ON_2D.md for these engine imports.
-    from al_dic.mesh.refinement import (
-        RefinementContext,
-        build_refinement_policy,
-        refine_mesh,
-    )
-
-    mask_l1 = None
-    if mask is not None:
-        mask_l1 = np.ascontiguousarray(np.asarray(mask, dtype=np.float64))
-    min_size = max(2, winstepsize // (2 ** max(1, refinement_level)))
-    policy = build_refinement_policy(
-        refine_inner_boundary=refine_inner,
-        refine_outer_boundary=refine_outer,
-        refinement_mask=refinement_brush,
-        min_element_size=min_size,
-        half_win=winsize // 2,
-    )
-    if policy is None:
-        return mesh
-    ctx = RefinementContext(mesh=mesh, mask=mask_l1)
-    u0 = np.zeros(2 * np.asarray(mesh.coordinates_fem).shape[0], dtype=np.float64)
-    refined, _u0 = refine_mesh(
-        mesh, policy.pre_solve, ctx, u0, mask=mask_l1, img_size=(img_h, img_w)
-    )
-    return refined
-
-
-def _build_reference_mesh(cfg: RunConfig, img_h: int, img_w: int, left_masks) -> DICMesh:
-    """Config-driven wrapper over :func:`build_reference_mesh` (loads the brush PNG)."""
-    brush = None
-    if cfg.refinement_mask is not None:
-        import cv2
-
-        from al_dic_3d.pathsafe import imread_unicode
-
-        img = imread_unicode(cfg.refinement_mask, cv2.IMREAD_GRAYSCALE)
-        if img is None:
-            raise ValueError(f"cannot read refinement mask: {cfg.refinement_mask}")
-        brush = (img > 0).astype(np.float64)
-    return build_reference_mesh(
-        img_h,
-        img_w,
-        cfg.roi,
-        winsize=cfg.winsize,
-        winstepsize=cfg.winstepsize,
-        winsize_min=cfg.winsize_min,
-        refine_inner=cfg.refine_inner,
-        refine_outer=cfg.refine_outer,
-        refinement_level=cfg.refinement_level,
-        refinement_brush=brush,
-        mask=left_masks[0] if left_masks is not None else None,
-    )
-
-
 def _load_roi_mask(path: Path, img_shape: tuple[int, int]) -> NDArray[np.bool_]:
     """Load ``cfg.roi_mask`` as a boolean array; validate shape and non-emptiness."""
     mask = _load_gray(path) > 0
@@ -530,6 +445,7 @@ def run_pipeline(
     n_frames = len(provider_left)
     _check_calibration_size(rig, cfg.cam_left, (img_h, img_w))
     _check_calibration_size(rig, cfg.cam_right, provider_right.shape)
+    fit_region = config_fit_region(cfg, seq_base, (img_h, img_w))  # read before the long run
 
     # Q5: an explicit reference-update schedule (incremental every_n / custom);
     # None keeps the engine's reference_mode-derived default. Both cameras
@@ -620,6 +536,8 @@ def run_pipeline(
     crack_aware = mask_cuts_mesh(mesh_L, left_mask0)
     if crack_aware:
         mesh_L = cut_mesh_at_barriers(mesh_L, left_mask0)
+    if fit_region is not None:  # a region too small for the fit fails now, not after tracking
+        region_nodes(np.asarray(mesh_L.coordinates_fem), fit_region, cfg.rigid_motion_mode)
 
     kwargs = dict(
         winsize=cfg.winsize,
@@ -698,6 +616,12 @@ def run_pipeline(
         rec = remove_3d_outliers(rec, ref_coords, threshold=cfg.outlier_threshold)
         gates["reproj_demoted"] = n0 - n1
         gates["outliers_removed"] = n1 - _n_valid_positions(rec.points)
+    # Rigid-motion removal (before strain, so slopes and non-GL strain see it);
+    # the run summary below keeps describing the measured reconstruction.
+    raw_rec = rec
+    rec, rigid_motion = remove_from_reconstruction(
+        rec, ref_coords, cfg.rigid_motion_mode, fit_region
+    )
 
     strain = None
     if cfg.compute_strain and not stopped_early:
@@ -740,9 +664,9 @@ def run_pipeline(
         xi = np.clip(np.round(rc[:, 0]).astype(np.int64), 0, left_mask0.shape[1] - 1)
         yi = np.clip(np.round(rc[:, 1]).astype(np.int64), 0, left_mask0.shape[0] - 1)
         n_in_roi = int((left_mask0[yi, xi] > 0.5).sum()) or int(cs.n_pts)
-    summary = summarize_run(cs, rec.points, n_eligible=n_in_roi)
+    summary = summarize_run(cs, raw_rec.points, n_eligible=n_in_roi)
 
-    tracked = int((rec.source != 3).sum())  # 3 == INVALID
+    tracked = int((raw_rec.source != 3).sum())  # 3 == INVALID
     meta = {
         "strategy": cfg.strategy,
         "n_frames": cs.n_frames,
@@ -785,6 +709,8 @@ def run_pipeline(
         "stopped_at_frame": None if stopped_at is None else int(stopped_at),
         "stop_reason": stop_reason,
     }
+    if rigid_motion is not None:
+        meta["rigid_motion"] = rigid_motion_meta(rigid_motion)
     return RunResult(
         strategy=cfg.strategy,
         ref_coords=ref_coords,
@@ -792,6 +718,7 @@ def run_pipeline(
         reconstruction=rec,
         strain=strain,
         meta=meta,
+        rigid_motion=rigid_motion,
     )
 
 

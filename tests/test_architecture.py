@@ -35,7 +35,9 @@ _QT_FREE = [
     "viz3d",
     "synthetic.py",
     "runner.py",
+    "run_mesh.py",
     "run_output.py",
+    "run_rigid.py",
     "memcheck.py",
     "pathsafe.py",
 ]

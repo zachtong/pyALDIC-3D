@@ -129,12 +129,17 @@ class ProjectDraft:
     # ^ brush-painted (H, W) array from the canvas; written to a PNG at build()
     compute_strain: bool = True  # legacy (kept for .aldic3d session compat; not wired)
     strain_size: int = 5
+    # Rigid-motion removal (post-processing, set in the Strain window): "off" |
+    # "translation" | "rigid", fitted on the drawn (H, W) region or, when None,
+    # on every valid node. Not in _RESULT_FIELDS: it never needs a re-run.
+    rigid_motion_mode: str = "off"
+    rigid_motion_region_array: object | None = field(default=None, repr=False)
     output_dir: Path | None = None
     output_prefix: str = "run"
 
     # Fields whose values change the pipeline RESULT (G2.7 staleness check).
     # Output naming (output_dir/prefix), the legacy compute_strain flag and the
-    # strain-window default (strain_size, post-processing only) are excluded.
+    # post-processing settings (strain_size, rigid motion) are excluded.
     _RESULT_FIELDS = (
         "calibration_file",
         "calibration_format",
@@ -353,6 +358,14 @@ class ProjectDraft:
             # its [strain].enabled switch for headless users (see load_config).
             compute_strain=False,
             strain_size=self.strain_size,
+            rigid_motion_mode=self.rigid_motion_mode,
+            rigid_motion_region=(
+                self._write_mask_png(
+                    self.rigid_motion_region_array, out_dir, "rigid_motion_region.png"
+                )
+                if self.rigid_motion_mode != "off"
+                else None
+            ),
             output_prefix=self.output_prefix,
             base_dir=self.calibration_file.parent,
         )

@@ -117,7 +117,25 @@ def selected_arrays(result: RunResult, fields: list[str]) -> dict[str, np.ndarra
         stack = field_stack(result, field)
         if stack is not None:
             arrays[field] = stack
+    arrays.update(rigid_motion_arrays(result))
     return arrays
+
+
+def rigid_motion_arrays(result: RunResult) -> dict[str, np.ndarray]:
+    """The removed rigid motion and the measured points (empty when removal is off)."""
+    state = getattr(result, "rigid_motion", None)
+    if state is None:
+        return {}
+    fit = state.fit
+    return {
+        "rbm_mode": np.asarray(fit.mode),
+        "rbm_rotation": fit.rotation,
+        "rbm_translation": fit.translation,
+        "rbm_centroid_shift": fit.centroid_shift,
+        "rbm_rms": fit.rms,
+        "rbm_n_used": fit.n_used,
+        "points3D_raw": state.raw.points,
+    }
 
 
 def _tmp_path(path: Path) -> Path:
