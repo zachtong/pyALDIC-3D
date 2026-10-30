@@ -54,6 +54,11 @@ simply comes back with no drawn mask).
 - **The refinement brush** — embedded as `refinement_mask.png`. It feeds the
   quadtree refinement, so keeping it is what makes a re-run of a reopened
   session build the *same* mesh as the run it was saved with.
+- **The rigid-motion setting** — the mode, and the drawn fit region embedded as
+  `rigid_motion_region.png`. The results are always saved as measured; the
+  removal is applied again when the project opens. If the saved region no
+  longer covers enough points, the project opens with the measured results and
+  the log says why.
 - **Seeds / Starting Points** — both the legacy single `seed_point` and the
   multi-seed `seed_points` list are saved and restored (a pre-multi-seed session
   migrates the single seed into the list on open).

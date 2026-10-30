@@ -9,6 +9,24 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+### Added
+
+- **Rigid-body motion can be removed from the results** (Strain window, RIGID
+  MOTION; config `[rigid_motion].mode` / `.region_mask`). Each frame's
+  best-fit translation, or translation and rotation, relative to frame 1 is
+  removed from the displacement everywhere: the main window's field maps and
+  3D view, the Strain window, the strain computed afterwards and every export.
+  The fit uses all valid points or a region drawn with rectangle and polygon
+  tools (shown in amber), and a per-frame table lists the removed shift,
+  rotation, fit residual and points used. Labels and exported figures say
+  *· rigid motion removed*, the archive adds the fit (`rbm_*`) and the measured
+  `points3D_raw` (archive schema 4), and the project keeps the measured data
+  and re-applies the setting when it opens. Green-Lagrange strain is unchanged
+  by the removal; the displacement and the out-of-plane slopes are not.
+- **The Strain window shows displacement and out-of-plane slopes** (FIELD).
+  `U`, `V`, `W` and `|D|` are available as soon as a run exists, and the
+  slopes `∂w/∂x`, `∂w/∂y` of the strain fit (in mrad) once strain is computed.
+
 ### Changed
 
 - **The Epipolar Band defaults to 15 px instead of 3 px** (PARAMETERS; config

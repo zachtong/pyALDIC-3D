@@ -12,6 +12,57 @@ tangent-plane fit of the displacement gradients, reduced to a strain tensor and
 its invariants. It is always **total-Lagrangian**, computed on the frame-0
 reference surface.
 
+## RIGID MOTION
+
+A specimen often moves and tilts as a whole between frames — a heated sample
+drifts in its chamber, a fixture settles. That rigid-body motion can be much
+larger than the deformation you are after: on a package warpage test the
+specimen moved ~260 µm and tilted 2.9 mrad while it warped by ~7 µm. The
+**RIGID MOTION** section removes it.
+
+- **Remove**: **Off** (default), **Translation only** (subtracts the mean
+  displacement of the fitted points) or **Translation + rotation** (also the
+  best-fit rotation, Kabsch least squares). Each frame is fitted against
+  frame 1, in incremental and accumulative runs alike.
+- **Fit region**: by default **all valid points**. Draw a region with
+  **+ Rectangle** / **+ Polygon** and remove parts of it with **− Rectangle** /
+  **− Polygon** — for example to fit only on a part that you know does not
+  deform. The region is drawn on frame 1 and shown in **amber** (the analysis
+  ROI stays blue); **Show fit region** hides it, **Use all valid points**
+  clears it. Translation needs at least 1 point in the region, translation +
+  rotation at least 3 not in a line; a region that cannot support the mode is
+  refused with the reason, and nothing changes.
+- **What changes**: the removal applies **everywhere** — the main window's
+  field maps and 3D view, this window, the strain computed afterwards and every
+  export. Every colorbar and exported figure says so with the suffix
+  *· rigid motion removed (mode)*. Switching the mode keeps the frame, the
+  camera and the 3-point specimen frame, so you can compare on and off. **Off**
+  restores the measured data: it is never overwritten.
+- **Per-frame table**: for every frame, the shift of the fitted points'
+  centroid ΔX/ΔY/ΔZ (µm), the rotation θ (mrad), the RMS residual of the fit
+  (µm) and the points used N. A frame that cannot be fitted shows dashes and is
+  left out of the corrected result (it reads as invalid, never as uncorrected).
+- **Strain**: Green-Lagrange strain does not change when rigid motion is
+  removed, but the slopes ∂w/∂x, ∂w/∂y and the other strain types do. After a
+  change, *⚠ Rigid-motion setting changed — click Compute Strain* appears until
+  you recompute; the hint survives saving and reopening the project.
+- **Saved with the project**: the mode and the drawn region are part of the
+  project; the project file keeps the measured data and re-applies the removal
+  when it opens. A new analysis run applies the current setting too.
+
+The plain least-squares fit is pulled by points that are wrong (the RMS column
+shows it) and by real deformation inside the region — when the whole surface
+bends, fit on its stiffest part. Across a crack the two sides may move
+differently: draw the region on one side.
+
+From the command line, add `[rigid_motion]` to the config:
+
+```toml
+[rigid_motion]
+mode = "rigid"                    # "off" | "translation" | "rigid" (translation + rotation)
+region_mask = "fit_region.png"    # optional: fit only inside this mask (left frame 1)
+```
+
 ## STRAIN PARAMETERS
 
 ### Strain window (VSG size)
@@ -93,14 +144,21 @@ label and a **Cancel** button. If you change a parameter after computing, a
 
 ### FIELD
 
-Seven exclusive toggle buttons select the strain field (default **εxx**):
+Exclusive toggle buttons in three groups select what is shown (default **εxx**):
 
-`εxx`, `εyy`, `εxy` (`exx, eyy, exy`); the principal strains `ε₁`, `ε₂`
-(`e1, e2`); `γ max` (`max_shear`); and `von Mises` (`von_mises`), the plane
-equivalent strain `sqrt(εxx² + εyy² − εxx·εyy + 3·εxy²)` used by pyALDIC (2D) as
-well. Buttons are disabled until strain is computed. (The result also carries `dwdx` / `dwdy`
-out-of-plane slope diagnostics, which are not exposed as field buttons but are
-present in exports.)
+- **Displacement** — `U`, `V`, `W` (world / left-camera axes) and `|D|`, in the
+  display unit chosen in the main window. These are available as soon as a run
+  exists, before any strain is computed, so the effect of rigid-motion removal
+  can be checked first.
+- **Slope** — `∂w/∂x`, `∂w/∂y` (`dwdx, dwdy`): the out-of-plane slopes of the
+  strain fit, shown in **mrad** (= µm/mm). They tilt with the specimen, so they
+  are meaningful once rigid motion is removed.
+- **Strain** — `εxx`, `εyy`, `εxy` (`exx, eyy, exy`); the principal strains
+  `ε₁`, `ε₂` (`e1, e2`); `γ max` (`max_shear`); and `von Mises` (`von_mises`),
+  the plane equivalent strain `sqrt(εxx² + εyy² − εxx·εyy + 3·εxy²)` used by
+  pyALDIC (2D) as well.
+
+Slope and strain buttons are disabled until strain is computed.
 
 ### VISUALIZATION
 

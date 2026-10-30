@@ -93,6 +93,25 @@ Then, for each **selected** field:
 | `max_shear`, `von_mises` | `(T, N)` | strain invariants |
 | `strain_valid` | `(T, N)` bool | edge-trim ∪ crack-trim mask (`True` = show), appended when strain is trimmed |
 
+While rigid-body motion is removed (Strain window, **RIGID MOTION**, or
+`[rigid_motion]` in a config), `points3D` and every displacement field hold the
+**corrected** values, and the archive adds:
+
+| Variable | Shape | Meaning |
+|----------|-------|---------|
+| `points3D_raw` | `(T, N, 3)` | the measured world coordinates, before the removal |
+| `rbm_mode` | scalar string | `translation` or `rigid` (translation + rotation) |
+| `rbm_rotation` | `(T, 3, 3)` | per-frame rotation `R` (identity at frame 1) |
+| `rbm_translation` | `(T, 3)` | per-frame translation `t` in **mm**, with `R·P¹ + t ≈ Pᵏ` and corrected `P'ᵏ = Rᵀ(Pᵏ − t)` |
+| `rbm_centroid_shift` | `(T, 3)` | how far the fitted points' centroid moved, in **mm** |
+| `rbm_rms` | `(T,)` | RMS residual of the fit, in **mm** |
+| `rbm_n_used` | `(T,)` | points used in each frame's fit |
+
+A frame that could not be fitted has `NaN` in these arrays and is invalid in the
+corrected fields. The parameters JSON carries the same per-frame table under
+`rigid_motion` (µm and mrad), and every exported figure's colorbar ends with
+*· rigid motion removed (mode)*.
+
 > The headless `al-dic-3d run` archive is a **superset**: on top of the above it
 > also writes every field stack unconditionally plus `displacement3D`
 > (`points3D[k] − points3D[0]`), the out-of-plane slope diagnostics `dwdx` /
@@ -110,7 +129,7 @@ The per-frame **CSV** files (`<prefix>_frame_1.csv`, … in the
 `<prefix>_csv_<ts>/` sub-folder) have one row per node with columns
 `x_px, y_px, X_mm, Y_mm, Z_mm`, then the selected fields.
 
-The headless `al-dic-3d run` records the archive layout as `archive_schema = 3`
+The headless `al-dic-3d run` records the archive layout as `archive_schema = 4`
 in its parameters JSON (the export dialog's parameters JSON does not carry this
 key). Both paths put CSV files in a `<prefix>_csv_<ts>/` sub-folder; the
 headless runner names the archives `<prefix>.npz` / `<prefix>.mat`, whereas the

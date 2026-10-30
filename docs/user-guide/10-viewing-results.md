@@ -21,6 +21,11 @@ field:
 ε₂, γ max, von Mises — live in the separate
 [Strain window](11-strain-processing.md), not here.)
 
+When rigid-body motion has been removed (Strain window, **RIGID MOTION**), every
+field here shows the corrected displacement and the colorbar and the 3D scalar
+bar end with *· rigid motion removed (mode)*. Switching it on or off keeps the
+current frame and the 3D camera, so the two can be compared directly.
+
 Below the toggles:
 
 - **Show on deformed frame** (checked by default) — plot the field at the
