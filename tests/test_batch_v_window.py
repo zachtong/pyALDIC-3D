@@ -187,7 +187,6 @@ def test_readiness_checks_that_the_inputs_are_usable(qapp, tmp_path):
     win.close()
 
 
-
 def test_progress_messages_are_shown_in_plain_words(qapp):
     from al_dic_3d.gui.progress_text import progress_text
 

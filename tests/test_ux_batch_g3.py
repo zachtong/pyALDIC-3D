@@ -470,9 +470,7 @@ def test_export_dialog_is_nonmodal_singleton(qapp, monkeypatch):
     class _StubDialog(QDialog):
         created = 0
 
-        def __init__(
-            self, result, extra_params=None, parent=None, *, draft=None, hint=None, **_kw
-        ):
+        def __init__(self, result, extra_params=None, parent=None, *, draft=None, hint=None, **_kw):
             super().__init__(parent)
             self._result = result
             type(self).created += 1

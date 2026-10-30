@@ -83,9 +83,7 @@ def test_suggested_save_path_is_never_a_bare_file_name(qapp, tmp_path):
     assert persistence.suggested_save_path("m.png", "mask") == str(Path.home() / "m.png")
 
 
-def test_mask_save_starts_in_the_image_folder_and_remembers_the_choice(
-    win, tmp_path, monkeypatch
-):
+def test_mask_save_starts_in_the_image_folder_and_remembers_the_choice(win, tmp_path, monkeypatch):
     image = tmp_path / "images" / "L_000.png"
     image.parent.mkdir()
     image.write_bytes(b"")
