@@ -144,6 +144,13 @@ Attach both files to a bug report. To see the output live, start
 installation itself (images, videos, translations, kernels, a small stereo
 run, a 3D render) and names the part that fails.
 
+On Python 3.10 or 3.11, a crash reading *Fatal Python error: deallocating
+None* (or *deallocating True or False*) comes from PySide6 6.12.0, which
+miscounts references on every interface signal. Current versions of
+pyALDIC-3D do not install that release there. In an existing environment, run
+`pip install "PySide6!=6.12.0"`, or use Python 3.12 or newer, where it is
+harmless.
+
 ## The first run takes much longer
 
 The numerical kernels are compiled once per installation. The application

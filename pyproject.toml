@@ -67,7 +67,12 @@ dependencies = [
     # its headline features costs more support than the extra download.
     # Imports stay lazy, so headless/CLI use still works where Qt or OpenGL
     # cannot initialize.
-    "PySide6>=6.5",
+    # PySide6 6.12.0 decrements the bool Signal.emit returns once too often:
+    # harmless from Python 3.12 (None/True/False are immortal), fatal below it,
+    # where the interpreter aborts after a few thousand signals
+    # (tests/test_pyside_refcount.py).
+    'PySide6>=6.5,!=6.12.0; python_version < "3.12"',
+    'PySide6>=6.5; python_version >= "3.12"',
     "pyvista>=0.43",
     "pyvistaqt>=0.11",
 ]
@@ -76,7 +81,8 @@ dependencies = [
 # Compatibility aliases: these packages are CORE dependencies since v1.0.0;
 # `pip install "al-dic-3d[gui,viz3d]"` from older docs keeps working.
 gui = [
-    "PySide6>=6.5",
+    'PySide6>=6.5,!=6.12.0; python_version < "3.12"',
+    'PySide6>=6.5; python_version >= "3.12"',
 ]
 viz3d = [
     "pyvista>=0.43",
@@ -86,7 +92,8 @@ dev = [
     "pytest>=7.0",
     "pytest-xdist>=3.0",
     "ruff>=0.6",
-    "PySide6>=6.5",  # GUI smoke tests (offscreen)
+    'PySide6>=6.5,!=6.12.0; python_version < "3.12"',  # GUI smoke tests (offscreen)
+    'PySide6>=6.5; python_version >= "3.12"',
     "psutil>=5.9",   # memcheck.py RAM probe
 ]
 

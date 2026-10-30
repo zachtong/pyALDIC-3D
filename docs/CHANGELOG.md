@@ -49,6 +49,12 @@ GitHub release notes for a tag are this file's section for that version.
 
 ### Fixed
 
+- **The application no longer aborts on Python 3.10 and 3.11.** PySide6 6.12.0
+  miscounts references on every interface signal. From Python 3.12 that is
+  harmless, but on 3.10 and 3.11 the interpreter aborted after a few thousand
+  signals (*Fatal Python error: deallocating None*), within minutes of use.
+  That PySide6 release is no longer installed below Python 3.12, and a test
+  catches a release that brings the bug back.
 - **The 3D View shows the specimen properly.** It opened looking at the back of
   the specimen with the image upside down, framed on the camera frusta so the
   surface was a speck, and unlit — a scene rebuild removed the lights. It now
