@@ -3790,32 +3790,42 @@ bleibt gleich; Verschiebung und Neigungen ∂w/∂x, ∂w/∂y nicht.</translati
         <translation>3D-Ausreißerfilter entfernte {0} Positionen</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
+        <translation>Kamera {0}: Die Suche für die Anfangsschätzung musste auf {1} Bildern erweitert werden (bis {2} px), was den Lauf verlangsamt. Ist die Bewegung zwischen den Referenzbildern wirklich so groß, PARAMETER &gt; Zeitliche Suche erhöhen.</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
+        <translation>Kamera {0}: Die Suche für die Anfangsschätzung musste auf {1} Bildern erweitert werden (bis {2} px), was den Lauf verlangsamt. Im inkrementellen Modus heißt das meist, dass der Bereich aus Bild 1 die Probe in späteren Referenzbildern nicht mehr abdeckt: Masken pro Bild importieren (INTERESSENBEREICH) oder WORKFLOW-TYP &gt; Akkumulativ verwenden.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="114"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Jedes Bild gegen Bild 1 zu verfolgen, hält großen Verformungen nicht stand. WORKFLOW-TYP &gt; Inkrementell versuchen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="105"/>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Jedes Referenz-Update fügt einen kleinen Verfolgungsfehler hinzu, und über eine lange Sequenz summieren sie sich. Weniger Updates (Referenz-Update &gt; Alle N Frames, z. B. 10) oder WORKFLOW-TYP &gt; Akkumulativ versuchen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="111"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Ändert sich der gültige Bereich im Versuch (Risse, Versagen), Masken pro Bild importieren (INTERESSENBEREICH).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="117"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Keine gültigen Punkte in IRGENDEINEM Frame — der Lauf lieferte ein leeres Ergebnis. Prüfen Sie ROI, Masken und Startpunkt (Details oben).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="125"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse abgeschlossen — {0} Frames, mediane Validität {1} %, {2} Frame(s) unter {3} % (siehe oben)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="136"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Analyse abgeschlossen — {0} Bilder, mittlere Gültigkeit {1} %</translation>
     </message>

@@ -151,4 +151,18 @@ does this in the background a couple of seconds after it opens (the log says
 *Preparing compute kernels in the background…* and later *Compute kernels
 ready*); a run started before that finishes waits for the compilation.
 
+## Every frame of an incremental run is slow
+
+The log ends with *Camera L: the initial-guess search had to widen on N frames
+(up to R px)*. At every incremental reference switch the initial guess comes
+from an FFT search. Without per-frame masks, each reference frame reuses the
+region drawn on frame 1. Once the specimen has moved, that region puts subsets
+on its edge, their correlation peaks hit the search boundary, and the search
+grows step by step, up to half the image, on every frame. On a specimen pulled
+to failure this made each frame about five times slower. Import per-frame
+masks ([Region of interest](07-region-of-interest.md)), or use
+**Accumulative** ([Workflow type](05-workflow-type.md)). With per-frame masks
+already imported, the motion between reference frames really is that large:
+raise **Temporal Search** ([Parameters](08-parameters.md)).
+
 Back to the [index](index.md).

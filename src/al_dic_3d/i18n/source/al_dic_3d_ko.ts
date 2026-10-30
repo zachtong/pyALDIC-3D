@@ -3780,32 +3780,42 @@ Green-Lagrange 변형률은 변하지 않지만,
         <translation>3D 이상치 필터가 위치 {0}개를 제거함</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
+        <translation>카메라 {0}: 초기 추정 탐색 범위를 {1}개 프레임에서 넓혀야 했습니다(최대 {2} px). 실행이 느려집니다. 기준 프레임 사이의 움직임이 실제로 이만큼 크다면 매개변수 &gt; 시간 탐색을 늘리세요.</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
+        <translation>카메라 {0}: 초기 추정 탐색 범위를 {1}개 프레임에서 넓혀야 했습니다(최대 {2} px). 실행이 느려집니다. 증분형에서는 보통 프레임 1 영역이 이후 기준 프레임에서 시편을 더 이상 덮지 못한다는 뜻입니다: 프레임별 마스크를 가져오거나(관심 영역) 워크플로 유형 &gt; 누적형을 사용하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="114"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 모든 프레임을 프레임 1과 비교하는 추적은 큰 변형을 따라가지 못합니다. 워크플로 유형 &gt; 증분형을 사용해 보세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="105"/>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 기준 프레임을 갱신할 때마다 작은 추적 오차가 생기고, 긴 시퀀스에서는 이것이 누적됩니다. 갱신 횟수를 줄이거나(기준 프레임 갱신 &gt; N 프레임마다, 예: 10) 워크플로 유형 &gt; 누적형을 사용해 보세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="111"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 시험 중 유효 영역이 바뀌면(균열, 파단) 프레임별 마스크를 가져오세요(관심 영역).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="117"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>어느 프레임에도 유효한 점이 없습니다 — 실행 결과가 비어 있습니다. ROI, 마스크, 시드 설정을 확인하십시오(자세한 내용은 위 참조).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="125"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>분석 완료 — 프레임 {0}개, 유효율 중앙값 {1}%, {2}개 프레임이 {3}% 미만 (위 참조)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="136"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>분석 완료 — {0}프레임, 유효율 중앙값 {1}%</translation>
     </message>

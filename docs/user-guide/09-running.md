@@ -73,6 +73,13 @@ few points tells you *why*. Representative messages:
 - *Quality gate (ZNSSD) removed N positions* / *Reprojection gate removed N
   positions* / *3D outlier filter removed N positions* — each quality gate's
   count (only when **Extra filters** is enabled).
+- *Camera L: the initial-guess search had to widen on N frames (up to R px) …*
+  — the FFT initial-guess search kept hitting its boundary and had to grow,
+  which slows the run (several times, at hundreds of pixels). Without
+  per-frame masks this usually means the frame-1 region no longer covers the
+  moved specimen at later incremental reference frames: import per-frame masks
+  or use **Accumulative**. With per-frame masks, the motion between reference
+  frames really is that large: raise **Temporal Search**.
 - *Validity falls from X% (frame 1) to Y%: …* — the run kept most points at
   first and then lost them. In accumulative mode the message suggests the
   incremental mode (tracking every frame against frame 1 cannot follow large

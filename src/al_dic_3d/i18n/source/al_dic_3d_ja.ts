@@ -3778,32 +3778,42 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
         <translation>3D 外れ値フィルタが {0} 個の位置を除外</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
+        <translation>カメラ {0}：初期推定の探索範囲を {1} フレームで広げる必要がありました（最大 {2} px）。実行が遅くなります。参照フレーム間の動きが実際にこれほど大きい場合は、パラメータ &gt; 時系列探索 を大きくしてください。</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
+        <translation>カメラ {0}：初期推定の探索範囲を {1} フレームで広げる必要がありました（最大 {2} px）。実行が遅くなります。逐次式では通常、フレーム 1 の領域が後の参照フレームで試験片を覆わなくなったことを意味します：フレームごとのマスクを読み込むか（関心領域）、ワークフロー種別 &gt; 累積式 を使用してください。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="114"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>有効率がフレーム 1 の {0}% から {1}% に下がりました：すべてのフレームをフレーム 1 と比べる追跡は大変形に追従できません。ワークフロー種別 &gt; 逐次式 を試してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="105"/>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>有効率がフレーム 1 の {0}% から {1}% に下がりました：参照フレームの更新ごとにわずかな追跡誤差が生じ、長い系列ではそれが積み重なります。更新回数を減らす（参照フレーム更新 &gt; N フレームごと、例：10）か、ワークフロー種別 &gt; 累積式 を試してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="111"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>有効率がフレーム 1 の {0}% から {1}% に下がりました：試験中に有効領域が変わる場合（き裂、破断）は、フレームごとのマスクを読み込んでください（関心領域）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="117"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>どのフレームにも有効な点がありません — 実行結果は空です。ROI・マスク・シード設定を確認してください (詳細は上記)。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="125"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>解析完了 — {0} フレーム、有効率の中央値 {1}%、{2} フレームが {3}% 未満 (上記参照)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="136"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>解析が完了しました：{0} フレーム、有効率の中央値 {1}%</translation>
     </message>

@@ -77,9 +77,25 @@ class RunSummaryMixin:
             n = int(gates.get(key, 0))
             if n:
                 self._append_log(template.format(n), "info")
-        from al_dic_3d.matching.diagnostics import collapse_advice
+        from al_dic_3d.matching.diagnostics import collapse_advice, widening_advice
 
         run_params = meta.get("run_params") or {}
+        for cam, n in widening_advice(s).items():
+            if run_params.get("per_frame_masks"):
+                text = self.tr(
+                    "Camera {0}: the initial-guess search had to widen on {1} frames "
+                    "(up to {2} px), which slows the run. If the motion between "
+                    "reference frames is that large, raise PARAMETERS > Temporal Search."
+                )
+            else:
+                text = self.tr(
+                    "Camera {0}: the initial-guess search had to widen on {1} frames "
+                    "(up to {2} px), which slows the run. In incremental mode this "
+                    "usually means the frame-1 region no longer covers the specimen at "
+                    "later reference frames: import per-frame masks (REGION OF "
+                    "INTEREST) or use WORKFLOW TYPE > Accumulative."
+                )
+            self._append_log(text.format(cam, n, s.fft_max_search_px), "warn")
         advice = collapse_advice(
             s,
             run_params.get("reference_mode"),

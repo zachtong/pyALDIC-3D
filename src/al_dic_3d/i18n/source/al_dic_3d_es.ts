@@ -3797,32 +3797,42 @@ no cambia; el desplazamiento y las pendientes ∂w/∂x, ∂w/∂y sí.</transla
         <translation>El filtro de valores atípicos 3D eliminó {0} posiciones</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
+        <translation>Cámara {0}: la búsqueda de la estimación inicial tuvo que ampliarse en {1} fotogramas (hasta {2} px), lo que ralentiza el cálculo. Si el movimiento entre fotogramas de referencia es realmente tan grande, aumente PARÁMETROS &gt; Búsqueda temporal.</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
+        <translation>Cámara {0}: la búsqueda de la estimación inicial tuvo que ampliarse en {1} fotogramas (hasta {2} px), lo que ralentiza el cálculo. En modo incremental esto suele significar que la región del fotograma 1 ya no cubre la probeta en los fotogramas de referencia posteriores: importe máscaras por fotograma (REGIÓN DE INTERÉS) o use TIPO DE FLUJO &gt; Acumulativo.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="114"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>La validez cae del {0} % (fotograma 1) al {1} %: comparar cada fotograma con el fotograma 1 no sigue deformaciones grandes. Pruebe TIPO DE FLUJO &gt; Incremental.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="105"/>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>La validez cae del {0} % (fotograma 1) al {1} %: cada actualización de la referencia añade un pequeño error de seguimiento y, en una secuencia larga, se acumulan. Pruebe menos actualizaciones (Actualización de referencia &gt; Cada N fotogramas, p. ej. 10) o TIPO DE FLUJO &gt; Acumulativo.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="111"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>La validez cae del {0} % (fotograma 1) al {1} %: si la región válida cambia durante el ensayo (grietas, rotura), importe máscaras por fotograma (REGIÓN DE INTERÉS).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="117"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Ningún punto válido en NINGÚN fotograma — la ejecución produjo un resultado vacío. Revise la ROI, las máscaras y el punto de inicio (detalles arriba).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="125"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Análisis completado — {0} fotogramas, validez mediana {1}%, {2} fotograma(s) por debajo del {3}% (ver arriba)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="136"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Análisis completado: {0} fotogramas, validez mediana {1} %</translation>
     </message>

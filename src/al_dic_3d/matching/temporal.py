@@ -16,7 +16,7 @@ import re
 import threading
 from collections import OrderedDict
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 from al_dic.core.data_structures import DICMesh, DICPara, split_uv
@@ -26,6 +26,7 @@ from al_dic.mesh.mesh_setup import mesh_setup
 from al_dic.solver.seed_prop_pipeline import build_grid_for_roi
 from numpy.typing import NDArray
 
+from al_dic_3d.matching.engine_log import record_fft_widening
 from al_dic_3d.matching.gate import _GATE_MAX_WORKERS, _gate_workers, gate_by_znssd  # noqa: F401
 from al_dic_3d.matching.resample import (  # noqa: F401 - re-exported (moved, fix batch V)
     _RESAMPLE_CACHE,
@@ -154,6 +155,9 @@ class TemporalField:
     # Frames on which the 2D engine solved NO node and silently zero-filled the
     # field (fix batch V): invalidated here instead of failing the whole track.
     zero_filled: tuple[int, ...] = ()
+    # Frames on which the engine widened its FFT initial-guess search (frame ->
+    # widest search, px): reported by the run summary, never changes a result.
+    fft_widened: dict[int, int] = field(default_factory=dict)
     stopped_early: bool = False  # a cooperative stop cut the track short
     stopped_at_frame: int | None = None  # 0-based first UNTRACKED frame
     stop_reason: str = ""  # engine's reason string (English)
@@ -378,6 +382,7 @@ class EngineTrack:
     stop_reason: str
     zero_filled: tuple[int, ...]
     verify_partial: bool
+    fft_widened: dict[int, int]
 
     @property
     def n_tracked(self) -> int:
@@ -456,19 +461,22 @@ def track_engine(
                     )
 
                 warnings.showwarning = _record
-            result = run_aldic(
-                para,
-                # Normalize-on-demand provider (P1.2): the engine otherwise
-                # eagerly materializes a full normalized float64 copy of the
-                # stack (ListFrameProvider). Byte-identical, streaming instead.
-                _EngineFrames(frames, para.gridxy_roi_range),
-                masks,
-                progress_fn=engine_progress,
-                stop_fn=stop,
-                compute_strain=False,
-                mesh=mesh,
-                U0=u0,
-            )
+            # The engine says it widened its FFT search only through logging
+            # (not the GUI log): count it per frame for the run summary.
+            with record_fft_widening(lambda: engine_frame[0]) as widening:
+                result = run_aldic(
+                    para,
+                    # Normalize-on-demand provider (P1.2): the engine otherwise
+                    # eagerly materializes a full normalized float64 copy of the
+                    # stack (ListFrameProvider). Byte-identical, streaming instead.
+                    _EngineFrames(frames, para.gridxy_roi_range),
+                    masks,
+                    progress_fn=engine_progress,
+                    stop_fn=stop,
+                    compute_strain=False,
+                    mesh=mesh,
+                    U0=u0,
+                )
     except RuntimeError:
         # Engine 0.7 RETURNS a partial result on a user cancel (handled below),
         # so a RuntimeError here is a genuine failure; when the stop tripped
@@ -567,6 +575,7 @@ def track_engine(
         stop_reason=stop_reason,
         zero_filled=zero_filled_frames,
         verify_partial=verify_partial,
+        fft_widened=dict(widening.widened),
     )
 
 
@@ -645,6 +654,7 @@ def finish_track(et: EngineTrack) -> TemporalField:
         stop_reason=stop_reason,
         znssd=gate_z,
         zero_filled=zero_filled_frames,
+        fft_widened=dict(et.fft_widened),
     )
 
 

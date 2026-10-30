@@ -16,12 +16,14 @@ parameters export)::
      "n_gated": int, "note": str}
 
 ``cam`` is ``"L"`` / ``"R"`` for temporal tracks, ``"stereo"`` for cross-camera
-stereo matches, ``"cross"`` for S3's direct L1->Rk matches.
+stereo matches, ``"cross"`` for S3's direct L1->Rk matches. A temporal row also
+carries ``"search_px": int`` on frames where the engine widened its FFT
+initial-guess search (the widest search it moved to).
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -35,6 +37,11 @@ if TYPE_CHECKING:
 #: Frames whose final correspondence validity falls below this fraction are
 #: reported as warnings by the run summary (CLI + GUI log).
 LOW_VALIDITY_FRAC = 0.7
+
+#: A camera whose FFT search the engine widened on at least this many frames gets
+#: a log line: once (frame 1, a large first motion) is normal; on most reference
+#: switches it means the reference region no longer fits the specimen.
+WIDENING_MIN_FRAMES = 3
 
 #: The reason string attached to honesty-gate kills (kept in one place so the
 #: GUI/CLI wording matches the row payload).
@@ -71,7 +78,9 @@ def temporal_rows(cam: str, tf: TemporalField) -> list[dict]:
             note = ZERO_FILL_NOTE
         else:
             note = GATE_NOTE if n_gated else ""
-        rows.append(frame_row(k, cam, n_pts, int(tf.valid[k].sum()), n_gated=n_gated, note=note))
+        row = frame_row(k, cam, n_pts, int(tf.valid[k].sum()), n_gated=n_gated, note=note)
+        search = int((getattr(tf, "fft_widened", None) or {}).get(k, 0))
+        rows.append({**row, "search_px": search} if search else row)
     return rows
 
 
@@ -111,6 +120,9 @@ class RunSummary:
     stereo_n_pts: int | None  # frame-1 stereo match candidates (None: no row)
     stereo_n_valid: int | None
     gated_by_cam: dict[str, int]  # cam -> total node-frames killed by the gate
+    # cam -> frames on which the engine widened its FFT search; widest search (px)
+    fft_widened_by_cam: dict[str, int] = field(default_factory=dict)
+    fft_max_search_px: int = 0
 
     def to_meta(self) -> dict:
         """Plain JSON-serializable dict for ``RunResult.meta['summary']``."""
@@ -124,6 +136,8 @@ class RunSummary:
             "stereo_n_pts": None if self.stereo_n_pts is None else int(self.stereo_n_pts),
             "stereo_n_valid": None if self.stereo_n_valid is None else int(self.stereo_n_valid),
             "gated_by_cam": {str(c): int(n) for c, n in self.gated_by_cam.items()},
+            "fft_widened_by_cam": {str(c): int(n) for c, n in self.fft_widened_by_cam.items()},
+            "fft_max_search_px": int(self.fft_max_search_px),
         }
 
 
@@ -155,10 +169,15 @@ def summarize_run(
     rows = tuple(getattr(cs, "diagnostics", ()) or ())
     stereo = next((r for r in rows if r.get("cam") == "stereo" and r.get("frame") == 0), None)
     gated: dict[str, int] = {}
+    widened: dict[str, int] = {}
+    max_search = 0
     for r in rows:
+        cam = str(r.get("cam", "?"))
         if int(r.get("n_gated", 0)):
-            cam = str(r.get("cam", "?"))
             gated[cam] = gated.get(cam, 0) + int(r["n_gated"])
+        if int(r.get("search_px", 0)):
+            widened[cam] = widened.get(cam, 0) + 1
+            max_search = max(max_search, int(r["search_px"]))
 
     return RunSummary(
         n_frames=int(n_frames),
@@ -176,7 +195,25 @@ def summarize_run(
         ),
         stereo_n_valid=None if stereo is None else int(stereo["n_valid"]),
         gated_by_cam=gated,
+        fft_widened_by_cam=widened,
+        fft_max_search_px=max_search,
     )
+
+
+def widening_advice(summary: RunSummary) -> dict[str, int]:
+    """Cameras (-> widened frame count) whose FFT search widened on many frames.
+
+    The engine widens its FFT initial-guess search when a correlation peak lands
+    on the search boundary, and reports it only to the log file. Measured on a
+    specimen pulled to failure, incremental every frame without per-frame
+    masks: the frame-1 region reused at each reference frame put subsets on the
+    moved specimen's edge, 56-128 nodes per frame hit the boundary (0 with
+    per-frame masks) and the search climbed 20 -> 702 px on every frame, about
+    five times slower.
+    """
+    return {
+        cam: n for cam, n in sorted(summary.fft_widened_by_cam.items()) if n >= WIDENING_MIN_FRAMES
+    }
 
 
 def collapse_advice(
@@ -273,6 +310,20 @@ def summary_lines(
             if n:
                 lines.append(("info", f"{label} removed {n} positions"))
     run_params = (stopped or {}).get("run_params") or {}
+    for cam, n in widening_advice(summary).items():
+        head = (
+            f"camera {cam}: the initial-guess search had to widen on {n} frames "
+            f"(up to {summary.fft_max_search_px} px), which slows the run"
+        )
+        if run_params.get("per_frame_masks"):
+            tail = "; if the motion between reference frames is that large, raise fft_search"
+        else:
+            tail = (
+                "; in incremental mode this usually means the frame-1 region no longer "
+                "covers the specimen at later reference frames: give per-frame masks "
+                '(left_mask / right_mask) or use reference_mode = "accumulative"'
+            )
+        lines.append(("warning", head + tail))
     advice = collapse_advice(
         summary,
         run_params.get("reference_mode"),

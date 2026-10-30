@@ -3772,32 +3772,42 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
         <translation>3D 離群點過濾移除了 {0} 個位置</translation>
     </message>
     <message>
+        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
+        <translation>相機 {0}：初始估計的搜尋範圍在 {1} 幀上不得不擴大（最大 {2} px），這會拖慢執行。若參考幀之間的運動確實這麼大，請增大 參數 &gt; 時序搜尋。</translation>
+    </message>
+    <message>
         <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
+        <translation>相機 {0}：初始估計的搜尋範圍在 {1} 幀上不得不擴大（最大 {2} px），這會拖慢執行。在增量模式下，這通常表示第 1 幀繪製的區域在之後的參考幀上已不再覆蓋試件：請匯入逐幀遮罩（感興趣區域），或改用 工作流類型 &gt; 累積式。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="114"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>有效率從 {0}%（第 1 幀）降至 {1}%：每幀都與第 1 幀比較的追蹤無法跟隨大變形。請嘗試 工作流類型 &gt; 增量式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="105"/>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>有效率從 {0}%（第 1 幀）降至 {1}%：每次參考幀更新都會帶來少量追蹤誤差，長序列中這些誤差會累加。請減少更新次數（參考幀更新 &gt; 每 N 幀，例如 10），或改用 工作流類型 &gt; 累積式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="111"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>有效率從 {0}%（第 1 幀）降至 {1}%：若試驗中有效區域會變化（裂紋、斷裂），請匯入逐幀遮罩（感興趣區域）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="117"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>所有幀均無有效點——本次執行產生了空結果。請檢查 ROI、遮罩與種子點設定（詳見上方訊息）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="125"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>分析完成——共 {0} 幀，中位有效率 {1}%，{2} 幀低於 {3}%（見上方）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="136"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>分析完成——共 {0} 幀，有效率中位數 {1}%</translation>
     </message>

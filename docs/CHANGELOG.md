@@ -72,6 +72,12 @@ GitHub release notes for a tag are this file's section for that version.
   (**Every N Frames**) or **Accumulative**. The run records its reference-update
   policy and whether per-frame masks were used (in the parameters export too).
   The user guide no longer calls **Incremental + Every Frame** the safe default.
+- **A run that widens its search on every frame now says so.** The engine
+  widens its FFT initial-guess search when a correlation peak hits the search
+  boundary, and reported it only in the log file. An incremental run without
+  per-frame masks on a moving specimen widened to 702 px on every frame, about
+  five times slower, with no reason on screen. The run log now names the
+  camera, the number of frames and the widest search, and says what to do.
 - The test suite no longer depends on how OpenCV rounds on a given computer.
   A test compared two exact copies of the same patch, and the last bit of the
   arithmetic chose between them, so it failed on some machines.

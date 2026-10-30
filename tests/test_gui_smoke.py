@@ -464,6 +464,34 @@ def test_an_incremental_collapse_advises_fewer_reference_updates(qapp, scene):
     win.close()
 
 
+def test_repeated_search_widening_is_explained_in_the_log(qapp, scene):
+    # Incremental without per-frame masks on a moving specimen: the engine
+    # widened its FFT search on every frame (up to 702 px) and only its log
+    # file said so; the run was five times slower with no reason on screen.
+    from dataclasses import replace
+
+    from al_dic_3d.matching.diagnostics import frame_row
+
+    win = _loaded_window(scene)
+    win.controller.run()
+    result = win.controller.state.result
+    rows = tuple(result.correspondence.diagnostics) + tuple(
+        {**frame_row(k, "L", 4, 4), "search_px": 702} for k in range(1, 6)
+    )
+    meta = dict(result.meta)
+    meta["run_params"] = dict(
+        meta["run_params"], reference_mode="incremental", per_frame_masks=False
+    )
+    win.controller.state.result = replace(
+        result, correspondence=replace(result.correspondence, diagnostics=rows), meta=meta
+    )
+    win._right._on_done()
+    text = win._right._console.toPlainText()
+    assert "widen on 5 frames (up to 702 px)" in text
+    assert "import per-frame masks" in text and "Accumulative" in text
+    win.close()
+
+
 def test_empty_result_logs_error_and_shows_canvas_notice(qapp, scene):
     # F3.1 empty-result guard: all-NaN reconstruction -> explicit error line
     # in the log + a visible notice on the canvas, never silent nothing.
