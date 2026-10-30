@@ -128,7 +128,7 @@ class RunConfig:
     stereo_epipolar_max_px: float = 2.0
     # Frame-1 stereo seed search: half-width (px) of the epipolar band scanned
     # along each point's line, ``stereo_search`` long; 0 = square window.
-    stereo_band_px: float = 3.0
+    stereo_band_px: float = 15.0
     # P3.6 opt-in: track both cameras concurrently (track_both strategy).
     # ~2x faster on the numba/numpy-heavy engine, doubles peak memory.
     # TOML: [matching].parallel_cameras. Results are identical either way.
@@ -228,7 +228,7 @@ def load_config(path: str | Path) -> RunConfig:
     # always see seed_points[0] as seed_point.
     if seed_point is None and seed_points:
         seed_point = seed_points[0]
-    band_px = float(match.get("stereo_band_px", 3.0))
+    band_px = float(match.get("stereo_band_px", 15.0))
     if not (math.isfinite(band_px) and 0.0 <= band_px <= _MAX_BAND_PX):
         raise ValueError(
             f"[matching].stereo_band_px must be between 0 and {_MAX_BAND_PX:.0f} px, "

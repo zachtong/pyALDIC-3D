@@ -9,6 +9,24 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+### Changed
+
+- **The Epipolar Band defaults to 15 px instead of 3 px** (PARAMETERS; config
+  `[matching].stereo_band_px`). The left/right search covers 15 px to each
+  side of the epipolar line, so it still reaches the matching patch when the
+  calibration is a few pixels off; the Epipolar limit then decides whether the
+  link is kept. New projects, and config files without the key, use 15 px; a
+  saved project keeps the width it was saved with. On Stereo-DIC Challenge 1.0
+  Sample 3 (25,000 nodes) the search takes 16 % less time than the square
+  window (3 px: 20 % less) and finds the same links. On a periodic pattern
+  finer than the band across the line, set a narrower band.
+
+### Fixed
+
+- The test suite no longer depends on how OpenCV rounds on a given computer.
+  A test compared two exact copies of the same patch, and the last bit of the
+  arithmetic chose between them, so it failed on some machines.
+
 ## [1.3.0] — 2026-10-29
 
 The right camera now follows the region of interest drawn on the left one, so a

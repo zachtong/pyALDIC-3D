@@ -52,15 +52,21 @@ A left point's match lies on its epipolar line in the right image, the line
 the calibration predicts; only its position along the line depends on the
 depth. The per-node search therefore scans a band along that line: **Epipolar
 Band** pixels to each side of it and **Stereo Search** pixels along it. A
-look-alike patch off the line cannot be picked, and with the usual side-by-side
-or stacked cameras, whose lines run nearly along the image rows or columns,
-far fewer positions are compared. Spinbox range **0–50 px**, default **3 px**;
-**0** (*off*) searches the square window instead. Config key:
-`[matching].stereo_band_px = 3.0`.
+look-alike patch farther off the line than the band cannot be picked, and with
+the usual side-by-side or stacked cameras, whose lines run nearly along the
+image rows or columns, fewer positions are compared. Spinbox range
+**0–50 px**, default **15 px**; **0** (*off*) searches the square window
+instead. Config key: `[matching].stereo_band_px = 15.0`.
 
-The band is never narrower than the **Epipolar limit** (see Result checks
-below), so a match the limit would accept can always be found: with a poor
-calibration, raise the Epipolar limit and the band follows. Turning the
+The band only decides where the search looks. The **Epipolar limit** (see
+Result checks below) decides which matches are kept: it rejects a match
+farther from the line than the limit (2 px by default), however wide the band.
+The band is never narrower than the limit, so a match the limit would accept
+can always be found; with a poor calibration, raise the Epipolar limit (the
+band widens with it once the limit passes the band). On a periodic pattern
+whose period across the line is shorter than the band, the neighbouring period
+can be picked instead of the true match and is then rejected by the limit; use
+a band narrower than the period there. Turning the
 Epipolar limit off also turns the band off, since both trust the calibration.
 The line is traced through the full lens-distortion model and the band widens
 where the distorted line bends away from a straight one; the images are not

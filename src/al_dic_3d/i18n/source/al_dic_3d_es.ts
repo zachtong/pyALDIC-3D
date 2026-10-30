@@ -2035,20 +2035,6 @@ Típicamente ¼–½ del tamaño del subset.</translation>
         <translation>desactivado</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
-        <source>Epipolar band: the left-to-right match is searched only within
-this many pixels of the line the calibration predicts for each
-node, over the Stereo Search distance along it, so a look-alike
-off the line cannot be picked. Default 3 px; never narrower
-than the Epipolar limit; 0 searches a square window instead.</source>
-        <translation>Banda epipolar: la correspondencia izquierda-derecha solo se busca
-a esta distancia en píxeles de la línea que la calibración predice
-para cada nodo, a lo largo de la distancia de Búsqueda estéreo;
-así no se puede elegir un patrón parecido fuera de la línea.
-3 px por defecto; nunca más estrecha que el Límite epipolar;
-0 busca en una ventana cuadrada.</translation>
-    </message>
-    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="427"/>
         <source>Epipolar Band</source>
         <translation>Banda epipolar</translation>
@@ -2162,6 +2148,20 @@ error de reproyección o distancia de valor atípico 3D es demasiado mala.
 Desactivados por defecto (se conservan todos los puntos seguidos);
 actívelos con datos ruidosos cuando unos pocos puntos malos ensucian los campos.
 El registro indica cuántos puntos quitó cada filtro.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 15 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>Banda epipolar: la correspondencia izquierda-derecha solo se busca
+a esta distancia en píxeles de la línea que la calibración predice
+para cada nodo, a lo largo de la distancia de Búsqueda estéreo;
+así no se puede elegir un patrón parecido fuera de la línea.
+15 px por defecto; nunca más estrecha que el Límite epipolar;
+0 busca en una ventana cuadrada.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="597"/>

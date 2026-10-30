@@ -2033,20 +2033,6 @@ und längere Läufe; größer = schneller, aber gröbere Felder. Üblich: ¼–�
         <translation>aus</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
-        <source>Epipolar band: the left-to-right match is searched only within
-this many pixels of the line the calibration predicts for each
-node, over the Stereo Search distance along it, so a look-alike
-off the line cannot be picked. Default 3 px; never narrower
-than the Epipolar limit; 0 searches a square window instead.</source>
-        <translation>Epipolarband: Die Links-rechts-Zuordnung wird nur innerhalb
-dieser Pixelzahl um die Linie gesucht, die die Kalibrierung für
-jeden Knoten vorhersagt, entlang der Linie über die Distanz der
-Stereo-Suche; ein ähnliches Muster abseits der Linie wird so nicht
-gewählt. Standard 3 px; nie schmaler als die Epipolargrenze;
-0 sucht stattdessen in einem quadratischen Fenster.</translation>
-    </message>
-    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="427"/>
         <source>Epipolar Band</source>
         <translation>Epipolarband</translation>
@@ -2159,6 +2145,20 @@ Rückprojektionsfehler oder 3D-Ausreißerabstand zu schlecht ist.
 Standardmäßig aus (alle verfolgten Punkte bleiben); für verrauschte
 Daten einschalten, wenn einzelne schlechte Punkte die Felder stören.
 Das Protokoll meldet, wie viele Punkte jeder Filter entfernt hat.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 15 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>Epipolarband: Die Links-rechts-Zuordnung wird nur innerhalb
+dieser Pixelzahl um die Linie gesucht, die die Kalibrierung für
+jeden Knoten vorhersagt, entlang der Linie über die Distanz der
+Stereo-Suche; ein ähnliches Muster abseits der Linie wird so nicht
+gewählt. Standard 15 px; nie schmaler als die Epipolargrenze;
+0 sucht stattdessen in einem quadratischen Fenster.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="597"/>

@@ -2027,19 +2027,6 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
         <translation>끔</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
-        <source>Epipolar band: the left-to-right match is searched only within
-this many pixels of the line the calibration predicts for each
-node, over the Stereo Search distance along it, so a look-alike
-off the line cannot be picked. Default 3 px; never narrower
-than the Epipolar limit; 0 searches a square window instead.</source>
-        <translation>에피폴라 밴드: 좌우 매칭은 캘리브레이션이 각 노드에 대해
-예측한 선에서 이 픽셀 수 이내만, 선을 따라서는 스테레오
-탐색 거리만큼만 탐색하므로 선 밖의 비슷한 무늬를 잘못
-고르지 않습니다. 기본값 3 px, 에피폴라 한계보다 좁아지지
-않으며, 0이면 정사각형 창에서 탐색합니다.</translation>
-    </message>
-    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="427"/>
         <source>Epipolar Band</source>
         <translation>에피폴라 밴드</translation>
@@ -2149,6 +2136,19 @@ reports how many points each filter removed.</source>
 기본값은 끔(추적한 모든 점 유지). 잡음이 많아
 몇몇 불량 점이 필드를 오염시킬 때 켜세요.
 각 필터가 제거한 점의 수는 로그에 표시됩니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 15 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>에피폴라 밴드: 좌우 매칭은 캘리브레이션이 각 노드에 대해
+예측한 선에서 이 픽셀 수 이내만, 선을 따라서는 스테레오
+탐색 거리만큼만 탐색하므로 선 밖의 비슷한 무늬를 잘못
+고르지 않습니다. 기본값 15 px, 에피폴라 한계보다 좁아지지
+않으며, 0이면 정사각형 창에서 탐색합니다.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="597"/>

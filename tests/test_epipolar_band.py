@@ -52,13 +52,14 @@ def test_the_line_passes_through_the_true_match(scene):
     assert np.linalg.norm(rel, axis=1).max() < 6.0  # the foot sits near the prior
 
 
-def test_band_and_square_seeds_agree_on_clean_images(scene):
+@pytest.mark.parametrize("width", [3.0, STEREO_BAND_PX])
+def test_band_and_square_seeds_agree_on_clean_images(scene, width):
     sc, left, right, pts, truth = scene
     rng = np.random.default_rng(3)
     offset = truth - pts + rng.uniform(-3, 3, pts.shape)
     sq, ok_sq = _ncc_seed(left, right, pts, offset, 48, HALF)
     foot, tan = epipolar_line_frames(sc["rig"], pts, pts + offset)
-    bd, ok_bd = _ncc_seed(left, right, pts, offset, 48, HALF, band=(foot, tan, 3.0))
+    bd, ok_bd = _ncc_seed(left, right, pts, offset, 48, HALF, band=(foot, tan, width))
     assert ok_sq.all() and ok_bd.all()
     for seed in (sq, bd):
         err = np.linalg.norm(pts + seed - truth, axis=1)
@@ -89,11 +90,15 @@ def test_a_slanted_band_masks_its_box(angle_deg):
     speckle = syn.speckle(240, seed=11)
     shift = np.array([9.0, 6.0])
     right = np.roll(speckle, (int(shift[1]), int(shift[0])), axis=(0, 1))
+    # Noise keeps the true match below the exact copy planted as the look-alike:
+    # two exact copies tie up to rounding, and the arithmetic path OpenCV takes
+    # on the machine (IPP or not) then decides which one wins.
+    right = right + np.random.default_rng(2).normal(0.0, 4.0, right.shape)
     p = np.array([[120.0, 120.0]])
     q = p + shift
     t = np.array([[np.cos(np.deg2rad(angle_deg)), np.sin(np.deg2rad(angle_deg))]])
     normal = np.array([-t[0, 1], t[0, 0]])
-    # 15 px off the line inside the band's box, its window clear of the true one.
+    # 15 px off the line (inside a slanted band's box), its window clear of the true one.
     decoy = np.round(q[0] + 45.0 * t[0] + 15.0 * normal).astype(int)
     assert np.abs(decoy - q[0]).max() > 2 * HALF + 1
     fake = right.copy()
@@ -103,8 +108,7 @@ def test_a_slanted_band_masks_its_box(angle_deg):
     square, _ = _ncc_seed(speckle, fake, p, shift, 60, HALF)
     seed, ok = _ncc_seed(speckle, fake, p, shift, 60, HALF, band=(q, t, 3.0))
     assert ok[0] and np.allclose(p[0] + seed[0], q[0]), (p[0] + seed[0], q[0], decoy)
-    if angle_deg != 90.0:  # a slanted box holds the look-alike, which the square finds
-        assert np.allclose(p[0] + square[0], decoy)
+    assert np.allclose(p[0] + square[0], decoy), "without the band the look-alike wins"
 
 
 def test_a_zero_band_is_the_square_window(scene):
@@ -126,7 +130,8 @@ def test_a_zero_band_is_the_square_window(scene):
     np.testing.assert_array_equal(a.valid, b.valid)
 
 
-def test_the_band_links_the_scene(scene):
+@pytest.mark.parametrize("width", [3.0, STEREO_BAND_PX])
+def test_the_band_links_the_scene(scene, width):
     sc, left, right, pts, truth = scene
     para = make_dicpara(img_size=left.shape, roi=(60, 260, 60, 260), winsize=32)
     off = (truth - pts).mean(axis=0)
@@ -138,7 +143,7 @@ def test_the_band_links_the_scene(scene):
         disparity_offset=tuple(off),
         search_radius=48,
         rig=sc["rig"],
-        band_px=3.0,
+        band_px=width,
     )
     err = np.linalg.norm(field.right_pts - truth, axis=1)
     assert field.valid.mean() > 0.95 and np.nanmedian(err[field.valid]) < 0.1
@@ -195,6 +200,16 @@ def _scene_config(tmp_path, extra=""):
 def test_the_band_width_comes_from_the_config(tmp_path):
     assert _scene_config(tmp_path / "a").stereo_band_px == STEREO_BAND_PX
     assert _scene_config(tmp_path / "b", "stereo_band_px = 5.5").stereo_band_px == 5.5
+
+
+def test_every_default_band_width_is_the_same():
+    from dataclasses import fields
+
+    from al_dic_3d.matching.contracts import CorrespondenceConfig
+    from al_dic_3d.runner import RunConfig
+
+    run_default = next(f.default for f in fields(RunConfig) if f.name == "stereo_band_px")
+    assert run_default == CorrespondenceConfig().stereo_band_px == STEREO_BAND_PX
 
 
 @pytest.mark.parametrize("value", ["-1.0", "inf", "nan", "5000.0"])
@@ -256,6 +271,7 @@ def test_the_sidebar_edits_the_band_width():
     win = MainWindow3D()
     left = win._left
     draft = win.controller.state.draft
+    assert left._band_spin.value() == STEREO_BAND_PX
     left._band_spin.setValue(7.5)
     assert draft.stereo_band_px == 7.5
     draft.stereo_band_px = 0.0

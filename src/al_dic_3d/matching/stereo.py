@@ -31,9 +31,11 @@ _NCC_SEED_CHUNK = 256
 
 #: Default half-width (px) of the epipolar band the frame-1 seed search scans;
 #: 0 searches the full square window. A genuine link sits ~0.1 px from its line
-#: on a good calibration; the band is never narrower than the epipolar limit
+#: on a good calibration, so the default is generous: it forgives a poor
+#: calibration in the seed search and still keeps look-alikes far off the line
+#: out. The band is never narrower than the epipolar limit
 #: (:func:`search_band_px`), so a link the limit would accept can be found.
-STEREO_BAND_PX = 3.0
+STEREO_BAND_PX = 15.0
 
 #: (foot points (n, 2), unit tangents (n, 2), half-widths px (n,) or scalar).
 Band = tuple[NDArray[np.float64], NDArray[np.float64], "float | NDArray[np.float64]"]

@@ -2026,19 +2026,6 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
         <translation>オフ</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
-        <source>Epipolar band: the left-to-right match is searched only within
-this many pixels of the line the calibration predicts for each
-node, over the Stereo Search distance along it, so a look-alike
-off the line cannot be picked. Default 3 px; never narrower
-than the Epipolar limit; 0 searches a square window instead.</source>
-        <translation>エピポーラ帯：左右の対応は、キャリブレーションが各節点に
-予測する線からこの画素数以内だけを、線に沿ってはステレオ
-探索の距離だけ探索するため、線から外れた似た模様を選ぶ
-ことはありません。既定 3 px。エピポーラ制限より狭く
-なりません。0 の場合は正方形ウィンドウで探索します。</translation>
-    </message>
-    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="427"/>
         <source>Epipolar Band</source>
         <translation>エピポーラ帯</translation>
@@ -2148,6 +2135,19 @@ reports how many points each filter removed.</source>
 既定はオフ（追跡した点をすべて保持）。ノイズの多いデータで
 少数の不良点が場を乱すときに有効にします。
 各フィルターが除外した点の数はログに表示されます。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 15 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>エピポーラ帯：左右の対応は、キャリブレーションが各節点に
+予測する線からこの画素数以内だけを、線に沿ってはステレオ
+探索の距離だけ探索するため、線から外れた似た模様を選ぶ
+ことはありません。既定 15 px。エピポーラ制限より狭く
+なりません。0 の場合は正方形ウィンドウで探索します。</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="597"/>

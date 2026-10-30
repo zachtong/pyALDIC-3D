@@ -2024,19 +2024,6 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
         <translation>關</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
-        <source>Epipolar band: the left-to-right match is searched only within
-this many pixels of the line the calibration predicts for each
-node, over the Stereo Search distance along it, so a look-alike
-off the line cannot be picked. Default 3 px; never narrower
-than the Epipolar limit; 0 searches a square window instead.</source>
-        <translation>極線帶：左右匹配只在校正為每個節點預測的極線
-兩側這麼多像素以內搜尋，沿極線方向的範圍為
-立體搜尋距離，因此極線外的相似紋理不會被誤選。
-預設 3 px；不會窄於極線限制；為 0 時改用
-正方形視窗搜尋。</translation>
-    </message>
-    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="427"/>
         <source>Epipolar Band</source>
         <translation>極線帶</translation>
@@ -2144,6 +2131,19 @@ reports how many points each filter removed.</source>
 預設關閉（保留所有追蹤點）；資料雜訊大、少數壞點
 汙染場時可開啟。日誌會報告
 每個過濾器剔除的點數。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 15 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>極線帶：左右匹配只在校正為每個節點預測的極線
+兩側這麼多像素以內搜尋，沿極線方向的範圍為
+立體搜尋距離，因此極線外的相似紋理不會被誤選。
+預設 15 px；不會窄於極線限制；為 0 時改用
+正方形視窗搜尋。</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="597"/>

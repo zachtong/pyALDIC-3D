@@ -66,7 +66,7 @@ class CorrespondenceConfig:
     # Half-width (px) of the epipolar band the frame-1 NCC seed search scans;
     # 0 = square window. Never narrower than stereo_epipolar_max_px (see
     # al_dic_3d.matching.stereo.search_band_px). Replaces the unused epipolar_seed.
-    stereo_band_px: float = 3.0
+    stereo_band_px: float = 15.0
     disparity_offset: tuple[float, float] | None = None  # coarse prior, big baselines
     # Initial-guess mode (F2): "seed" needs seed_point (left frame-1 pixel);
     # without one it falls back to "fft" with a warning. Mapping to the engine:

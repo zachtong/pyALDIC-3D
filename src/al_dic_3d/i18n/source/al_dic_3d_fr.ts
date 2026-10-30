@@ -2035,20 +2035,6 @@ Typiquement ¼–½ de la taille du subset.</translation>
         <translation>désactivé</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
-        <source>Epipolar band: the left-to-right match is searched only within
-this many pixels of the line the calibration predicts for each
-node, over the Stereo Search distance along it, so a look-alike
-off the line cannot be picked. Default 3 px; never narrower
-than the Epipolar limit; 0 searches a square window instead.</source>
-        <translation>Bande épipolaire : la correspondance gauche-droite n'est cherchée
-qu'à ce nombre de pixels au plus de la ligne que l'étalonnage
-prédit pour chaque nœud, sur la distance de la Recherche stéréo
-le long de celle-ci ; un motif semblable hors de la ligne ne peut
-donc pas être retenu. 3 px par défaut ; jamais plus étroite que la
-Limite épipolaire ; 0 cherche plutôt dans une fenêtre carrée.</translation>
-    </message>
-    <message>
         <location filename="../../gui/panels/left_sidebar.py" line="427"/>
         <source>Epipolar Band</source>
         <translation>Bande épipolaire</translation>
@@ -2162,6 +2148,20 @@ l'erreur de reprojection ou la distance d'aberration 3D est trop mauvaise.
 Désactivés par défaut (tous les points suivis sont gardés) ; activez-les
 sur des données bruitées quand quelques mauvais points polluent les champs.
 Le journal indique combien de points chaque filtre a retirés.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
+        <source>Epipolar band: the left-to-right match is searched only within
+this many pixels of the line the calibration predicts for each
+node, over the Stereo Search distance along it, so a look-alike
+off the line cannot be picked. Default 15 px; never narrower
+than the Epipolar limit; 0 searches a square window instead.</source>
+        <translation>Bande épipolaire : la correspondance gauche-droite n'est cherchée
+qu'à ce nombre de pixels au plus de la ligne que l'étalonnage
+prédit pour chaque nœud, sur la distance de la Recherche stéréo
+le long de celle-ci ; un motif semblable hors de la ligne ne peut
+donc pas être retenu. 15 px par défaut ; jamais plus étroite que la
+Limite épipolaire ; 0 cherche plutôt dans une fenêtre carrée.</translation>
     </message>
     <message>
         <location filename="../../gui/panels/left_sidebar.py" line="597"/>

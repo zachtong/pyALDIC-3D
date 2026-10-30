@@ -412,7 +412,7 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
         self._band_spin.setDecimals(1)
         self._band_spin.setRange(0.0, 50.0)
         self._band_spin.setSingleStep(0.5)
-        self._band_spin.setValue(3.0)
+        self._band_spin.setValue(15.0)
         self._band_spin.setSuffix(" px")
         self._band_spin.setSpecialValueText(self.tr("off"))
         self._band_spin.setToolTip(
@@ -420,7 +420,7 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
                 "Epipolar band: the left-to-right match is searched only within\n"
                 "this many pixels of the line the calibration predicts for each\n"
                 "node, over the Stereo Search distance along it, so a look-alike\n"
-                "off the line cannot be picked. Default 3 px; never narrower\n"
+                "off the line cannot be picked. Default 15 px; never narrower\n"
                 "than the Epipolar limit; 0 searches a square window instead."
             )
         )
@@ -773,7 +773,7 @@ class LeftSidebar3D(PairActionsMixin, QWidget):
         draft.winsize_min = min(8, step)  # engine invariant: winsize_min <= step
         self._step_combo.setCurrentText(str(step))
         self._search_spin.setValue(draft.stereo_search)
-        self._band_spin.setValue(float(getattr(draft, "stereo_band_px", 3.0)))
+        self._band_spin.setValue(float(getattr(draft, "stereo_band_px", 15.0)))
         self._temporal_spin.setValue(draft.fft_search)
         self._admm_spin.setValue(draft.admm_max_iter)
         self._admm_spin.setEnabled(draft.use_global_step)
