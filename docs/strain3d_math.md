@@ -151,7 +151,7 @@ back for parity.
   provides an optional scattered smoothing of the same spirit; default off
   (`smooth_times = 0`) so the raw field is used.
 
-## 6. Validation (the Phase-3 gate)
+## 6. Validation
 
 Analytic fields, computed directly (no rendering) on a synthetic node cloud:
 1. **Rigid rotation → 0 strain**: `disp = (R·Pᵀ)ᵀ − P` for a rotation `R`;
@@ -161,6 +161,4 @@ Analytic fields, computed directly (no rendering) on a synthetic node cloud:
 3. **Uniaxial stretch on a curved surface** (cylinder/sphere cap): stretch along
    a principal surface direction; the recovered in-plane strain matches the
    applied value within tolerance (tests the tangent-frame handling).
-Plus MATLAB `strainPerFrame` parity on the baseline dataset (deferred with the
-other MATLAB-parity gates until the user provides it), and a VSG-size sensitivity
-study in `reports/phase3_strain.pdf`.
+These are covered by the test suite (`tests/test_strain3d.py`).

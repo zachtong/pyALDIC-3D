@@ -37,8 +37,8 @@ pip install -e ../pyALDIC
 
 Never modify the 2D repo from a 3D change. If a fix genuinely belongs there,
 say so in the issue and it will be done in a separate 2D pull request.
-`docs/DEPENDS_ON_2D.md` is the ledger of exactly which `al_dic` symbols this
-project uses — add a row if your change imports a new one.
+If your change imports an `al_dic` symbol this project did not use before, say
+so in the pull request.
 
 ## House rules
 
@@ -67,12 +67,10 @@ project uses — add a row if your change imports a new one.
    change touches the correlation, reconstruction or strain path, mention
    whether the MATLAB-parity gates still pass.
 
-## Figures and marketing assets
+## Figures
 
-The README figures are all generated: every image under `assets/` has a script
-under `tools/marketing/` that reproduces it headlessly from the shipping code.
-If you change something a figure illustrates, re-run the matching generator
-rather than editing the PNG.
+The README figures live under `assets/`. If you change something a figure
+illustrates, say so in the pull request so the figure can be regenerated.
 
 ## Licence
 

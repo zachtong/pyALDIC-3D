@@ -22,9 +22,7 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# Phase reports: matplotlib PdfPages output. `reports/` holds ONLY PDFs, is
-# gitignored, and is NEVER referenced from README (see CLAUDE.md engineering
-# rules). Regenerate with `python tools/phase0_report.py`.
+# Local report output (PDFs); never committed.
 reports/
 
 # Session / dataset artifacts
@@ -74,11 +72,23 @@ desktop.ini
 # Git worktrees
 .worktrees/
 
-# Claude Code: the settings.json (cross-repo read-only boundary + permissions)
-# and CLAUDE.md (session bootstrap / invariants) ARE versioned on purpose — they
-# are this repo's operating contract. Ignore only transient local .claude state.
-.claude/*
-!.claude/settings.json
+# ---------------------------------------------------------------------------
+# Private development material — kept on the author's machine, never published.
+# The public repository carries only what users and contributors need: the
+# package, its tests, the user guide, the sample dataset, packaging and CI.
+# ---------------------------------------------------------------------------
+CLAUDE.md
+.claude/
+tasks/
+paper_softwareX/
+docs/architecture/
+docs/DEPENDS_ON_2D.md
+docs/RELEASING.md
+# tools/: only the translation-maintenance scripts are public.
+/tools/*
+!/tools/i18n.py
+!/tools/fill_translations.py
+!/tools/i18n_batch_*.py
 
 # Read-only reference clones of third-party repos (never committed)
 reference/

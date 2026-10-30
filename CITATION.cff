@@ -1,7 +1,7 @@
 # Citation metadata for pyALDIC-3D (Citation File Format 1.2.0).
 # Maintainer notes:
 # - `version` AND `date-released` must be bumped together with
-#   src/al_dic_3d/__init__.py at every release (see docs/RELEASING.md);
+#   src/al_dic_3d/__init__.py at every release;
 #   `date-released` is the day that version's GitHub Release is published.
 # - The DOI below is Zenodo's concept DOI (all versions), minted at the first
 #   public release; it does not change between releases.

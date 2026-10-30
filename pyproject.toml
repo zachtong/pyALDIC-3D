@@ -52,7 +52,6 @@ dependencies = [
     # 0.10.0 and 1.0.3). During development an editable install of the sibling
     # repo satisfies the same range:
     #     pip install -e ../pyALDIC
-    # docs/DEPENDS_ON_2D.md is the ledger of exactly which al_dic symbols we use.
     "al-dic>=0.7.2,<1.1",
     # Imported directly by this package (not only through al-dic).
     "matplotlib>=3.6",   # export/colorbar.py, viz3d/fieldmap.py, calibration/printout.py
@@ -89,8 +88,7 @@ dev = [
     "ruff>=0.6",
     "pre-commit>=3.5",
     "PySide6>=6.5",  # GUI smoke tests (offscreen)
-    "psutil>=5.9",   # tools/stress_test.py RSS sampling
-    "h5py>=3.0",     # tools/matlab_parity.py reads the v7.3 MATLAB baseline
+    "psutil>=5.9",   # memcheck.py RAM probe
 ]
 
 [project.urls]
@@ -118,11 +116,13 @@ include = [
     "/README.md",
     "/LICENSE",
     "/CITATION.cff",
-    "/docs",
+    "/docs/user-guide",
+    "/docs/COORDINATES.md",
+    "/docs/strain3d_math.md",
     "/.github/workflows",
 ]
 # NOT included on purpose: quickstart/ (14 MB sample dataset), assets/ (README
-# screenshots), tools/, reports/, reference/ — the sdist stays install+test lean.
+# screenshots), tools/ — the sdist stays install+test lean.
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

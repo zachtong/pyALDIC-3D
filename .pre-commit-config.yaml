@@ -3,8 +3,8 @@
 # Mirrors the 2D repo's tooling (ruff + standard hygiene). The GUI and its tr()
 # strings have shipped since 1.0.0 (8 locales), but i18n is deliberately not a
 # hook: extracting, filling and compiling catalogs rewrites .ts/.qm files and
-# needs PySide6's lupdate/lrelease, so it runs by hand per CLAUDE.md's i18n
-# contract (tools/i18n.py extract|compile|scan, tools/fill_translations.py).
+# needs PySide6's lupdate/lrelease, so it runs by hand (CONTRIBUTING.md:
+# tools/i18n.py extract|compile|scan, tools/fill_translations.py).
 #
 # CI's lint job (.github/workflows/ci.yml) installs the same ruff version as
 # the rev below -- bump the two together.

@@ -5,9 +5,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versioning follows [Semantic Versioning](https://semver.org/).
 
 Entries are per package version (`al-dic-3d` on PyPI, `vX.Y.Z` git tags). The
-`v1.x` milestones in `docs/architecture/00_INDEX.md` are internal documentation
-milestones, not releases. The GitHub release notes for a tag are this file's
-section for that version (see `docs/RELEASING.md`).
+GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 

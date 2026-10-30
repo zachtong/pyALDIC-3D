@@ -5,7 +5,7 @@ name: Publish to PyPI
 # PyPI verifies the workflow's short-lived identity instead.
 #
 # One-time setup on PyPI (Your projects -> al-dic-3d -> Publishing, or a
-# *pending* publisher before the first release — see docs/RELEASING.md):
+# *pending* publisher before the first release):
 #   Owner            zachtong
 #   Repository       pyALDIC-3D
 #   Workflow         publish.yml
@@ -127,8 +127,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           NOTES_FILE: ${{ steps.notes.outputs.file }}
         # Creating the GitHub *Release* (not just the tag) is what triggers the
-        # Zenodo DOI mint once the GitHub-Zenodo integration is enabled -- see
-        # docs/RELEASING.md. Re-run safe: an existing release is reused as is
+        # Zenodo DOI mint once the GitHub-Zenodo integration is enabled.
+        # Re-run safe: an existing release is reused as is
         # (its notes are not rewritten) and --clobber overwrites previously
         # uploaded artifacts.
         run: |
