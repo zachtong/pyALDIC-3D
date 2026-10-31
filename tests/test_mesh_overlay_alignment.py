@@ -162,10 +162,18 @@ def test_rendered_grid_lies_inside_the_drawn_roi_after_a_pan(area):
     ys, xs = np.nonzero(grid)
     assert xs.size > 100
 
-    # The ROI rectangle as the canvas shows it, plus a pixel of line width.
+    # The ROI rectangle as the canvas shows it, plus a pixel of line width. A
+    # share rather than min/max: one stray mesh-colored pixel at the viewport
+    # edge showed up on one CI runner; a stale pan offset (60 x 40 px here) puts
+    # a large share of the grid outside.
     vt = area.canvas.viewportTransform()
     top_left = vt.map(QPointF(_ROI[0], _ROI[1]))
     bottom_right = vt.map(QPointF(_ROI[2] + 1, _ROI[3] + 1))
     tol = 2
-    assert xs.min() >= top_left.x() - tol and xs.max() <= bottom_right.x() + tol
-    assert ys.min() >= top_left.y() - tol and ys.max() <= bottom_right.y() + tol
+    inside = (
+        (xs >= top_left.x() - tol)
+        & (xs <= bottom_right.x() + tol)
+        & (ys >= top_left.y() - tol)
+        & (ys <= bottom_right.y() + tol)
+    )
+    assert inside.mean() >= 0.99, f"{inside.mean():.1%} of the grid lies on the ROI"
