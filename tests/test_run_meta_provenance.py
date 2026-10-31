@@ -99,11 +99,12 @@ def test_a_validity_collapse_comes_with_advice():
 
 
 def test_an_incremental_collapse_never_repeats_what_the_user_already_did():
-    """A notched specimen pulled to failure (136 frames): incremental,
-    every frame, per-frame masks kept 21 % of the points by the end and the log
-    advised ... per-frame masks. Each reference update adds a small tracking
-    error (and drops mesh cells outside that frame's mask), so the advice for a
-    collapse under frequent updates is fewer updates or accumulative."""
+    """A notched specimen pulled to failure (136 frames): incremental, every
+    frame, per-frame masks, and the log advised ... per-frame masks. The tracking
+    check now verifies each step against its own reference frame, so the small
+    error each update adds no longer drops points: shorter steps track better.
+    Rare updates -> update every frame; every frame without masks -> masks;
+    every frame with masks -> nothing to repeat."""
     from al_dic_3d.matching.diagnostics import RunSummary, collapse_advice, summary_lines
 
     collapsed = RunSummary(
@@ -118,15 +119,15 @@ def test_an_incremental_collapse_never_repeats_what_the_user_already_did():
         gated_by_cam={},
     )
     advice = lambda **kw: collapse_advice(collapsed, "incremental", **kw)  # noqa: E731
-    assert advice() == "fewer_updates"  # an old result without the fields: every frame
-    assert advice(ref_update_mode="every_frame") == "fewer_updates"
-    assert advice(ref_update_mode="every_frame", per_frame_masks=True) == "fewer_updates"
-    assert advice(ref_update_mode="every_n", per_frame_masks=True) == "fewer_updates"
-    # Rare updates without masks: a valid region that changes is the likely cause.
-    assert advice(ref_update_mode="every_n", per_frame_masks=False) == "masks"
-    assert advice(ref_update_mode="custom", per_frame_masks=False) == "masks"
+    assert advice() == "masks"  # an old result without the fields: every frame, no masks
+    assert advice(ref_update_mode="every_frame") == "masks"
+    assert advice(ref_update_mode="every_frame", per_frame_masks=True) is None
+    assert advice(ref_update_mode="every_n", per_frame_masks=True) == "more_updates"
+    assert advice(ref_update_mode="custom", per_frame_masks=False) == "more_updates"
 
-    meta = {"run_params": {"reference_mode": "incremental", "ref_update_mode": "every_frame"}}
+    meta = {"run_params": {"reference_mode": "incremental", "ref_update_mode": "every_n"}}
     text = " ".join(t for _, t in summary_lines(collapsed, stopped=meta))
-    assert "every_n" in text and "accumulative" in text
-    assert "per-frame masks" not in text
+    assert "every_frame" in text and "fewer" not in text
+    meta["run_params"].update(ref_update_mode="every_frame", per_frame_masks=True)
+    text = " ".join(t for _, t in summary_lines(collapsed, stopped=meta))
+    assert "per-frame masks" not in text and "every_frame" not in text

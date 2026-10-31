@@ -293,3 +293,106 @@ def gate_by_znssd(
                 stopped_at = k + 1
             break
     return n_gated, stopped_at
+
+
+def gate_stepwise(
+    frames,
+    masks,
+    ref_coords: NDArray[np.float64],
+    u_accum: NDArray[np.float64],
+    valid: NDArray[np.bool_],
+    winsize: int,
+    threshold: float,
+    parents,
+    *,
+    progress: Callable[[float, str], None] | None = None,
+    stop: Callable[[], bool] | None = None,
+    workers: int | None = None,
+    affine: bool = True,
+    min_support: float = GATE_MIN_SUPPORT,
+    znssd_out: NDArray[np.float64] | None = None,
+) -> tuple[NDArray[np.int64], int | None]:
+    """The honesty gate, step by step: frame ``k`` against the frame it was tracked from.
+
+    ``parents[k]`` is the reference frame frame ``k`` was correlated from
+    (``FrameSchedule.parent``; ``parents[0]`` is ignored). Each frame is scored
+    exactly like :func:`gate_by_znssd` scores frame 1 against frame 0, with the
+    reference frame's image and mask, the positions the track had there and the
+    increment since. Composition makes every later step depend on a reference
+    frame, so a node that fails on a reference frame stays invalid on every
+    frame tracked from it. Accumulative tracks (every parent is frame 0) go
+    through :func:`gate_by_znssd` unchanged.
+
+    Why: an incremental track adds a tiny error at each step (~0.01 px on a
+    notched specimen pulled to failure). Checking every node against its
+    frame-0 subset dropped the drifted but genuinely tracked nodes (21 % kept
+    after 135 steps while the engine tracked 99 %); a garbage step still fails
+    here. ``n_gated[k]`` counts the engine-valid nodes dropped on frame ``k``,
+    those whose reference frame was dropped included.
+    """
+    n_frames = u_accum.shape[0]
+    parents = [int(p) for p in parents]
+    if len(parents) != n_frames or any(not 0 <= parents[k] < k for k in range(1, n_frames)):
+        raise ValueError(f"parents must name an earlier frame for every frame: {parents}")
+    if all(p == 0 for p in parents[1:]):
+        return gate_by_znssd(
+            frames,
+            masks[0],
+            ref_coords,
+            u_accum,
+            valid,
+            winsize,
+            threshold,
+            progress=progress,
+            stop=stop,
+            workers=workers,
+            affine=affine,
+            min_support=min_support,
+            znssd_out=znssd_out,
+        )
+    n_gated = np.zeros(n_frames, dtype=np.int64)
+    n_deformed = max(1, n_frames - 1)
+    stopped_at: int | None = None
+    for k in range(1, n_frames):
+        r = parents[k]
+        tracked = valid[k].copy()
+        cand = tracked & valid[r] if r > 0 else tracked
+        if znssd_out is not None:
+            znssd_out[k] = np.nan
+        keep = cand
+        if cand.any():
+            idx = np.flatnonzero(cand)
+            pos = ref_coords[idx] + (u_accum[r, idx] if r > 0 else 0.0)
+            u_pair = np.zeros((2, idx.size, 2), dtype=np.float64)
+            u_pair[1] = u_accum[k, idx] - (u_accum[r, idx] if r > 0 else 0.0)
+            v_pair = np.ones((2, idx.size), dtype=bool)
+            z_pair = np.full((2, idx.size), np.nan) if znssd_out is not None else None
+            gate_by_znssd(
+                [frames[r], frames[k]],
+                masks[r],
+                pos,
+                u_pair,
+                v_pair,
+                winsize,
+                threshold,
+                workers=workers,
+                affine=affine,
+                min_support=min_support,
+                znssd_out=z_pair,
+            )
+            keep = np.zeros_like(cand)
+            keep[idx] = v_pair[1]
+            if z_pair is not None:
+                znssd_out[k, idx] = z_pair[1]
+        bad = tracked & ~keep
+        if bad.any():
+            u_accum[k, bad] = np.nan
+            valid[k, bad] = False
+            n_gated[k] = int(bad.sum())
+        if progress is not None:
+            progress(k / n_deformed, f"verifying frame {k}/{n_deformed}")
+        if cand.any() and stop is not None and stop():
+            if k + 1 < n_frames:
+                stopped_at = k + 1
+            break
+    return n_gated, stopped_at

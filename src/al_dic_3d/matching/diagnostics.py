@@ -45,7 +45,9 @@ WIDENING_MIN_FRAMES = 3
 
 #: The reason string attached to honesty-gate kills (kept in one place so the
 #: GUI/CLI wording matches the row payload).
-GATE_NOTE = "validity gate: correlation vs frame 1 failed"
+# The step's reference frame: frame 1 for accumulative tracks, the frame each
+# incremental step was tracked from otherwise (gate.gate_stepwise).
+GATE_NOTE = "validity gate: correlation with the reference frame failed"
 
 
 # Frames on which the 2D engine solved no node (fix batch V): the frame is
@@ -330,7 +332,7 @@ def collapse_advice(
     ref_update_mode: str | None = None,
     per_frame_masks: bool = False,
 ) -> str | None:
-    """``"incremental"`` / ``"fewer_updates"`` / ``"masks"`` when validity collapses.
+    """``"incremental"`` / ``"more_updates"`` / ``"masks"`` when validity collapses.
 
     Fix batch V: on a specimen pulled to failure the GUI defaults (every frame
     tracked against frame 1) keep ~70 % of the nodes in frame 1 and ~2 % from
@@ -339,12 +341,14 @@ def collapse_advice(
     quarter of it.
 
     * accumulative -> the incremental mode;
-    * incremental with a reference update every frame, or with per-frame masks
-      already given -> fewer updates (or accumulative): each update adds a small
-      tracking error (~0.01 px on a notched specimen pulled to failure) that
-      sums over a long sequence;
-    * incremental with rare updates and no per-frame masks -> per-frame masks
-      (a valid region that changes, e.g. a crack).
+    * incremental with rare reference updates -> update every frame: the
+      tracking check verifies each step against its own reference frame, so
+      the small error each update adds does not drop points, and shorter steps
+      track more robustly;
+    * incremental every frame without per-frame masks -> per-frame masks (a
+      valid region that changes, e.g. a crack);
+    * incremental every frame with per-frame masks -> no advice (nothing the
+      user has not already done).
 
     ``ref_update_mode=None`` (a result saved before it was recorded) reads as
     the default, every frame.
@@ -354,9 +358,9 @@ def collapse_advice(
         return None
     if reference_mode == "accumulative":
         return "incremental"
-    if ref_update_mode in (None, "every_frame") or per_frame_masks:
-        return "fewer_updates"
-    return "masks"
+    if ref_update_mode not in (None, "every_frame"):
+        return "more_updates"
+    return None if per_frame_masks else "masks"
 
 
 def summary_lines(
@@ -479,12 +483,11 @@ def summary_lines(
                 "frame against frame 1 cannot follow large deformation; try "
                 'reference_mode = "incremental" (GUI: WORKFLOW TYPE > Incremental)'
             )
-        elif advice == "fewer_updates":
+        elif advice == "more_updates":
             text = (
-                f"validity falls from {start:.0f}% (frame 1) to {worst:.0f}%: every reference "
-                "update adds a small tracking error and these add up over a long sequence; "
-                'try fewer updates (ref_update_mode = "every_n", e.g. ref_update_n = 10) '
-                'or reference_mode = "accumulative"'
+                f"validity falls from {start:.0f}% (frame 1) to {worst:.0f}%: the motion "
+                "between reference frames is too large to track; update the reference every "
+                'frame (ref_update_mode = "every_frame")'
             )
         else:
             text = (

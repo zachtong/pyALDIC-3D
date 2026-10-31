@@ -109,14 +109,14 @@ zeitliche Suche die größte Bewegung pro Frame selbst abdecken.</translation>
     <message>
         <location filename="../../gui/widgets/advanced_section.py" line="107"/>
         <source>Tracking check: every tracked point must still look like its
-frame-1 subset (correlation mismatch, 0 = perfect, 4 = worst).
+reference-frame subset (correlation mismatch, 0 = perfect, 4 = worst).
 Points below 60 % of this value always pass; points up to it
 pass when their neighbours agree; the rest are dropped as
 failed tracks. Default 1.0 (correlation 0.5). Raise it (e.g.
 1.5) for very large strains, lower it for stricter results;
 0 turns the check off.</source>
         <translation>Verfolgungsprüfung: Jeder verfolgte Punkt muss seiner Teilmenge
-aus Bild 1 noch ähneln (Korrelationsabweichung, 0 = perfekt, 4 = schlechtest).
+im Referenzbild noch ähneln (Korrelationsabweichung, 0 = perfekt, 4 = schlechtest).
 Punkte unter 60 % dieses Werts bestehen immer; Punkte bis zu ihm
 bestehen, wenn ihre Nachbarn übereinstimmen; der Rest wird als
 fehlgeschlagene Spur verworfen. Standard 1.0 (Korrelation 0,5).
@@ -1624,7 +1624,7 @@ für alle Bilder.</translation>
 <context>
     <name>ImageCanvas3D</name>
     <message>
-        <location filename="../../gui/widgets/image_view.py" line="762"/>
+        <location filename="../../gui/widgets/image_view.py" line="763"/>
         <source>The three points are nearly in a line — spread them around the edge</source>
         <translation>Die drei Punkte liegen fast auf einer Linie — verteilen Sie sie über den Rand</translation>
     </message>
@@ -3766,8 +3766,8 @@ bleibt gleich; Verschiebung und Neigungen ∂w/∂x, ∂w/∂y nicht.</translati
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="62"/>
-        <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
-        <translation>Kamera {0}: Validitätsgate entfernte {1} Knoten-Frames (Korrelation mit Frame 1 fehlgeschlagen)</translation>
+        <source>Camera {0}: validity gate removed {1} node-frames (correlation with the reference frame failed)</source>
+        <translation>Kamera {0}: Validitätsgate entfernte {1} Knoten-Frames (Korrelation mit dem Referenzbild fehlgeschlagen)</translation>
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="67"/>
@@ -3805,47 +3805,47 @@ bleibt gleich; Verschiebung und Neigungen ∂w/∂x, ∂w/∂y nicht.</translati
         <translation>Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Jedes Bild gegen Bild 1 zu verfolgen, hält großen Verformungen nicht stand. WORKFLOW-TYP &gt; Inkrementell versuchen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="122"/>
-        <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
-        <translation>Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Jedes Referenz-Update fügt einen kleinen Verfolgungsfehler hinzu, und über eine lange Sequenz summieren sie sich. Weniger Updates (Referenz-Update &gt; Alle N Frames, z. B. 10) oder WORKFLOW-TYP &gt; Akkumulativ versuchen.</translation>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
+        <source>Validity falls from {0}% (frame 1) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
+        <translation>Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Die Bewegung zwischen den Referenzbildern ist zu groß, um sie zu verfolgen. Die Referenz in jedem Frame aktualisieren (Referenz-Update &gt; Jeder Frame).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="128"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Ändert sich der gültige Bereich im Versuch (Risse, Versagen), Masken pro Bild importieren (INTERESSENBEREICH).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="134"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Keine gültigen Punkte in IRGENDEINEM Frame — der Lauf lieferte ein leeres Ergebnis. Prüfen Sie ROI, Masken und Startpunkt (Details oben).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="142"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse abgeschlossen — {0} Frames, mediane Validität {1} %, {2} Frame(s) unter {3} % (siehe oben)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="153"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Analyse abgeschlossen — {0} Bilder, mittlere Gültigkeit {1} %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="177"/>
+        <location filename="../../gui/panels/run_summary.py" line="176"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>Die Stereoprüfung hat {0} Zuordnungen wegen schwacher Links-rechts-Korrelation (ZNSSD über {1}) und {2} wegen des Epipolarabstands (über {3} px) entfernt.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="190"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Die Stereozuordnungen von Bild 1 liegen im Median {0} px neben ihren Epipolarlinien: Die Kalibrierung passt vermutlich nicht zu diesen Bildern (Kamera bewegt, falsche Datei oder links und rechts vertauscht). Kalibrierung prüfen oder neu erstellen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="199"/>
+        <location filename="../../gui/panels/run_summary.py" line="198"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Viele Stereozuordnungen von Bild 1 liegen neben ihren Epipolarlinien: Die Kalibrierung passt vermutlich nicht zu diesen Bildern (Kamera bewegt, falsche Datei oder links und rechts vertauscht). Kalibrierung prüfen oder neu erstellen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="207"/>
+        <location filename="../../gui/panels/run_summary.py" line="206"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>Auf einer rauen oder stark geneigten Oberfläche können auch richtige Stereozuordnungen schwach korrelieren. Fehlen Punkte, ERWEITERT &gt; Ergebnisprüfungen &gt; Stereoprüfung erhöhen (zum Beispiel auf 1.0).</translation>
     </message>

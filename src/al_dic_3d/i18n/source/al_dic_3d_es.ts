@@ -110,14 +110,14 @@ fotograma.</translation>
     <message>
         <location filename="../../gui/widgets/advanced_section.py" line="107"/>
         <source>Tracking check: every tracked point must still look like its
-frame-1 subset (correlation mismatch, 0 = perfect, 4 = worst).
+reference-frame subset (correlation mismatch, 0 = perfect, 4 = worst).
 Points below 60 % of this value always pass; points up to it
 pass when their neighbours agree; the rest are dropped as
 failed tracks. Default 1.0 (correlation 0.5). Raise it (e.g.
 1.5) for very large strains, lower it for stricter results;
 0 turns the check off.</source>
         <translation>Comprobación de seguimiento: cada punto seguido debe parecerse
-aún a su subconjunto del fotograma 1 (desajuste de correlación, 0 = perfecto, 4 = peor).
+aún a su subconjunto del fotograma de referencia (desajuste de correlación, 0 = perfecto, 4 = peor).
 Los puntos por debajo del 60 % de este valor pasan siempre; los que
 llegan hasta él pasan si sus vecinos coinciden; el resto se descarta
 como seguimiento fallido. Por defecto 1,0 (correlación 0,5). Súbalo
@@ -1625,7 +1625,7 @@ para todos los fotogramas.</translation>
 <context>
     <name>ImageCanvas3D</name>
     <message>
-        <location filename="../../gui/widgets/image_view.py" line="762"/>
+        <location filename="../../gui/widgets/image_view.py" line="763"/>
         <source>The three points are nearly in a line — spread them around the edge</source>
         <translation>Los tres puntos están casi alineados — repártalos por el borde</translation>
     </message>
@@ -3773,8 +3773,8 @@ no cambia; el desplazamiento y las pendientes ∂w/∂x, ∂w/∂y sí.</transla
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="62"/>
-        <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
-        <translation>Cámara {0}: la puerta de validez eliminó {1} nodos-fotograma (falló la correlación con el fotograma 1)</translation>
+        <source>Camera {0}: validity gate removed {1} node-frames (correlation with the reference frame failed)</source>
+        <translation>Cámara {0}: la puerta de validez eliminó {1} nodos-fotograma (falló la correlación con el fotograma de referencia)</translation>
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="67"/>
@@ -3812,47 +3812,47 @@ no cambia; el desplazamiento y las pendientes ∂w/∂x, ∂w/∂y sí.</transla
         <translation>La validez cae del {0} % (fotograma 1) al {1} %: comparar cada fotograma con el fotograma 1 no sigue deformaciones grandes. Pruebe TIPO DE FLUJO &gt; Incremental.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="122"/>
-        <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
-        <translation>La validez cae del {0} % (fotograma 1) al {1} %: cada actualización de la referencia añade un pequeño error de seguimiento y, en una secuencia larga, se acumulan. Pruebe menos actualizaciones (Actualización de referencia &gt; Cada N fotogramas, p. ej. 10) o TIPO DE FLUJO &gt; Acumulativo.</translation>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
+        <source>Validity falls from {0}% (frame 1) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
+        <translation>La validez cae del {0} % (fotograma 1) al {1} %: el movimiento entre fotogramas de referencia es demasiado grande para seguirlo. Actualice la referencia en cada fotograma (Actualización de referencia &gt; Cada fotograma).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="128"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>La validez cae del {0} % (fotograma 1) al {1} %: si la región válida cambia durante el ensayo (grietas, rotura), importe máscaras por fotograma (REGIÓN DE INTERÉS).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="134"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Ningún punto válido en NINGÚN fotograma — la ejecución produjo un resultado vacío. Revise la ROI, las máscaras y el punto de inicio (detalles arriba).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="142"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Análisis completado — {0} fotogramas, validez mediana {1}%, {2} fotograma(s) por debajo del {3}% (ver arriba)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="153"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Análisis completado: {0} fotogramas, validez mediana {1} %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="177"/>
+        <location filename="../../gui/panels/run_summary.py" line="176"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>La comprobación estéreo eliminó {0} correspondencias por correlación izquierda-derecha débil (ZNSSD por encima de {1}) y {2} por distancia epipolar (por encima de {3} px).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="190"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Las correspondencias estéreo del fotograma 1 están a una mediana de {0} px de sus líneas epipolares: la calibración probablemente no corresponde a estas imágenes (una cámara se movió, un archivo equivocado o izquierda y derecha intercambiadas). Compruebe o rehaga la calibración.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="199"/>
+        <location filename="../../gui/panels/run_summary.py" line="198"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Muchas correspondencias estéreo del fotograma 1 se apartan de sus líneas epipolares: la calibración probablemente no corresponde a estas imágenes (una cámara se movió, un archivo equivocado o izquierda y derecha intercambiadas). Compruebe o rehaga la calibración.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="207"/>
+        <location filename="../../gui/panels/run_summary.py" line="206"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>En una superficie rugosa o muy inclinada, las correspondencias estéreo correctas pueden correlacionar débilmente. Si faltan puntos, aumente AVANZADO &gt; Comprobaciones de resultados &gt; Comprobación estéreo (por ejemplo a 1.0).</translation>
     </message>

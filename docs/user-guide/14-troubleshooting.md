@@ -63,10 +63,9 @@ that decays over frames points at motion exceeding the search / seed,
 decorrelation, or (for large deformation or rotation) the wrong tracking mode —
 switch to **Incremental** ([Workflow type](05-workflow-type.md)); the log
 suggests this when validity collapses in accumulative mode. If validity decays
-in incremental mode instead, update the reference less often (**Every N
-Frames**, e.g. 10) or try **Accumulative**: every reference update adds a small
-tracking error, and over a long sequence these errors add up (the log suggests
-this too). For a
+in incremental mode instead, update the reference every frame (the motion
+between reference frames may be too large), and import per-frame masks when the
+specimen moves far or cracks (the log suggests both). For a
 specimen strained close to failure, raising **ADVANCED > Result checks >
 Tracking check** (for example to 1.5) keeps more of the strongly deformed
 points ([Parameters](08-parameters.md)). Enabling **Extra filters** will remove

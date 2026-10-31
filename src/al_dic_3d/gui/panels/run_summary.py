@@ -58,7 +58,7 @@ class RunSummaryMixin:
             self._append_log(
                 self.tr(
                     "Camera {0}: validity gate removed {1} node-frames "
-                    "(correlation vs frame 1 failed)"
+                    "(correlation with the reference frame failed)"
                 ).format(cam, n),
                 "warn",
             )
@@ -112,12 +112,11 @@ class RunSummaryMixin:
                     "against frame 1 cannot follow large deformation. Try WORKFLOW "
                     "TYPE > Incremental."
                 )
-            elif advice == "fewer_updates":
+            elif advice == "more_updates":
                 text = self.tr(
-                    "Validity falls from {0}% (frame 1) to {1}%: every reference update "
-                    "adds a small tracking error, and over a long sequence they add up. "
-                    "Try fewer updates (Reference Update > Every N Frames, e.g. 10) or "
-                    "WORKFLOW TYPE > Accumulative."
+                    "Validity falls from {0}% (frame 1) to {1}%: the motion between "
+                    "reference frames is too large to track. Update the reference every "
+                    "frame (Reference Update > Every Frame)."
                 )
             else:
                 text = self.tr(

@@ -14,9 +14,26 @@ GitHub release notes for a tag are this file's section for that version.
 - **al-dic 1.0.4 or newer is required** (was 0.7.2), and the Windows installer
   ships 1.0.4. That release trims the mesh pyALDIC-3D passes it from scratch at
   every reference frame (see Fixed).
+- **In incremental mode the Tracking check verifies each step against the
+  frame it was tracked from**, not against frame 1. Each step adds a small
+  position error. The check against frame 1 removed points once that error
+  had summed to about 1.5 px, although the engine was still tracking them.
+  On a notched specimen pulled to failure (136 frames, a reference update every
+  frame), the run now keeps 98.6 % of the points on average instead of 76 %
+  (frame 132: 7131 of 7599 instead of 2445). It also keeps the necking region
+  that accumulative tracking loses. A step that loses the pattern still fails,
+  and the rest of that point's track goes with it. Accumulative runs are
+  checked exactly as before. After an incremental collapse, the run log now
+  suggests updating the reference every frame, not less often.
 
 ### Fixed
 
+- **The mesh preview stays on the drawn ROI after the view is panned.**
+  Panning, by dragging with the right or middle mouse button, holding Space and
+  dragging, or with the arrow keys, moved the grid by the pan distance a second
+  time. It then sat beside the ROI until the window was resized. The colour
+  bar, the configuration card and the canvas hints drifted the same way, in
+  the main window and in the Strain window.
 - **Incremental runs with per-frame masks keep the material that moves past
   the frame-1 outline.** There were two causes:
   - Each reference frame trimmed the analysis mesh again from the previous
@@ -30,9 +47,8 @@ GitHub release notes for a tag are this file's section for that version.
 
   On a notched specimen pulled to failure (136 frames, a reference update
   every frame), mean validity rose from 63 % to 76 % (frame 132: 1616 →
-  2445 of 7599 points). The remaining loss is the small error each reference
-  update adds. Accumulative or **Every N Frames** still suit long sequences
-  better. Runs without per-frame masks, and accumulative runs, keep the same
+  2445 of 7599 points). The step-wise Tracking check (see Changed) recovers
+  the rest. Runs without per-frame masks, and accumulative runs, keep the same
   mesh as before.
 - **The run log explains the stereo check.** Links that the frame-1 stereo
   check rejected were reported as *Camera stereo: validity gate removed N

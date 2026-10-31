@@ -27,7 +27,12 @@ from al_dic.solver.seed_prop_pipeline import build_grid_for_roi
 from numpy.typing import NDArray
 
 from al_dic_3d.matching.engine_log import record_fft_widening
-from al_dic_3d.matching.gate import _GATE_MAX_WORKERS, _gate_workers, gate_by_znssd  # noqa: F401
+from al_dic_3d.matching.gate import (  # noqa: F401
+    _GATE_MAX_WORKERS,
+    _gate_workers,
+    gate_by_znssd,
+    gate_stepwise,
+)
 from al_dic_3d.matching.resample import (  # noqa: F401 - re-exported (moved, fix batch V)
     _RESAMPLE_CACHE,
     _long_simplices,
@@ -383,6 +388,7 @@ class EngineTrack:
     zero_filled: tuple[int, ...]
     verify_partial: bool
     fft_widened: dict[int, int]
+    masks: object = None  # the {0,1} mask stream the engine ran with (reference masks)
 
     @property
     def n_tracked(self) -> int:
@@ -576,6 +582,7 @@ def track_engine(
         zero_filled=zero_filled_frames,
         verify_partial=verify_partial,
         fft_widened=dict(widening.widened),
+        masks=masks,
     )
 
 
@@ -626,6 +633,10 @@ def finish_track(et: EngineTrack) -> TemporalField:
             # pass short (P4) and drops the unverified frames.
             stop=None if engine_stopped else stop,
             znssd_out=gate_z,
+            # Incremental steps are each checked against their own reference
+            # frame (gate.gate_stepwise): drift is not a tracking failure.
+            masks=et.masks,
+            parents=reference_parents(para, u_accum.shape[0]),
         )
         if gate_stopped_at is not None:
             # A cancel cut the verification short. Frames the gate never reached
@@ -685,6 +696,14 @@ class _Ratchet:
         self._fn(self._high, msg)
 
 
+def reference_parents(para: DICPara, n_frames: int) -> list[int]:
+    """Each frame's reference frame (frame 0 for itself) under ``para``'s schedule."""
+    from al_dic.core.data_structures import FrameSchedule  # DEPENDS_ON_2D.md
+
+    schedule = para.frame_schedule or FrameSchedule.from_mode(para.reference_mode, n_frames)
+    return [0] + [int(schedule.parent(k)) for k in range(1, n_frames)]
+
+
 def _gate_by_znssd(
     frames: FrameSeq,
     mask0: NDArray[np.float64],
@@ -699,8 +718,32 @@ def _gate_by_znssd(
     workers: int | None = None,
     affine: bool = True,
     znssd_out: NDArray[np.float64] | None = None,
+    masks=None,
+    parents=None,
 ) -> tuple[NDArray[np.int64], int | None]:
-    """Honesty gate for one camera track — see :func:`al_dic_3d.matching.gate.gate_by_znssd`."""
+    """Honesty gate for one camera track.
+
+    With ``parents`` (each frame's reference frame) and the reference ``masks``
+    it is :func:`al_dic_3d.matching.gate.gate_stepwise`; without, the frame-0
+    check :func:`al_dic_3d.matching.gate.gate_by_znssd` (identical for
+    accumulative tracks).
+    """
+    if parents is not None and masks is not None:
+        return gate_stepwise(
+            frames,
+            masks,
+            ref_coords,
+            u_accum,
+            valid,
+            int(para.winsize),
+            threshold,
+            parents,
+            progress=progress,
+            stop=stop,
+            workers=workers,
+            affine=affine,
+            znssd_out=znssd_out,
+        )
     return gate_by_znssd(
         frames,
         mask0,

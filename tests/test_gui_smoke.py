@@ -436,10 +436,10 @@ def test_run_summary_reports_stopped_early(qapp, scene):
     win.close()
 
 
-def test_an_incremental_collapse_advises_fewer_reference_updates(qapp, scene):
-    # A specimen pulled to failure: incremental + every frame + per-frame masks
-    # lost most points and the log advised importing per-frame masks, which the
-    # user had already done.
+def test_an_incremental_collapse_with_rare_updates_advises_every_frame(qapp, scene):
+    # Each incremental step is checked against its own reference frame, so
+    # shorter steps track better: a collapse with rare updates gets "update the
+    # reference every frame", never "import per-frame masks" when they are there.
     from dataclasses import replace
 
     win = _loaded_window(scene)
@@ -451,7 +451,7 @@ def test_an_incremental_collapse_advises_fewer_reference_updates(qapp, scene):
     meta["run_params"] = dict(
         meta["run_params"],
         reference_mode="incremental",
-        ref_update_mode="every_frame",
+        ref_update_mode="every_n",
         per_frame_masks=True,
     )
     win.controller.state.result = replace(
@@ -459,7 +459,7 @@ def test_an_incremental_collapse_advises_fewer_reference_updates(qapp, scene):
     )
     win._right._on_done()
     text = win._right._console.toPlainText()
-    assert "Every N Frames" in text and "Accumulative" in text
+    assert "Reference Update > Every Frame" in text
     assert "import per-frame masks" not in text
     win.close()
 

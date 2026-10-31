@@ -98,7 +98,7 @@ class AdvancedSection3D(QWidget):
             4.0,
             self.tr(
                 "Tracking check: every tracked point must still look like its\n"
-                "frame-1 subset (correlation mismatch, 0 = perfect, 4 = worst).\n"
+                "reference-frame subset (correlation mismatch, 0 = perfect, 4 = worst).\n"
                 "Points below 60 % of this value always pass; points up to it\n"
                 "pass when their neighbours agree; the rest are dropped as\n"
                 "failed tracks. Default 1.0 (correlation 0.5). Raise it (e.g.\n"

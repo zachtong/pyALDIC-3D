@@ -110,14 +110,14 @@ par image.</translation>
     <message>
         <location filename="../../gui/widgets/advanced_section.py" line="107"/>
         <source>Tracking check: every tracked point must still look like its
-frame-1 subset (correlation mismatch, 0 = perfect, 4 = worst).
+reference-frame subset (correlation mismatch, 0 = perfect, 4 = worst).
 Points below 60 % of this value always pass; points up to it
 pass when their neighbours agree; the rest are dropped as
 failed tracks. Default 1.0 (correlation 0.5). Raise it (e.g.
 1.5) for very large strains, lower it for stricter results;
 0 turns the check off.</source>
         <translation>Contrôle du suivi : chaque point suivi doit encore ressembler à
-sa fenêtre de l'image 1 (écart de corrélation, 0 = parfait, 4 = pire).
+sa fenêtre de l'image de référence (écart de corrélation, 0 = parfait, 4 = pire).
 Les points sous 60 % de cette valeur passent toujours ; ceux jusqu'à
 elle passent si leurs voisins concordent ; les autres sont écartés
 comme suivis échoués. Par défaut 1,0 (corrélation 0,5). Augmentez-la
@@ -1625,7 +1625,7 @@ pour toutes les images.</translation>
 <context>
     <name>ImageCanvas3D</name>
     <message>
-        <location filename="../../gui/widgets/image_view.py" line="762"/>
+        <location filename="../../gui/widgets/image_view.py" line="763"/>
         <source>The three points are nearly in a line — spread them around the edge</source>
         <translation>Les trois points sont presque alignés — répartissez-les sur le bord</translation>
     </message>
@@ -3772,8 +3772,8 @@ n'en dépend pas ; le déplacement et les pentes ∂w/∂x, ∂w/∂y, si.</tran
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="62"/>
-        <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
-        <translation>Caméra {0} : le contrôle de validité a supprimé {1} nœuds-images (corrélation avec l'image 1 échouée)</translation>
+        <source>Camera {0}: validity gate removed {1} node-frames (correlation with the reference frame failed)</source>
+        <translation>Caméra {0} : le contrôle de validité a supprimé {1} nœuds-images (corrélation avec l'image de référence échouée)</translation>
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="67"/>
@@ -3811,47 +3811,47 @@ n'en dépend pas ; le déplacement et les pentes ∂w/∂x, ∂w/∂y, si.</tran
         <translation>La validité chute de {0} % (image 1) à {1} % : comparer chaque image à l'image 1 ne suit pas les grandes déformations. Essayez TYPE DE FLUX &gt; Incrémental.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="122"/>
-        <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
-        <translation>La validité chute de {0} % (image 1) à {1} % : chaque mise à jour de la référence ajoute une petite erreur de suivi, et sur une longue séquence elles s'additionnent. Essayez moins de mises à jour (Mise à jour de la référence &gt; Toutes les N images, par ex. 10) ou TYPE DE FLUX &gt; Cumulatif.</translation>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
+        <source>Validity falls from {0}% (frame 1) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
+        <translation>La validité chute de {0} % (image 1) à {1} % : le mouvement entre images de référence est trop grand pour être suivi. Mettez à jour la référence à chaque image (Mise à jour de la référence &gt; Chaque image).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="128"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>La validité chute de {0} % (image 1) à {1} % : si la région valide change pendant l'essai (fissures, rupture), importez des masques par image (RÉGION D'INTÉRÊT).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="134"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Aucun point valide dans AUCUNE image — l'exécution a produit un résultat vide. Vérifiez la ROI, les masques et le point de départ (détails ci-dessus).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="142"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse terminée — {0} images, validité médiane {1} %, {2} image(s) sous {3} % (voir ci-dessus)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="153"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Analyse terminée — {0} images, validité médiane {1} %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="177"/>
+        <location filename="../../gui/panels/run_summary.py" line="176"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>Le contrôle stéréo a retiré {0} correspondances pour une corrélation gauche-droite faible (ZNSSD au-dessus de {1}) et {2} pour la distance épipolaire (au-dessus de {3} px).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="190"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Les correspondances stéréo de l'image 1 sont à {0} px (médiane) de leurs droites épipolaires : l'étalonnage ne correspond probablement pas à ces images (caméra déplacée, mauvais fichier, ou gauche et droite inversées). Vérifiez ou refaites l'étalonnage.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="199"/>
+        <location filename="../../gui/panels/run_summary.py" line="198"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>De nombreuses correspondances stéréo de l'image 1 s'écartent de leurs droites épipolaires : l'étalonnage ne correspond probablement pas à ces images (caméra déplacée, mauvais fichier, ou gauche et droite inversées). Vérifiez ou refaites l'étalonnage.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="207"/>
+        <location filename="../../gui/panels/run_summary.py" line="206"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>Sur une surface rugueuse ou très inclinée, des correspondances stéréo correctes peuvent corréler faiblement. S'il manque des points, augmentez AVANCÉ &gt; Contrôles des résultats &gt; Contrôle stéréo (par exemple à 1.0).</translation>
     </message>

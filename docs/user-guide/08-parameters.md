@@ -127,8 +127,13 @@ sets how strict the checks are (0 turns a check off; each spin box then reads
 *off*):
 
 - **Tracking check** (default **1.0**; config `[matching].temporal_gate_znssd`)
-  — every tracked point must still correlate with its frame-1 subset, compared
-  with the subset deformed by the local strain. The value is a correlation
+  — every tracked point must still correlate with its subset in the reference
+  frame it was tracked from, compared with the subset deformed by the local
+  strain. In accumulative mode that is frame 1. In incremental mode each step is
+  checked against its own reference frame, so the small error each step adds
+  does not drop a point that is still being tracked, while a step that lost
+  the pattern still fails, together with the rest of that point's track. The
+  value is a correlation
   mismatch (ZNSSD: 0 = identical, 1.0 = correlation 0.5, 4 = worst). Points
   below 60 % of the value always pass; points up to the value pass only when
   their neighbours move consistently with them; the rest are dropped. Raise it

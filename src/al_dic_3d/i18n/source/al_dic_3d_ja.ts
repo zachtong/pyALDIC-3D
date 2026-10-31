@@ -109,13 +109,13 @@ must cover the largest per-frame motion by itself.</source>
     <message>
         <location filename="../../gui/widgets/advanced_section.py" line="107"/>
         <source>Tracking check: every tracked point must still look like its
-frame-1 subset (correlation mismatch, 0 = perfect, 4 = worst).
+reference-frame subset (correlation mismatch, 0 = perfect, 4 = worst).
 Points below 60 % of this value always pass; points up to it
 pass when their neighbours agree; the rest are dropped as
 failed tracks. Default 1.0 (correlation 0.5). Raise it (e.g.
 1.5) for very large strains, lower it for stricter results;
 0 turns the check off.</source>
-        <translation>追跡チェック：追跡した各点は、フレーム 1 のサブセットと
+        <translation>追跡チェック：追跡した各点は、参照フレームのサブセットと
 まだ似ている必要があります（相関の不一致、0 = 完全、4 = 最悪）。
 この値の 60% 未満の点は常に合格、この値までの点は
 近傍と一致すれば合格、それ以外は追跡失敗として除外します。
@@ -1620,7 +1620,7 @@ for every frame.</source>
 <context>
     <name>ImageCanvas3D</name>
     <message>
-        <location filename="../../gui/widgets/image_view.py" line="762"/>
+        <location filename="../../gui/widgets/image_view.py" line="763"/>
         <source>The three points are nearly in a line — spread them around the edge</source>
         <translation>3 点がほぼ一直線上にあります — 円周に沿って離して選んでください</translation>
     </message>
@@ -3754,8 +3754,8 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="62"/>
-        <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
-        <translation>カメラ {0}: 有効性ゲートが {1} 個のノードフレームを除外 (第 1 フレームとの相関検証に失敗)</translation>
+        <source>Camera {0}: validity gate removed {1} node-frames (correlation with the reference frame failed)</source>
+        <translation>カメラ {0}: 有効性ゲートが {1} 個のノードフレームを除外 (参照フレームとの相関検証に失敗)</translation>
     </message>
     <message>
         <location filename="../../gui/panels/run_summary.py" line="67"/>
@@ -3793,47 +3793,47 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
         <translation>有効率がフレーム 1 の {0}% から {1}% に下がりました：すべてのフレームをフレーム 1 と比べる追跡は大変形に追従できません。ワークフロー種別 &gt; 逐次式 を試してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="122"/>
-        <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
-        <translation>有効率がフレーム 1 の {0}% から {1}% に下がりました：参照フレームの更新ごとにわずかな追跡誤差が生じ、長い系列ではそれが積み重なります。更新回数を減らす（参照フレーム更新 &gt; N フレームごと、例：10）か、ワークフロー種別 &gt; 累積式 を試してください。</translation>
+        <location filename="../../gui/panels/run_summary.py" line="121"/>
+        <source>Validity falls from {0}% (frame 1) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
+        <translation>有効率がフレーム 1 の {0}% から {1}% に下がりました：参照フレーム間の動きが大きすぎて追跡できません。参照フレームを毎フレーム更新してください（参照フレーム更新 &gt; 毎フレーム）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="128"/>
+        <location filename="../../gui/panels/run_summary.py" line="127"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>有効率がフレーム 1 の {0}% から {1}% に下がりました：試験中に有効領域が変わる場合（き裂、破断）は、フレームごとのマスクを読み込んでください（関心領域）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="134"/>
+        <location filename="../../gui/panels/run_summary.py" line="133"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>どのフレームにも有効な点がありません — 実行結果は空です。ROI・マスク・シード設定を確認してください (詳細は上記)。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="142"/>
+        <location filename="../../gui/panels/run_summary.py" line="141"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>解析完了 — {0} フレーム、有効率の中央値 {1}%、{2} フレームが {3}% 未満 (上記参照)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="153"/>
+        <location filename="../../gui/panels/run_summary.py" line="152"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>解析が完了しました：{0} フレーム、有効率の中央値 {1}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="177"/>
+        <location filename="../../gui/panels/run_summary.py" line="176"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>ステレオチェックで、左右の相関が弱い（ZNSSD が {1} を超える）{0} 個の対応と、エピポーラ距離が {3} px を超える {2} 個の対応を除外しました。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="190"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>フレーム 1 のステレオ対応はエピポーラ線から中央値 {0} px 離れています：キャリブレーションがこれらの画像と合っていない可能性があります（カメラが動いた、ファイルの取り違え、左右の入れ替わり）。キャリブレーションを確認するかやり直してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="199"/>
+        <location filename="../../gui/panels/run_summary.py" line="198"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>フレーム 1 の多くのステレオ対応がエピポーラ線から外れています：キャリブレーションがこれらの画像と合っていない可能性があります（カメラが動いた、ファイルの取り違え、左右の入れ替わり）。キャリブレーションを確認するかやり直してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="207"/>
+        <location filename="../../gui/panels/run_summary.py" line="206"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>粗い面や大きく傾いた面では、正しいステレオ対応でも相関が弱くなることがあります。点が欠ける場合は、詳細設定 &gt; 結果のチェック &gt; ステレオチェック を上げてください（例：1.0）。</translation>
     </message>

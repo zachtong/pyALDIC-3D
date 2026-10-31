@@ -29,8 +29,8 @@ A **Reference Update** sub-section appears **only when Tracking Mode =
 Incremental**. It controls when the rolling reference refreshes:
 
 - **Every Frame** (default) — the reference resets every frame, so each match
-  only has to follow one frame's motion. Each reset, though, adds a small
-  tracking error, and over a long sequence these errors add up (see *Which
+  only has to follow one frame's motion: the most robust choice. Each reset adds
+  a small position error, and these add up over a long sequence (see *Which
   combination to pick?* below). Only frame 1 needs an ROI; each later reference
   frame reuses that outline unchanged, so if the specimen moves far beyond it,
   import per-frame masks (see [Region of interest](07-region-of-interest.md)).
@@ -102,21 +102,30 @@ memory. Results are identical either way. Config key
 | Experiment | Tracking | Reference Update |
 |------------|----------|------------------|
 | Small or moderate, smoothly loaded deformation | Accumulative | — |
-| Large cumulative strain | Accumulative first; Incremental if it loses points | Every N Frames |
-| Large rigid rotation | Incremental | Every N Frames |
+| Large cumulative strain | Incremental | Every Frame |
+| Large rigid rotation | Incremental | Every Frame |
 | Dynamic event / impact (large jumps between frames) | Incremental | Every Frame |
 | Quasi-static with known load steps | Incremental | Custom |
 
-**Start with Accumulative.** Each reference update adds a small tracking error
-(about a hundredth of a pixel), and the errors add up over a sequence.
-One example is a 136-frame tension test pulled to failure, with per-frame masks.
-Incremental + Every Frame lost most points by the end. Every 10 Frames did
-better. Accumulative kept 82 % of the points up to the fracture, and needed no
-Starting Point for it.
+The two modes trade robustness against accuracy:
 
-Switch to Incremental when accumulative validity collapses (the log says so).
-For long sequences, prefer **Every N Frames**. Keep **Every Frame** for short
-sequences, or for motion too large to correlate across several frames.
+- **Accumulative** compares every frame with frame 1, so no error accumulates.
+  Once the specimen has deformed or rotated too much to still look like frame 1,
+  points are lost.
+- **Incremental** compares each frame with the reference frame just before it,
+  so the pattern only has to survive one step. Each step adds a small position
+  error (about a hundredth of a pixel), which accumulates. The Tracking check
+  verifies each step against its own reference frame, so that error does not
+  remove points, but the positions drift by its sum.
+
+On a 136-frame tension test pulled to failure (notched specimen, per-frame
+masks), Incremental + Every Frame kept 98.6 % of the points on average and
+Accumulative 92 %. The points only Incremental kept were the most strained,
+where the specimen necks before the fracture (29 % strain against 14 %
+overall). By frame 132 the incremental positions had drifted 1.7 px (median)
+from the accumulative ones. For small and moderate deformation Accumulative is
+the more accurate choice. Switch to Incremental when accumulative validity collapses
+(the log says so).
 
 Incremental needs an ROI only on frame 1. Each later reference frame reuses
 that outline, so when the specimen moves far beyond it, add per-frame masks.

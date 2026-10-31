@@ -74,8 +74,10 @@ few points tells you *why*. Representative messages:
   or strongly inclined surface, so raise **Stereo check** (for example to 1.0).
   Mostly epipolar: the median distance of the links from their epipolar lines,
   with the hint that the calibration probably does not match the images.
-- *Camera L: validity gate removed N node-frames (correlation vs frame 1
-  failed)* — temporal correlation failures.
+- *Camera L: validity gate removed N node-frames (correlation with the
+  reference frame failed)* — temporal correlation failures (the reference frame
+  is frame 1 in accumulative mode, the frame each step was tracked from in
+  incremental mode).
 - *Frame k: only Z% of points valid* — a per-frame low-validity warning.
 - *Quality gate (ZNSSD) removed N positions* / *Reprojection gate removed N
   positions* / *3D outlier filter removed N positions* — each quality gate's
@@ -90,11 +92,11 @@ few points tells you *why*. Representative messages:
 - *Validity falls from X% (frame 1) to Y%: …* — the run kept most points at
   first and then lost them. In accumulative mode the message suggests the
   incremental mode (tracking every frame against frame 1 cannot follow large
-  deformation). In incremental mode with the reference updated every frame, or
-  with per-frame masks already imported, it suggests fewer reference updates
-  (**Every N Frames**) or **Accumulative**: each update adds a small tracking
-  error, and over a long sequence these errors add up. Otherwise (rare updates
-  and no per-frame masks) it suggests per-frame masks.
+  deformation). In incremental mode with rare reference updates (**Every N
+  Frames**, **Custom**) it suggests updating every frame: the motion between
+  reference frames was too large to track. With every-frame updates and no
+  per-frame masks it suggests per-frame masks (a valid region that changes,
+  such as a crack).
 - *Analysis complete — F frames, median validity Z%* — the success summary,
   with *K frame(s) below T% (see above)* when frames were flagged.
 
