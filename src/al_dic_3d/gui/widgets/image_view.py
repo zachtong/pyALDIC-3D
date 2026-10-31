@@ -14,8 +14,7 @@ erase), whose buffers and painting live in
 :class:`~al_dic_3d.gui.widgets.image_view_brush.BrushToolMixin` (mixed in here;
 split out for the 800-line file cap). Zoom: Fit / 100% / +/- and mouse wheel
 (anchor under mouse), clamped to [5 %, 4000 %]; pan with the right or middle
-mouse button, or hold Space for a hand-drag pan mode (G2.4). Qt view layer; no
-user-facing strings.
+mouse button, or hold Space for a hand-drag pan mode (G2.4).
 
 ``ImageView`` is kept as a thin alias for backward compatibility.
 """
@@ -195,6 +194,8 @@ class ImageCanvas3D(BrushToolMixin, QGraphicsView):
 
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        # 2D parity: a minimal-update pan QWidget.scroll()s the viewport, moving its child overlays.
+        self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -795,5 +796,4 @@ class ImageCanvas3D(BrushToolMixin, QGraphicsView):
         self._preview_items = []
 
 
-# Backward-compatible alias (earlier pages referenced ImageView).
-ImageView = ImageCanvas3D
+ImageView = ImageCanvas3D  # backward-compatible alias (earlier pages used ImageView)
