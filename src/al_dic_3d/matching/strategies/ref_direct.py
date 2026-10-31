@@ -30,7 +30,12 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceConfig,
     CorrespondenceSet,
 )
-from al_dic_3d.matching.diagnostics import frame_row, stereo_rows, temporal_rows
+from al_dic_3d.matching.diagnostics import (
+    frame_row,
+    no_stereo_links_message,
+    stereo_rows,
+    temporal_rows,
+)
 from al_dic_3d.matching.primitives import make_dicpara, match_points, prepare_reference
 from al_dic_3d.matching.stereo import (
     accept_field,
@@ -223,20 +228,30 @@ class RefDirectStrategy:
                     rig=rig,
                     band_px=search_band_px(cfg.stereo_band_px, cfg.stereo_epipolar_max_px),
                 )
+                stereo_stats: dict = {}
                 field, n_rz, n_re = accept_field(
                     field,
                     rig=rig,
                     znssd_max=cfg.stereo_znssd_max,
                     epipolar_max_px=cfg.stereo_epipolar_max_px,
+                    stats=stereo_stats,
                 )
                 m_k, znssd_k, valid_m = field.d, field.znssd, field.valid
-                diag += stereo_rows(field, note=stereo_note, rejected=(n_rz, n_re))
+                diag += stereo_rows(
+                    field,
+                    note=stereo_note,
+                    rejected=(n_rz, n_re),
+                    epipolar_median_px=stereo_stats.get("epipolar_median_px"),
+                )
                 if not valid_m.any():
                     raise RuntimeError(
-                        f"frame-1 stereo match found no valid correspondences "
-                        f"(0/{n_pts} candidates matched L1->R1; search_radius="
-                        f"{self.stereo_search}, disparity offset={stereo_offset}) — "
-                        f"check the seed point / disparity prior and stereo overlap."
+                        no_stereo_links_message(
+                            n_pts,
+                            self.stereo_search,
+                            stereo_offset,
+                            rejected=(n_rz, n_re),
+                            epipolar_median_px=stereo_stats.get("epipolar_median_px"),
+                        )
                     )
             else:
                 # Direct L1 -> R_k match at the reference nodes X_L, chain-seeded

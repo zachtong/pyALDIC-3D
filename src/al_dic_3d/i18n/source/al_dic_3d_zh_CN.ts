@@ -3747,69 +3747,89 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
         <translation>第 1 帧立体匹配：{0}/{1} 个点匹配成功（{2}%）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="61"/>
+        <location filename="../../gui/panels/run_summary.py" line="62"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>相机 {0}：有效性门控移除了 {1} 个节点帧（与第 1 帧的相关性校验失败）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="66"/>
+        <location filename="../../gui/panels/run_summary.py" line="67"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>第 {0} 帧：仅 {1}% 的点有效</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="73"/>
+        <location filename="../../gui/panels/run_summary.py" line="74"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>质量门控（ZNSSD）移除了 {0} 个位置</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="74"/>
+        <location filename="../../gui/panels/run_summary.py" line="75"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>重投影门控移除了 {0} 个位置</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="75"/>
+        <location filename="../../gui/panels/run_summary.py" line="76"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>3D 离群点过滤移除了 {0} 个位置</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <location filename="../../gui/panels/run_summary.py" line="91"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>相机 {0}：初始估计的搜索范围在 {1} 帧上不得不扩大（最大 {2} px），这会拖慢运行。若参考帧之间的运动确实这么大，请增大 参数 &gt; 时序搜索。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <location filename="../../gui/panels/run_summary.py" line="99"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>相机 {0}：初始估计的搜索范围在 {1} 帧上不得不扩大（最大 {2} px），这会拖慢运行。在增量模式下，这通常说明第 1 帧绘制的区域在之后的参考帧上已不再覆盖试件：请导入逐帧掩膜（感兴趣区域），或改用 工作流类型 &gt; 累积式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="114"/>
+        <location filename="../../gui/panels/run_summary.py" line="115"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>有效率从 {0}%（第 1 帧）降至 {1}%：每帧都与第 1 帧比较的跟踪无法跟随大变形。请尝试 工作流类型 &gt; 增量式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="121"/>
+        <location filename="../../gui/panels/run_summary.py" line="122"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>有效率从 {0}%（第 1 帧）降至 {1}%：每次参考帧更新都会带来少量跟踪误差，长序列中这些误差会累加。请减少更新次数（参考帧更新 &gt; 每 N 帧，例如 10），或改用 工作流类型 &gt; 累积式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="127"/>
+        <location filename="../../gui/panels/run_summary.py" line="128"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>有效率从 {0}%（第 1 帧）降至 {1}%：若试验中有效区域会变化（裂纹、断裂），请导入逐帧掩膜（感兴趣区域）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="133"/>
+        <location filename="../../gui/panels/run_summary.py" line="134"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>所有帧均无有效点——本次运行产生了空结果。请检查 ROI、掩膜与种子点设置（详见上方信息）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="141"/>
+        <location filename="../../gui/panels/run_summary.py" line="142"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>分析完成——共 {0} 帧，中位有效率 {1}%，{2} 帧低于 {3}%（见上方）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="152"/>
+        <location filename="../../gui/panels/run_summary.py" line="153"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>分析完成——共 {0} 帧，有效率中位数 {1}%</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="177"/>
+        <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
+        <translation>立体校验因左右相关性偏弱（ZNSSD 高于 {1}）移除了 {0} 个匹配，因极线距离（超过 {3} px）移除了 {2} 个。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
+        <translation>第 1 帧的立体匹配到其极线的距离中位数为 {0} px：标定很可能与这些图像不符（相机移动过、用错了文件，或左右相机颠倒）。请检查或重新标定。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="199"/>
+        <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
+        <translation>第 1 帧的许多立体匹配偏离其极线：标定很可能与这些图像不符（相机移动过、用错了文件，或左右相机颠倒）。请检查或重新标定。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="207"/>
+        <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
+        <translation>在粗糙或明显倾斜的表面上，正确的立体匹配也可能相关性偏弱。若缺点较多，请调高 高级 &gt; 结果校验 &gt; 立体校验（例如调到 1.0）。</translation>
     </message>
 </context>
 <context>

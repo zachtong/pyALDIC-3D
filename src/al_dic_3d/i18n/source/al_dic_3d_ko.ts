@@ -3755,69 +3755,89 @@ Green-Lagrange 변형률은 변하지 않지만,
         <translation>1번 프레임 스테레오 매칭: {0}/{1}개 점 매칭됨 ({2}%)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="61"/>
+        <location filename="../../gui/panels/run_summary.py" line="62"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>카메라 {0}: 유효성 게이트가 노드 프레임 {1}개를 제거함 (1번 프레임과의 상관 검증 실패)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="66"/>
+        <location filename="../../gui/panels/run_summary.py" line="67"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>프레임 {0}: 점의 {1}%만 유효</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="73"/>
+        <location filename="../../gui/panels/run_summary.py" line="74"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>품질 게이트(ZNSSD)가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="74"/>
+        <location filename="../../gui/panels/run_summary.py" line="75"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>재투영 게이트가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="75"/>
+        <location filename="../../gui/panels/run_summary.py" line="76"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>3D 이상치 필터가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <location filename="../../gui/panels/run_summary.py" line="91"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>카메라 {0}: 초기 추정 탐색 범위를 {1}개 프레임에서 넓혀야 했습니다(최대 {2} px). 실행이 느려집니다. 기준 프레임 사이의 움직임이 실제로 이만큼 크다면 매개변수 &gt; 시간 탐색을 늘리세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <location filename="../../gui/panels/run_summary.py" line="99"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>카메라 {0}: 초기 추정 탐색 범위를 {1}개 프레임에서 넓혀야 했습니다(최대 {2} px). 실행이 느려집니다. 증분형에서는 보통 프레임 1 영역이 이후 기준 프레임에서 시편을 더 이상 덮지 못한다는 뜻입니다: 프레임별 마스크를 가져오거나(관심 영역) 워크플로 유형 &gt; 누적형을 사용하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="114"/>
+        <location filename="../../gui/panels/run_summary.py" line="115"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 모든 프레임을 프레임 1과 비교하는 추적은 큰 변형을 따라가지 못합니다. 워크플로 유형 &gt; 증분형을 사용해 보세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="121"/>
+        <location filename="../../gui/panels/run_summary.py" line="122"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 기준 프레임을 갱신할 때마다 작은 추적 오차가 생기고, 긴 시퀀스에서는 이것이 누적됩니다. 갱신 횟수를 줄이거나(기준 프레임 갱신 &gt; N 프레임마다, 예: 10) 워크플로 유형 &gt; 누적형을 사용해 보세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="127"/>
+        <location filename="../../gui/panels/run_summary.py" line="128"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 시험 중 유효 영역이 바뀌면(균열, 파단) 프레임별 마스크를 가져오세요(관심 영역).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="133"/>
+        <location filename="../../gui/panels/run_summary.py" line="134"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>어느 프레임에도 유효한 점이 없습니다 — 실행 결과가 비어 있습니다. ROI, 마스크, 시드 설정을 확인하십시오(자세한 내용은 위 참조).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="141"/>
+        <location filename="../../gui/panels/run_summary.py" line="142"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>분석 완료 — 프레임 {0}개, 유효율 중앙값 {1}%, {2}개 프레임이 {3}% 미만 (위 참조)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="152"/>
+        <location filename="../../gui/panels/run_summary.py" line="153"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>분석 완료 — {0}프레임, 유효율 중앙값 {1}%</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="177"/>
+        <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
+        <translation>스테레오 검사가 좌우 상관이 약한(ZNSSD {1} 초과) 대응 {0}개와 에피폴라 거리({3} px 초과) 때문에 {2}개를 제거했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
+        <translation>프레임 1의 스테레오 대응이 에피폴라 선에서 중앙값 {0} px 떨어져 있습니다: 보정이 이 이미지와 맞지 않을 가능성이 큽니다(카메라 이동, 잘못된 파일, 좌우 뒤바뀜). 보정을 확인하거나 다시 하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="199"/>
+        <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
+        <translation>프레임 1의 많은 스테레오 대응이 에피폴라 선에서 벗어나 있습니다: 보정이 이 이미지와 맞지 않을 가능성이 큽니다(카메라 이동, 잘못된 파일, 좌우 뒤바뀜). 보정을 확인하거나 다시 하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="207"/>
+        <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
+        <translation>거칠거나 크게 기울어진 표면에서는 올바른 스테레오 대응도 상관이 약할 수 있습니다. 점이 빠진다면 고급 설정 &gt; 결과 검사 &gt; 스테레오 검사 값을 올리세요(예: 1.0).</translation>
     </message>
 </context>
 <context>

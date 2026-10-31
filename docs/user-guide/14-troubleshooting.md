@@ -47,9 +47,18 @@ order:
 ## Low match fraction / few valid points
 
 The log's *Frame-1 stereo match: X/Y points matched (Z%)* and per-frame validity
-lines localize the loss. Low stereo yield points at calibration (the epipolar
-check rejects links that disagree with it) or at a disparity that varies more
-than **Stereo Search** covers; placing a Starting Point helps. Temporal validity
+lines localize the loss. A low stereo yield has three usual causes, and the
+*Stereo check removed …* line tells them apart:
+
+- The links fail the **Stereo check** for weak left-right correlation: a rough
+  surface or a large stereo angle. Raise **Stereo check** (for example to 1.0).
+- The links fail the **Epipolar limit**, at a large median distance from their
+  epipolar lines: the calibration does not match the images. Check or redo it.
+  When no link survives, the run stops with that diagnosis.
+- Few links are found at all: the disparity varies more than **Stereo Search**
+  covers. Placing a Starting Point helps.
+
+Temporal validity
 that decays over frames points at motion exceeding the search / seed,
 decorrelation, or (for large deformation or rotation) the wrong tracking mode —
 switch to **Incremental** ([Workflow type](05-workflow-type.md)); the log

@@ -31,7 +31,11 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceConfig,
     CorrespondenceSet,
 )
-from al_dic_3d.matching.diagnostics import stereo_rows, temporal_rows
+from al_dic_3d.matching.diagnostics import (
+    no_stereo_links_message,
+    stereo_rows,
+    temporal_rows,
+)
 from al_dic_3d.matching.primitives import make_dicpara
 from al_dic_3d.matching.right_roi import right_camera_masks, rim_width
 from al_dic_3d.matching.stereo import accept_field, search_band_px, stereo_match_pair
@@ -304,20 +308,25 @@ class TrackBothStrategy:
         )
         # H4 (fix batch V): converged is not accepted — drop false locks by
         # correlation quality and epipolar consistency before anything is tracked.
+        stereo_stats: dict = {}
         disp, n_rej_z, n_rej_e = accept_field(
             disp,
             rig=rig,
             znssd_max=cfg.stereo_znssd_max,
             epipolar_max_px=cfg.stereo_epipolar_max_px,
+            stats=stereo_stats,
         )
         right_pts = disp.right_pts  # (n_pts, 2); NaN where the stereo link failed
         base_valid = disp.valid  # (n_pts,)
         if not base_valid.any():
             raise RuntimeError(
-                f"frame-1 stereo match found no valid correspondences "
-                f"(0/{n_pts} candidates matched L1->R1; search_radius="
-                f"{self.stereo_search}, disparity offset={stereo_offset}) — "
-                f"check the seed point / disparity prior and stereo overlap."
+                no_stereo_links_message(
+                    n_pts,
+                    self.stereo_search,
+                    stereo_offset,
+                    rejected=(n_rej_z, n_rej_e),
+                    epipolar_median_px=stereo_stats.get("epipolar_median_px"),
+                )
             )
 
         # (2) per-camera temporal tracks. The right camera runs on an
@@ -529,7 +538,12 @@ class TrackBothStrategy:
 
         # F3.1: per-stage failure accounting rides along with the result.
         diagnostics = (
-            *stereo_rows(disp, note=stereo_note, rejected=(n_rej_z, n_rej_e)),
+            *stereo_rows(
+                disp,
+                note=stereo_note,
+                rejected=(n_rej_z, n_rej_e),
+                epipolar_median_px=stereo_stats.get("epipolar_median_px"),
+            ),
             *temporal_rows("L", tf_L),
             *temporal_rows("R", tf_R),
         )

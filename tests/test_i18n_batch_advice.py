@@ -45,7 +45,9 @@ def test_translations_are_real_and_keep_placeholders():
     for locale, table in _batch().items():
         for source, text in table.items():
             assert text and text != source, (locale, source)
-            assert re.findall(r"\{\d\}", text) == re.findall(r"\{\d\}", source), (locale, source)
+            # Positional placeholders: every one exactly once, in any word order.
+            placeholders = sorted(re.findall(r"\{\d\}", text))
+            assert placeholders == sorted(re.findall(r"\{\d\}", source)), (locale, source)
 
 
 def test_the_advice_translates_at_runtime():

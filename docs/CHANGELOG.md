@@ -9,6 +9,25 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The run log explains the stereo check.** Links that the frame-1 stereo
+  check rejected were reported as *Camera stereo: validity gate removed N
+  node-frames (correlation vs frame 1 failed)*. That check compares the two
+  cameras, not a frame with frame 1, and the log never named the setting to
+  change. The log now gives a separate line for links rejected by weak
+  left-right correlation and for links rejected by epipolar distance. When
+  many fail the correlation check, it advises raising **Stereo check**: on a
+  rough surface seen at a 29° stereo angle, the default had removed 810 of 2008
+  correct links. When many lie off their epipolar lines, it reports their
+  median distance and says the calibration probably does not match the images.
+- **A run whose stereo links all fail the epipolar check names the
+  calibration.** It stopped with "check the seed point / disparity prior and
+  stereo overlap" even when every link had been found and then rejected for its
+  distance from the epipolar line. The error now gives the median distance
+  (17.6 px for a calibration off by 0.04°) and points at the calibration; when
+  weak correlation removed the links, it names **Stereo check** instead.
+
 ## [1.4.0] — 2026-10-30
 
 ### Added

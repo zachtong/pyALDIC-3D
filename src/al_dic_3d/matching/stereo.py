@@ -470,6 +470,7 @@ def accept_links(
     rig=None,
     znssd_max: float | None = STEREO_ZNSSD_MAX,
     epipolar_max_px: float | None = STEREO_EPIPOLAR_MAX_PX,
+    stats: dict | None = None,
 ) -> tuple[NDArray[np.bool_], int, int]:
     """Reject converged-but-wrong stereo links.
 
@@ -478,6 +479,12 @@ def accept_links(
     wide-baseline false lock lands far from the epipolar line. Returns
     ``(valid_new, n_rejected_znssd, n_rejected_epipolar)``; a threshold ``None``
     or ``<= 0`` disables that check, and the epipolar check needs ``rig``.
+
+    ``stats`` (optional, filled in place) receives ``epipolar_median_px``: the
+    median distance of the links that passed the correlation check from their
+    epipolar lines (needs ``rig``; measured even with the epipolar check off).
+    A calibration that does not match the images shows as a common offset of
+    every link, so the run log can name it (GitHub issue #1).
     """
     v = np.asarray(valid, dtype=bool).copy()
     n_z = n_e = 0
@@ -485,9 +492,13 @@ def accept_links(
         bad_z = v & ~(np.asarray(znssd, dtype=np.float64) <= float(znssd_max))
         n_z = int(bad_z.sum())
         v &= ~bad_z
-    if rig is not None and epipolar_max_px is not None and epipolar_max_px > 0 and v.any():
+    dist = None
+    if rig is not None and v.any():
         dist = np.full(v.shape[0], np.nan)
         dist[v] = epipolar_distance_px(rig, np.asarray(left_pts)[v], np.asarray(right_pts)[v])
+        if stats is not None and np.isfinite(dist).any():
+            stats["epipolar_median_px"] = float(np.nanmedian(dist))
+    if dist is not None and epipolar_max_px is not None and epipolar_max_px > 0:
         bad_e = v & ~(dist <= float(epipolar_max_px))
         n_e = int(bad_e.sum())
         v &= ~bad_e
@@ -500,6 +511,7 @@ def accept_field(
     rig=None,
     znssd_max: float | None = STEREO_ZNSSD_MAX,
     epipolar_max_px: float | None = STEREO_EPIPOLAR_MAX_PX,
+    stats: dict | None = None,
 ) -> tuple[DisparityField, int, int]:
     """:func:`accept_links` applied to a :class:`DisparityField` (NaNs the rejects)."""
     import dataclasses
@@ -513,6 +525,7 @@ def accept_field(
         rig=rig,
         znssd_max=znssd_max,
         epipolar_max_px=epipolar_max_px,
+        stats=stats,
     )
     if n_z == 0 and n_e == 0:
         return field, 0, 0

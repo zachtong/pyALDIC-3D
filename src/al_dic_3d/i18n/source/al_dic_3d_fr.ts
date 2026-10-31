@@ -3771,69 +3771,89 @@ n'en dépend pas ; le déplacement et les pentes ∂w/∂x, ∂w/∂y, si.</tran
         <translation>Appariement stéréo image 1 : {0}/{1} points appariés ({2} %)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="61"/>
+        <location filename="../../gui/panels/run_summary.py" line="62"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation vs frame 1 failed)</source>
         <translation>Caméra {0} : le contrôle de validité a supprimé {1} nœuds-images (corrélation avec l'image 1 échouée)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="66"/>
+        <location filename="../../gui/panels/run_summary.py" line="67"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>Image {0} : seulement {1} % de points valides</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="73"/>
+        <location filename="../../gui/panels/run_summary.py" line="74"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>Le contrôle qualité (ZNSSD) a supprimé {0} positions</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="74"/>
+        <location filename="../../gui/panels/run_summary.py" line="75"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>Le contrôle de reprojection a supprimé {0} positions</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="75"/>
+        <location filename="../../gui/panels/run_summary.py" line="76"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>Le filtre de points aberrants 3D a supprimé {0} positions</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="90"/>
+        <location filename="../../gui/panels/run_summary.py" line="91"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>Caméra {0} : la recherche de l'estimation initiale a dû être élargie sur {1} images (jusqu'à {2} px), ce qui ralentit le calcul. Si le mouvement entre images de référence est vraiment aussi grand, augmentez PARAMÈTRES &gt; Recherche temporelle.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="98"/>
+        <location filename="../../gui/panels/run_summary.py" line="99"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>Caméra {0} : la recherche de l'estimation initiale a dû être élargie sur {1} images (jusqu'à {2} px), ce qui ralentit le calcul. En mode incrémental, cela signifie généralement que la région de l'image 1 ne couvre plus l'éprouvette dans les images de référence suivantes : importez des masques par image (RÉGION D'INTÉRÊT) ou utilisez TYPE DE FLUX &gt; Cumulatif.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="114"/>
+        <location filename="../../gui/panels/run_summary.py" line="115"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>La validité chute de {0} % (image 1) à {1} % : comparer chaque image à l'image 1 ne suit pas les grandes déformations. Essayez TYPE DE FLUX &gt; Incrémental.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="121"/>
+        <location filename="../../gui/panels/run_summary.py" line="122"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: every reference update adds a small tracking error, and over a long sequence they add up. Try fewer updates (Reference Update &gt; Every N Frames, e.g. 10) or WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>La validité chute de {0} % (image 1) à {1} % : chaque mise à jour de la référence ajoute une petite erreur de suivi, et sur une longue séquence elles s'additionnent. Essayez moins de mises à jour (Mise à jour de la référence &gt; Toutes les N images, par ex. 10) ou TYPE DE FLUX &gt; Cumulatif.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="127"/>
+        <location filename="../../gui/panels/run_summary.py" line="128"/>
         <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>La validité chute de {0} % (image 1) à {1} % : si la région valide change pendant l'essai (fissures, rupture), importez des masques par image (RÉGION D'INTÉRÊT).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="133"/>
+        <location filename="../../gui/panels/run_summary.py" line="134"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Aucun point valide dans AUCUNE image — l'exécution a produit un résultat vide. Vérifiez la ROI, les masques et le point de départ (détails ci-dessus).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="141"/>
+        <location filename="../../gui/panels/run_summary.py" line="142"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse terminée — {0} images, validité médiane {1} %, {2} image(s) sous {3} % (voir ci-dessus)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="152"/>
+        <location filename="../../gui/panels/run_summary.py" line="153"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Analyse terminée — {0} images, validité médiane {1} %</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="177"/>
+        <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
+        <translation>Le contrôle stéréo a retiré {0} correspondances pour une corrélation gauche-droite faible (ZNSSD au-dessus de {1}) et {2} pour la distance épipolaire (au-dessus de {3} px).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
+        <translation>Les correspondances stéréo de l'image 1 sont à {0} px (médiane) de leurs droites épipolaires : l'étalonnage ne correspond probablement pas à ces images (caméra déplacée, mauvais fichier, ou gauche et droite inversées). Vérifiez ou refaites l'étalonnage.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="199"/>
+        <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
+        <translation>De nombreuses correspondances stéréo de l'image 1 s'écartent de leurs droites épipolaires : l'étalonnage ne correspond probablement pas à ces images (caméra déplacée, mauvais fichier, ou gauche et droite inversées). Vérifiez ou refaites l'étalonnage.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="207"/>
+        <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
+        <translation>Sur une surface rugueuse ou très inclinée, des correspondances stéréo correctes peuvent corréler faiblement. S'il manque des points, augmentez AVANCÉ &gt; Contrôles des résultats &gt; Contrôle stéréo (par exemple à 1.0).</translation>
     </message>
 </context>
 <context>

@@ -67,6 +67,13 @@ ledger. Every gate and every silent kill becomes a line, so a run that produces
 few points tells you *why*. Representative messages:
 
 - *Frame-1 stereo match: X/Y points matched (Z%)* — the initial stereo yield.
+- *Stereo check removed N links for weak left-right correlation … and M for
+  epipolar distance …* — links between the cameras that the **Stereo check**
+  and **Epipolar limit** rejected ([Parameters](08-parameters.md)). When they are
+  many, a second line names the likely cause. Mostly weak correlation: a rough
+  or strongly inclined surface, so raise **Stereo check** (for example to 1.0).
+  Mostly epipolar: the median distance of the links from their epipolar lines,
+  with the hint that the calibration probably does not match the images.
 - *Camera L: validity gate removed N node-frames (correlation vs frame 1
   failed)* — temporal correlation failures.
 - *Frame k: only Z% of points valid* — a per-frame low-validity warning.

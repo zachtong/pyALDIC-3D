@@ -81,6 +81,25 @@ def test_accept_links_rejects_poor_correlation_and_epipolar_outliers():
     assert (n_z, n_e) == (1, 1)
 
 
+def test_accept_links_reports_the_median_epipolar_residual():
+    # A calibration that does not match the images shows as a common offset of
+    # every link from its epipolar line; its median is reported even when the
+    # epipolar check itself is off.
+    rig = _rig()
+    pl, pr = _pairs(rig, 9)
+    pr = pr + np.array([0.0, 6.0])
+    expected = float(np.median(epipolar_distance_px(rig, pl, pr)))
+    for limit in (2.0, None):
+        stats: dict = {}
+        accept_links(
+            pl, pr, np.zeros(9), np.ones(9, bool), rig=rig, epipolar_max_px=limit, stats=stats
+        )
+        assert stats["epipolar_median_px"] == pytest.approx(expected)
+    stats = {}
+    accept_links(pl, pr, np.zeros(9), np.ones(9, bool), rig=None, stats=stats)
+    assert stats.get("epipolar_median_px") is None  # no rig, nothing to measure
+
+
 def test_thresholds_can_be_disabled():
     rig = _rig()
     pl, pr = _pairs(rig, 3)

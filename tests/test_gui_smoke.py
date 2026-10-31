@@ -492,6 +492,39 @@ def test_repeated_search_widening_is_explained_in_the_log(qapp, scene):
     win.close()
 
 
+def test_the_stereo_check_is_explained_in_the_log(qapp, scene):
+    # GitHub issue #1: the default stereo check removed 810 of 2008 correct links
+    # on a rough surface; the log called it "Camera stereo: validity gate ...
+    # (correlation vs frame 1 failed)" and did not name the threshold.
+    from dataclasses import replace
+
+    from al_dic_3d.matching.contracts import DisparityField
+    from al_dic_3d.matching.diagnostics import stereo_rows
+
+    win = _loaded_window(scene)
+    win.controller.run()
+    result = win.controller.state.result
+    n = 100
+    valid = np.zeros(n, dtype=bool)
+    valid[:45] = True
+    field = DisparityField(0, np.zeros((n, 2)), np.zeros((n, 2)), np.zeros(n), valid)
+    stereo = stereo_rows(field, rejected=(50, 1), epipolar_median_px=0.4)
+    rows = tuple(stereo) + tuple(
+        r for r in result.correspondence.diagnostics if r["cam"] != "stereo"
+    )
+    meta = dict(result.meta)
+    meta["run_params"] = dict(meta["run_params"], stereo_znssd_max=0.6, stereo_epipolar_max_px=2.0)
+    win.controller.state.result = replace(
+        result, correspondence=replace(result.correspondence, diagnostics=rows), meta=meta
+    )
+    win._right._on_done()
+    text = win._right._console.toPlainText()
+    assert "Camera stereo" not in text
+    assert "Stereo check removed 50 links" in text and "1 for epipolar distance" in text
+    assert "Stereo check (for example to 1.0)" in text
+    win.close()
+
+
 def test_empty_result_logs_error_and_shows_canvas_notice(qapp, scene):
     # F3.1 empty-result guard: all-NaN reconstruction -> explicit error line
     # in the log + a visible notice on the canvas, never silent nothing.

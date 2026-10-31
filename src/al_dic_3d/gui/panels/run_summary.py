@@ -53,6 +53,7 @@ class RunSummaryMixin:
                 ),
                 "warn" if frac < LOW_VALIDITY_FRAC else "info",
             )
+        self._log_stereo_check(s, meta.get("run_params") or {})
         for cam, n in sorted(s.gated_by_cam.items()):
             self._append_log(
                 self.tr(
@@ -153,4 +154,56 @@ class RunSummaryMixin:
                     s.n_frames, f"{s.median_valid_frac * 100:.0f}"
                 ),
                 "success",
+            )
+
+    def _log_stereo_check(self, s, run_params: dict) -> None:
+        """The frame-1 stereo check's removals and, when they are many, the cause.
+
+        GitHub issue #1: the check compares the two cameras, not frame k with
+        frame 1, and on a rough surface seen at a large stereo angle it removed
+        most of the correct links without naming the threshold; a calibration
+        that does not match the images shows as a large median epipolar residual.
+        """
+        from al_dic_3d.matching.diagnostics import stereo_check_advice
+        from al_dic_3d.matching.stereo import STEREO_EPIPOLAR_MAX_PX, STEREO_ZNSSD_MAX
+
+        zmax = float(run_params.get("stereo_znssd_max") or STEREO_ZNSSD_MAX)
+        emax = float(run_params.get("stereo_epipolar_max_px") or STEREO_EPIPOLAR_MAX_PX)
+        if s.stereo_rejected_znssd or s.stereo_rejected_epipolar:
+            self._append_log(
+                self.tr(
+                    "Stereo check removed {0} links for weak left-right correlation "
+                    "(ZNSSD above {1}) and {2} for epipolar distance (above {3} px)."
+                ).format(
+                    s.stereo_rejected_znssd, f"{zmax:g}", s.stereo_rejected_epipolar, f"{emax:g}"
+                ),
+                "info",
+            )
+        advice = stereo_check_advice(s, emax)
+        if advice == "calibration":
+            median = s.stereo_epipolar_median_px
+            text = (
+                self.tr(
+                    "The frame-1 stereo links lie a median {0} px from their epipolar "
+                    "lines: the calibration probably does not match these images (a "
+                    "camera moved, a wrong file, or left and right swapped). Check or "
+                    "redo the calibration."
+                ).format(f"{median:.1f}")
+                if median is not None
+                else self.tr(
+                    "Many frame-1 stereo links lie off their epipolar lines: the "
+                    "calibration probably does not match these images (a camera moved, "
+                    "a wrong file, or left and right swapped). Check or redo the "
+                    "calibration."
+                )
+            )
+            self._append_log(text, "warn")
+        elif advice == "raise_znssd":
+            self._append_log(
+                self.tr(
+                    "Correct stereo links can correlate weakly on a rough or strongly "
+                    "inclined surface. If points are missing, raise ADVANCED > Result "
+                    "checks > Stereo check (for example to 1.0)."
+                ),
+                "warn",
             )

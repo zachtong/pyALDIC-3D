@@ -136,7 +136,9 @@ sets how strict the checks are (0 turns a check off; each spin box then reads
   points correlate poorly; lower it for stricter results.
 - **Stereo check** (default **0.6**, correlation 0.7; config
   `[matching].stereo_znssd_max`) — the largest correlation mismatch a frame-1
-  left/right match may have.
+  left/right match may have. On a rough surface seen at a large stereo angle,
+  correct matches can correlate at about 0.7 and many fail the default; the run
+  log says so, and 1.0 (correlation 0.5) is a good starting value there.
 - **Epipolar limit** (default **2 px**; config
   `[matching].stereo_epipolar_max_px`) — how far a left/right match may lie from
   the line the calibration predicts. Raise it only for a poor calibration.

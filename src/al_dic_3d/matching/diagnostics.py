@@ -88,20 +88,72 @@ def stereo_rows(
     disp: DisparityField,
     note: str = "frame-1 stereo match",
     rejected: tuple[int, int] = (0, 0),
+    epipolar_median_px: float | None = None,
 ) -> list[dict]:
     """The cross-camera stereo match row (NCC seed + IC-GN reject count).
 
     ``rejected`` = ``(n_znssd, n_epipolar)`` links the acceptance check removed
-    after IC-GN converged (fix batch V); they count as the row's ``n_gated`` and
-    are named in the note so the log can say why the links were dropped.
+    after IC-GN converged (fix batch V); they count as the row's ``n_gated``, are
+    named in the note, and ride as ``n_znssd`` / ``n_epipolar`` so the summary
+    can say why the links were dropped. ``epipolar_median_px`` is the median
+    distance of the links from their epipolar lines (``stats`` of
+    :func:`al_dic_3d.matching.stereo.accept_links`): a calibration that does not
+    match the images shows there. A clean row keeps the plain schema.
     """
     n = int(disp.valid.shape[0])
     n_z, n_e = int(rejected[0]), int(rejected[1])
     if n_z or n_e:
         note = f"{note}; rejected {n_z} (ZNSSD) + {n_e} (epipolar)"
-    return [
-        frame_row(disp.frame_idx, "stereo", n, int(disp.valid.sum()), n_gated=n_z + n_e, note=note)
-    ]
+    n_valid = int(disp.valid.sum())
+    row = frame_row(disp.frame_idx, "stereo", n, n_valid, n_gated=n_z + n_e, note=note)
+    if n_z or n_e:
+        row = {**row, "n_znssd": n_z, "n_epipolar": n_e}
+    if epipolar_median_px is not None:
+        row = {**row, "epipolar_median_px": round(float(epipolar_median_px), 3)}
+    return [row]
+
+
+#: A stereo check that removes at least this share of the frame-1 links gets
+#: advice in the run log (a few rejected links are the check doing its job).
+STEREO_ADVICE_FRAC = 0.2
+
+
+def no_stereo_links_message(
+    n_pts: int,
+    search_radius: int,
+    offset,
+    rejected: tuple[int, int] = (0, 0),
+    epipolar_median_px: float | None = None,
+) -> str:
+    """The error for a frame-1 stereo match that kept no link, naming the cause.
+
+    It always said "check the seed point / disparity prior and stereo overlap",
+    also when every link was found and then rejected by the stereo check -- for
+    their distance from the epipolar line (a calibration that does not match the
+    images) or for weak left-right correlation (GitHub issue #1).
+    """
+    head = (
+        f"frame-1 stereo match found no valid correspondences "
+        f"(0/{n_pts} candidates matched L1->R1; search_radius={search_radius}, "
+        f"disparity offset={offset})"
+    )
+    n_z, n_e = int(rejected[0]), int(rejected[1])
+    if n_e and n_e >= n_z:
+        median = "" if epipolar_median_px is None else f", median {epipolar_median_px:.1f} px"
+        return (
+            f"{head} — the stereo check rejected {n_e} links for their distance from "
+            f"the epipolar line{median}: the calibration probably does not match these "
+            f"images (a camera moved, a wrong file, or left and right swapped); check "
+            f"or redo the calibration."
+        )
+    if n_z:
+        return (
+            f"{head} — the stereo check rejected {n_z} links for weak left-right "
+            f"correlation: if the surface correlates poorly between the two views, raise "
+            f"stereo_znssd_max (GUI: ADVANCED > Result checks > Stereo check); otherwise "
+            f"check the seed point / disparity prior and stereo overlap."
+        )
+    return f"{head} — check the seed point / disparity prior and stereo overlap."
 
 
 # --- post-run summary ---------------------------------------------------------
@@ -123,6 +175,13 @@ class RunSummary:
     # cam -> frames on which the engine widened its FFT search; widest search (px)
     fft_widened_by_cam: dict[str, int] = field(default_factory=dict)
     fft_max_search_px: int = 0
+    # Stereo check: links removed for weak left-right correlation / epipolar
+    # distance (all stereo rows), the frame-1 split, and the frame-1 median
+    # epipolar residual.
+    stereo_rejected_znssd: int = 0
+    stereo_rejected_epipolar: int = 0
+    stereo_epipolar_median_px: float | None = None
+    stereo_frame1_rejected: tuple[int, int] = (0, 0)
 
     def to_meta(self) -> dict:
         """Plain JSON-serializable dict for ``RunResult.meta['summary']``."""
@@ -138,6 +197,14 @@ class RunSummary:
             "gated_by_cam": {str(c): int(n) for c, n in self.gated_by_cam.items()},
             "fft_widened_by_cam": {str(c): int(n) for c, n in self.fft_widened_by_cam.items()},
             "fft_max_search_px": int(self.fft_max_search_px),
+            "stereo_rejected_znssd": int(self.stereo_rejected_znssd),
+            "stereo_rejected_epipolar": int(self.stereo_rejected_epipolar),
+            "stereo_epipolar_median_px": (
+                None
+                if self.stereo_epipolar_median_px is None
+                else round(float(self.stereo_epipolar_median_px), 3)
+            ),
+            "stereo_frame1_rejected": [int(n) for n in self.stereo_frame1_rejected],
         }
 
 
@@ -171,9 +238,15 @@ def summarize_run(
     gated: dict[str, int] = {}
     widened: dict[str, int] = {}
     max_search = 0
+    rej_z = rej_e = 0
     for r in rows:
         cam = str(r.get("cam", "?"))
-        if int(r.get("n_gated", 0)):
+        if cam == "stereo":
+            # The stereo check compares the two cameras, not frame k with frame 1:
+            # it is reported on its own line, never as a temporal gate.
+            rej_z += int(r.get("n_znssd", 0))
+            rej_e += int(r.get("n_epipolar", 0))
+        elif int(r.get("n_gated", 0)):
             gated[cam] = gated.get(cam, 0) + int(r["n_gated"])
         if int(r.get("search_px", 0)):
             widened[cam] = widened.get(cam, 0) + 1
@@ -197,7 +270,42 @@ def summarize_run(
         gated_by_cam=gated,
         fft_widened_by_cam=widened,
         fft_max_search_px=max_search,
+        stereo_rejected_znssd=rej_z,
+        stereo_rejected_epipolar=rej_e,
+        stereo_epipolar_median_px=(
+            None
+            if stereo is None or stereo.get("epipolar_median_px") is None
+            else float(stereo["epipolar_median_px"])
+        ),
+        stereo_frame1_rejected=(
+            (0, 0)
+            if stereo is None
+            else (int(stereo.get("n_znssd", 0)), int(stereo.get("n_epipolar", 0)))
+        ),
     )
+
+
+def stereo_check_advice(summary: RunSummary, epipolar_max_px: float = 2.0) -> str | None:
+    """``"calibration"`` / ``"raise_znssd"`` when the frame-1 stereo check removed a lot.
+
+    * ``"calibration"``: at least :data:`STEREO_ADVICE_FRAC` of the converged
+      frame-1 links were off their epipolar line, or the median residual alone
+      exceeds the limit -- the calibration does not match the images (the issue
+      #1 reporter's first calibration put every link 17.6 px off its line);
+    * ``"raise_znssd"``: at least that share failed the correlation check -- on a
+      rough surface seen at a large stereo angle correct links correlate at
+      ZNCC ~0.7, and the default check (ZNSSD 0.6) removed 810 of 2008.
+    """
+    n_z, n_e = summary.stereo_frame1_rejected
+    converged = (summary.stereo_n_valid or 0) + n_z + n_e
+    if converged <= 0:
+        return None
+    median = summary.stereo_epipolar_median_px
+    if n_e >= STEREO_ADVICE_FRAC * converged or (median is not None and median > epipolar_max_px):
+        return "calibration"
+    if n_z >= STEREO_ADVICE_FRAC * converged:
+        return "raise_znssd"
+    return None
 
 
 def widening_advice(summary: RunSummary) -> dict[str, int]:
@@ -310,6 +418,40 @@ def summary_lines(
             if n:
                 lines.append(("info", f"{label} removed {n} positions"))
     run_params = (stopped or {}).get("run_params") or {}
+    if summary.stereo_rejected_znssd or summary.stereo_rejected_epipolar:
+        zmax = run_params.get("stereo_znssd_max")
+        emax = run_params.get("stereo_epipolar_max_px")
+        z_part = "" if zmax is None else f" (ZNSSD > {zmax:g})"
+        e_part = "" if emax is None else f" (> {emax:g} px)"
+        text = (
+            f"stereo check removed {summary.stereo_rejected_znssd} links for weak "
+            f"left-right correlation{z_part} and {summary.stereo_rejected_epipolar} "
+            f"for epipolar distance{e_part}"
+        )
+        if summary.stereo_epipolar_median_px is not None:
+            text += f"; median epipolar residual {summary.stereo_epipolar_median_px:.1f} px"
+        lines.append(("info", text))
+    advice = stereo_check_advice(summary, float(run_params.get("stereo_epipolar_max_px") or 2.0))
+    if advice == "calibration":
+        median = summary.stereo_epipolar_median_px
+        where = "" if median is None else f" a median {median:.1f} px"
+        lines.append(
+            (
+                "warning",
+                f"the frame-1 stereo links lie{where} from their epipolar lines: the "
+                f"calibration probably does not match these images (a camera moved, a "
+                f"wrong file, or left and right swapped) — check or redo the calibration",
+            )
+        )
+    elif advice == "raise_znssd":
+        lines.append(
+            (
+                "warning",
+                "correct stereo links can correlate weakly on a rough or strongly inclined "
+                "surface: if points are missing, raise [matching] stereo_znssd_max "
+                "(e.g. 1.0; GUI: ADVANCED > Result checks > Stereo check)",
+            )
+        )
     for cam, n in widening_advice(summary).items():
         head = (
             f"camera {cam}: the initial-guess search had to widen on {n} frames "
