@@ -206,7 +206,7 @@ are lazy, so the compute path never needs a display.
 | **GUI** | <mark>**Built-in desktop**</mark> | Built-in (MATLAB)¹ | Script-driven¹ | Built-in desktop (basic cases)³ | Built-in desktop | Built-in desktop | Built-in (MATLAB)¹ |
 | **Platform** | <mark>**Windows, macOS, Linux**</mark> | MATLAB R2024a+¹ | Windows (only OS tested)¹ | Windows, macOS, Linux | Windows only | Windows only | MATLAB¹ |
 | **Cost / licence** | <mark>**Free · BSD-3 · no MATLAB**</mark> | Free · MIT¹ | Free · Apache-2.0¹ | Free · BSD-3 | Commercial | Commercial | Free · BSD-3¹ |
-| **Latest release**² | <mark>**v1.3.0 (2026)**</mark> | No tagged release | v1.1.0 (2021) | v3.0-beta.8 (2023) | VIC-3D 11 | MatchID 2026.2 | v1.2.2 (2017) |
+| **Latest release**² | <mark>**v1.4.0 (2026)**</mark> | No tagged release | v1.1.0 (2021) | v3.0-beta.8 (2023) | VIC-3D 11 | MatchID 2026.2 | v1.2.2 (2017) |
 | **UI languages** | <mark>**8**</mark> | Not documented | Not documented | Not documented | Not documented | Not documented | Not documented |
 | **Cameras** | 2 (N-camera post-v1) | 2 | **Up to 12+** | ≤ 10 in code, no documented workflow³ | **Up to 16** | **Vendor: no limit** | n/a |
 
@@ -291,7 +291,7 @@ pip install al-dic-3d
 ```
 
 **Windows, no Python:** a self-contained installer
-(`pyALDIC-3D-1.3.0-win64-setup.exe`, ~197 MB — Python, Qt, VTK and all
+(`pyALDIC-3D-1.4.0-win64-setup.exe`, ~197 MB — Python, Qt, VTK and all
 dependencies bundled) is attached to the
 [latest release](https://github.com/zachtong/pyALDIC-3D/releases/latest).
 It installs per-user (no admin prompt) and registers `.aldic3d` files.
@@ -512,7 +512,7 @@ repository"* button from it), every version is archived on Zenodo under the conc
              pyALDIC platform},
   year    = {2026},
   url     = {https://github.com/zachtong/pyALDIC-3D},
-  version = {1.3.0},
+  version = {1.4.0},
   doi     = {10.5281/zenodo.21696564}
 }
 ```

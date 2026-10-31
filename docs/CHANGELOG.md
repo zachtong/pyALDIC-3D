@@ -9,6 +9,8 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-10-30
+
 ### Added
 
 - **Rigid-body motion can be removed from the results** (Strain window, RIGID
@@ -538,7 +540,8 @@ as a Windows installer on the GitHub release, and archived on Zenodo
   without Python: a per-user install that needs no administrator rights. It is
   not code-signed, so SmartScreen asks for confirmation on first run.
 
-[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.1.0...v1.2.0
