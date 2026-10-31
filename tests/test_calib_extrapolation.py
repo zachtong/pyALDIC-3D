@@ -101,6 +101,20 @@ def test_thresholds_are_overridable():
     assert EXTRAPOLATION_UNDETERMINED not in [f.code for f in lax.findings]
 
 
+@pytest.fixture
+def single_thread_opencv():
+    """OpenCV's camera calibration sums in parallel, so two identical solves differ
+    in the last digits: up to 1e-7 relative here, 2.6e-6 on a CI runner (which
+    failed the 1e-6 comparison below once). On one thread they are bit-identical."""
+    import cv2
+
+    n_threads = cv2.getNumThreads()
+    cv2.setNumThreads(1)
+    yield
+    cv2.setNumThreads(n_threads)
+
+
+@pytest.mark.usefixtures("single_thread_opencv")
 def test_the_user_choice_of_k3_does_not_change_what_is_compared():
     dets = _dets(_central_poses())
     free = diagnose_camera("L", CAM, dets, SIZE, fix_k3=False).camera_diagnostics
