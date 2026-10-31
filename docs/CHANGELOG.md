@@ -9,6 +9,14 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+## [1.4.1] — 2026-10-31
+
+Incremental runs keep their points: on a notched specimen pulled to failure
+they now hold 98.6 % of the points on average, against 63 % in 1.4.0. The run
+log also says what the stereo check rejected and when the calibration does not
+match the images, which came out of
+[#1](https://github.com/zachtong/pyALDIC-3D/issues/1).
+
 ### Changed
 
 - **al-dic 1.0.4 or newer is required** (was 0.7.2), and the Windows installer
@@ -66,6 +74,10 @@ GitHub release notes for a tag are this file's section for that version.
   distance from the epipolar line. The error now gives the median distance
   (17.6 px for a calibration off by 0.04°) and points at the calibration; when
   weak correlation removed the links, it names **Stereo check** instead.
+- **The 3D outlier filter no longer prints "All-NaN slice encountered"**
+  warnings. With **Extra filters** on, a point whose neighbours were all invalid
+  triggered the warning on every run. Such points still stay valid, and results
+  are unchanged.
 
 ## [1.4.0] — 2026-10-30
 
@@ -598,7 +610,8 @@ as a Windows installer on the GitHub release, and archived on Zenodo
   without Python: a per-user install that needs no administrator rights. It is
   not code-signed, so SmartScreen asks for confirmation on first run.
 
-[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.0...v1.2.1
