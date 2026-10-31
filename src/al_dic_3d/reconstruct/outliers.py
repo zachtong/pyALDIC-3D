@@ -92,10 +92,17 @@ def remove_3d_outliers(
         for k in range(n_frames):
             d = rec.displacement[k]  # (n_pts, 3)
             d_nbr = d[nbr]  # (n_pts, k, 3), NaN where a neighbour is invalid
-            if np.isnan(d_nbr).all():
+            # Points with no valid neighbour have nothing to compare with: they
+            # keep NaN statistics (never outliers) and nanmedian never sees an
+            # all-NaN slice (its RuntimeWarning was printed on real runs).
+            has_nbr = np.isfinite(d_nbr).any(axis=1).all(axis=1)  # (n_pts,)
+            if not has_nbr.any():
                 continue
-            med = np.nanmedian(d_nbr, axis=1)  # (n_pts, 3)
-            mad = np.nanmedian(np.abs(d_nbr - med[:, None, :]), axis=1)  # (n_pts, 3)
+            med = np.full((n_pts, 3), np.nan)
+            mad = np.full((n_pts, 3), np.nan)
+            sub = d_nbr[has_nbr]
+            med[has_nbr] = np.nanmedian(sub, axis=1)
+            mad[has_nbr] = np.nanmedian(np.abs(sub - med[has_nbr][:, None, :]), axis=1)
             resid = np.abs(d - med) / (mad + eps)
             outlier = np.isfinite(d).all(axis=1) & (resid > threshold).any(axis=1)
             points[k, outlier] = np.nan

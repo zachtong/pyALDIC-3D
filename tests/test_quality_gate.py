@@ -83,6 +83,27 @@ def test_remove_3d_outliers_flags_spike_keeps_inliers():
     assert int((cleaned.source[1] == INVALID).sum()) == 1
 
 
+def test_an_isolated_point_keeps_quiet_and_valid():
+    """A point whose neighbours are all invalid has no neighbourhood to compare
+    with: it is kept, and numpy's "All-NaN slice encountered" RuntimeWarning
+    (printed on every run of a real dataset with Extra filters on) is gone."""
+    import warnings
+
+    xs, ys = np.meshgrid(np.arange(6), np.arange(6))
+    ref = np.column_stack([xs.ravel(), ys.ravel()]).astype(np.float64) * 10.0
+    n = ref.shape[0]
+    P1 = np.column_stack([ref, np.full(n, 100.0)])
+    points = np.stack([P1, P1 + np.array([0.1, 0.0, 0.2])])
+    lonely = 0  # a corner node; its nearest neighbours are made invalid below
+    nbrs = np.argsort(np.linalg.norm(ref - ref[lonely], axis=1))[1:9]
+    points[1, nbrs] = np.nan
+    rec = _recon(points, np.zeros((2, n)))
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        cleaned = remove_3d_outliers(rec, ref, k_neighbors=8)
+    assert cleaned.source[1, lonely] == TRACKED and np.isfinite(cleaned.points[1, lonely]).all()
+
+
 def test_quality_gate_preserves_clean_dataset(tmp_path):
     cv2 = pytest.importorskip("cv2")  # noqa: F841
     from al_dic_3d.runner import load_config, run_pipeline
