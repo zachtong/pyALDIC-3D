@@ -78,9 +78,11 @@ the middle, run and display controls on the right.
 | Out-of-plane W (2nd–98th percentile) | 0 | 0.04 to 0.10 mm | −0.68 to +0.71 mm |
 | Principal strain ε₁ (median / 99th percentile) | 0 | 0.1% / 0.5% | 4.5% / 18.5% |
 
-The mesh has 6,372 points, of which 4,542 lie on the specimen. The few percent
-that are not valid sit along the outer edge and the cut-out, where a subset
-reaches past the material. They are left empty rather than filled with guesses.
+The mesh has 6,490 points, of which 4,542 lie on the specimen. It spans the
+specimen's bounding box and, since the masks move, the ground the specimen
+covers in the later frames. The few percent of specimen points that are not
+valid sit along the outer edge and the cut-out, where a subset reaches past the
+material. They are left empty rather than filled with guesses.
 The specimen surface is 375–393 mm from the left camera.
 
 ## Option B: the command line
@@ -115,7 +117,7 @@ of the parameters. To read the results in Python:
 import numpy as np
 
 d = np.load("quickstart/results/d_specimen.npz")
-print(d["points3D"].shape)          # (3, 6372, 3): frames x points x (X, Y, Z) in mm
+print(d["points3D"].shape)          # (3, 6490, 3): frames x points x (X, Y, Z) in mm
 w = d["W"][2]                       # out-of-plane displacement on frame 3, mm
 print(np.nanpercentile(w, [2, 98])) # about [-0.68, 0.71]
 ```

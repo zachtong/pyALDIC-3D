@@ -46,13 +46,13 @@ dependencies = [
     # (OpenCV's docs: install exactly one). 4.x and 5.x are both supported —
     # calibration/geometry.py picks undistortPointsIter on 4.x.
     "opencv-python>=4.7",
-    # pyALDIC-2D consumed as a READ-ONLY library (decision D11), bounded to the
-    # versions the suite is verified against: 0.7.2 (first with partial
-    # results) through 1.0.x (the full suite passes on 0.7.2, 0.8.0, 0.9.0,
-    # 0.10.0 and 1.0.3). During development an editable install of the sibling
-    # repo satisfies the same range:
+    # pyALDIC-2D consumed as a READ-ONLY library (decision D11). 1.0.4 is the
+    # floor: from it an external mesh is trimmed from its untrimmed copy at
+    # every reference frame, so incremental runs with per-frame masks no longer
+    # lose the cells an earlier, narrower mask removed. During development an
+    # editable install of the sibling repo satisfies the same range:
     #     pip install -e ../pyALDIC
-    "al-dic>=0.7.2,<1.1",
+    "al-dic>=1.0.4,<1.1",
     # Imported directly by this package (not only through al-dic).
     "matplotlib>=3.6",   # export/colorbar.py, viz3d/fieldmap.py, calibration/printout.py
     "numba>=0.57",       # strain3d/kernels.py

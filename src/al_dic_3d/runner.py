@@ -504,7 +504,21 @@ def run_pipeline(
     if progress is not None:
         progress(0.0, "Setup: checking the sequence and building the reference mesh")
     seq.validate()
-    mesh_L = _build_reference_mesh(cfg, img_h, img_w, masks.get(cfg.cam_left))
+    # Per-frame masks can move with the specimen: an incremental run gets a
+    # grid covering every reference mask (by whole steps; frame-1 nodes stay).
+    from al_dic_3d.matching.mesh_cover import reference_cover_roi, reference_frames
+
+    mesh_roi = reference_cover_roi(
+        cfg.roi,
+        left_masks if cfg.left_masks is not None else None,
+        reference_frames(mask_mode, n_frames, mask_schedule),
+        step=cfg.winstepsize,
+        winsize=cfg.winsize,
+        img_shape=(img_h, img_w),
+    )
+    mesh_L = _build_reference_mesh(
+        replace(cfg, roi=mesh_roi), img_h, img_w, masks.get(cfg.cam_left)
+    )
 
     # Fail-fast RAM pre-check (P1.4) BEFORE any stack touches memory: project
     # the run's peak from the sequence geometry and refuse runs that would

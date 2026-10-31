@@ -107,7 +107,7 @@ jobs:
           - bound: lower
             # The oldest al-dic in range, and the OpenCV 4.x line
             # (calibration/geometry.py has a 4.x code path).
-            pins: '"al-dic==0.7.2" "opencv-python>=4.7,<5"'
+            pins: '"al-dic==1.0.4" "opencv-python>=4.7,<5"'
           - bound: upper
             # The newest al-dic minor the range admits.
             pins: '"al-dic>=1.0,<1.1"'

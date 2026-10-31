@@ -26,7 +26,8 @@ def test_quickstart_config_reproduces_the_readme_figures():
     result = run_pipeline(load_config(QUICKSTART / "config.toml"))
 
     assert result.reconstruction.n_frames == 3
-    assert result.ref_coords.shape[0] == 6372  # README: 6,372 mesh points ...
+    # README: 6,490 mesh points (the grid covers every reference frame's mask) ...
+    assert result.ref_coords.shape[0] == 6490
     assert result.meta["n_pts_in_roi"] == 4542  # ... 4,542 on the specimen
     valid = result.meta["summary"]["valid_frac"]
     assert min(valid) > 0.93, valid  # README: 97.3 / 97.1 / 96.4 %

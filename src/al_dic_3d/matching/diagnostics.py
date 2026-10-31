@@ -341,10 +341,8 @@ def collapse_advice(
     * accumulative -> the incremental mode;
     * incremental with a reference update every frame, or with per-frame masks
       already given -> fewer updates (or accumulative): each update adds a small
-      tracking error that sums over the sequence, and with per-frame masks the
-      engine drops the mesh cells outside each new reference's mask for good
-      (a notched specimen pulled to failure, 136 frames: every frame + masks
-      kept 21 % of the points at the end, accumulative 82 %);
+      tracking error (~0.01 px on a notched specimen pulled to failure) that
+      sums over a long sequence;
     * incremental with rare updates and no per-frame masks -> per-frame masks
       (a valid region that changes, e.g. a crack).
 

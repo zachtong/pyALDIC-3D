@@ -118,10 +118,9 @@ Switch to Incremental when accumulative validity collapses (the log says so).
 For long sequences, prefer **Every N Frames**. Keep **Every Frame** for short
 sequences, or for motion too large to correlate across several frames.
 
-With per-frame masks, update the reference rarely. At each update, the mesh
-cells outside that frame's mask are dropped, and the current al-dic engine
-does not restore them at later updates. Incremental needs an ROI only on
-frame 1. Each later reference frame reuses that outline, so when the
-specimen moves far beyond it, add per-frame masks.
+Incremental needs an ROI only on frame 1. Each later reference frame reuses
+that outline, so when the specimen moves far beyond it, add per-frame masks.
+The analysis grid then covers every reference frame's mask, so material that
+moves past the frame-1 outline keeps being tracked.
 
 Next: [Initial guess & Starting Points →](06-initial-guess.md)

@@ -36,6 +36,7 @@ from al_dic_3d.matching.diagnostics import (
     stereo_rows,
     temporal_rows,
 )
+from al_dic_3d.matching.mesh_cover import reference_frames, right_cover_roi
 from al_dic_3d.matching.primitives import make_dicpara
 from al_dic_3d.matching.right_roi import right_camera_masks, rim_width
 from al_dic_3d.matching.stereo import accept_field, search_band_px, stereo_match_pair
@@ -368,6 +369,19 @@ class TrackBothStrategy:
         )
         if right_note:
             setup_note(progress, f"Setup: {right_note}")
+        # Reference masks that move with the specimen: the grid covers them all.
+        roi_R = right_cover_roi(
+            roi_R,
+            right_masks=seq.masks.get("R"),
+            left_masks=seq.masks.get("L"),
+            left_pts=coords_L,
+            right_pts=right_pts,
+            refs=reference_frames(cfg.reference_mode, seq.n_frames, cfg.schedule_R),
+            step=self.winstepsize,
+            winsize=self.winsize,
+            img_shape=(img_h, img_w),
+            rim_px=rim_width(self.winsize, self.winstepsize),
+        )
         para_R = make_dicpara(
             img_size=(img_h, img_w),
             roi=roi_R,

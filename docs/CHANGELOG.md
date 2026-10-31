@@ -9,8 +9,31 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+### Changed
+
+- **al-dic 1.0.4 or newer is required** (was 0.7.2), and the Windows installer
+  ships 1.0.4. That release trims the mesh pyALDIC-3D passes it from scratch at
+  every reference frame (see Fixed).
+
 ### Fixed
 
+- **Incremental runs with per-frame masks keep the material that moves past
+  the frame-1 outline.** There were two causes:
+  - Each reference frame trimmed the analysis mesh again from the previous
+    trim, so cells removed by an earlier, narrower mask never came back. The
+    2D engine fixed this in al-dic 1.0.4.
+  - The mesh covered only the frame-1 region, so material that a later
+    reference mask placed outside it had no cells to be tracked in. The mesh
+    now also covers every reference frame's mask. It grows by whole grid
+    steps, so the frame-1 points stay exactly where they were, and the extra
+    points outside the frame-1 mask are invalid from the start.
+
+  On a notched specimen pulled to failure (136 frames, a reference update
+  every frame), mean validity rose from 63 % to 76 % (frame 132: 1616 →
+  2445 of 7599 points). The remaining loss is the small error each reference
+  update adds. Accumulative or **Every N Frames** still suit long sequences
+  better. Runs without per-frame masks, and accumulative runs, keep the same
+  mesh as before.
 - **The run log explains the stereo check.** Links that the frame-1 stereo
   check rejected were reported as *Camera stereo: validity gate removed N
   node-frames (correlation vs frame 1 failed)*. That check compares the two
