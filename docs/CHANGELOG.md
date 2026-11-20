@@ -9,6 +9,22 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Strain no longer reads high along free edges when both cameras are
+  tracked.** The right camera is tracked on its own grid, and its motion is
+  then carried to each stereo point. A point near a free edge can lie up to one
+  node step past the right grid's last node, and it used to get that node's
+  motion unchanged. That drops the displacement gradient, so under large strain
+  the left and right positions disagreed by 1 to 4 px. The mismatch became a
+  depth error, and Green-Lagrange strain gained a ½(∂W/∂Y)² term, which is
+  never negative, along every edge, notch and hole. Those points now get a
+  local affine fit of the nearby right-camera nodes, which keeps the gradient
+  and is exact for a linear field. On a notched specimen pulled to failure,
+  that term fell from 0.071 to 0.006 within 4 px of the edge, the right camera's
+  edge error fell from 0.67 to 0.20 px (the left camera's is 0.22 px), and the
+  stripes along the notches and the hole are gone.
+
 ## [1.4.1] — 2026-10-31
 
 Incremental runs keep their points: on a notched specimen pulled to failure

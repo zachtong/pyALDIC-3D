@@ -494,9 +494,16 @@ class TrackBothStrategy:
         # Right-camera validity must survive the resampling (fix batch V): nodes
         # the honesty gate rejected are NaN in tf_R.u_accum and drop out of the
         # triangulation, so a triangle bridging a gated region has long edges —
-        # reject those, and never nearest-fill from further than one node step.
+        # reject those, and never fill from further than one node step.
         # Otherwise a failed right-camera region was re-filled from distant
         # nodes and shipped as TRACKED.
+        # The MOTION is filled by a local affine fit, not the nearest node: a
+        # stereo point near a free edge can lie up to one step past the right
+        # grid's last node, and copying that node's motion drops the gradient
+        # (error = strain x distance, 1-4 px at a strained notch root). The
+        # left/right mismatch became a depth error, and Green-Lagrange strain
+        # gained 0.5 (dW/dY)^2 >= 0 along every free edge. The ZNSSD score is
+        # a per-node quality, so it keeps the nearest fill.
         step_R = node_spacing(tf_R.ref_coords)
         cap_edge = 1.5 * step_R if np.isfinite(step_R) else None
         cap_fill = step_R if np.isfinite(step_R) else None
@@ -512,6 +519,7 @@ class TrackBothStrategy:
                     right_pts[valid_rp],
                     max_edge=cap_edge,
                     max_fill_dist=cap_fill,
+                    fill_method="affine",
                 )
             xr_k = right_pts + motion_r
 
