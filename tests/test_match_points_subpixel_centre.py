@@ -32,7 +32,7 @@ def _render(centres: np.ndarray, amps: np.ndarray, a: np.ndarray, t: np.ndarray)
     img = np.zeros((SIZE, SIZE))
     a_inv = np.linalg.inv(a)
     reach = int(np.ceil(5 * BLOB_RADIUS * np.abs(a).sum(1).max())) + 1
-    for c, amp in zip(centres, amps):
+    for c, amp in zip(centres, amps, strict=True):
         cx, cy = a @ c + t
         x0, x1 = max(0, int(cx) - reach), min(SIZE, int(cx) + reach + 1)
         y0, y1 = max(0, int(cy) - reach), min(SIZE, int(cy) + reach + 1)
