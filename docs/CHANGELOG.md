@@ -9,6 +9,12 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+## [1.4.2] — 2026-11-24
+
+Two accuracy fixes. Track Both no longer adds strain along free edges, notches
+and holes, and Stereo Each Frame no longer adds random out-of-plane scatter on
+every frame.
+
 ### Fixed
 
 - **Strain no longer reads high along free edges when both cameras are
@@ -36,8 +42,8 @@ GitHub release notes for a tag are this file's section for that version.
   match now evaluates the solved local warp at the exact position. On a
   synthetic curved specimen with known motion, the out-of-plane displacement
   scatter fell from 64 to 21 µm and the median 3D displacement error from 40 to
-  17 µm. Track Both and Reference Direct match at whole pixels and give the
-  same results as before.
+  17 µm. Track Both and Reference Direct match at whole pixels, so this fix
+  does not change them.
 
 ## [1.4.1] — 2026-10-31
 
@@ -640,7 +646,8 @@ as a Windows installer on the GitHub release, and archived on Zenodo
   without Python: a per-user install that needs no administrator rights. It is
   not code-signed, so SmartScreen asks for confirmation on first run.
 
-[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.2...HEAD
+[1.4.2]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.2.1...v1.3.0
