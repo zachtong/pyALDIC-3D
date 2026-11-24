@@ -24,6 +24,20 @@ GitHub release notes for a tag are this file's section for that version.
   that term fell from 0.071 to 0.006 within 4 px of the edge, the right camera's
   edge error fell from 0.67 to 0.20 px (the left camera's is 0.22 px), and the
   stripes along the notches and the hole are gone.
+- **Stereo Each Frame puts each right-camera point where its left point really
+  is.** This strategy matches the two cameras again at every frame, at left
+  positions that tracking gives to a fraction of a pixel. The match was solved
+  at the nearest whole pixel, and its result was then used for the exact
+  position. That leaves out how much the left-to-right mapping stretches over
+  the sub-pixel step, so every frame's right point was off by up to half a
+  pixel times that stretch (about 0.05 px, and up to 0.1 px where the two views
+  differ most). The error changes at random from point to point and from frame
+  to frame, so it showed up as scatter in the out-of-plane displacement. The
+  match now evaluates the solved local warp at the exact position. On a
+  synthetic curved specimen with known motion, the out-of-plane displacement
+  scatter fell from 64 to 21 µm and the median 3D displacement error from 40 to
+  17 µm. Track Both and Reference Direct match at whole pixels and give the
+  same results as before.
 
 ## [1.4.1] — 2026-10-31
 

@@ -168,12 +168,15 @@ def match_points(
             ``points`` and ``para`` (reused across deformed images).
 
     Returns:
-        ``(U (n,2), znssd (n,), valid (n,))``. Invalid points get ``NaN`` in ``U``
-        and ``znssd``; ``znssd`` is in ``[0, 4]`` (``0`` = perfect, ``2(1-ZNCC)``).
+        ``(U (n,2), znssd (n,), valid (n,))``. ``U`` is the motion of each query
+        point itself, also at non-integer points (see
+        :func:`_motion_at_points`). Invalid points get ``NaN`` in ``U`` and
+        ``znssd``; ``znssd`` is in ``[0, 4]`` (``0`` = perfect, ``2(1-ZNCC)``).
     """
     if reference is None:
         reference = prepare_reference(ref_img, points, para)
     ref, mask = reference.ref, reference.mask
+    pts = np.asarray(points, np.float64)
     dfm = np.ascontiguousarray(def_img, dtype=np.float64)
     u_2d, f_2d, conv_iter = local_icgn_solve_subset(
         reference.ctx, None, np.ascontiguousarray(U0, np.float64), dfm, tol
@@ -182,10 +185,11 @@ def match_points(
     valid = conv_iter <= para.icgn_max_iter
     from al_dic_3d.matching.gate import _gate_workers
 
+    # Scored at the solved subset (centred on round(x)) with the solved warp.
     znssd = _znssd(
         ref,
         dfm,
-        np.asarray(points, np.float64),
+        pts,
         u_2d,
         f_2d,
         para.winsize,
@@ -194,10 +198,38 @@ def match_points(
         workers=_gate_workers(),
     )
 
-    out_u = u_2d.astype(np.float64).copy()
+    out_u = _motion_at_points(pts, u_2d, f_2d, valid)
     out_u[~valid] = np.nan
     znssd[~valid] = np.nan
     return out_u, znssd, valid
+
+
+def _motion_at_points(
+    points: NDArray[np.float64],
+    u_2d: NDArray[np.float64],
+    f_2d: NDArray[np.float64],
+    valid: NDArray[np.bool_],
+) -> NDArray[np.float64]:
+    """Motion of each query point from the warp solved at its nearest pixel.
+
+    The engine centres every subset on ``round(x)`` (its Numba backend rounds
+    the coordinates before solving), so ``u_2d`` is the motion of that pixel.
+    The solved affine warp gives the motion of ``x`` itself:
+    ``u(x) = u(round(x)) + F (x - round(x))``. Without this term a caller at
+    sub-pixel points (the per-frame stereo strategy) is off by up to
+    ``|F| / 2`` px, about 0.09 px at a stereo disparity gradient of 0.17.
+
+    ``f_2d`` rows are ``[du/dx, dv/dx, du/dy, dv/dy]``. Integer points and
+    invalid points are returned unchanged (bit-identical).
+    """
+    out = u_2d.astype(np.float64).copy()
+    delta = points - np.round(points)
+    sub = valid & np.isfinite(delta).all(axis=1) & (delta != 0.0).any(axis=1)
+    if sub.any():
+        d, f = delta[sub], f_2d[sub]
+        out[sub, 0] += f[:, 0] * d[:, 0] + f[:, 2] * d[:, 1]
+        out[sub, 1] += f[:, 1] * d[:, 0] + f[:, 3] * d[:, 1]
+    return out
 
 
 # ZNSSD point-chunk size: the vectorized kernel materializes ~8 float64 arrays of
