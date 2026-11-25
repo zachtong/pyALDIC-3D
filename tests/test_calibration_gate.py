@@ -17,6 +17,7 @@ from al_dic_3d.calibration import (
     ChessboardSpec,
     CircleGridSpec,
     CodedCircleGridSpec,
+    calibrate_mono,
     calibrate_stereo,
     detect_board,
     from_opencv_yaml,
@@ -225,6 +226,55 @@ def test_rejection_loop_drops_corrupted_pair(rig, chess_set):
     assert len(rejected) == 1 and rejected[0].index == 4
     assert "rejected" in rejected[0].note
     assert res.rms < 0.05  # survivors solve cleanly
+
+
+# Per-view RMS of the first solve with one grossly wrong view (index 4), as
+# OpenCV 5.1 lands it on Linux: most views fit, two good ones sit at 4-6 px,
+# above the 3 x median cut (~3.4 px). On Windows the same solve spreads the
+# error over every view instead, so only view 4 exceeded the cut there.
+_DISTORTED_FIRST_SOLVE = [0.95, 1.29, 0.96, 0.85, 113.5, 0.68, 2.83, 1.11, 0.66, 1.18, 6.50, 4.38]
+
+
+def _first_call_reports(real, per_view_index, per_view):
+    """Wrap an OpenCV solver so its FIRST call reports ``per_view`` errors."""
+    calls = []
+
+    def wrapped(*args, **kwargs):
+        ret = list(real(*args, **kwargs))
+        if not calls:
+            shape = np.shape(ret[per_view_index])
+            ret[per_view_index] = np.asarray(per_view, np.float64).reshape(shape)
+        calls.append(len(args[0]))
+        return tuple(ret)
+
+    return wrapped, calls
+
+
+def test_mono_rejection_drops_only_the_view_that_distorts_the_solve(monkeypatch, chess_set):
+    import cv2
+
+    _poses, dl, _dr = chess_set
+    views = dl[:12]
+    wrapped, calls = _first_call_reports(cv2.calibrateCameraExtended, 7, _DISTORTED_FIRST_SOLVE)
+    monkeypatch.setattr(cv2, "calibrateCameraExtended", wrapped)
+    mono = calibrate_mono(views, (sc.IMG_W, sc.IMG_H))
+    # The good views at 4-6 px are judged again by the solve without view 4.
+    assert mono.view_indices.tolist() == [i for i in range(12) if i != 4]
+    assert calls == [12, 11]
+
+
+def test_stereo_rejection_drops_only_the_pair_that_distorts_the_solve(monkeypatch, chess_set):
+    import cv2
+
+    _poses, dl, dr = chess_set
+    errors = np.full((18, 2), 0.03)
+    errors[4] = [40.0, 0.03]  # the bad pair
+    errors[[9, 13]] = [[0.03, 0.4], [0.5, 0.03]]  # good pairs pushed over 2.5 x median
+    wrapped, calls = _first_call_reports(cv2.stereoCalibrateExtended, 11, errors)
+    monkeypatch.setattr(cv2, "stereoCalibrateExtended", wrapped)
+    res = calibrate_stereo(dl, dr, (sc.IMG_W, sc.IMG_H), reject_rms=0.2)
+    assert [p.index for p in res.pairs if not p.used] == [4]
+    assert calls == [18, 17]
 
 
 def test_solve_input_validation(chess_set):

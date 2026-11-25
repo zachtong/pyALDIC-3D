@@ -11,12 +11,24 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [1.4.2] — 2026-11-25
 
-Three accuracy fixes. Track Both no longer adds strain along free edges,
+Four accuracy fixes. Track Both no longer adds strain along free edges,
 notches and holes. Stereo Each Frame no longer adds random out-of-plane scatter
 on every frame. The tracking check now drops points that sit next to a region
-that stopped correlating, which it used to ship up to 1.5 px off.
+that stopped correlating, which it used to ship up to 1.5 px off. The built-in
+calibration also no longer throws away good views along with a bad one.
 
 ### Fixed
+
+- **A bad calibration view no longer takes good views with it.** When one
+  view is badly wrong (a misdetected or misnumbered board), the first solve is
+  distorted, and some good views can then exceed the rejection threshold too.
+  Every view above the threshold used to be rejected at once, so those good
+  views were lost. Now only the worst view is rejected, the solve repeats
+  without it, and the others are judged again. Stereo pairs are rejected the
+  same way. With OpenCV 5.1 on Linux and macOS this happened on a single bad
+  view out of twelve: two good views were rejected with it. On four real
+  calibration sets on Windows, the same views are rejected as before and the
+  results are unchanged.
 
 - **Points next to a region that stopped correlating are no longer shipped up
   to 1.5 px off.** When part of a subset covers a region that stops correlating

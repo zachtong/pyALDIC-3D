@@ -136,16 +136,17 @@ def calibrate_mono(
     min_points: int = 6,
     reject_view_rms: float = 1.0,
     reject_view_factor: float = 3.0,
-    max_reject_rounds: int = 3,
+    max_reject_rounds: int = 25,
     initial: CameraIntrinsics | None = None,
 ) -> MonoCalibration:
     """Solve one camera's intrinsics from its usable board detections.
 
-    Views whose per-view reprojection RMS exceeds
-    ``max(reject_view_rms, reject_view_factor * median)`` are dropped and the
-    solve repeats (up to ``max_reject_rounds`` rounds, never below 3 views):
-    one catastrophically misdetected view otherwise biases fx by percents
-    while the pooled RMS still looks merely mediocre.
+    While the worst view's reprojection RMS exceeds
+    ``max(reject_view_rms, reject_view_factor * median)``, that one view is
+    dropped and the solve repeats (up to ``max_reject_rounds`` views, never
+    below 3 views): one catastrophically misdetected view otherwise biases fx
+    by percents while the pooled RMS still looks merely mediocre. Dropping one
+    view per round keeps the good views that the bad one pushed over the cut.
 
     ``image_size`` is ``(width, height)``. ``zero_tangent`` defaults to True:
     on planar targets the principal point and the decentering (tangential)
@@ -218,10 +219,14 @@ def calibrate_mono(
         if len(usable) <= 3:
             break
         cut = max(reject_view_rms, reject_view_factor * float(np.median(per_view)))
-        keep = per_view <= cut
-        if keep.all():
+        worst = int(np.argmax(per_view))
+        if per_view[worst] <= cut:
             break
-        usable = [i for i, k in zip(usable, keep, strict=True) if k]
+        # One view per round: a grossly wrong view distorts the whole solve, so
+        # good views can exceed the cut only because of it (how far depends on
+        # where the distorted solve lands, which differs between OpenCV builds).
+        # They are judged again by the next solve, without it.
+        usable = usable[:worst] + usable[worst + 1 :]
         rms, K, dist, rvecs, tvecs, std_i, per_view, new_obj = _solve(usable)
 
     std = np.asarray(std_i, np.float64).ravel()
@@ -330,7 +335,7 @@ def calibrate_stereo(
     release_object: bool = False,
     reject_rms: float = 1.0,
     reject_factor: float = 2.5,
-    max_reject_rounds: int = 5,
+    max_reject_rounds: int = 25,
     min_pairs: int = 6,
     dot_radius_mm: float | None = None,
 ) -> StereoResult:
@@ -417,28 +422,29 @@ def calibrate_stereo(
             criteria=criteria,
         )
 
-    # Rejection loop: drop pairs whose worst-camera RMS exceeds
-    # max(reject_rms, reject_factor * median), never sinking below min_pairs.
-    # The absolute floor keeps uniformly-good sets intact (k*median alone would
+    # Rejection loop: while the worst pair's worst-camera RMS exceeds
+    # max(reject_rms, reject_factor * median), drop that one pair and solve
+    # again, never sinking below min_pairs. One pair per round, as in
+    # calibrate_mono: a bad pair can push good pairs over the cut. The
+    # absolute floor keeps uniformly-good sets intact (k*median alone would
     # amputate healthy geometry and weaken the solve).
     result = solve(used)
     for _round in range(max_reject_rounds):
         per_view = np.asarray(result[11], np.float64)  # (n, 2) RMS per pair per camera
         worst = per_view.max(axis=1)
         threshold = max(reject_rms, reject_factor * float(np.median(worst)))
-        bad = [k for k in range(len(used)) if worst[k] > threshold]
-        if not bad or len(used) - len(bad) < min_pairs:
+        k = int(np.argmax(worst))
+        if worst[k] <= threshold or len(used) - 1 < min_pairs:
             break
-        for k in bad:
-            i = used[k]
-            pairs[i] = replace(
-                pairs[i],
-                used=False,
-                rms_left=float(per_view[k, 0]),
-                rms_right=float(per_view[k, 1]),
-                note=f"rejected: rms {worst[k]:.3f}px > {threshold:.3f}px",
-            )
-        used = [i for k, i in enumerate(used) if k not in set(bad)]
+        i = used[k]
+        pairs[i] = replace(
+            pairs[i],
+            used=False,
+            rms_left=float(per_view[k, 0]),
+            rms_right=float(per_view[k, 1]),
+            note=f"rejected: rms {worst[k]:.3f}px > {threshold:.3f}px",
+        )
+        used = used[:k] + used[k + 1 :]
         result = solve(used)
 
     rms, K1o, d1o, K2o, d2o, R, T, _e, F, rvecs, tvecs, per_view = result
