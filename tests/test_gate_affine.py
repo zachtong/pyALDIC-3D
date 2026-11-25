@@ -130,9 +130,12 @@ def test_raising_the_threshold_relaxes_the_strong_tier_too(monkeypatch):
     def gated(threshold: float) -> int:
         u = np.zeros((2, n, 2))
         valid = np.ones((2, n), bool)
+        # The mocked score is flat, so it has no minimum: this test is about the
+        # two tiers alone.
         kills, _ = gate.gate_by_znssd(
-            frames, np.ones((120, 120)), coords, u, valid, 16, threshold, workers=1
-        )
+            frames, np.ones((120, 120)), coords, u, valid, 16, threshold, workers=1,
+            minimum_check=False,
+        )  # fmt: skip
         return int(kills[1])
 
     assert gated(1.0) == n  # no strong neighbour anywhere: all weak nodes fail

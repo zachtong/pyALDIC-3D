@@ -136,7 +136,12 @@ sets how strict the checks are (0 turns a check off; each spin box then reads
   value is a correlation
   mismatch (ZNSSD: 0 = identical, 1.0 = correlation 0.5, 4 = worst). Points
   below 60 % of the value always pass; points up to the value pass only when
-  their neighbours move consistently with them; the rest are dropped. Raise it
+  their neighbours move consistently with them; the rest are dropped. A point
+  that correlates less than near-perfectly (mismatch above 0.1) must also sit
+  where its subset correlates best: when part of a subset covers a region that
+  stopped correlating (glare, an occlusion, lost paint), the solver can settle
+  half a pixel or more away while the correlation still looks acceptable, and
+  such a point is dropped. Raise it
   (for example to 1.5) for specimens strained close to failure, where genuine
   points correlate poorly; lower it for stricter results.
 - **Stereo check** (default **0.6**, correlation 0.7; config

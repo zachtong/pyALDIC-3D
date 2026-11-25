@@ -104,15 +104,17 @@ def test_right_camera_failure_invalidates_the_affected_points(tmp_path):
         assert (cs.source[k][inside] == INVALID).all()
         assert np.isnan(result.reconstruction.points[k][inside]).all()
 
-    # Nothing grossly wrong may be shipped as valid. The corrupted patch degrades
-    # the right camera's global (ADMM) solution everywhere — the gate rejects
-    # ~97% of its nodes — and the few survivors carry sub-pixel errors no
-    # correlation check can see (a 0.5 px misregistration still scores ZNCC
-    # ~0.97). Before the fix the same run shipped points 113 mm off.
+    # Nothing grossly wrong may be shipped as valid. Before fix batch V the same
+    # run shipped points 113 mm off. Right nodes whose subsets only partly
+    # cover the patch still score ZNCC 0.7-0.85, but IC-GN converged up to
+    # 1.5 px off their score minimum; the gate's minimum check removes them
+    # (with al-dic 1.0.5 they shipped 3D errors up to 2.9 mm, now 0.6 mm; with
+    # 1.0.4 the right track fails almost everywhere and nothing survives).
+    # 1 px of right-camera error is ~1.8 mm of depth here.
     gt = synth_stereo.gt_world_points(scene, result.ref_coords)
     rec = result.reconstruction
     for k in (1, 2):
         ok = np.isfinite(rec.points[k]).all(axis=1) & np.isfinite(rec.points[0]).all(axis=1)
         if ok.any():
             err = np.linalg.norm(rec.displacement[k][ok] - (gt[k] - gt[0])[ok], axis=1)
-            assert err.max() < 2.0, f"frame {k}: max 3D error {err.max():.3f} mm"
+            assert err.max() < 1.0, f"frame {k}: max 3D error {err.max():.3f} mm"

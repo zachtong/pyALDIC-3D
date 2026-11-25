@@ -26,6 +26,9 @@ DRIFT_PX = 0.5  # tracking error added at every step (4 px by the last frame)
 WIN = 24
 
 
+INCREMENTAL = [0, *range(N - 1)]  # every frame tracked from the previous one
+
+
 def _frames() -> list[np.ndarray]:
     pad = int(STEP_PX * N) + 4
     rng = np.random.default_rng(5)
@@ -43,10 +46,25 @@ def _nodes() -> np.ndarray:
     return np.column_stack([xs.ravel(), ys.ravel()])
 
 
-def _drifting_track(n: int) -> np.ndarray:
+def _hops(parents) -> list[int]:
+    """Correlation steps composed to reach each frame (frame 0: none)."""
+    hops = [0] * N
+    for k in range(1, N):
+        hops[k] = hops[parents[k]] + 1
+    return hops
+
+
+def _drifting_track(n: int, parents=None) -> np.ndarray:
+    """True motion plus DRIFT_PX for every composed step.
+
+    Each correlation adds its own small error, so the drift grows with the
+    number of steps composed, not with the frame number: frames correlated
+    directly from the same reference share its drift.
+    """
+    hops = _hops(INCREMENTAL if parents is None else parents)
     u = np.zeros((N, n, 2))
     for k in range(N):
-        u[k, :, 0] = (STEP_PX + DRIFT_PX) * k  # true motion + accumulated drift
+        u[k, :, 0] = STEP_PX * k + DRIFT_PX * hops[k]
     return u
 
 
@@ -64,9 +82,6 @@ def _run(gate, parents=None, u=None, valid=None):
         n_gated, stopped = gate_by_znssd(frames, masks[0], ref, u, valid, WIN, 1.0, znssd_out=z)
     assert stopped is None
     return valid, n_gated, z
-
-
-INCREMENTAL = [0, *range(N - 1)]  # every frame tracked from the previous one
 
 
 def test_a_drifting_but_tracked_chain_is_kept():
@@ -93,7 +108,7 @@ def test_a_garbage_step_breaks_the_track_for_good():
 def test_with_every_n_frames_only_a_failed_reference_breaks_its_children():
     parents = [0, 0, 0, 0, 3, 3, 3, 6, 6]  # references 0, 3, 6
     ref = _nodes()
-    u = _drifting_track(len(ref))
+    u = _drifting_track(len(ref), parents)
     in_frame_2, at_ref_3 = np.zeros(len(ref), bool), np.zeros(len(ref), bool)
     in_frame_2[::4] = True
     at_ref_3[1::4] = True

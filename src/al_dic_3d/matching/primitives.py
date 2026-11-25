@@ -263,6 +263,7 @@ def _znssd(
     workers: int = 1,
     min_count: int = 0,
     coeffs: NDArray[np.float64] | None = None,
+    counts_out: NDArray[np.int64] | None = None,
 ) -> NDArray[np.float64]:
     """ZNSSD per point at the converged warp (independent of the solver internals).
 
@@ -301,6 +302,9 @@ def _znssd(
     A caller scoring the same deformed image twice (the honesty gate's affine
     pass and its translation retry) passes ``coeffs`` from
     :func:`spline_coefficients` so the filter runs once per frame.
+
+    ``counts_out`` (``(n,)`` int) receives each scored point's number of valid
+    pixels (left untouched for points not scored).
     """
     h, w = ref.shape
     n = points.shape[0]
@@ -339,7 +343,7 @@ def _znssd(
         chunk = max(_ZNSSD_MIN_CHUNK, chunk // workers)
     blocks = [idx[start : start + chunk] for start in range(0, idx.size, chunk)]
 
-    def evaluate(sel: NDArray[np.int64]) -> NDArray[np.float64]:
+    def evaluate(sel: NDArray[np.int64]) -> tuple[NDArray[np.float64], NDArray[np.int64]]:
         return _znssd_block(
             ref,
             coeffs,
@@ -354,11 +358,17 @@ def _znssd(
             mask,
             mask_has_holes,
             min_count=min_count,
+            return_count=True,
         )
+
+    def store(sel: NDArray[np.int64], values) -> None:
+        z[sel] = values[0]
+        if counts_out is not None:
+            counts_out[sel] = values[1]
 
     if workers == 1 or len(blocks) == 1:
         for sel in blocks:
-            z[sel] = evaluate(sel)
+            store(sel, evaluate(sel))
         return z
 
     from concurrent.futures import ThreadPoolExecutor
@@ -368,7 +378,7 @@ def _znssd(
         # write, so neither the values nor their placement depend on which
         # worker finished first.
         for sel, values in zip(blocks, pool.map(evaluate, blocks), strict=True):
-            z[sel] = values
+            store(sel, values)
     return z
 
 
@@ -408,14 +418,16 @@ def _znssd_block(
     mask: NDArray[np.float64],
     mask_has_holes: bool = False,
     min_count: int = 0,
-) -> NDArray[np.float64]:
+    return_count: bool = False,
+):
     """The vectorized ZNSSD kernel for one chunk of in-bounds point indices.
 
     ``dfm_coeffs`` is the deformed image's CUBIC SPLINE COEFFICIENT array
     (``spline_filter(dfm, 3, mode='constant')``), not raw intensities — the
     caller hoists that filter out of the chunk loop (P4). Pure function: it
     reads only its arguments and writes only its return value, so chunks can be
-    evaluated concurrently.
+    evaluated concurrently. Returns the ZNSSD, or ``(znssd, valid pixel
+    count)`` with ``return_count``.
     """
     h, w = ref.shape
     s = xx.shape[0]
@@ -485,4 +497,4 @@ def _znssd_block(
     ) / bottomg[:, None, None]
     zi = (res * res * comb).sum((1, 2))
     zi[cnt < max(4, int(min_count))] = np.nan
-    return zi
+    return (zi, cnt) if return_count else zi

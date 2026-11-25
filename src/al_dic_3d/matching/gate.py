@@ -32,6 +32,19 @@ the default keeps 37 % of all nodes in the last frame, where a plain 1.0
 threshold would keep 46 % -- the extra 9 % sit in neighbourhoods where no node
 correlates strongly any more, which is also what a decorrelated region that
 the solver froze on its previous displacement looks like.
+
+A passing score is not enough on its own. A subset partly covering a region
+that decorrelated (an occlusion, a glare, a lost speckle patch) can score ZNCC
+0.7-0.85 while IC-GN converged 0.5-1.5 px away from where that subset
+correlates best: the solver's fixed point weights the residual by the
+REFERENCE image gradient, so the decorrelated pixels pull it off the score
+minimum (local DIC and ADMM alike). The minimum check therefore also requires
+every node scoring above ``GATE_MINIMUM_MIN_ZNSSD`` to sit at a minimum of its
+own score, within a tolerance that grows with the precision the subset can
+locate that minimum with (see the constants below). On a synthetic stereo pair
+with one right-camera patch replaced by an unrelated speckle it removes the
+right nodes shipped 0.4-1.4 px off (3D errors up to 2.9 mm); clean nodes there
+sit within 0.08 px of their minimum.
 """
 
 from __future__ import annotations
@@ -62,6 +75,28 @@ GATE_STRONG_FRACTION = 0.6
 GATE_STRONG_ZNSSD = GATE_STRONG_FRACTION * 1.0  # the default, kept for reference
 GATE_MIN_SUPPORT_NEIGHBOURS = 3
 GATE_SUPPORT_TOL_PX = 1.0
+
+# Minimum check (see the module docstring). The gate ZNSSD is sampled on a
+# 3x3 translation stencil around the tracked motion, a quadratic is fitted, and
+# a node whose fitted minimum lies further than its tolerance (or that has no
+# minimum) fails. The step is a whole pixel so every sample has the same
+# sub-pixel phase: interpolation smooths image noise more at half-pixel
+# positions, which ripples the score with a 1 px period and can turn a correct
+# track into a local maximum on a 0.5 px stencil. The tolerance is the larger
+# of a fixed floor and GATE_MINIMUM_SIGMAS times the precision the subset can
+# locate its minimum with (noise, subset size, texture). Nodes scoring at or
+# below the floor skip the check: their subsets correlate too well to hide a
+# decorrelated part.
+GATE_MINIMUM_STEP_PX = 1.0
+GATE_MINIMUM_TOL_PX = 0.25
+GATE_MINIMUM_SIGMAS = 4.0
+GATE_MINIMUM_MIN_ZNSSD = 0.1
+
+# Stencil offsets (dx, dy) in units of the step, row-major; index 4 is the centre.
+_STENCIL = np.array([(dx, dy) for dy in (-1.0, 0.0, 1.0) for dx in (-1.0, 0.0, 1.0)])
+_STENCIL_CENTRE = 4
+
+ScoreFn = Callable[..., NDArray[np.float64]]
 
 
 def _gate_workers() -> int:
@@ -188,6 +223,149 @@ def neighbour_supported(
     return out
 
 
+def _quadratic_fit(
+    z9: NDArray[np.float64], step: float
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Fitted quadratic on the stencil: ``(distance to its minimum, smallest curvature)``.
+
+    ``z9`` is ``(n, 9)``: a score sampled at ``_STENCIL * step``. A least-squares
+    ``z = c0 + c1 dx + c2 dy + c3 dx^2 + c4 dx dy + c5 dy^2`` is fitted per row.
+    The curvature is the smallest eigenvalue of the fitted Hessian
+    ``[[2 c3, c4], [c4, 2 c5]]``. Both are NaN where a sample is missing or the
+    quadratic has no minimum (not positive definite).
+    """
+    z9 = np.asarray(z9, dtype=np.float64).reshape(-1, _STENCIL.shape[0])
+    d = _STENCIL * float(step)
+    design = np.column_stack(
+        [np.ones(len(d)), d[:, 0], d[:, 1], d[:, 0] ** 2, d[:, 0] * d[:, 1], d[:, 1] ** 2]
+    )
+    coef = z9 @ np.linalg.pinv(design).T  # (n, 6)
+    gx, gy, a, b, c = coef[:, 1], coef[:, 2], coef[:, 3], coef[:, 4], coef[:, 5]
+    det = 4.0 * a * c - b * b
+    ok = np.isfinite(coef).all(axis=1) & (a > 0) & (det > 0)
+    shift = np.full(z9.shape[0], np.nan, dtype=np.float64)
+    curv = np.full(z9.shape[0], np.nan, dtype=np.float64)
+    # argmin of the quadratic: [[2a, b], [b, 2c]] s = -[gx, gy]
+    sx = (b[ok] * gy[ok] - 2.0 * c[ok] * gx[ok]) / det[ok]
+    sy = (b[ok] * gx[ok] - 2.0 * a[ok] * gy[ok]) / det[ok]
+    shift[ok] = np.hypot(sx, sy)
+    curv[ok] = (a[ok] + c[ok]) - np.hypot(a[ok] - c[ok], b[ok])
+    return shift, curv
+
+
+def quadratic_minimum_shift(z9: NDArray[np.float64], step: float) -> NDArray[np.float64]:
+    """Distance from the stencil centre to the minimum of a fitted quadratic.
+
+    See :func:`_quadratic_fit`; NaN where there is no minimum.
+    """
+    return _quadratic_fit(z9, step)[0]
+
+
+def minimum_tolerance(
+    z: NDArray[np.float64], count: NDArray[np.float64], curvature: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Largest accepted shift to the score minimum, per node (px).
+
+    Least squares locates the minimum of ``z = sum r^2`` over ``count`` pixels
+    with covariance ``2 (z / count) H^-1``; ``curvature`` is the smallest
+    eigenvalue of ``H``, so ``sigma = sqrt(2 z / (count * curvature))`` is the
+    worst-direction precision (0.003 px on a clean synthetic subset, ~0.1 px at
+    ZNCC 0.7 from noise). Returns ``max(GATE_MINIMUM_TOL_PX,
+    GATE_MINIMUM_SIGMAS * sigma)``.
+    """
+    with np.errstate(divide="ignore", invalid="ignore"):
+        sigma = np.sqrt(2.0 * z / (np.maximum(count, 1.0) * curvature))
+    return np.fmax(GATE_MINIMUM_TOL_PX, GATE_MINIMUM_SIGMAS * sigma)
+
+
+def minimum_shift(
+    score: ScoreFn,
+    u: NDArray[np.float64],
+    f2d: NDArray[np.float64],
+    z_centre: NDArray[np.float64],
+    sel: NDArray[np.bool_],
+    step: float = GATE_MINIMUM_STEP_PX,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.bool_]]:
+    """Shift from each selected node's motion to the nearest minimum of its gate score.
+
+    ``score(u, f2d, sel, counts_out=...)`` is the gate ZNSSD at motion ``u`` and
+    warp gradient ``f2d``; ``z_centre`` is its value at ``u`` itself. The score
+    is sampled on the 3x3 translation stencil of ``step`` px (gradient fixed)
+    and a quadratic locates the minimum. Returns ``(shift, tolerance,
+    testable)``, all ``(n,)``; ``shift`` and ``tolerance`` are NaN outside
+    ``sel`` and ``shift`` also where no minimum is found. A node is testable
+    only when every stencil sample scores the same pixels: a subset running
+    off the deformed image gains or loses pixels as it shifts, and scores over
+    different pixels are not comparable.
+    """
+    n = u.shape[0]
+    shift = np.full(n, np.nan, dtype=np.float64)
+    tol = np.full(n, np.nan, dtype=np.float64)
+    testable = np.zeros(n, dtype=bool)
+    if not sel.any():
+        return shift, tol, testable
+    z9 = np.full((n, _STENCIL.shape[0]), np.nan, dtype=np.float64)
+    z9[:, _STENCIL_CENTRE] = z_centre
+    c_min = np.full(n, np.iinfo(np.int64).max, dtype=np.int64)
+    c_max = np.zeros(n, dtype=np.int64)
+    for j, (dx, dy) in enumerate(_STENCIL):
+        if j == _STENCIL_CENTRE:
+            continue
+        cnt = np.zeros(n, dtype=np.int64)
+        z9[:, j] = score(u + np.array([dx * step, dy * step]), f2d, sel, counts_out=cnt)
+        c_min = np.minimum(c_min, cnt)
+        c_max = np.maximum(c_max, cnt)
+    s_sel, curv = _quadratic_fit(z9[sel], step)
+    shift[sel] = s_sel
+    tol[sel] = minimum_tolerance(z_centre[sel], c_min[sel].astype(np.float64), curv)
+    testable[sel] = c_min[sel] == c_max[sel]
+    return shift, tol, testable
+
+
+def _off_minimum(
+    score: ScoreFn,
+    u: NDArray[np.float64],
+    f2d: NDArray[np.float64],
+    z: NDArray[np.float64],
+    candidates: NDArray[np.bool_],
+) -> tuple[NDArray[np.bool_], NDArray[np.float64]]:
+    """Candidates whose motion is not at a minimum of their gate score.
+
+    Checks the candidates scoring above ``GATE_MINIMUM_MIN_ZNSSD`` with the
+    warp gradient that produced ``z``. A node failing with a non-zero gradient
+    is re-checked with the translation-only warp and passes if either check
+    does, so a gradient corrupted by bad neighbours cannot fail a good node
+    (the same rule as the score's translation retry). A node the check cannot
+    test (see :func:`minimum_shift`) keeps the verdict of its score; an
+    untestable retry does not rescue a node that failed. Returns
+    ``(off_min, shift)``; ``shift`` comes from the warp that passed best (NaN
+    where unchecked or where neither warp has a minimum).
+    """
+    n = u.shape[0]
+    check = candidates & (z > GATE_MINIMUM_MIN_ZNSSD)
+    if not check.any():
+        return np.zeros(n, dtype=bool), np.full(n, np.nan, dtype=np.float64)
+    shift, tol, testable = minimum_shift(score, u, f2d, z, check)
+    ratio = np.where(testable, shift / tol, 0.0)  # NaN (no minimum) never passes
+    off = check & ~(ratio <= 1.0)
+    retry = off & f2d.any(axis=1)
+    if retry.any():
+        zeros_f = np.zeros_like(f2d)
+        z_t = score(u, zeros_f, retry)
+        clean_t = retry & (z_t <= GATE_MINIMUM_MIN_ZNSSD)
+        rest = retry & ~clean_t
+        shift_t, tol_t, testable_t = minimum_shift(score, u, zeros_f, z_t, rest)
+        # Only a retry that could be tested can rescue a node that failed.
+        ratio_t = np.where(testable_t, shift_t / tol_t, np.nan)
+        better = rest & (ratio_t <= np.nan_to_num(ratio, nan=np.inf))
+        shift[better] = shift_t[better]
+        ratio[better] = ratio_t[better]
+        shift[clean_t] = 0.0
+        ratio[clean_t] = 0.0
+        off = check & ~(ratio <= 1.0)
+    return off, shift
+
+
 def gate_by_znssd(
     frames,
     mask0: NDArray[np.float64],
@@ -203,6 +381,8 @@ def gate_by_znssd(
     affine: bool = True,
     min_support: float = GATE_MIN_SUPPORT,
     znssd_out: NDArray[np.float64] | None = None,
+    minimum_check: bool = True,
+    shift_out: NDArray[np.float64] | None = None,
 ) -> tuple[NDArray[np.int64], int | None]:
     """Invalidate (in place) tracked nodes whose frame-0 -> frame-k correlation fails.
 
@@ -219,6 +399,12 @@ def gate_by_znssd(
         min_support: minimum fraction of the full subset that must stay valid.
         znssd_out: optional ``(n_frames, n)`` array receiving each verified
             node's final ZNSSD (NaN where not verified).
+        minimum_check: also require the tracked motion to sit at a minimum of
+            the gate score (module docstring). ``False`` restores the
+            score-only gate.
+        shift_out: optional ``(n_frames, n)`` array receiving the shift to the
+            nearest score minimum of each node the minimum check examined (NaN
+            elsewhere, and where no minimum was found).
         progress: receives ``(k / n_deformed, "verifying frame k/N")`` per frame.
         stop: polled AFTER each verified frame, so a cancel costs at most one
             more frame and every frame reported as tracked was verified.
@@ -250,26 +436,40 @@ def gate_by_znssd(
             # translation retry (it used to run once per call).
             coeffs = spline_coefficients(dfm)
 
-            def score(f2d, sel, dfm=dfm, u_k=u_accum[k], coeffs=coeffs):
+            def score(u_k, f2d, sel, counts_out=None, dfm=dfm, coeffs=coeffs):
                 return _znssd(
                     ref, dfm, ref_coords, u_k, f2d, winsize, sel, mask0,
                     workers=threads, min_count=min_count, coeffs=coeffs,
+                    counts_out=counts_out,
                 )  # fmt: skip
 
+            u_k = u_accum[k]
+            f_used = zeros_f
             if affine:
-                grad = node_gradients(ref_coords, u_accum[k], stencil)
-                z = score(grad, pre)
+                grad = node_gradients(ref_coords, u_k, stencil)
+                z = score(u_k, grad, pre)
+                f_used = grad.copy()
                 retry = pre & ~(z <= threshold) & grad.any(axis=1)
                 if retry.any():
-                    z_t = score(zeros_f, retry)
-                    z[retry] = np.fmin(z[retry], z_t[retry])
+                    z_t = score(u_k, zeros_f, retry)
+                    # Same as fmin(z, z_t); remember which warp scored best.
+                    use_t = retry & np.isfinite(z_t) & ~(z <= z_t)
+                    z[use_t] = z_t[use_t]
+                    f_used[use_t] = 0.0
             else:
-                z = score(zeros_f, pre)
+                z = score(u_k, zeros_f, pre)
+            # Minimum check: a passing score is not enough if a nearby motion
+            # scores clearly better (module docstring).
+            off_min = np.zeros_like(pre)
+            if minimum_check:
+                off_min, shift = _off_minimum(score, u_k, f_used, z, pre & (z <= threshold))
+                if shift_out is not None:
+                    shift_out[k] = shift
             # Two-tier acceptance: strong nodes pass outright; the rest up to the
             # threshold need a coherent strong neighbourhood (module docstring).
             strong_thr = GATE_STRONG_FRACTION * threshold
-            strong = pre & (z <= strong_thr)
-            weak = pre & ~strong & (z <= threshold)
+            strong = pre & (z <= strong_thr) & ~off_min
+            weak = pre & ~strong & ~off_min & (z <= threshold)
             if weak.any():
                 if stencil is None:
                     stencil = NeighbourIndex(ref_coords)
@@ -311,6 +511,8 @@ def gate_stepwise(
     affine: bool = True,
     min_support: float = GATE_MIN_SUPPORT,
     znssd_out: NDArray[np.float64] | None = None,
+    minimum_check: bool = True,
+    shift_out: NDArray[np.float64] | None = None,
 ) -> tuple[NDArray[np.int64], int | None]:
     """The honesty gate, step by step: frame ``k`` against the frame it was tracked from.
 
@@ -349,6 +551,8 @@ def gate_stepwise(
             affine=affine,
             min_support=min_support,
             znssd_out=znssd_out,
+            minimum_check=minimum_check,
+            shift_out=shift_out,
         )
     n_gated = np.zeros(n_frames, dtype=np.int64)
     n_deformed = max(1, n_frames - 1)
@@ -359,6 +563,8 @@ def gate_stepwise(
         cand = tracked & valid[r] if r > 0 else tracked
         if znssd_out is not None:
             znssd_out[k] = np.nan
+        if shift_out is not None:
+            shift_out[k] = np.nan
         keep = cand
         if cand.any():
             idx = np.flatnonzero(cand)
@@ -367,6 +573,7 @@ def gate_stepwise(
             u_pair[1] = u_accum[k, idx] - (u_accum[r, idx] if r > 0 else 0.0)
             v_pair = np.ones((2, idx.size), dtype=bool)
             z_pair = np.full((2, idx.size), np.nan) if znssd_out is not None else None
+            s_pair = np.full((2, idx.size), np.nan) if shift_out is not None else None
             gate_by_znssd(
                 [frames[r], frames[k]],
                 masks[r],
@@ -379,11 +586,15 @@ def gate_stepwise(
                 affine=affine,
                 min_support=min_support,
                 znssd_out=z_pair,
+                minimum_check=minimum_check,
+                shift_out=s_pair,
             )
             keep = np.zeros_like(cand)
             keep[idx] = v_pair[1]
             if z_pair is not None:
                 znssd_out[k, idx] = z_pair[1]
+            if s_pair is not None:
+                shift_out[k, idx] = s_pair[1]
         bad = tracked & ~keep
         if bad.any():
             u_accum[k, bad] = np.nan

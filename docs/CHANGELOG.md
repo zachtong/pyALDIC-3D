@@ -11,11 +11,27 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [1.4.2] — 2026-11-24
 
-Two accuracy fixes. Track Both no longer adds strain along free edges, notches
-and holes, and Stereo Each Frame no longer adds random out-of-plane scatter on
-every frame.
+Three accuracy fixes. Track Both no longer adds strain along free edges,
+notches and holes. Stereo Each Frame no longer adds random out-of-plane scatter
+on every frame. The tracking check now drops points that sit next to a region
+that stopped correlating, which it used to ship up to 1.5 px off.
 
 ### Fixed
+
+- **Points next to a region that stopped correlating are no longer shipped up
+  to 1.5 px off.** When part of a subset covers a region that stops correlating
+  in a later frame (glare, an occlusion, lost paint), the solver can settle 0.5
+  to 1.5 px away from where that subset correlates best, while the correlation
+  still looks acceptable (0.7 to 0.85). The tracking check only looked at the
+  correlation, so these points passed, and in the right camera the error became
+  a depth error. Every point that does not correlate near-perfectly must now
+  also sit where its subset correlates best. The tolerance is at least 0.25 px
+  and grows where noise or a small subset makes that position less certain, so
+  correct points on noisy images still pass. On a synthetic stereo pair with
+  part of the right images replaced, the largest 3D displacement error fell
+  from 2.9 to 0.6 mm. On real tests the check drops 0.005 % of the tracked
+  points of a notched specimen pulled to failure and 0.03 % on a D-shaped
+  specimen, and the tracking check takes 10 to 20 % longer.
 
 - **Strain no longer reads high along free edges when both cameras are
   tracked.** The right camera is tracked on its own grid, and its motion is
