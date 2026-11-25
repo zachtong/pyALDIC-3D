@@ -9,7 +9,7 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
-## [1.4.2] — 2026-11-24
+## [1.4.2] — 2026-11-25
 
 Three accuracy fixes. Track Both no longer adds strain along free edges,
 notches and holes. Stereo Each Frame no longer adds random out-of-plane scatter
