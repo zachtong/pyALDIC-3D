@@ -22,6 +22,13 @@ GitHub release notes for a tag are this file's section for that version.
   detected several at a time, in the dialog and in `al-dic-3d calibrate`, and
   the full-resolution search is limited in memory: it needed up to 6 GB per
   20 MP image, which could slow a 16 GB computer to a crawl.
+- **DIC runs are about 15 to 25 % faster, with identical results.** The 2D
+  engine smooths every displacement field with a Gaussian whose reach, on the
+  regular grids pyALDIC-3D uses, covers only the node itself, so it returned
+  its input unchanged while taking about half of the engine's time. It is now
+  skipped wherever that can be proven for the mesh (refined meshes keep it).
+  Measured on 20-frame runs: 34 to 28 s at 5 Mpx, 177 to 149 s at 12 Mpx; on
+  a real notched specimen the 3D points are identical to the last bit.
 - **A run warns when a camera has probably moved since the calibration.** The
   run log now warns when the matched left and right points lie a median of
   more than 0.5 px from their epipolar lines (healthy real rigs: 0.02 to
