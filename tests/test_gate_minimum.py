@@ -53,6 +53,7 @@ def test_an_exact_quadratic_gives_its_minimum():
         lambda dx, dy: 0.5 + dx * dx - dy * dy,  # saddle
         lambda dx, dy: 0.5 - dx * dx - dy * dy,  # maximum
         lambda dx, dy: 0.7,  # flat
+        lambda dx, dy: 0.7 + 1e-14 * (dx * dx + dy * dy),  # curvature at rounding level
     ],
 )
 def test_no_minimum_is_nan(fn):

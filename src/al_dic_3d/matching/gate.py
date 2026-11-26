@@ -95,6 +95,9 @@ GATE_MINIMUM_MIN_ZNSSD = 0.1
 # Stencil offsets (dx, dy) in units of the step, row-major; index 4 is the centre.
 _STENCIL = np.array([(dx, dy) for dy in (-1.0, 0.0, 1.0) for dx in (-1.0, 0.0, 1.0)])
 _STENCIL_CENTRE = 4
+# Smallest fitted curvature (relative to the score's magnitude) that counts as
+# a minimum; below it the fit only sees floating-point rounding.
+_MIN_RELATIVE_CURVATURE = 1e-9
 
 ScoreFn = Callable[..., NDArray[np.float64]]
 
@@ -242,14 +245,23 @@ def _quadratic_fit(
     coef = z9 @ np.linalg.pinv(design).T  # (n, 6)
     gx, gy, a, b, c = coef[:, 1], coef[:, 2], coef[:, 3], coef[:, 4], coef[:, 5]
     det = 4.0 * a * c - b * b
-    ok = np.isfinite(coef).all(axis=1) & (a > 0) & (det > 0)
+    lam = (a + c) - np.hypot(a - c, b)  # smallest eigenvalue of the Hessian
+    # A curvature at rounding level is no minimum: a flat score fits to +-1e-17
+    # coefficients whose signs differ between CPUs (x86 vs Apple silicon).
+    scale = np.abs(z9).max(axis=1) if z9.size else np.zeros(0)
+    ok = (
+        np.isfinite(coef).all(axis=1)
+        & (a > 0)
+        & (det > 0)
+        & (lam > _MIN_RELATIVE_CURVATURE * scale)
+    )
     shift = np.full(z9.shape[0], np.nan, dtype=np.float64)
     curv = np.full(z9.shape[0], np.nan, dtype=np.float64)
     # argmin of the quadratic: [[2a, b], [b, 2c]] s = -[gx, gy]
     sx = (b[ok] * gy[ok] - 2.0 * c[ok] * gx[ok]) / det[ok]
     sy = (b[ok] * gx[ok] - 2.0 * a[ok] * gy[ok]) / det[ok]
     shift[ok] = np.hypot(sx, sy)
-    curv[ok] = (a[ok] + c[ok]) - np.hypot(a[ok] - c[ok], b[ok])
+    curv[ok] = lam[ok]
     return shift, curv
 
 
