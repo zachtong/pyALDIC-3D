@@ -21,9 +21,15 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_quickstart_config_reproduces_the_readme_figures():
+    from dataclasses import replace
+
     from al_dic_3d.runner import load_config, run_pipeline
 
-    result = run_pipeline(load_config(QUICKSTART / "config.toml"))
+    # The memory pre-check projects ~2.2 GB for this run, more than 70 % of
+    # the ~3 GB a hosted macOS runner has free; the run itself fits. This test
+    # checks the results, not the pre-check (tests/test_memcheck*.py do).
+    cfg = replace(load_config(QUICKSTART / "config.toml"), ignore_memory_check=True)
+    result = run_pipeline(cfg)
 
     assert result.reconstruction.n_frames == 3
     # README: 6,490 mesh points (the grid covers every reference frame's mask) ...

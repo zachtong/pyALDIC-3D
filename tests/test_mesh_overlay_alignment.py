@@ -154,9 +154,13 @@ def test_rendered_grid_lies_inside_the_drawn_roi_after_a_pan(area):
 
     shot = area.canvas.viewport().grab().toImage()
     w, h = shot.width(), shot.height()
-    ptr = shot.convertToFormat(shot.Format.Format_RGB888).constBits()
-    stride = shot.convertToFormat(shot.Format.Format_RGB888).bytesPerLine()
-    rgb = np.frombuffer(ptr, np.uint8).reshape(h, stride)[:, : 3 * w].reshape(h, w, 3)
+    # Keep the converted image alive while its bits are read: constBits() of a
+    # temporary pointed into freed memory, which read right only until that
+    # memory was reused (on Linux after the calibration dialog tests).
+    rgb_img = shot.convertToFormat(shot.Format.Format_RGB888)
+    stride = rgb_img.bytesPerLine()
+    rgb = np.frombuffer(rgb_img.constBits(), np.uint8).reshape(h, stride)[:, : 3 * w]
+    rgb = rgb.reshape(h, w, 3).copy()
     r, g, b = (rgb[..., i].astype(int) for i in range(3))
     grid = (r > 200) & (b > 200) & (g < 90)  # the magenta mesh lines
     ys, xs = np.nonzero(grid)
