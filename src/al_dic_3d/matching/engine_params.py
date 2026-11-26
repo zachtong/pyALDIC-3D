@@ -14,7 +14,8 @@ inclusive). With the default ``disp_smoothness = 5e-4`` that radius is
 When no OTHER node lies inside any node's radius, each row of the row-normalised
 weight matrix is the single diagonal weight ``exp(0) / exp(0) = 1.0`` and the
 smoothing returns its input bit for bit (NaN nodes are restored as NaN either
-way). Computing it is then pure cost: it was 50-61 % of engine time on 3D runs.
+way; the sparse product's ``0.0 + 1.0 * x`` only turns a ``-0.0`` into ``0.0``).
+Computing it is then pure cost: it was 50-61 % of engine time on 3D runs.
 
 That holds for the uniform Q8 grid 3D builds (no midside nodes, every element
 edge equals the node spacing ``s``, nearest other node at ``s > 0.75 s``), for
