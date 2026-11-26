@@ -9,6 +9,16 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-11-26
+
+Ready for a lab's own experiments. Chessboard calibration takes seconds
+instead of minutes, runs are 15 to 25 % faster, and the software now warns or
+stops where it used to give a wrong result without a word: a wrongly entered
+square size, images that do not match the calibration, a camera moved since
+calibrating, left and right images out of step, and a run too large for the
+computer's memory. Failures in calibration and in the first stereo match now
+say what to check.
+
 ### Changed
 
 - **Chessboard calibration is 13 to 49 times faster on large images.** For 25
@@ -760,7 +770,8 @@ as a Windows installer on the GitHub release, and archived on Zenodo
   without Python: a per-user install that needs no administrator rights. It is
   not code-signed, so SmartScreen asks for confirmation on first run.
 
-[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.2...HEAD
+[Unreleased]: https://github.com/zachtong/pyALDIC-3D/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.2...v1.5.0
 [1.4.2]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/zachtong/pyALDIC-3D/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/zachtong/pyALDIC-3D/compare/v1.3.0...v1.4.0
