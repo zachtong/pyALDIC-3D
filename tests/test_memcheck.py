@@ -87,3 +87,41 @@ def test_run_pipeline_fails_fast_and_override_runs(tmp_path, monkeypatch):
     result = run_pipeline(replace(cfg, ignore_memory_check=True))
     assert result.meta["n_tracked_positions"] > 0
     assert np.isfinite(result.reconstruction.points[0]).any()
+
+
+# Peaks measured by the 2026-11-26 audit (peak working set, GiB) and the run
+# geometry: (img_h, img_w, nodes, frames, incremental, peak). Synthetic 5 / 12
+# Mpx scenes and a real 5 Mpx notched specimen, track_both, default engine.
+MEASURED_PEAKS = {
+    "5mp ws32 acc": (1944, 2592, 11532, 20, False, 2.46),
+    "5mp ws24 step8 acc": (1944, 2592, 45695, 20, False, 4.12),
+    "12mp ws32 acc": (3000, 4000, 27170, 20, False, 5.32),
+    "12mp ws24 step8 acc": (3000, 4000, 108300, 20, False, 9.40),
+    "12mp ws32 acc 50 frames": (3000, 4000, 27170, 50, False, 5.42),
+    "real 5mp ws24 step8 acc": (2448, 2048, 37230, 12, False, 3.65),
+    "5mp ws32 inc 5 frames": (1944, 2592, 11532, 5, True, 4.14),
+    "5mp ws32 inc": (1944, 2592, 11532, 20, True, 4.19),
+    "12mp ws24 step8 inc": (3000, 4000, 108300, 10, True, 18.88),
+    "real 5mp ws24 step8 inc": (2448, 2048, 39260, 12, True, 6.94),
+}
+
+
+@pytest.mark.parametrize("name", sorted(MEASURED_PEAKS))
+def test_the_projection_covers_every_measured_peak(name):
+    h, w, nodes, frames, inc, peak = MEASURED_PEAKS[name]
+    projected = (
+        memcheck.estimate_peak_bytes(frames, h, w, 2, lazy=True, n_pts=nodes, incremental=inc)
+        / 1024**3
+    )
+    # Above the measured peak, and not so far above that it refuses runs that fit.
+    assert peak <= projected <= 1.2 * peak, (name, round(projected, 2))
+
+
+def test_a_16_gb_pc_is_stopped_before_a_dense_incremental_run(monkeypatch):
+    # 12 Mpx, winsize 24 / step 8, incremental: 18.9 GB measured; the old
+    # projection (5.0 GB) let it start on a PC with 16 GB free, which then swaps.
+    monkeypatch.setattr(memcheck, "available_ram_bytes", lambda: 16 * 1024**3)
+    with pytest.raises(memcheck.MemoryBudgetError, match="Projected peak memory"):
+        memcheck.check_run_memory(10, 3000, 4000, 2, n_pts=108300, incremental=True)
+    # The same run tracked accumulatively (9.4 GB) is let through on 16 GB free.
+    memcheck.check_run_memory(10, 3000, 4000, 2, n_pts=108300, incremental=False)

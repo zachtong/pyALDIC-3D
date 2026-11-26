@@ -535,6 +535,7 @@ def run_pipeline(
             lazy=True,
             n_pts=int(np.asarray(mesh_L.coordinates_fem).shape[0]),
             parallel=cfg.parallel_cameras,  # P3.6: both engine transients live
+            incremental=cfg.reference_mode == "incremental",
         )
 
     # Batch C item 1/5: cut the external frame-1 mesh at any thin crack barrier

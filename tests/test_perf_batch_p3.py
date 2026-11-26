@@ -663,4 +663,5 @@ def test_memcheck_parallel_doubles_engine_transient():
     seq = memcheck.estimate_peak_bytes(20, 2048, 2448, 2, lazy=True, n_pts=20000)
     par = memcheck.estimate_peak_bytes(20, 2048, 2448, 2, lazy=True, n_pts=20000, parallel=True)
     transient = int(memcheck.ENGINE_TRANSIENT_BYTES_PER_MPX * (2048 * 2448 / 1e6))
+    transient += 20000 * memcheck.ENGINE_BYTES_PER_NODE  # the per-node working set
     assert par - seq == transient  # P3.6: both engine working sets live at once
