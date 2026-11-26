@@ -68,8 +68,8 @@ correctly). What surrounds the solve matters as much as the solve: per-image
 reprojection bars, threshold-based worst-pair rejection with an automatic re-solve,
 epipolar validation, coverage and pose diagnostics, optional joint bundle adjustment
 with board-morphology refinement, a leave-*p*-out stability jackknife, a 1:1 printable
-board PDF, and an independent **known-distance verification** that catches a wrong
-scale a reprojection RMS never will (the MATLAB predecessor has none of this — it
+board PDF, and a **known-distance verification** on a separate board pair that
+catches a scale error a reprojection RMS never will (the MATLAB predecessor has none of this — it
 imports a calibration and prints one frame's error).
 Already calibrated? Import from **six external formats** (MATLAB/OpenCV, MatchID, MMC,
 DICe, OpenCorr, OpenCV-YAML) or type parameters in by hand.

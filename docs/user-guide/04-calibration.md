@@ -27,6 +27,60 @@ photograph a calibration board from many poses with the same stereo rig, load
 the LEFT/RIGHT board image sets, and the app detects the board, solves the
 mono + stereo geometry, runs QC, and writes the calibration.
 
+### Checklist for calibrating your own rig
+
+A calibration belongs to one exact camera setup. Most bad 3D results trace back
+to one of these points, and several of them cannot be detected afterwards.
+
+**Set up the rig first, then leave it alone.**
+
+- Lock focus, aperture and zoom, and use the image size and binning of the
+  test. Any change after calibrating, including a camera knocked by a few
+  tenths of a degree, invalidates it. A run warns when the matched points lie
+  far from their epipolar lines, which is what a moved camera looks like.
+- Point both cameras at the specimen from roughly symmetric angles. In
+  synthetic tests, stereo matching worked fully with up to 60° between the two
+  viewing directions, but became unreliable when one camera saw the specimen
+  about 40° more obliquely than the other, or when one camera was rolled about
+  its axis by more than 10-15° relative to the other. If your rig needs such a
+  geometry, place a seed point ([Initial guess](06-initial-guess.md)): it
+  raised the matched share from 74 % to 93 % in the 45° asymmetric case.
+
+**Know your board.**
+
+- Chessboard **Columns × Rows count the inner corners**, where four squares
+  meet, not the squares: a board of 10 × 8 squares has 9 × 7 inner corners. A
+  board entered with the wrong count is not found in any image.
+- **Measure the printed square size** with calipers across several squares
+  (for example 8 squares, then divide by 8). Printers scale pages, and the
+  square size sets the absolute scale of every 3D point and displacement. A
+  wrong value cannot be detected afterwards: the RMS, the checks and the
+  **Verify** step below all stay perfect, while every length comes out wrong
+  by the same factor (10 mm entered for a 12 mm board: all displacements
+  16.7 % low).
+- Mount the board on something rigid and flat (glass, aluminium plate). Paper
+  on cardboard bends; see **Optimize board shape** below if you must use it.
+- A chessboard must be fully visible in an image to be detected. Use a board
+  that fits the field of view of both cameras with some margin, or a ChArUco
+  or coded dot board, which are detected when partly visible.
+
+**Take the pictures.**
+
+- Take 15-30 pairs (the solve needs at least 6 usable pairs). Fewer than
+  about 10 leaves the lens distortion poorly determined.
+- Tilt the board by up to about 30-45° about both of its axes, in both
+  directions, and move it so that across all views it reaches every corner of
+  each camera's image ([calibration checks](#can-this-calibration-be-trusted-calibration-checks)).
+- Keep it near the working distance of the test, sharply focused, still
+  (no motion blur), evenly lit and free of glare.
+- Optionally take one extra pair at the end of the test session for the
+  **Verify** step, to confirm the rig did not move during the test.
+
+**Check the result** before you measure: the RMS should be well under 1 px,
+and the **Baseline** should match the distance between the two cameras that
+you can measure with a ruler. That comparison, or a known distance on the
+specimen, is the independent check of the absolute scale.
+
 ### Board family
 
 The **Type** combo selects the board family; the per-board parameter fields
@@ -90,8 +144,12 @@ The **RESULT** panel is the sanity check — read it before trusting a run:
   amber outline on each camera's image.
 
 If you loaded a verification pair, a **Verify** line reports the measured board
-pitch versus the true pitch, the scale error, and the plane RMS in mm — the most
-direct check that the calibration's absolute scale is correct.
+pitch versus the pitch you entered, the scale error, and the plane RMS in mm.
+It shows whether the calibration reproduces the board as you described it, on
+a pair it was not computed from, so it catches a calibration that is internally
+wrong (or a rig that moved after calibrating) even when the RMS looks fine. It
+compares against the square size you entered, so it cannot catch a wrongly
+entered square size: measure the board (see the checklist above).
 
 ### Can this calibration be trusted? (calibration checks)
 
