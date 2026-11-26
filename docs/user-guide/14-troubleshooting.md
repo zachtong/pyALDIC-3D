@@ -110,6 +110,30 @@ displacement magnitudes came out 8.6 % too large, with nothing else in the log
 looking wrong. **Recalibrate the rig as it stands now** (and lock the camera
 mounts and lenses before calibrating).
 
+## "Frame N is the first of M frames whose left-right point pairs lie off their epipolar lines"
+
+Every frame's stereo pairs are checked against their epipolar lines, not only
+frame 1's. When a later frame sits more than 0.2 px further off than frame 1,
+the log names the first such frame: its left and right images probably do not
+show the same moment. The usual cause is an image missing from (or added to)
+one camera's folder, so every later image is paired with the wrong partner;
+unsynchronised cameras, or a camera that moved during the test, look the same.
+The validity can stay at 100 % while the 3D result is wrong: in a synthetic
+test with one right image missing, the 3D error grew from 0.05 mm to 1.0 mm. Check that the
+left and right image lists pair up frame by frame (same count, same frame
+numbers) and run again. A very slow test with almost no motion between frames
+can hide an offset from this check.
+
+## The log says a displacement "was copied from that point and may be wrong"
+
+In incremental mode the 2D engine carries each point through every reference
+frame. When a point lands far outside the area measured on a reference frame,
+its displacement is copied from the nearest measured point, and the log names
+the frame and the count. Give each reference frame a region of interest that
+covers the specimen (per-frame masks, [Region of interest](07-region-of-interest.md)). The
+related warning that points *stopped being tracked by frame N* means they
+moved onto pixels outside the region of interest.
+
 Temporal validity
 that decays over frames points at motion exceeding the search / seed,
 decorrelation, or (for large deformation or rotation) the wrong tracking mode —
