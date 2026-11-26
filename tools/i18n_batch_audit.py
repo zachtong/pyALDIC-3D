@@ -193,6 +193,110 @@ _ROWS: list[tuple[str, str, str, str, str, str, str, str]] = [
         "Résultat partiel — {0} images calculées sur {1}, validité médiane {2} %",
         "Resultado parcial: {0} de {1} fotogramas calculados, validez mediana {2} %",
     ),
+    # Robustness audit (2026-11-26): per-frame epipolar check, engine tracking warnings.
+    (
+        "Frame {0} is the first of {1} frames whose left-right point pairs lie off their "
+        "epipolar lines (median up to {2} px; frame 1: {3} px): the two images of those frames "
+        "probably do not show the same moment. Likely causes: an image missing from or added to "
+        "one camera's sequence, unsynchronised cameras, or a camera that moved during the test. "
+        "Check that the left and right image lists pair up frame by frame; the 3D results of "
+        "those frames are not reliable.",
+        "第 {0} 帧是 {1} 个左右点对偏离极线的帧中的第一个（中位数最高 {2} px；第 1 帧：{3} px）："
+        "这些帧的两幅图像很可能不是同一时刻拍摄的。可能原因：某台相机的序列缺少或多出一幅图像、"
+        "两台相机不同步，或试验过程中有相机移动。请检查左右图像列表是否逐帧对应；这些帧的 3D "
+        "结果不可靠。",
+        "第 {0} 幀是 {1} 個左右點對偏離極線的幀中的第一個（中位數最高 {2} px；第 1 幀：{3} px）："
+        "這些幀的兩幅影像很可能不是同一時刻拍攝的。可能原因：某台相機的序列缺少或多出一幅影像、"
+        "兩台相機不同步，或試驗過程中有相機移動。請檢查左右影像清單是否逐幀對應；這些幀的 3D "
+        "結果不可靠。",
+        "フレーム {0} は、左右の点の対応がエピポーラ線から外れている {1} フレームのうち最初の"
+        "フレームです（中央値は最大 {2} px、フレーム 1 では {3} px）：これらのフレームの 2 枚の"
+        "画像は同じ瞬間を写していない可能性が高いです。考えられる原因：一方のカメラのシーケンスで"
+        "画像が欠けているか余分にある、カメラが同期していない、試験中にカメラが動いた。左右の画像"
+        "リストがフレームごとに対応しているか確認してください。これらのフレームの 3D 結果は信頼"
+        "できません。",
+        "프레임 {0}은(는) 좌우 점 쌍이 에피폴라 선에서 벗어난 {1}개 프레임 중 첫 번째입니다"
+        "(중앙값 최대 {2} px, 프레임 1: {3} px): 이 프레임들의 두 이미지는 같은 순간을 찍은 것이 "
+        "아닐 가능성이 큽니다. 가능한 원인: 한 카메라의 시퀀스에서 이미지가 빠졌거나 더 있음, "
+        "카메라가 동기화되지 않음, 시험 중 카메라가 움직임. 왼쪽과 오른쪽 이미지 목록이 프레임별로 "
+        "짝이 맞는지 확인하세요. 이 프레임들의 3D 결과는 신뢰할 수 없습니다.",
+        "Bild {0} ist das erste von {1} Bildern, deren linke und rechte Punktpaare neben ihren "
+        "Epipolarlinien liegen (Median bis {2} px; Bild 1: {3} px): Die beiden Aufnahmen dieser "
+        "Bilder zeigen vermutlich nicht denselben Zeitpunkt. Mögliche Ursachen: ein fehlendes oder "
+        "zusätzliches Bild in der Sequenz einer Kamera, nicht synchronisierte Kameras oder eine "
+        "Kamera, die sich während des Versuchs bewegt hat. Prüfen, ob die linke und die rechte "
+        "Bildliste Bild für Bild zusammenpassen; die 3D-Ergebnisse dieser Bilder sind nicht "
+        "verlässlich.",
+        "L'image {0} est la première des {1} images dont les paires de points gauche-droite "
+        "s'écartent de leurs droites épipolaires (médiane jusqu'à {2} px ; image 1 : {3} px) : "
+        "les deux vues de ces images ne montrent probablement pas le même instant. Causes "
+        "probables : une image manquante ou en trop dans la séquence d'une caméra, des caméras non "
+        "synchronisées, ou une caméra qui a bougé pendant l'essai. Vérifiez que les listes "
+        "d'images gauche et droite se correspondent image par image ; les résultats 3D de ces "
+        "images ne sont pas fiables.",
+        "El fotograma {0} es el primero de {1} fotogramas cuyos pares de puntos izquierda-derecha "
+        "se apartan de sus líneas epipolares (mediana de hasta {2} px; fotograma 1: {3} px): las "
+        "dos imágenes de esos fotogramas probablemente no muestran el mismo instante. Causas "
+        "probables: una imagen que falta o sobra en la secuencia de una cámara, cámaras no "
+        "sincronizadas o una cámara que se movió durante el ensayo. Compruebe que las listas de "
+        "imágenes izquierda y derecha se correspondan fotograma a fotograma; los resultados 3D de "
+        "esos fotogramas no son fiables.",
+    ),
+    (
+        "Camera {0}: on frame {1}, {2} points lay more than {3} px from the nearest point "
+        "measured on reference frame {4}; their displacement was copied from that point and may "
+        "be wrong ({5} frames affected). Give each reference frame a region of interest that "
+        "covers the specimen (per-frame masks, REGION OF INTEREST).",
+        "相机 {0}：第 {1} 帧上有 {2} 个点距参考帧 {4} 上最近的测量点超过 {3} px；它们的位移是从"
+        "该点复制的，可能有误（受影响 {5} 帧）。请为每个参考帧提供覆盖试件的感兴趣区域（逐帧掩膜，"
+        "见感兴趣区域）。",
+        "相機 {0}：第 {1} 幀上有 {2} 個點距參考幀 {4} 上最近的量測點超過 {3} px；它們的位移是從"
+        "該點複製的，可能有誤（受影響 {5} 幀）。請為每個參考幀提供涵蓋試件的感興趣區域（逐幀遮罩，"
+        "見感興趣區域）。",
+        "カメラ {0}：フレーム {1} で {2} 個の点が、参照フレーム {4} で測定された最も近い点から "
+        "{3} px 以上離れていました。それらの変位はその点からコピーされたもので、誤っている可能性が"
+        "あります（影響を受けたフレーム数 {5}）。各参照フレームに試験片を覆う関心領域を指定して"
+        "ください（フレームごとのマスク、関心領域）。",
+        "카메라 {0}: 프레임 {1}에서 {2}개 점이 참조 프레임 {4}에서 측정된 가장 가까운 점과 {3} px "
+        "이상 떨어져 있었습니다. 이 점들의 변위는 그 점에서 복사된 것이라 틀릴 수 있습니다(영향받은 "
+        "프레임 {5}개). 각 참조 프레임에 시편을 덮는 관심 영역을 지정하세요(프레임별 마스크, 관심 "
+        "영역).",
+        "Kamera {0}: In Bild {1} lagen {2} Punkte mehr als {3} px vom nächsten in Referenzbild {4} "
+        "gemessenen Punkt entfernt; ihre Verschiebung wurde von diesem Punkt kopiert und kann falsch "
+        "sein ({5} Bilder betroffen). Jedem Referenzbild einen Interessenbereich geben, der den "
+        "Prüfkörper abdeckt (Masken pro Bild, INTERESSENBEREICH).",
+        "Caméra {0} : sur l'image {1}, {2} points se trouvaient à plus de {3} px du point mesuré le "
+        "plus proche sur l'image de référence {4} ; leur déplacement a été copié de ce point et "
+        "peut être faux ({5} images concernées). Donnez à chaque image de référence une région "
+        "d'intérêt qui couvre l'éprouvette (masques par image, RÉGION D'INTÉRÊT).",
+        "Cámara {0}: en el fotograma {1}, {2} puntos quedaron a más de {3} px del punto medido más "
+        "cercano en el fotograma de referencia {4}; su desplazamiento se copió de ese punto y puede "
+        "ser erróneo ({5} fotogramas afectados). Asigne a cada fotograma de referencia una región "
+        "de interés que cubra la probeta (máscaras por fotograma, REGIÓN DE INTERÉS).",
+    ),
+    (
+        "Camera {0}: {1} of {2} points ({3}%) stopped being tracked by frame {4}: they moved onto "
+        "pixels outside the region of interest or where nothing was measured. Check that each "
+        "frame's region of interest covers the specimen.",
+        "相机 {0}：到第 {4} 帧时，{2} 个点中有 {1} 个（{3}%）已停止跟踪：它们移到了感兴趣区域之外"
+        "或没有测量值的像素上。请检查每一帧的感兴趣区域是否覆盖试件。",
+        "相機 {0}：到第 {4} 幀時，{2} 個點中有 {1} 個（{3}%）已停止追蹤：它們移到了感興趣區域之外"
+        "或沒有量測值的像素上。請檢查每一幀的感興趣區域是否涵蓋試件。",
+        "カメラ {0}：フレーム {4} までに {2} 点中 {1} 点（{3}%）の追跡が止まりました：関心領域の外、"
+        "または何も測定されていない画素に移動しました。各フレームの関心領域が試験片を覆っているか"
+        "確認してください。",
+        "카메라 {0}: 프레임 {4}까지 {2}개 점 중 {1}개({3}%)의 추적이 멈췄습니다: 관심 영역 밖이나 "
+        "측정값이 없는 픽셀로 이동했습니다. 각 프레임의 관심 영역이 시편을 덮는지 확인하세요.",
+        "Kamera {0}: {1} von {2} Punkten ({3} %) wurden bis Bild {4} nicht mehr verfolgt: Sie sind "
+        "auf Pixel außerhalb des Interessenbereichs oder ohne Messwert gewandert. Prüfen, ob der "
+        "Interessenbereich jedes Bildes den Prüfkörper abdeckt.",
+        "Caméra {0} : {1} points sur {2} ({3} %) ne sont plus suivis à l'image {4} : ils sont "
+        "passés sur des pixels hors de la région d'intérêt ou sans mesure. Vérifiez que la région "
+        "d'intérêt de chaque image couvre l'éprouvette.",
+        "Cámara {0}: {1} de {2} puntos ({3} %) dejaron de seguirse en el fotograma {4}: se "
+        "desplazaron a píxeles fuera de la región de interés o sin medición. Compruebe que la "
+        "región de interés de cada fotograma cubra la probeta.",
+    ),
 ]
 
 BATCH: dict[str, dict[str, str]] = {

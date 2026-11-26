@@ -350,7 +350,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="175"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="408"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="409"/>
         <source>select a pair to preview detected points</source>
         <translation>ペアを選択すると検出点をプレビューします</translation>
     </message>
@@ -521,122 +521,122 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="385"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="717"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="721"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>画像 (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="430"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="431"/>
         <source>{0} left / {1} right images</source>
         <translation>左 {0} 枚 / 右 {1} 枚</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="440"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="441"/>
         <source>Load equal, &gt;= 3 left/right image sets first.</source>
         <translation>左右同数(3 組以上)の画像を先に読み込んでください。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="471"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="472"/>
         <source>Working… {0}</source>
         <translation>処理中… {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="480"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="481"/>
         <source>Calibration failed: {0}</source>
         <translation>キャリブレーション失敗:{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="505"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
         <source>used</source>
         <translation>使用</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="507"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="511"/>
         <source>L: {0}</source>
         <translation>左:{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="513"/>
         <source>R: {0}</source>
         <translation>右:{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="525"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="529"/>
         <source>Stereo RMS {0:.3f} px | epipolar {1:.3f} px</source>
         <translation>ステレオ RMS {0:.3f} px | エピポーラ {1:.3f} px</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="532"/>
         <source>Baseline {0:.2f} mm | pairs {1}/{2}</source>
         <translation>基線 {0:.2f} mm | ペア {1}/{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="531"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="535"/>
         <source>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</source>
         <translation>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="534"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="538"/>
         <source>Coverage L {0:.0%} / R {1:.0%} | tilt {2:.0f}-{3:.0f}°</source>
         <translation>カバレッジ 左 {0:.0%} / 右 {1:.0%} | 傾き {2:.0f}-{3:.0f}°</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="543"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="547"/>
         <source>Bundle adjustment: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} mono views)</source>
         <translation>バンドル調整：RMS {0:.3f} -&gt; {1:.3f} px（単眼ビュー {2:.0f} 件）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="553"/>
         <source>Board flatness: z-range {0:.3f} mm</source>
         <translation>ボード平面度：z 範囲 {0:.3f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="552"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="556"/>
         <source>Warning: {0}</source>
         <translation>警告:{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="694"/>
         <source>Save board PDF</source>
         <translation>ボード PDF を保存</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="692"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="696"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="707"/>
         <source>Board PDF written: {0}</source>
         <translation>ボード PDF を書き込みました：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="719"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="723"/>
         <source>Choose LEFT verification image</source>
         <translation>左カメラの検証画像を選択</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="728"/>
         <source>Choose RIGHT verification image</source>
         <translation>右カメラの検証画像を選択</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="733"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="737"/>
         <source>Verification failed: {0}</source>
         <translation>検証に失敗しました：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="743"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>検証：ピッチ {0:.4f} mm 対 {1:g} mm — スケール誤差 {2:.3%}、平面 RMS {3:.4f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="753"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="757"/>
         <source>Save calibration as</source>
         <translation>キャリブレーションを保存</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="755"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="759"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
     </message>
@@ -1206,28 +1206,28 @@ with an ROI or brush tool turns it back on.</source>
 <context>
     <name>DetectionFilesMixin</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="215"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="229"/>
         <source>Save detections</source>
         <translation>検出結果を保存</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="217"/>
-        <location filename="../../gui/dialogs/calibration_support.py" line="238"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="252"/>
         <source>NumPy detections (*.npz)</source>
         <translation>NumPy 検出結果 (*.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="245"/>
         <source>Detections saved: {0}</source>
         <translation>検出結果を保存しました：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="236"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="250"/>
         <source>Load detections</source>
         <translation>検出結果を読み込み</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="260"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>{0} ペアの検出結果を読み込みました — 再キャリブレーションで検出なしに再計算できます</translation>
     </message>
@@ -1235,12 +1235,12 @@ with an ROI or brush tool turns it back on.</source>
 <context>
     <name>DetectionZoomDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="288"/>
         <source>Detection preview — pair {0}</source>
         <translation>検出プレビュー — ペア {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="283"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="297"/>
         <source>Wheel: zoom · Right/middle drag: pan</source>
         <translation>ホイール：ズーム · 右/中ボタンドラッグ：パン</translation>
     </message>
@@ -2783,12 +2783,12 @@ The previous version of the file, if any, is unchanged.</source>
 <context>
     <name>PairBars</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="106"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="120"/>
         <source>no solve yet</source>
         <translation>まだ解がありません</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="128"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="142"/>
         <source>worst-camera RMS per pair; dashed = reject threshold</source>
         <translation>ペアごとの最悪カメラ RMS。破線 = 棄却しきい値</translation>
     </message>
@@ -3801,74 +3801,89 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
         <translation>3D 外れ値フィルタが {0} 個の位置を除外</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="96"/>
+        <location filename="../../gui/panels/run_summary.py" line="100"/>
+        <source>Frame {0} is the first of {1} frames whose left-right point pairs lie off their epipolar lines (median up to {2} px; frame 1: {3} px): the two images of those frames probably do not show the same moment. Likely causes: an image missing from or added to one camera&apos;s sequence, unsynchronised cameras, or a camera that moved during the test. Check that the left and right image lists pair up frame by frame; the 3D results of those frames are not reliable.</source>
+        <translation>フレーム {0} は、左右の点の対応がエピポーラ線から外れている {1} フレームのうち最初のフレームです（中央値は最大 {2} px、フレーム 1 では {3} px）：これらのフレームの 2 枚の画像は同じ瞬間を写していない可能性が高いです。考えられる原因：一方のカメラのシーケンスで画像が欠けているか余分にある、カメラが同期していない、試験中にカメラが動いた。左右の画像リストがフレームごとに対応しているか確認してください。これらのフレームの 3D 結果は信頼できません。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="120"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>カメラ {0}：初期推定の探索範囲を {1} フレームで広げる必要がありました（最大 {2} px）。実行が遅くなります。参照フレーム間の動きが実際にこれほど大きい場合は、パラメータ &gt; 時系列探索 を大きくしてください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="102"/>
+        <location filename="../../gui/panels/run_summary.py" line="126"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>カメラ {0}：初期推定の探索範囲を {1} フレームで広げる必要がありました（最大 {2} px）。実行が遅くなります。逐次式では通常、フレーム 1 の領域が後の参照フレームで試験片を覆わなくなったことを意味します：フレームごとのマスクを読み込むか（関心領域）、ワークフロー種別 &gt; 累積式 を使用してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="120"/>
+        <location filename="../../gui/panels/run_summary.py" line="144"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>有効率がフレーム 2 の {0}% から {1}% に下がりました：すべてのフレームをフレーム 1 と比べる追跡は大変形に追従できません。ワークフロー種別 &gt; 逐次式 を試してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="126"/>
+        <location filename="../../gui/panels/run_summary.py" line="150"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
         <translation>有効率がフレーム 2 の {0}% から {1}% に下がりました：参照フレーム間の動きが大きすぎて追跡できません。参照フレームを毎フレーム更新してください（参照フレーム更新 &gt; 毎フレーム）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="132"/>
+        <location filename="../../gui/panels/run_summary.py" line="156"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>有効率がフレーム 2 の {0}% から {1}% に下がりました：試験中に有効領域が変わる場合（き裂、破断）は、フレームごとのマスクを読み込んでください（関心領域）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="140"/>
+        <location filename="../../gui/panels/run_summary.py" line="164"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>どのフレームにも有効な点がありません — 実行結果は空です。ROI・マスク・シード設定を確認してください (詳細は上記)。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="148"/>
+        <location filename="../../gui/panels/run_summary.py" line="172"/>
         <source>Partial result — {0} of {1} frames computed, median validity {2}%</source>
         <translation>部分的な結果：{1} フレーム中 {0} フレームを計算、有効率の中央値 {2}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="156"/>
+        <location filename="../../gui/panels/run_summary.py" line="180"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>解析完了 — {0} フレーム、有効率の中央値 {1}%、{2} フレームが {3}% 未満 (上記参照)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="169"/>
+        <location filename="../../gui/panels/run_summary.py" line="193"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>解析が完了しました：{0} フレーム、有効率の中央値 {1}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="215"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>ステレオチェックで、左右の相関が弱い（ZNSSD が {1} を超える）{0} 個の対応と、エピポーラ距離が {3} px を超える {2} 個の対応を除外しました。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="203"/>
+        <location filename="../../gui/panels/run_summary.py" line="227"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>フレーム 1 のステレオ対応はエピポーラ線から中央値 {0} px 離れています：キャリブレーションがこれらの画像と合っていない可能性があります（カメラが動いた、ファイルの取り違え、左右の入れ替わり）。キャリブレーションを確認するかやり直してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="210"/>
+        <location filename="../../gui/panels/run_summary.py" line="234"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>フレーム 1 の多くのステレオ対応がエピポーラ線から外れています：キャリブレーションがこれらの画像と合っていない可能性があります（カメラが動いた、ファイルの取り違え、左右の入れ替わり）。キャリブレーションを確認するかやり直してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="220"/>
+        <location filename="../../gui/panels/run_summary.py" line="244"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines (a calibration that fits the images gives under 0.3 px): a camera has probably moved since the calibration (bumped, refocused or re-aimed), which biases the 3D shape and displacements. Recalibrate the rig as it stands now.</source>
         <translation>フレーム 1 のステレオ対応はエピポーラ線から中央値で {0} px 離れています（画像に合ったキャリブレーションなら 0.3 px 未満）：キャリブレーション後にカメラが動いた可能性があります（ぶつかった、ピントを合わせ直した、向きを変えた）。これは 3D 形状と変位に偏りを生じます。現在の状態のリグでキャリブレーションをやり直してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="231"/>
+        <location filename="../../gui/panels/run_summary.py" line="255"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>粗い面や大きく傾いた面では、正しいステレオ対応でも相関が弱くなることがあります。点が欠ける場合は、詳細設定 &gt; 結果のチェック &gt; ステレオチェック を上げてください（例：1.0）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="268"/>
+        <source>Camera {0}: on frame {1}, {2} points lay more than {3} px from the nearest point measured on reference frame {4}; their displacement was copied from that point and may be wrong ({5} frames affected). Give each reference frame a region of interest that covers the specimen (per-frame masks, REGION OF INTEREST).</source>
+        <translation>カメラ {0}：フレーム {1} で {2} 個の点が、参照フレーム {4} で測定された最も近い点から {3} px 以上離れていました。それらの変位はその点からコピーされたもので、誤っている可能性があります（影響を受けたフレーム数 {5}）。各参照フレームに試験片を覆う関心領域を指定してください（フレームごとのマスク、関心領域）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="283"/>
+        <source>Camera {0}: {1} of {2} points ({3}%) stopped being tracked by frame {4}: they moved onto pixels outside the region of interest or where nothing was measured. Check that each frame&apos;s region of interest covers the specimen.</source>
+        <translation>カメラ {0}：フレーム {4} までに {2} 点中 {1} 点（{3}%）の追跡が止まりました：関心領域の外、または何も測定されていない画素に移動しました。各フレームの関心領域が試験片を覆っているか確認してください。</translation>
     </message>
 </context>
 <context>

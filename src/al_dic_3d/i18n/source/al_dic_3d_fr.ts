@@ -351,7 +351,7 @@ augmentez-la seulement pour un étalonnage médiocre ; 0 désactive le contrôle
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="175"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="408"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="409"/>
         <source>select a pair to preview detected points</source>
         <translation>sélectionnez une paire pour prévisualiser les points détectés</translation>
     </message>
@@ -522,122 +522,122 @@ augmentez-la seulement pour un étalonnage médiocre ; 0 désactive le contrôle
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="385"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="717"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="721"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="430"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="431"/>
         <source>{0} left / {1} right images</source>
         <translation>{0} images gauches / {1} droites</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="440"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="441"/>
         <source>Load equal, &gt;= 3 left/right image sets first.</source>
         <translation>Chargez d'abord des jeux gauche/droite égaux (au moins 3).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="471"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="472"/>
         <source>Working… {0}</source>
         <translation>Traitement… {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="480"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="481"/>
         <source>Calibration failed: {0}</source>
         <translation>Échec de l'étalonnage : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="505"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
         <source>used</source>
         <translation>utilisée</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="507"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="511"/>
         <source>L: {0}</source>
         <translation>G : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="513"/>
         <source>R: {0}</source>
         <translation>D : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="525"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="529"/>
         <source>Stereo RMS {0:.3f} px | epipolar {1:.3f} px</source>
         <translation>RMS stéréo {0:.3f} px | épipolaire {1:.3f} px</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="532"/>
         <source>Baseline {0:.2f} mm | pairs {1}/{2}</source>
         <translation>Ligne de base {0:.2f} mm | paires {1}/{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="531"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="535"/>
         <source>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</source>
         <translation>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="534"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="538"/>
         <source>Coverage L {0:.0%} / R {1:.0%} | tilt {2:.0f}-{3:.0f}°</source>
         <translation>Couverture G {0:.0%} / D {1:.0%} | inclinaison {2:.0f}-{3:.0f}°</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="543"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="547"/>
         <source>Bundle adjustment: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} mono views)</source>
         <translation>Ajustement de faisceaux : RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} vues mono)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="553"/>
         <source>Board flatness: z-range {0:.3f} mm</source>
         <translation>Planéité de la mire : plage z {0:.3f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="552"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="556"/>
         <source>Warning: {0}</source>
         <translation>Avertissement : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="694"/>
         <source>Save board PDF</source>
         <translation>Enregistrer le PDF de la mire</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="692"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="696"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="707"/>
         <source>Board PDF written: {0}</source>
         <translation>PDF de la mire écrit : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="719"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="723"/>
         <source>Choose LEFT verification image</source>
         <translation>Choisir l'image de vérification GAUCHE</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="728"/>
         <source>Choose RIGHT verification image</source>
         <translation>Choisir l'image de vérification DROITE</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="733"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="737"/>
         <source>Verification failed: {0}</source>
         <translation>Échec de la vérification : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="743"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>Vérification : pas {0:.4f} mm contre {1:g} mm — erreur d'échelle {2:.3%}, RMS plan {3:.4f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="753"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="757"/>
         <source>Save calibration as</source>
         <translation>Enregistrer l'étalonnage sous</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="755"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="759"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
     </message>
@@ -1211,28 +1211,28 @@ ROI ou le pinceau le réactive.</translation>
 <context>
     <name>DetectionFilesMixin</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="215"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="229"/>
         <source>Save detections</source>
         <translation>Enregistrer les détections</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="217"/>
-        <location filename="../../gui/dialogs/calibration_support.py" line="238"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="252"/>
         <source>NumPy detections (*.npz)</source>
         <translation>Détections NumPy (*.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="245"/>
         <source>Detections saved: {0}</source>
         <translation>Détections enregistrées : {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="236"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="250"/>
         <source>Load detections</source>
         <translation>Charger les détections</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="260"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>{0} paires de détections chargées — Réétalonner résout sans redétection</translation>
     </message>
@@ -1240,12 +1240,12 @@ ROI ou le pinceau le réactive.</translation>
 <context>
     <name>DetectionZoomDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="288"/>
         <source>Detection preview — pair {0}</source>
         <translation>Aperçu de détection — paire {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="283"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="297"/>
         <source>Wheel: zoom · Right/middle drag: pan</source>
         <translation>Molette : zoom · Glisser bouton droit/central : déplacement</translation>
     </message>
@@ -2798,12 +2798,12 @@ La version précédente du fichier, s'il y en a une, est intacte.</translation>
 <context>
     <name>PairBars</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="106"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="120"/>
         <source>no solve yet</source>
         <translation>pas encore de solution</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="128"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="142"/>
         <source>worst-camera RMS per pair; dashed = reject threshold</source>
         <translation>RMS caméra la plus défavorable par paire ; pointillés = seuil de rejet</translation>
     </message>
@@ -3819,74 +3819,89 @@ n'en dépend pas ; le déplacement et les pentes ∂w/∂x, ∂w/∂y, si.</tran
         <translation>Le filtre de points aberrants 3D a supprimé {0} positions</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="96"/>
+        <location filename="../../gui/panels/run_summary.py" line="100"/>
+        <source>Frame {0} is the first of {1} frames whose left-right point pairs lie off their epipolar lines (median up to {2} px; frame 1: {3} px): the two images of those frames probably do not show the same moment. Likely causes: an image missing from or added to one camera&apos;s sequence, unsynchronised cameras, or a camera that moved during the test. Check that the left and right image lists pair up frame by frame; the 3D results of those frames are not reliable.</source>
+        <translation>L'image {0} est la première des {1} images dont les paires de points gauche-droite s'écartent de leurs droites épipolaires (médiane jusqu'à {2} px ; image 1 : {3} px) : les deux vues de ces images ne montrent probablement pas le même instant. Causes probables : une image manquante ou en trop dans la séquence d'une caméra, des caméras non synchronisées, ou une caméra qui a bougé pendant l'essai. Vérifiez que les listes d'images gauche et droite se correspondent image par image ; les résultats 3D de ces images ne sont pas fiables.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="120"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>Caméra {0} : la recherche de l'estimation initiale a dû être élargie sur {1} images (jusqu'à {2} px), ce qui ralentit le calcul. Si le mouvement entre images de référence est vraiment aussi grand, augmentez PARAMÈTRES &gt; Recherche temporelle.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="102"/>
+        <location filename="../../gui/panels/run_summary.py" line="126"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>Caméra {0} : la recherche de l'estimation initiale a dû être élargie sur {1} images (jusqu'à {2} px), ce qui ralentit le calcul. En mode incrémental, cela signifie généralement que la région de l'image 1 ne couvre plus l'éprouvette dans les images de référence suivantes : importez des masques par image (RÉGION D'INTÉRÊT) ou utilisez TYPE DE FLUX &gt; Cumulatif.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="120"/>
+        <location filename="../../gui/panels/run_summary.py" line="144"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>La validité chute de {0} % (image 2) à {1} % : comparer chaque image à l'image 1 ne suit pas les grandes déformations. Essayez TYPE DE FLUX &gt; Incrémental.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="126"/>
+        <location filename="../../gui/panels/run_summary.py" line="150"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
         <translation>La validité chute de {0} % (image 2) à {1} % : le mouvement entre images de référence est trop grand pour être suivi. Mettez à jour la référence à chaque image (Mise à jour de la référence &gt; Chaque image).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="132"/>
+        <location filename="../../gui/panels/run_summary.py" line="156"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>La validité chute de {0} % (image 2) à {1} % : si la région valide change pendant l'essai (fissures, rupture), importez des masques par image (RÉGION D'INTÉRÊT).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="140"/>
+        <location filename="../../gui/panels/run_summary.py" line="164"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Aucun point valide dans AUCUNE image — l'exécution a produit un résultat vide. Vérifiez la ROI, les masques et le point de départ (détails ci-dessus).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="148"/>
+        <location filename="../../gui/panels/run_summary.py" line="172"/>
         <source>Partial result — {0} of {1} frames computed, median validity {2}%</source>
         <translation>Résultat partiel — {0} images calculées sur {1}, validité médiane {2} %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="156"/>
+        <location filename="../../gui/panels/run_summary.py" line="180"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse terminée — {0} images, validité médiane {1} %, {2} image(s) sous {3} % (voir ci-dessus)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="169"/>
+        <location filename="../../gui/panels/run_summary.py" line="193"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Analyse terminée — {0} images, validité médiane {1} %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="215"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>Le contrôle stéréo a retiré {0} correspondances pour une corrélation gauche-droite faible (ZNSSD au-dessus de {1}) et {2} pour la distance épipolaire (au-dessus de {3} px).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="203"/>
+        <location filename="../../gui/panels/run_summary.py" line="227"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Les correspondances stéréo de l'image 1 sont à {0} px (médiane) de leurs droites épipolaires : l'étalonnage ne correspond probablement pas à ces images (caméra déplacée, mauvais fichier, ou gauche et droite inversées). Vérifiez ou refaites l'étalonnage.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="210"/>
+        <location filename="../../gui/panels/run_summary.py" line="234"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>De nombreuses correspondances stéréo de l'image 1 s'écartent de leurs droites épipolaires : l'étalonnage ne correspond probablement pas à ces images (caméra déplacée, mauvais fichier, ou gauche et droite inversées). Vérifiez ou refaites l'étalonnage.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="220"/>
+        <location filename="../../gui/panels/run_summary.py" line="244"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines (a calibration that fits the images gives under 0.3 px): a camera has probably moved since the calibration (bumped, refocused or re-aimed), which biases the 3D shape and displacements. Recalibrate the rig as it stands now.</source>
         <translation>Les correspondances stéréo de l'image 1 s'écartent en médiane de {0} px de leurs droites épipolaires (un étalonnage adapté aux images donne moins de 0,3 px) : une caméra a probablement bougé depuis l'étalonnage (heurtée, refocalisée ou réorientée), ce qui biaise la forme 3D et les déplacements. Refaites l'étalonnage du montage tel qu'il est maintenant.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="231"/>
+        <location filename="../../gui/panels/run_summary.py" line="255"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>Sur une surface rugueuse ou très inclinée, des correspondances stéréo correctes peuvent corréler faiblement. S'il manque des points, augmentez AVANCÉ &gt; Contrôles des résultats &gt; Contrôle stéréo (par exemple à 1.0).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="268"/>
+        <source>Camera {0}: on frame {1}, {2} points lay more than {3} px from the nearest point measured on reference frame {4}; their displacement was copied from that point and may be wrong ({5} frames affected). Give each reference frame a region of interest that covers the specimen (per-frame masks, REGION OF INTEREST).</source>
+        <translation>Caméra {0} : sur l'image {1}, {2} points se trouvaient à plus de {3} px du point mesuré le plus proche sur l'image de référence {4} ; leur déplacement a été copié de ce point et peut être faux ({5} images concernées). Donnez à chaque image de référence une région d'intérêt qui couvre l'éprouvette (masques par image, RÉGION D'INTÉRÊT).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="283"/>
+        <source>Camera {0}: {1} of {2} points ({3}%) stopped being tracked by frame {4}: they moved onto pixels outside the region of interest or where nothing was measured. Check that each frame&apos;s region of interest covers the specimen.</source>
+        <translation>Caméra {0} : {1} points sur {2} ({3} %) ne sont plus suivis à l'image {4} : ils sont passés sur des pixels hors de la région d'intérêt ou sans mesure. Vérifiez que la région d'intérêt de chaque image couvre l'éprouvette.</translation>
     </message>
 </context>
 <context>

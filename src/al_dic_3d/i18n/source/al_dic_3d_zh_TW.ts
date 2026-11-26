@@ -350,7 +350,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="175"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="408"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="409"/>
         <source>select a pair to preview detected points</source>
         <translation>選擇一對影像以預覽偵測到的點</translation>
     </message>
@@ -521,122 +521,122 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="385"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="717"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="721"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>影像檔 (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="430"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="431"/>
         <source>{0} left / {1} right images</source>
         <translation>左 {0} 張 / 右 {1} 張</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="440"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="441"/>
         <source>Load equal, &gt;= 3 left/right image sets first.</source>
         <translation>請先載入數量相等且 ≥ 3 組的左右影像。</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="471"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="472"/>
         <source>Working… {0}</source>
         <translation>處理中… {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="480"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="481"/>
         <source>Calibration failed: {0}</source>
         <translation>校正失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="505"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
         <source>used</source>
         <translation>已採用</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="507"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="511"/>
         <source>L: {0}</source>
         <translation>左：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="513"/>
         <source>R: {0}</source>
         <translation>右：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="525"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="529"/>
         <source>Stereo RMS {0:.3f} px | epipolar {1:.3f} px</source>
         <translation>立體 RMS {0:.3f} px | 極線 {1:.3f} px</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="532"/>
         <source>Baseline {0:.2f} mm | pairs {1}/{2}</source>
         <translation>基線 {0:.2f} mm | 影像對 {1}/{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="531"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="535"/>
         <source>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</source>
         <translation>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="534"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="538"/>
         <source>Coverage L {0:.0%} / R {1:.0%} | tilt {2:.0f}-{3:.0f}°</source>
         <translation>覆蓋率 左 {0:.0%} / 右 {1:.0%} | 傾角 {2:.0f}-{3:.0f}°</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="543"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="547"/>
         <source>Bundle adjustment: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} mono views)</source>
         <translation>光束平差：RMS {0:.3f} -&gt; {1:.3f} px（單相機視圖 {2:.0f} 個）</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="553"/>
         <source>Board flatness: z-range {0:.3f} mm</source>
         <translation>校正板平整度：z 範圍 {0:.3f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="552"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="556"/>
         <source>Warning: {0}</source>
         <translation>警告：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="694"/>
         <source>Save board PDF</source>
         <translation>儲存校正板 PDF</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="692"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="696"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="707"/>
         <source>Board PDF written: {0}</source>
         <translation>校正板 PDF 已寫入：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="719"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="723"/>
         <source>Choose LEFT verification image</source>
         <translation>選擇左相機驗證影像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="728"/>
         <source>Choose RIGHT verification image</source>
         <translation>選擇右相機驗證影像</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="733"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="737"/>
         <source>Verification failed: {0}</source>
         <translation>驗證失敗：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="743"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>驗證：間距 {0:.4f} mm 對比 {1:g} mm——尺度誤差 {2:.3%}，平面 RMS {3:.4f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="753"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="757"/>
         <source>Save calibration as</source>
         <translation>校正另存為</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="755"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="759"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
     </message>
@@ -1207,28 +1207,28 @@ with an ROI or brush tool turns it back on.</source>
 <context>
     <name>DetectionFilesMixin</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="215"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="229"/>
         <source>Save detections</source>
         <translation>儲存偵測結果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="217"/>
-        <location filename="../../gui/dialogs/calibration_support.py" line="238"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="252"/>
         <source>NumPy detections (*.npz)</source>
         <translation>NumPy 偵測結果 (*.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="245"/>
         <source>Detections saved: {0}</source>
         <translation>偵測結果已儲存：{0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="236"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="250"/>
         <source>Load detections</source>
         <translation>載入偵測結果</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="260"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>已載入 {0} 組偵測結果——點擊重新校正即可免偵測重解</translation>
     </message>
@@ -1236,12 +1236,12 @@ with an ROI or brush tool turns it back on.</source>
 <context>
     <name>DetectionZoomDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="288"/>
         <source>Detection preview — pair {0}</source>
         <translation>偵測預覽 — 影像對 {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="283"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="297"/>
         <source>Wheel: zoom · Right/middle drag: pan</source>
         <translation>滾輪：縮放 · 右鍵/中鍵拖曳：平移</translation>
     </message>
@@ -2778,12 +2778,12 @@ The previous version of the file, if any, is unchanged.</source>
 <context>
     <name>PairBars</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="106"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="120"/>
         <source>no solve yet</source>
         <translation>尚未求解</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="128"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="142"/>
         <source>worst-camera RMS per pair; dashed = reject threshold</source>
         <translation>每對影像的最差相機 RMS；虛線 = 剔除閾值</translation>
     </message>
@@ -3795,74 +3795,89 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
         <translation>3D 離群點過濾移除了 {0} 個位置</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="96"/>
+        <location filename="../../gui/panels/run_summary.py" line="100"/>
+        <source>Frame {0} is the first of {1} frames whose left-right point pairs lie off their epipolar lines (median up to {2} px; frame 1: {3} px): the two images of those frames probably do not show the same moment. Likely causes: an image missing from or added to one camera&apos;s sequence, unsynchronised cameras, or a camera that moved during the test. Check that the left and right image lists pair up frame by frame; the 3D results of those frames are not reliable.</source>
+        <translation>第 {0} 幀是 {1} 個左右點對偏離極線的幀中的第一個（中位數最高 {2} px；第 1 幀：{3} px）：這些幀的兩幅影像很可能不是同一時刻拍攝的。可能原因：某台相機的序列缺少或多出一幅影像、兩台相機不同步，或試驗過程中有相機移動。請檢查左右影像清單是否逐幀對應；這些幀的 3D 結果不可靠。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="120"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>相機 {0}：初始估計的搜尋範圍在 {1} 幀上不得不擴大（最大 {2} px），這會拖慢執行。若參考幀之間的運動確實這麼大，請增大 參數 &gt; 時序搜尋。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="102"/>
+        <location filename="../../gui/panels/run_summary.py" line="126"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>相機 {0}：初始估計的搜尋範圍在 {1} 幀上不得不擴大（最大 {2} px），這會拖慢執行。在增量模式下，這通常表示第 1 幀繪製的區域在之後的參考幀上已不再覆蓋試件：請匯入逐幀遮罩（感興趣區域），或改用 工作流類型 &gt; 累積式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="120"/>
+        <location filename="../../gui/panels/run_summary.py" line="144"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>有效率從 {0}%（第 2 幀）降至 {1}%：每幀都與第 1 幀比較的追蹤無法跟隨大變形。請嘗試 工作流類型 &gt; 增量式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="126"/>
+        <location filename="../../gui/panels/run_summary.py" line="150"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
         <translation>有效率從 {0}%（第 2 幀）降至 {1}%：參考幀之間的運動太大，無法追蹤。請每幀更新參考幀（參考幀更新 &gt; 每幀）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="132"/>
+        <location filename="../../gui/panels/run_summary.py" line="156"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>有效率從 {0}%（第 2 幀）降至 {1}%：若試驗中有效區域會變化（裂紋、斷裂），請匯入逐幀遮罩（感興趣區域）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="140"/>
+        <location filename="../../gui/panels/run_summary.py" line="164"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>所有幀均無有效點——本次執行產生了空結果。請檢查 ROI、遮罩與種子點設定（詳見上方訊息）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="148"/>
+        <location filename="../../gui/panels/run_summary.py" line="172"/>
         <source>Partial result — {0} of {1} frames computed, median validity {2}%</source>
         <translation>部分結果——已計算 {1} 幀中的 {0} 幀，有效率中位數 {2}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="156"/>
+        <location filename="../../gui/panels/run_summary.py" line="180"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>分析完成——共 {0} 幀，中位有效率 {1}%，{2} 幀低於 {3}%（見上方）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="169"/>
+        <location filename="../../gui/panels/run_summary.py" line="193"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>分析完成——共 {0} 幀，有效率中位數 {1}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="215"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>立體校驗因左右相關性偏弱（ZNSSD 高於 {1}）移除了 {0} 個匹配，因極線距離（超過 {3} px）移除了 {2} 個。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="203"/>
+        <location filename="../../gui/panels/run_summary.py" line="227"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>第 1 幀的立體匹配到其極線的距離中位數為 {0} px：標定很可能與這些影像不符（相機移動過、用錯了檔案，或左右相機顛倒）。請檢查或重新標定。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="210"/>
+        <location filename="../../gui/panels/run_summary.py" line="234"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>第 1 幀的許多立體匹配偏離其極線：標定很可能與這些影像不符（相機移動過、用錯了檔案，或左右相機顛倒）。請檢查或重新標定。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="220"/>
+        <location filename="../../gui/panels/run_summary.py" line="244"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines (a calibration that fits the images gives under 0.3 px): a camera has probably moved since the calibration (bumped, refocused or re-aimed), which biases the 3D shape and displacements. Recalibrate the rig as it stands now.</source>
         <translation>第 1 幀的立體匹配與其極線的距離中位數為 {0} px（與影像相符的標定應小於 0.3 px）：自標定以來很可能有相機移動過（被碰到、重新對焦或重新調整方向），這會使三維形貌和位移產生偏差。請按裝置目前狀態重新標定。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="231"/>
+        <location filename="../../gui/panels/run_summary.py" line="255"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>在粗糙或明顯傾斜的表面上，正確的立體匹配也可能相關性偏弱。若缺點較多，請調高 高級 &gt; 結果校驗 &gt; 立體校驗（例如調到 1.0）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="268"/>
+        <source>Camera {0}: on frame {1}, {2} points lay more than {3} px from the nearest point measured on reference frame {4}; their displacement was copied from that point and may be wrong ({5} frames affected). Give each reference frame a region of interest that covers the specimen (per-frame masks, REGION OF INTEREST).</source>
+        <translation>相機 {0}：第 {1} 幀上有 {2} 個點距參考幀 {4} 上最近的量測點超過 {3} px；它們的位移是從該點複製的，可能有誤（受影響 {5} 幀）。請為每個參考幀提供涵蓋試件的感興趣區域（逐幀遮罩，見感興趣區域）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="283"/>
+        <source>Camera {0}: {1} of {2} points ({3}%) stopped being tracked by frame {4}: they moved onto pixels outside the region of interest or where nothing was measured. Check that each frame&apos;s region of interest covers the specimen.</source>
+        <translation>相機 {0}：到第 {4} 幀時，{2} 個點中有 {1} 個（{3}%）已停止追蹤：它們移到了感興趣區域之外或沒有量測值的像素上。請檢查每一幀的感興趣區域是否涵蓋試件。</translation>
     </message>
 </context>
 <context>
