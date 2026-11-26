@@ -27,6 +27,7 @@ from al_dic.solver.seed_prop_pipeline import build_grid_for_roi
 from numpy.typing import NDArray
 
 from al_dic_3d.matching.engine_log import record_fft_widening
+from al_dic_3d.matching.engine_params import engine_para
 from al_dic_3d.matching.gate import (  # noqa: F401
     _GATE_MAX_WORKERS,
     _gate_workers,
@@ -471,7 +472,9 @@ def track_engine(
             # (not the GUI log): count it per frame for the run summary.
             with record_fft_widening(lambda: engine_frame[0]) as widening:
                 result = run_aldic(
-                    para,
+                    # Displacement smoothing that provably returns its input on
+                    # this mesh is dropped (engine_params; bit-identical tracks).
+                    engine_para(para, mesh),
                     # Normalize-on-demand provider (P1.2): the engine otherwise
                     # eagerly materializes a full normalized float64 copy of the
                     # stack (ListFrameProvider). Byte-identical, streaming instead.
