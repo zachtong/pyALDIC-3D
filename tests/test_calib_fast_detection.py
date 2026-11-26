@@ -225,3 +225,24 @@ def test_uint16_gray_conversion_is_bit_identical_to_the_float_path():
     bgr = rng.integers(0, 4096, (40, 50, 3), dtype=np.uint16)
     expected = _reference_gray(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY))
     np.testing.assert_array_equal(to_gray_u8(bgr), expected)
+
+
+def test_the_order_is_decided_on_the_final_corners(monkeypatch):
+    """A board turned ~90 degrees nearly ties the two ends; the search's own
+    (coarse, a few px off) order must not decide it, the refined corners do."""
+    n = SPEC.cols * SPEC.rows
+    refined = np.column_stack([np.linspace(300.0, 100.0, n), np.linspace(50.0, 260.0, n)])
+    # Canonical: the first corner's x + y (350) is below the last one's (360).
+    # The search hands them over reversed, as a coarse start may.
+    monkeypatch.setattr(
+        cb, "_search", lambda gray, spec: cb.ChessboardCorners(refined[::-1].copy(), "sb")
+    )
+    out = cb.find_chessboard(np.zeros((400, 400), np.uint8), SPEC)
+    assert out.points[0].sum() <= out.points[-1].sum()
+    np.testing.assert_array_equal(out.points, refined)
+
+
+def test_a_view_without_a_board_is_returned_unchanged(monkeypatch):
+    miss = cb.ChessboardCorners(None, "classic", "chessboard not found")
+    monkeypatch.setattr(cb, "_search", lambda gray, spec: miss)
+    assert cb.find_chessboard(np.zeros((40, 40), np.uint8), SPEC) is miss

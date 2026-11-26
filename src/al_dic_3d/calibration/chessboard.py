@@ -22,7 +22,7 @@ from __future__ import annotations
 import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 from numpy.typing import NDArray
@@ -211,6 +211,18 @@ def _coarse_sb(
 
 def find_chessboard(gray: NDArray[np.uint8], spec: ChessboardSpec) -> ChessboardCorners:
     """Refined corners of ``spec``'s board in an 8-bit grayscale view (see the module notes)."""
+    found = _search(gray, spec)
+    if found.points is None:
+        return found
+    # The order is decided again on the final full-resolution corners, so it
+    # cannot depend on which search found the board: for a board turned about
+    # 90 degrees the two ends nearly tie, and a coarse search's few-pixel error
+    # could otherwise order a view differently from its stereo partner.
+    return replace(found, points=_canonicalize(found.points))
+
+
+def _search(gray: NDArray[np.uint8], spec: ChessboardSpec) -> ChessboardCorners:
+    """Coarse levels, then the full-resolution searches; corners refined at full size."""
     for side in _COARSE_SIDES:
         if max(gray.shape) < _COARSE_MIN_FACTOR * side:
             break

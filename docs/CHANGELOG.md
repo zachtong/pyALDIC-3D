@@ -9,6 +9,20 @@ GitHub release notes for a tag are this file's section for that version.
 
 ## [Unreleased]
 
+### Changed
+
+- **Chessboard calibration is 13 to 49 times faster on large images.** For 25
+  pairs of 10 MB images (4096 × 2448) the calibration took 6 minutes and now
+  takes 18 seconds; 25 pairs of 20 MP images went from 9.5 minutes to 12
+  seconds. The board is first searched on reduced copies of each image, and
+  its corners are then refined at full resolution exactly as before, so the
+  corners agree with the old ones to within 0.0005 px and the same images are
+  detected. Boards the reduced copies cannot confirm (for example a corner at
+  the image edge) are searched at full resolution as before. Images are now
+  detected several at a time, in the dialog and in `al-dic-3d calibrate`, and
+  the full-resolution search is limited in memory: it needed up to 6 GB per
+  20 MP image, which could slow a 16 GB computer to a crawl.
+
 ## [1.4.2] — 2026-11-25
 
 Four accuracy fixes. Track Both no longer adds strain along free edges,
