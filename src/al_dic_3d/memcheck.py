@@ -48,6 +48,25 @@ SETUP_AND_GATE_FRAMES = 16
 # displacement / reproj (~7), strain + export staging headroom.
 RESULT_DOUBLES_PER_POINT_FRAME = 24
 
+# Engine + gate working set per mesh node, independent of the frame count
+# (2026-11-26 audit of the measured peaks, see estimate_peak_bytes). Dense
+# meshes were projected 1.8-1.9x too low without it: 12 Mpx with winsize 24 /
+# step 8 (108,300 nodes, 20 frames) peaked at 9.4 GB against 5.2 projected,
+# 5 Mpx at 45,695 nodes at 4.1 against 2.2. The extra memory grows with the
+# node count at 41-45 KiB per node at both image sizes (real 5 Mpx data,
+# 37,230 nodes: 44 KiB); 46 KiB keeps every measured run below its projection.
+ENGINE_BYTES_PER_NODE = 46 * 1024
+
+# The incremental mode's extra working set: the reference frame changes, so
+# the engine keeps a mesh, a pair solution and the cumulative-transform
+# bookkeeping per reference on top of the accumulative set. It does not grow
+# with the frame count (5 Mpx, 11,532 nodes: 4.14 / 4.16 / 4.19 GB peak at
+# 5 / 10 / 20 frames, against 2.46 accumulative) but with the image and the
+# mesh: +1.7 GB there, +3.3 GB on real 5 Mpx data at 39,260 nodes, +9.5 GB at
+# 12 Mpx and 108,300 nodes (18.9 GB peak, 5.0 projected before).
+INCREMENTAL_BYTES_PER_MPX = 240 * 1024**2
+INCREMENTAL_BYTES_PER_NODE = 66 * 1024
+
 DEFAULT_RAM_FRACTION = 0.70
 
 
@@ -101,6 +120,7 @@ def estimate_peak_bytes(
     lazy: bool = True,
     n_pts: int = 0,
     parallel: bool = False,
+    incremental: bool = False,
 ) -> int:
     """Projected peak process memory (bytes) for one pipeline run.
 
@@ -112,9 +132,16 @@ def estimate_peak_bytes(
     ``parallel`` (P3.6) doubles the engine transient: with concurrent camera
     tracking both engine working sets are live at once. ``SETUP_AND_GATE_FRAMES``
     covers the frame-sized arrays outside the engine (see its comment).
+    ``ENGINE_BYTES_PER_NODE`` sizes the per-node working set (doubled by
+    ``parallel``), and ``incremental`` adds the incremental mode's per-run
+    extra (:data:`INCREMENTAL_BYTES_PER_MPX`, :data:`INCREMENTAL_BYTES_PER_NODE`).
     """
     bytes_per_frame = int(img_h) * int(img_w) * 8
-    transient = int(ENGINE_TRANSIENT_BYTES_PER_MPX * (img_h * img_w / 1e6))
+    mpx = img_h * img_w / 1e6
+    nodes = max(int(n_pts), 0)
+    transient = int(ENGINE_TRANSIENT_BYTES_PER_MPX * mpx) + nodes * ENGINE_BYTES_PER_NODE
+    if incremental:
+        transient += int(INCREMENTAL_BYTES_PER_MPX * mpx) + nodes * INCREMENTAL_BYTES_PER_NODE
     if parallel:
         transient *= 2
     if lazy:
@@ -135,6 +162,7 @@ def check_run_memory(
     lazy: bool = True,
     n_pts: int = 0,
     parallel: bool = False,
+    incremental: bool = False,
     fraction: float = DEFAULT_RAM_FRACTION,
 ) -> None:
     """Raise :class:`MemoryBudgetError` (a ``ValueError``) when the peak exceeds RAM.
@@ -147,7 +175,14 @@ def check_run_memory(
     if available is None:
         return
     projected = estimate_peak_bytes(
-        n_frames, img_h, img_w, n_cameras, lazy=lazy, n_pts=n_pts, parallel=parallel
+        n_frames,
+        img_h,
+        img_w,
+        n_cameras,
+        lazy=lazy,
+        n_pts=n_pts,
+        parallel=parallel,
+        incremental=incremental,
     )
     budget = fraction * available
     if projected <= budget:

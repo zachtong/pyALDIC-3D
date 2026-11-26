@@ -83,6 +83,11 @@ def temporal_rows(cam: str, tf: TemporalField) -> list[dict]:
         row = frame_row(k, cam, n_pts, int(tf.valid[k].sum()), n_gated=n_gated, note=note)
         search = int((getattr(tf, "fft_widened", None) or {}).get(k, 0))
         rows.append({**row, "search_px": search} if search else row)
+    # The engine's tracking warnings ride on the row of the frame they name.
+    for w in getattr(tf, "engine_warnings", ()) or ():
+        k = min(max(int(w.get("frame", 0)), 0), len(rows) - 1) if rows else -1
+        if k >= 0:
+            rows[k] = {**rows[k], "engine_warnings": [*rows[k].get("engine_warnings", []), dict(w)]}
     return rows
 
 
@@ -130,6 +135,81 @@ STEREO_ADVICE_FRAC = 0.2
 #: twice the worst healthy run (4-20x the others) and still below that bumped
 #: camera.
 EPIPOLAR_DRIFT_PX = 0.5
+
+
+#: Per-frame epipolar check: a frame whose stereo pairs lie this much (px,
+#: median) further from their epipolar lines than frame 1's is reported. The
+#: frame-1 stereo check sees frame 1 only; a right image missing from the
+#: sequence (the rest renumbered) put every later pair out of step, and the run
+#: reported 100 % valid with a 1.0 mm 3D error instead of 0.05 mm. The medians
+#: of those frames rose from 0.023-0.026 px to 0.31-0.38 px (0.35 mm/frame
+#: motion) or 2.1-2.3 px (larger motion); the tracked frames of the healthy
+#: synthetic runs sit 0.02-0.03 px above frame 1. Real data stay well below:
+#: the quickstart D specimen at most +0.003 px, and a notched specimen loaded
+#: to failure (136 frames, accumulative) 0.042 px at frame 1 and at most
+#: 0.116 px on any frame (+0.074).
+EPIPOLAR_JUMP_PX = 0.2
+
+#: Pairs sampled per frame for that median (an even stride over the valid
+#: pairs): the check costs about a millisecond per frame at any mesh size.
+EPIPOLAR_SAMPLE_PTS = 4000
+
+#: A frame with fewer valid pairs than this gets no median.
+EPIPOLAR_MIN_PTS = 20
+
+#: ``cam`` of the per-frame epipolar rows.
+EPIPOLAR_ROW_CAM = "epipolar"
+
+
+def epipolar_rows(
+    rig,
+    xL: NDArray[np.float64],
+    xR: NDArray[np.float64],
+    cam_left: str = "L",
+    cam_right: str = "R",
+    max_pts: int = EPIPOLAR_SAMPLE_PTS,
+) -> list[dict]:
+    """One row per frame with the median epipolar residual of its stereo pairs.
+
+    ``xL`` / ``xR`` are a correspondence's ``(n_frames, n_pts, 2)`` positions;
+    the residual is :func:`al_dic_3d.matching.stereo.epipolar_distance_px` over
+    at most ``max_pts`` valid pairs per frame. A row carries
+    ``epipolar_median_px`` only when the frame has :data:`EPIPOLAR_MIN_PTS`
+    valid pairs. Strategy-agnostic: it reads only the final pairs.
+    """
+    from al_dic_3d.matching.stereo import epipolar_distance_px
+
+    xl = np.asarray(xL, dtype=np.float64)
+    xr = np.asarray(xR, dtype=np.float64)
+    n_frames, n_pts = xl.shape[:2]
+    rows: list[dict] = []
+    for k in range(n_frames):
+        idx = np.flatnonzero(np.isfinite(xl[k]).all(axis=1) & np.isfinite(xr[k]).all(axis=1))
+        row = frame_row(k, EPIPOLAR_ROW_CAM, n_pts, int(idx.size), note="per-frame epipolar check")
+        if idx.size > max_pts:
+            idx = idx[np.linspace(0, idx.size - 1, max_pts).astype(np.int64)]
+        if idx.size >= EPIPOLAR_MIN_PTS:
+            d = epipolar_distance_px(rig, xl[k, idx], xr[k, idx], cam_left, cam_right)
+            if np.isfinite(d).any():
+                row = {**row, "epipolar_median_px": round(float(np.nanmedian(d)), 4)}
+        rows.append(row)
+    return rows
+
+
+def frame_sync_frames(summary: RunSummary) -> tuple[int, ...]:
+    """Frames (0-based, after frame 0) whose pairs left their epipolar lines.
+
+    A frame is listed when its median residual exceeds frame 0's by more than
+    :data:`EPIPOLAR_JUMP_PX`. Measuring against frame 0 keeps a calibration
+    that is off from the start (left and right swapped, a camera moved before
+    the test) on the frame-1 advice alone. Empty when frame 0 has no median
+    (a result saved before the check, or no valid frame-0 pair).
+    """
+    med = summary.epipolar_by_frame
+    if len(med) < 2 or med[0] is None:
+        return ()
+    limit = float(med[0]) + EPIPOLAR_JUMP_PX
+    return tuple(k for k in range(1, len(med)) if med[k] is not None and med[k] > limit)
 
 
 def no_stereo_links_cause(rejected: tuple[int, int] = (0, 0)) -> str:
@@ -237,6 +317,12 @@ class RunSummary:
     stereo_rejected_epipolar: int = 0
     stereo_epipolar_median_px: float | None = None
     stereo_frame1_rejected: tuple[int, int] = (0, 0)
+    # Per-frame median epipolar residual of the final pairs (px; None: no
+    # median for that frame, empty: a result saved before the check).
+    epipolar_by_frame: tuple[float | None, ...] = ()
+    # The 2D engine's tracking warnings (engine_log.tracking_warnings), each
+    # with its camera under "cam".
+    engine_warnings: tuple[dict, ...] = ()
 
     def to_meta(self) -> dict:
         """Plain JSON-serializable dict for ``RunResult.meta['summary']``."""
@@ -260,6 +346,10 @@ class RunSummary:
                 else round(float(self.stereo_epipolar_median_px), 3)
             ),
             "stereo_frame1_rejected": [int(n) for n in self.stereo_frame1_rejected],
+            "epipolar_by_frame": [
+                None if m is None else round(float(m), 4) for m in self.epipolar_by_frame
+            ],
+            "engine_warnings": [dict(w) for w in self.engine_warnings],
         }
 
 
@@ -294,8 +384,16 @@ def summarize_run(
     widened: dict[str, int] = {}
     max_search = 0
     rej_z = rej_e = 0
+    epipolar: list[float | None] = [None] * int(n_frames)
+    engine: list[dict] = []
     for r in rows:
         cam = str(r.get("cam", "?"))
+        engine.extend({**w, "cam": cam} for w in r.get("engine_warnings", ()) or ())
+        if cam == EPIPOLAR_ROW_CAM:
+            k = int(r.get("frame", -1))
+            if 0 <= k < n_frames and r.get("epipolar_median_px") is not None:
+                epipolar[k] = float(r["epipolar_median_px"])
+            continue
         if cam == "stereo":
             # The stereo check compares the two cameras, not frame k with frame 1:
             # it is reported on its own line, never as a temporal gate.
@@ -337,7 +435,38 @@ def summarize_run(
             if stereo is None
             else (int(stereo.get("n_znssd", 0)), int(stereo.get("n_epipolar", 0)))
         ),
+        epipolar_by_frame=(
+            tuple(epipolar) if any(r.get("cam") == EPIPOLAR_ROW_CAM for r in rows) else ()
+        ),
+        engine_warnings=tuple(engine),
     )
+
+
+def engine_warning_text(w: dict) -> str | None:
+    """English line for one engine tracking warning (``None``: a key not worded).
+
+    Frames are numbered from 1 here, as in the GUI.
+    """
+    cam, frame = w.get("cam", "?"), int(w.get("frame", 0)) + 1
+    if w.get("key") == "grid_miss":
+        far = w.get("far_px")
+        return (
+            f"camera {cam}: on frame {frame}, {w['count']} points lay more than "
+            f"{0.0 if far is None else far:.1f} px from the nearest point measured on "
+            f"reference frame {int(w.get('ref_frame', 0)) + 1}; their displacement was "
+            f"copied from that point and may be wrong ({w.get('n_frames', 1)} frame(s) "
+            f"affected). Give each reference frame a region of interest that covers the "
+            f"specimen (per-frame masks)"
+        )
+    if w.get("key") == "material_loss":
+        return (
+            f"camera {cam}: {w['count']} of {w.get('n_material', 0)} points "
+            f"({100.0 * float(w.get('fraction', 0.0)):.0f}%) stopped being tracked by "
+            f"frame {frame}: they moved onto pixels outside the region of interest or "
+            f"where nothing was measured. Check that each frame's region of interest "
+            f"covers the specimen"
+        )
+    return None
 
 
 def computed_frames(summary: RunSummary, meta: dict | None) -> RunSummary:
@@ -549,6 +678,26 @@ def summary_lines(
                 "(e.g. 1.0; GUI: ADVANCED > Result checks > Stereo check)",
             )
         )
+    sync = frame_sync_frames(summary)
+    if sync:
+        worst = max(summary.epipolar_by_frame[k] for k in sync)
+        lines.append(
+            (
+                "warning",
+                f"frame {sync[0] + 1} is the first of {len(sync)} frames whose left-right "
+                f"point pairs lie off their epipolar lines (median up to {worst:.2f} px; "
+                f"frame 1: {summary.epipolar_by_frame[0]:.2f} px): the two images of "
+                f"those frames probably do not show the same moment. Likely causes: an "
+                f"image missing from or added to one camera's sequence, unsynchronised "
+                f"cameras, or a camera that moved during the test. Check that the left "
+                f"and right image lists pair up frame by frame; the 3D results of those "
+                f"frames are not reliable",
+            )
+        )
+    for w in summary.engine_warnings:
+        text = engine_warning_text(w)
+        if text is not None:
+            lines.append(("warning", text))
     for cam, n in widening_advice(summary).items():
         head = (
             f"camera {cam}: the initial-guess search had to widen on {n} frames "

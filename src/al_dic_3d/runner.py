@@ -535,6 +535,7 @@ def run_pipeline(
             lazy=True,
             n_pts=int(np.asarray(mesh_L.coordinates_fem).shape[0]),
             parallel=cfg.parallel_cameras,  # P3.6: both engine transients live
+            incremental=cfg.reference_mode == "incremental",
         )
 
     # Batch C item 1/5: cut the external frame-1 mesh at any thin crack barrier
@@ -601,6 +602,12 @@ def run_pipeline(
     stop_reason = str(getattr(cs, "stop_reason", "") or "")
     if stopped_early and (stopped_at is None or stopped_at <= 1):
         raise RuntimeError("cancelled")
+    # Per-frame epipolar check, any strategy: the frame-1 stereo check cannot see
+    # a later left/right frame offset (a missing image), which is otherwise silent.
+    from al_dic_3d.matching.diagnostics import epipolar_rows
+
+    epi = epipolar_rows(rig, cs.xL, cs.xR, cfg.cam_left, cfg.cam_right)
+    cs = replace(cs, diagnostics=(*cs.diagnostics, *epi))
     ref_coords = np.asarray(mesh_L.coordinates_fem, dtype=np.float64)
 
     def _n_valid_positions(points) -> int:

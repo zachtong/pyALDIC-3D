@@ -3877,74 +3877,89 @@ bleibt gleich; Verschiebung und Neigungen ∂w/∂x, ∂w/∂y nicht.</translati
         <translation>3D-Ausreißerfilter entfernte {0} Positionen</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="96"/>
+        <location filename="../../gui/panels/run_summary.py" line="100"/>
+        <source>Frame {0} is the first of {1} frames whose left-right point pairs lie off their epipolar lines (median up to {2} px; frame 1: {3} px): the two images of those frames probably do not show the same moment. Likely causes: an image missing from or added to one camera&apos;s sequence, unsynchronised cameras, or a camera that moved during the test. Check that the left and right image lists pair up frame by frame; the 3D results of those frames are not reliable.</source>
+        <translation>Bild {0} ist das erste von {1} Bildern, deren linke und rechte Punktpaare neben ihren Epipolarlinien liegen (Median bis {2} px; Bild 1: {3} px): Die beiden Aufnahmen dieser Bilder zeigen vermutlich nicht denselben Zeitpunkt. Mögliche Ursachen: ein fehlendes oder zusätzliches Bild in der Sequenz einer Kamera, nicht synchronisierte Kameras oder eine Kamera, die sich während des Versuchs bewegt hat. Prüfen, ob die linke und die rechte Bildliste Bild für Bild zusammenpassen; die 3D-Ergebnisse dieser Bilder sind nicht verlässlich.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="120"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>Kamera {0}: Die Suche für die Anfangsschätzung musste auf {1} Bildern erweitert werden (bis {2} px), was den Lauf verlangsamt. Ist die Bewegung zwischen den Referenzbildern wirklich so groß, PARAMETER &gt; Zeitliche Suche erhöhen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="102"/>
+        <location filename="../../gui/panels/run_summary.py" line="126"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>Kamera {0}: Die Suche für die Anfangsschätzung musste auf {1} Bildern erweitert werden (bis {2} px), was den Lauf verlangsamt. Im inkrementellen Modus heißt das meist, dass der Bereich aus Bild 1 die Probe in späteren Referenzbildern nicht mehr abdeckt: Masken pro Bild importieren (INTERESSENBEREICH) oder WORKFLOW-TYP &gt; Akkumulativ verwenden.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="120"/>
+        <location filename="../../gui/panels/run_summary.py" line="144"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>Die Gültigkeit fällt von {0} % (Bild 2) auf {1} %: Jedes Bild gegen Bild 1 zu verfolgen, hält großen Verformungen nicht stand. WORKFLOW-TYP &gt; Inkrementell versuchen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="126"/>
+        <location filename="../../gui/panels/run_summary.py" line="150"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
         <translation>Die Gültigkeit fällt von {0} % (Bild 2) auf {1} %: Die Bewegung zwischen den Referenzbildern ist zu groß, um sie zu verfolgen. Die Referenz in jedem Frame aktualisieren (Referenz-Update &gt; Jeder Frame).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="132"/>
+        <location filename="../../gui/panels/run_summary.py" line="156"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>Die Gültigkeit fällt von {0} % (Bild 2) auf {1} %: Ändert sich der gültige Bereich im Versuch (Risse, Versagen), Masken pro Bild importieren (INTERESSENBEREICH).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="140"/>
+        <location filename="../../gui/panels/run_summary.py" line="164"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>Keine gültigen Punkte in IRGENDEINEM Frame — der Lauf lieferte ein leeres Ergebnis. Prüfen Sie ROI, Masken und Startpunkt (Details oben).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="148"/>
+        <location filename="../../gui/panels/run_summary.py" line="172"/>
         <source>Partial result — {0} of {1} frames computed, median validity {2}%</source>
         <translation>Teilergebnis — {0} von {1} Bildern berechnet, mittlere Gültigkeit {2} %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="156"/>
+        <location filename="../../gui/panels/run_summary.py" line="180"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>Analyse abgeschlossen — {0} Frames, mediane Validität {1} %, {2} Frame(s) unter {3} % (siehe oben)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="169"/>
+        <location filename="../../gui/panels/run_summary.py" line="193"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>Analyse abgeschlossen — {0} Bilder, mittlere Gültigkeit {1} %</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="215"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>Die Stereoprüfung hat {0} Zuordnungen wegen schwacher Links-rechts-Korrelation (ZNSSD über {1}) und {2} wegen des Epipolarabstands (über {3} px) entfernt.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="203"/>
+        <location filename="../../gui/panels/run_summary.py" line="227"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Die Stereozuordnungen von Bild 1 liegen im Median {0} px neben ihren Epipolarlinien: Die Kalibrierung passt vermutlich nicht zu diesen Bildern (Kamera bewegt, falsche Datei oder links und rechts vertauscht). Kalibrierung prüfen oder neu erstellen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="210"/>
+        <location filename="../../gui/panels/run_summary.py" line="234"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>Viele Stereozuordnungen von Bild 1 liegen neben ihren Epipolarlinien: Die Kalibrierung passt vermutlich nicht zu diesen Bildern (Kamera bewegt, falsche Datei oder links und rechts vertauscht). Kalibrierung prüfen oder neu erstellen.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="220"/>
+        <location filename="../../gui/panels/run_summary.py" line="244"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines (a calibration that fits the images gives under 0.3 px): a camera has probably moved since the calibration (bumped, refocused or re-aimed), which biases the 3D shape and displacements. Recalibrate the rig as it stands now.</source>
         <translation>Die Stereozuordnungen von Bild 1 liegen im Median {0} px neben ihren Epipolarlinien (eine zu den Bildern passende Kalibrierung ergibt unter 0,3 px): Vermutlich hat sich seit der Kalibrierung eine Kamera bewegt (angestoßen, neu fokussiert oder neu ausgerichtet), was die 3D-Form und die Verschiebungen verfälscht. Den Aufbau in seinem jetzigen Zustand neu kalibrieren.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="231"/>
+        <location filename="../../gui/panels/run_summary.py" line="255"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>Auf einer rauen oder stark geneigten Oberfläche können auch richtige Stereozuordnungen schwach korrelieren. Fehlen Punkte, ERWEITERT &gt; Ergebnisprüfungen &gt; Stereoprüfung erhöhen (zum Beispiel auf 1.0).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="268"/>
+        <source>Camera {0}: on frame {1}, {2} points lay more than {3} px from the nearest point measured on reference frame {4}; their displacement was copied from that point and may be wrong ({5} frames affected). Give each reference frame a region of interest that covers the specimen (per-frame masks, REGION OF INTEREST).</source>
+        <translation>Kamera {0}: In Bild {1} lagen {2} Punkte mehr als {3} px vom nächsten in Referenzbild {4} gemessenen Punkt entfernt; ihre Verschiebung wurde von diesem Punkt kopiert und kann falsch sein ({5} Bilder betroffen). Jedem Referenzbild einen Interessenbereich geben, der den Prüfkörper abdeckt (Masken pro Bild, INTERESSENBEREICH).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="283"/>
+        <source>Camera {0}: {1} of {2} points ({3}%) stopped being tracked by frame {4}: they moved onto pixels outside the region of interest or where nothing was measured. Check that each frame&apos;s region of interest covers the specimen.</source>
+        <translation>Kamera {0}: {1} von {2} Punkten ({3} %) wurden bis Bild {4} nicht mehr verfolgt: Sie sind auf Pixel außerhalb des Interessenbereichs oder ohne Messwert gewandert. Prüfen, ob der Interessenbereich jedes Bildes den Prüfkörper abdeckt.</translation>
     </message>
 </context>
 <context>

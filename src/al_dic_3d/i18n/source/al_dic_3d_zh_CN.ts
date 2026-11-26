@@ -3859,74 +3859,89 @@ by it; the displacement and the slopes ∂w/∂x, ∂w/∂y are not.</source>
         <translation>3D 离群点过滤移除了 {0} 个位置</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="96"/>
+        <location filename="../../gui/panels/run_summary.py" line="100"/>
+        <source>Frame {0} is the first of {1} frames whose left-right point pairs lie off their epipolar lines (median up to {2} px; frame 1: {3} px): the two images of those frames probably do not show the same moment. Likely causes: an image missing from or added to one camera&apos;s sequence, unsynchronised cameras, or a camera that moved during the test. Check that the left and right image lists pair up frame by frame; the 3D results of those frames are not reliable.</source>
+        <translation>第 {0} 帧是 {1} 个左右点对偏离极线的帧中的第一个（中位数最高 {2} px；第 1 帧：{3} px）：这些帧的两幅图像很可能不是同一时刻拍摄的。可能原因：某台相机的序列缺少或多出一幅图像、两台相机不同步，或试验过程中有相机移动。请检查左右图像列表是否逐帧对应；这些帧的 3D 结果不可靠。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="120"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>相机 {0}：初始估计的搜索范围在 {1} 帧上不得不扩大（最大 {2} px），这会拖慢运行。若参考帧之间的运动确实这么大，请增大 参数 &gt; 时序搜索。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="102"/>
+        <location filename="../../gui/panels/run_summary.py" line="126"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>相机 {0}：初始估计的搜索范围在 {1} 帧上不得不扩大（最大 {2} px），这会拖慢运行。在增量模式下，这通常说明第 1 帧绘制的区域在之后的参考帧上已不再覆盖试件：请导入逐帧掩膜（感兴趣区域），或改用 工作流类型 &gt; 累积式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="120"/>
+        <location filename="../../gui/panels/run_summary.py" line="144"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
         <translation>有效率从 {0}%（第 2 帧）降至 {1}%：每帧都与第 1 帧比较的跟踪无法跟随大变形。请尝试 工作流类型 &gt; 增量式。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="126"/>
+        <location filename="../../gui/panels/run_summary.py" line="150"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
         <translation>有效率从 {0}%（第 2 帧）降至 {1}%：参考帧之间的运动太大，无法跟踪。请每帧更新参考帧（参考帧更新 &gt; 每帧）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="132"/>
+        <location filename="../../gui/panels/run_summary.py" line="156"/>
         <source>Validity falls from {0}% (frame 2) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
         <translation>有效率从 {0}%（第 2 帧）降至 {1}%：若试验中有效区域会变化（裂纹、断裂），请导入逐帧掩膜（感兴趣区域）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="140"/>
+        <location filename="../../gui/panels/run_summary.py" line="164"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>所有帧均无有效点——本次运行产生了空结果。请检查 ROI、掩膜与种子点设置（详见上方信息）。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="148"/>
+        <location filename="../../gui/panels/run_summary.py" line="172"/>
         <source>Partial result — {0} of {1} frames computed, median validity {2}%</source>
         <translation>部分结果——已计算 {1} 帧中的 {0} 帧，有效率中位数 {2}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="156"/>
+        <location filename="../../gui/panels/run_summary.py" line="180"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>分析完成——共 {0} 帧，中位有效率 {1}%，{2} 帧低于 {3}%（见上方）</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="169"/>
+        <location filename="../../gui/panels/run_summary.py" line="193"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>分析完成——共 {0} 帧，有效率中位数 {1}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="191"/>
+        <location filename="../../gui/panels/run_summary.py" line="215"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>立体校验因左右相关性偏弱（ZNSSD 高于 {1}）移除了 {0} 个匹配，因极线距离（超过 {3} px）移除了 {2} 个。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="203"/>
+        <location filename="../../gui/panels/run_summary.py" line="227"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>第 1 帧的立体匹配到其极线的距离中位数为 {0} px：标定很可能与这些图像不符（相机移动过、用错了文件，或左右相机颠倒）。请检查或重新标定。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="210"/>
+        <location filename="../../gui/panels/run_summary.py" line="234"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>第 1 帧的许多立体匹配偏离其极线：标定很可能与这些图像不符（相机移动过、用错了文件，或左右相机颠倒）。请检查或重新标定。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="220"/>
+        <location filename="../../gui/panels/run_summary.py" line="244"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines (a calibration that fits the images gives under 0.3 px): a camera has probably moved since the calibration (bumped, refocused or re-aimed), which biases the 3D shape and displacements. Recalibrate the rig as it stands now.</source>
         <translation>第 1 帧的立体匹配与其极线的距离中位数为 {0} px（与图像相符的标定应小于 0.3 px）：自标定以来很可能有相机移动过（被碰到、重新对焦或重新调整方向），这会使三维形貌和位移产生偏差。请按装置当前状态重新标定。</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="231"/>
+        <location filename="../../gui/panels/run_summary.py" line="255"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>在粗糙或明显倾斜的表面上，正确的立体匹配也可能相关性偏弱。若缺点较多，请调高 高级 &gt; 结果校验 &gt; 立体校验（例如调到 1.0）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="268"/>
+        <source>Camera {0}: on frame {1}, {2} points lay more than {3} px from the nearest point measured on reference frame {4}; their displacement was copied from that point and may be wrong ({5} frames affected). Give each reference frame a region of interest that covers the specimen (per-frame masks, REGION OF INTEREST).</source>
+        <translation>相机 {0}：第 {1} 帧上有 {2} 个点距参考帧 {4} 上最近的测量点超过 {3} px；它们的位移是从该点复制的，可能有误（受影响 {5} 帧）。请为每个参考帧提供覆盖试件的感兴趣区域（逐帧掩膜，见感兴趣区域）。</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="283"/>
+        <source>Camera {0}: {1} of {2} points ({3}%) stopped being tracked by frame {4}: they moved onto pixels outside the region of interest or where nothing was measured. Check that each frame&apos;s region of interest covers the specimen.</source>
+        <translation>相机 {0}：到第 {4} 帧时，{2} 个点中有 {1} 个（{3}%）已停止跟踪：它们移到了感兴趣区域之外或没有测量值的像素上。请检查每一帧的感兴趣区域是否覆盖试件。</translation>
     </message>
 </context>
 <context>
