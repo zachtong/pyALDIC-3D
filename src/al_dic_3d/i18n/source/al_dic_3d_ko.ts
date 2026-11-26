@@ -14,7 +14,7 @@
         <translation>버전 {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/about_dialog.py" line="55"/>
+        <location filename="../../gui/dialogs/about_dialog.py" line="52"/>
         <source>Stereo (3D) digital image correlation — full-field displacement and surface strain from a calibrated camera pair.</source>
         <translation>스테레오(3D) 디지털 이미지 상관법 — 보정된 카메라 쌍으로 전영역 변위와 표면 변형률을 측정합니다.</translation>
     </message>
@@ -42,7 +42,7 @@
         <translation>기준 프레임 직접 매칭</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="51"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="43"/>
         <source>How stereo correspondences are propagated through time.
 Track Both (default): match stereo once at frame 1, then
 track each camera temporally — fastest, one stereo solve.
@@ -61,7 +61,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>전략</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="60"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="59"/>
         <source>1 = single global pass (fastest), 3 = default, 5+ = diminishing returns</source>
         <translation>1 = 단일 패스(가장 빠름), 3 = 기본값, 5 이상은 수익 감소</translation>
     </message>
@@ -81,7 +81,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>병렬 카메라 추적</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="75"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="72"/>
         <source>Track both cameras concurrently — modest speedup (the solver already uses all cores), doubles peak memory</source>
         <translation>양쪽 카메라를 동시에 추적 — 속도 향상은 제한적(솔버가 이미 모든 코어 사용), 최대 메모리 2배</translation>
     </message>
@@ -91,7 +91,7 @@ both cameras — no drift accumulation, small motions only.</source>
         <translation>FFT 피크가 잘리면 검색 영역 자동 확장</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="88"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="83"/>
         <source>When the temporal FFT integer peak lands on the search-region
 boundary, retry with a larger region (engine default on).
 Disable for strictly bounded runtimes; then Temporal Search
@@ -107,7 +107,7 @@ must cover the largest per-frame motion by itself.</source>
         <translation>결과 검사</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="107"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="100"/>
         <source>Tracking check: every tracked point must still look like its
 reference-frame subset (correlation mismatch, 0 = perfect, 4 = worst).
 Points below 60 % of this value always pass; points up to it
@@ -129,7 +129,7 @@ failed tracks. Default 1.0 (correlation 0.5). Raise it (e.g.
         <translation>추적 검사</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="117"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="114"/>
         <source>Stereo check: a left/right match is kept only if its
 correlation mismatch is at most this value. Default 0.6
 (correlation 0.7); 0 turns the check off.</source>
@@ -143,7 +143,7 @@ correlation mismatch is at most this value. Default 0.6
         <translation>스테레오 검사</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/advanced_section.py" line="127"/>
+        <location filename="../../gui/widgets/advanced_section.py" line="124"/>
         <source>Epipolar limit: a left/right match must lie within this many
 pixels of the line the calibration predicts. Default 2 px;
 raise it only for a poor calibration; 0 turns the check off.</source>
@@ -210,12 +210,12 @@ raise it only for a poor calibration; 0 turns the check off.</source>
         <translation>애니메이션 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="150"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="149"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>먼저 이미지 시퀀스를 불러오세요(메인 창에서 프로젝트를 여세요).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="160"/>
+        <location filename="../../gui/dialogs/export_tabs/animation_tab.py" line="158"/>
         <source>GIF timing has 1/100 s steps: {0} fps will play at {1} fps. Choose MP4 for faster playback.</source>
         <translation>GIF의 프레임 간격은 1/100초 단위입니다: {0} fps는 {1} fps로 재생됩니다. 더 빠른 재생에는 MP4를 선택하세요.</translation>
     </message>
@@ -238,7 +238,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
         <translation>pyALDIC-3D에서 오류가 발생했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="294"/>
+        <location filename="../../gui/app.py" line="289"/>
         <source>An unexpected error occurred. The application may not behave correctly from here on, so saving your project and restarting is recommended.</source>
         <translation>예기치 않은 오류가 발생했습니다. 이후 애플리케이션이 올바르게 동작하지 않을 수 있으므로 프로젝트를 저장하고 다시 시작하는 것이 좋습니다.</translation>
     </message>
@@ -248,7 +248,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
         <translation>자세한 내용이 {0}에 기록되었습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/app.py" line="350"/>
+        <location filename="../../gui/app.py" line="348"/>
         <source>Preparing compute kernels in the background…</source>
         <translation>백그라운드에서 계산 커널을 준비하는 중…</translation>
     </message>
@@ -521,7 +521,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="385"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="718"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="717"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>이미지 (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
@@ -626,7 +626,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
         <translation>검증 실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="740"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>검증: 간격 {0:.4f} mm 대 {1:g} mm — 스케일 오차 {2:.3%}, 평면 RMS {3:.4f} mm</translation>
     </message>
@@ -644,37 +644,37 @@ raise it only for a poor calibration; 0 turns the check off.</source>
 <context>
     <name>CalibrationFindings</name>
     <message>
-        <location filename="../../gui/calibration_findings.py" line="55"/>
+        <location filename="../../gui/calibration_findings.py" line="49"/>
         <source>Camera {0}: the board reached {1:.0%} of the image-corner radius. Beyond it the lens model is a guess: two equally good fits differ by up to {2:.2f} px there. Add views with the board near the image corners, keep the region of interest inside the covered area, or fix k3 for a low-distortion lens.</source>
         <translation>카메라 {0}: 보드가 이미지 모서리 반경의 {1:.0%}까지만 닿았습니다. 그 바깥의 렌즈 모델은 추측입니다. 똑같이 좋은 두 피팅이 그곳에서 최대 {2:.2f} px 차이 납니다. 이미지 모서리 근처에 보드를 둔 뷰를 추가하거나, 관심 영역을 덮인 범위 안에 두거나, 저왜곡 렌즈라면 k3를 고정하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/calibration_findings.py" line="61"/>
+        <location filename="../../gui/calibration_findings.py" line="57"/>
         <source>Camera {0}: the board reached {1:.0%} of the image-corner radius; the lens model is fitted only inside that radius.</source>
         <translation>카메라 {0}: 보드가 이미지 모서리 반경의 {1:.0%}까지 닿았습니다. 렌즈 모델은 이 반경 안쪽에서만 피팅됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/calibration_findings.py" line="47"/>
+        <location filename="../../gui/calibration_findings.py" line="40"/>
         <source>Camera {0}: the board reached {1:.0%} of the image-corner radius. Beyond it the lens model is a guess: two equally good fits differ by up to {2:.2f} px there. With k3 fixed, the corners are right only if the lens has no k3 distortion: add views with the board near the image corners, or keep the region of interest inside the covered area.</source>
         <translation>카메라 {0}: 보드가 이미지 모서리 반경의 {1:.0%}까지만 닿았습니다. 그 바깥의 렌즈 모델은 추측입니다. 똑같이 좋은 두 피팅이 그곳에서 최대 {2:.2f} px 차이 납니다. k3를 고정하면 렌즈에 k3 왜곡이 없을 때만 모서리가 정확합니다. 이미지 모서리 근처에 보드를 둔 뷰를 추가하거나 관심 영역을 덮인 범위 안에 두세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/calibration_findings.py" line="70"/>
+        <location filename="../../gui/calibration_findings.py" line="63"/>
         <source>Camera {0}: the residuals follow a pattern the lens model does not explain (binned excess {1:.1f}, fitted field {2:.1f} × noise; about 1 when the model fits), although the board shape is already optimised. A lens the model cannot describe, a board that bends differently from view to view, or detector bias can cause this.</source>
         <translation>카메라 {0}: 보드 형상을 이미 최적화했는데도 잔차에 렌즈 모델이 설명하지 못하는 패턴이 있습니다(구간 초과 {1:.1f}, 적합 장 {2:.1f} × 노이즈, 모델이 맞으면 약 1). 모델이 표현할 수 없는 렌즈, 뷰마다 다르게 휘는 보드 또는 검출 편향이 원인일 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/calibration_findings.py" line="80"/>
+        <location filename="../../gui/calibration_findings.py" line="72"/>
         <source>Camera {0}: the residuals follow a pattern the lens model does not explain (binned excess {1:.1f}, fitted field {2:.1f} × noise; about 1 when the model fits). Often the board is the cause (not flat, or its points not exactly where the board description puts them): tick Joint bundle adjustment and Optimize board shape. A lens the model cannot describe or detector bias can also cause this.</source>
         <translation>카메라 {0}: 잔차에 렌즈 모델이 설명하지 못하는 패턴이 있습니다(구간 초과 {1:.1f}, 적합 장 {2:.1f} × 노이즈, 모델이 맞으면 약 1). 원인은 보드인 경우가 많습니다(평평하지 않거나 점이 보드 설명과 정확히 같은 위치에 있지 않음). '번들 조정'과 '보드 형상 최적화'를 선택하세요. 모델이 표현할 수 없는 렌즈나 검출 편향도 원인일 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/calibration_findings.py" line="85"/>
+        <location filename="../../gui/calibration_findings.py" line="82"/>
         <source>Camera {0}: the extrapolation check was skipped (too few usable views).</source>
         <translation>카메라 {0}: 외삽 검사를 건너뛰었습니다(사용 가능한 뷰가 너무 적음).</translation>
     </message>
     <message>
-        <location filename="../../gui/calibration_findings.py" line="91"/>
+        <location filename="../../gui/calibration_findings.py" line="88"/>
         <source>Camera {0}: the lens-model check was skipped: the points fill only {1} image cells.</source>
         <translation>카메라 {0}: 렌즈 모델 검사를 건너뛰었습니다. 점이 {1}개의 이미지 셀에만 있습니다.</translation>
     </message>
@@ -692,7 +692,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
         <translation>이미지에서 캘리브레이션…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="59"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="54"/>
         <source>Run the built-in stereo calibrator on your target photos
 (checkerboard / ChArUco / dot grid). Writes an opencv_yaml
 file and loads it — the recommended path when you have
@@ -706,7 +706,7 @@ opencv_yaml 파일을 작성하고 불러옵니다 — 보정 이미지가 있�
         <translation>형식</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="80"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="74"/>
         <source>File format of the calibration to import. Default opencv_yaml
 (written by the built-in calibrator). Pick the format matching
 your source: dice (DICe XML), matchid (MatchID .caldat),
@@ -722,7 +722,7 @@ opencorr(OpenCorr CSV), mmc(MultiDIC/MMC .mat), matlabcv(MATLAB stereoParams .ma
         <translation>보정 가져오기…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="92"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="88"/>
         <source>Load an existing stereo calibration file in the selected
 Format. The status line below shows fx / fy and the baseline
 as a sanity check.</source>
@@ -735,7 +735,7 @@ as a sanity check.</source>
         <translation>파라미터 수동 입력…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="103"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="99"/>
         <source>Type intrinsics and extrinsics by hand (fx, fy, cx, cy,
 distortion, R, T) — the fallback when no calibration file
 exists. Writes an opencv_yaml file and loads it.</source>
@@ -783,7 +783,7 @@ fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
         <translation>{0} 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/camera_drop_zone.py" line="106"/>
+        <location filename="../../gui/widgets/camera_drop_zone.py" line="103"/>
         <source>Click to pick this camera&apos;s image folder, or drag the folder here. Both cameras need the same number of frames.</source>
         <translation>클릭하여 이 카메라의 이미지 폴더를 선택하거나 폴더를 여기로 끌어다 놓으세요. 두 카메라의 프레임 수는 같아야 합니다.</translation>
     </message>
@@ -829,7 +829,7 @@ fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
         <translation>이미지를 뷰포트에 맞춤 (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="106"/>
+        <location filename="../../gui/panels/canvas_area.py" line="103"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>현재 확대율 — 클릭하면 100%(1:1 픽셀)로 재설정됩니다.
@@ -851,7 +851,7 @@ Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>격자 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="143"/>
+        <location filename="../../gui/panels/canvas_area.py" line="138"/>
         <source>Show the computational mesh preview on the reference view
 (left camera, frame 1). Rebuilt live from the current Subset
 Step / refinement settings — what you see is the run&apos;s mesh.
@@ -861,7 +861,7 @@ Default on; turn off to declutter the canvas.</source>
 기본 켜짐. 캔버스를 깔끔하게 하려면 끄세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="155"/>
+        <location filename="../../gui/panels/canvas_area.py" line="151"/>
         <source>Hovering a mesh node shows its correlation subset window
 (the Subset Size box). Needs Show Grid. Use it to judge
 whether the subset spans enough speckle texture.</source>
@@ -869,7 +869,7 @@ whether the subset spans enough speckle texture.</source>
 '그리드 표시'가 필요합니다. 서브셋이 충분한 스페클 텍스처를 포함하는지 판단하는 데 사용하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="168"/>
+        <location filename="../../gui/panels/canvas_area.py" line="164"/>
         <source>Switch the canvas to the reconstructed 3D surface (colored by
 the selected field, with the camera frusta). Uncheck to return
 to the 2D image view. Requires results.</source>
@@ -887,7 +887,7 @@ to the 2D image view. Requires results.</source>
         <translation>ROI 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="130"/>
+        <location filename="../../gui/panels/canvas_area.py" line="125"/>
         <source>Show the drawn region of interest (blue) and refinement zones
 on the reference view (left camera, frame 1). Turned off when
 an analysis finishes so the results are not tinted; drawing
@@ -928,7 +928,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>마스크 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="373"/>
+        <location filename="../../gui/panels/canvas_area.py" line="372"/>
         <source>PNG image (*.png)</source>
         <translation>PNG 이미지 (*.png)</translation>
     </message>
@@ -943,7 +943,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>ROI 마스크를 {0}에 저장했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_area.py" line="585"/>
+        <location filename="../../gui/panels/canvas_area.py" line="584"/>
         <source>Analysis produced no valid points — nothing to display. See the log.</source>
         <translation>분석에서 유효한 점이 없습니다 — 표시할 내용이 없습니다. 로그를 확인하십시오.</translation>
     </message>
@@ -951,12 +951,12 @@ with an ROI or brush tool turns it back on.</source>
 <context>
     <name>CanvasRenderMixin</name>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="71"/>
+        <location filename="../../gui/panels/canvas_render.py" line="68"/>
         <source>Could not map the ROI into the right camera: {0}</source>
         <translation>ROI를 오른쪽 카메라로 옮길 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_render.py" line="208"/>
+        <location filename="../../gui/panels/canvas_render.py" line="207"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
@@ -979,7 +979,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>시드점을 지웠습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="83"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="81"/>
         <source>Starting points are placed on the LEFT camera, frame 1 — switch there to add a point</source>
         <translation>시드점은 왼쪽 카메라 1번 프레임에 배치합니다 — 해당 화면으로 전환한 뒤 추가하세요</translation>
     </message>
@@ -1024,7 +1024,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>캔버스 이미지를 클립보드에 복사했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/canvas_tools.py" line="210"/>
+        <location filename="../../gui/panels/canvas_tools.py" line="206"/>
         <source>1. Drop the left/right camera folders in the sidebar
 2. Calibrate or import calibration
 3. Draw the ROI and Run</source>
@@ -1066,7 +1066,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>FFT(시드점 없음)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="82"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="81"/>
         <source>Local DIC</source>
         <translation>Local DIC</translation>
     </message>
@@ -1092,7 +1092,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>누적형</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/config_overlay.py" line="76"/>
+        <location filename="../../gui/widgets/config_overlay.py" line="75"/>
         <source>Incremental</source>
         <translation>증분형</translation>
     </message>
@@ -1163,7 +1163,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>변형률</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="80"/>
+        <location filename="../../gui/dialogs/export_tabs/data_tab.py" line="79"/>
         <source>3D points, reprojection error, and source flags are always exported.</source>
         <translation>3D 점, 재투영 오차, 소스 플래그는 항상 내보내집니다.</translation>
     </message>
@@ -1227,7 +1227,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>검출 결과 불러오기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="261"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="260"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>검출 결과 {0}쌍을 불러왔습니다 — 재캘리브레이션으로 재검출 없이 다시 풉니다</translation>
     </message>
@@ -1308,22 +1308,22 @@ with an ROI or brush tool turns it back on.</source>
         <translation>3D 보기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="184"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="182"/>
         <source>Numeric results: field-selective NPZ / MAT / CSV tables plus PLY / VTU meshes for external tools.</source>
         <translation>수치 결과: 필드를 선택할 수 있는 NPZ / MAT / CSV 테이블과 외부 도구용 PLY / VTU 메시.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="188"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="186"/>
         <source>Rendered per-camera field overlays as PNG images, one per frame, using the Preview &amp; Colorbar style.</source>
         <translation>카메라별 필드 오버레이를 프레임당 한 장의 PNG 이미지로 렌더링합니다('미리보기와 컬러바' 스타일 사용).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="192"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="190"/>
         <source>GIF / MP4 animations of the field overlay across frames, using the Preview &amp; Colorbar style.</source>
         <translation>프레임 전반의 필드 오버레이 GIF / MP4 애니메이션('미리보기와 컬러바' 스타일 사용).</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="196"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="194"/>
         <source>WYSIWYG style source: the colorbar and margins configured here are used by every Images / Animation export.</source>
         <translation>WYSIWYG 스타일 소스: 여기서 설정한 컬러바와 여백이 모든 이미지/애니메이션 내보내기에 사용됩니다.</translation>
     </message>
@@ -1358,7 +1358,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>닫기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_dialog.py" line="200"/>
+        <location filename="../../gui/dialogs/export_dialog.py" line="198"/>
         <source>Offscreen renders of the 3D surface as images, a deforming animation or a turntable, from your current 3D view.</source>
         <translation>현재 3D 뷰의 시점으로 3D 표면을 오프스크린 렌더링하여 이미지, 변형 애니메이션 또는 턴테이블로 내보냅니다.</translation>
     </message>
@@ -1381,7 +1381,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>내보내기 취소됨 — 파일 {0}개 유지</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="290"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="289"/>
         <source>(the unfinished animation was deleted)</source>
         <translation>(완료되지 않은 애니메이션은 삭제되었습니다)</translation>
     </message>
@@ -1391,7 +1391,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>아무것도 기록되지 않았습니다: {0}에 그릴 데이터가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="301"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="299"/>
         <source>Nothing was written — the export produced no files.</source>
         <translation>아무것도 기록되지 않았습니다 — 내보내기에서 파일이 생성되지 않았습니다.</translation>
     </message>
@@ -1406,7 +1406,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>{0} 데이터 없음</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/common.py" line="318"/>
+        <location filename="../../gui/dialogs/export_tabs/common.py" line="317"/>
         <source>the right-camera ROI could not be derived; the tracked area was used</source>
         <translation>오른쪽 카메라의 ROI를 도출할 수 없어 추적 영역을 사용했습니다</translation>
     </message>
@@ -1460,17 +1460,17 @@ with an ROI or brush tool turns it back on.</source>
         <translation>변위</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="70"/>
+        <location filename="../../gui/widgets/field_selector.py" line="69"/>
         <source>U — world-frame displacement along X (left camera&apos;s +X, image right), in mm</source>
         <translation>U — 월드 좌표계 X 방향 변위(왼쪽 카메라의 +X, 이미지 오른쪽), 단위 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="73"/>
+        <location filename="../../gui/widgets/field_selector.py" line="72"/>
         <source>V — world-frame displacement along Y (left camera&apos;s +Y, image down), in mm</source>
         <translation>V — 월드 좌표계 Y 방향 변위(왼쪽 카메라의 +Y, 이미지 아래쪽), 단위 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="77"/>
+        <location filename="../../gui/widgets/field_selector.py" line="75"/>
         <source>W — world-frame displacement along Z (left camera&apos;s optical axis, toward the scene): out-of-plane motion, in mm</source>
         <translation>W — 월드 좌표계 Z 방향 변위(왼쪽 카메라 광축, 장면 방향): 면외 운동, 단위 mm</translation>
     </message>
@@ -1480,8 +1480,8 @@ with an ROI or brush tool turns it back on.</source>
         <translation>|D| — 변위 크기 √(U²+V²+W²), 단위 mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/field_selector.py" line="83"/>
-        <location filename="../../gui/widgets/field_selector.py" line="111"/>
+        <location filename="../../gui/widgets/field_selector.py" line="80"/>
+        <location filename="../../gui/widgets/field_selector.py" line="107"/>
         <source>Velocity — per-node speed |D(k) − D(k−1)| × frame rate, in the display unit per second. Depends on the frame rate set in the UNITS section; frame 1 has no predecessor (empty).</source>
         <translation>속도 — 노드별 속력 |D(k) − D(k−1)| × 프레임 속도. 표시 단위/초로 표시됩니다. UNITS 섹션의 프레임 속도 설정에 따라 달라지며, 프레임 1은 이전 프레임이 없습니다(비어 있음).</translation>
     </message>
@@ -1499,7 +1499,7 @@ with an ROI or brush tool turns it back on.</source>
         <translation>프레임별 마스크</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/frame_masks_section.py" line="74"/>
+        <location filename="../../gui/widgets/frame_masks_section.py" line="69"/>
         <source>Optional: one mask image per frame (non-zero = valid), for
 specimens whose valid region changes, e.g. a crack or a
 boundary that moves. Without them the ROI of frame 1 is used
@@ -1530,7 +1530,7 @@ for every frame.</source>
         <translation>왼쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/frame_masks_section.py" line="99"/>
+        <location filename="../../gui/widgets/frame_masks_section.py" line="97"/>
         <source>Right</source>
         <translation>오른쪽</translation>
     </message>
@@ -1663,7 +1663,7 @@ for every frame.</source>
         <translation>이미지 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="131"/>
+        <location filename="../../gui/dialogs/export_tabs/images_tab.py" line="130"/>
         <source>Load an image sequence first (open the project in the main window).</source>
         <translation>먼저 이미지 시퀀스를 불러오세요(메인 창에서 프로젝트를 여세요).</translation>
     </message>
@@ -1691,7 +1691,7 @@ for every frame.</source>
         <translation>시드점</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="85"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="77"/>
         <source>Click one or more points on the LEFT camera, frame 1 — at least
 one per connected ROI region. Each point&apos;s neighborhood is matched
 automatically into the right camera (stereo offset) and into
@@ -1708,12 +1708,12 @@ fields. If no point is placed, the run falls back to FFT.</source>
     </message>
     <message>
         <location filename="../../gui/widgets/init_guess_section.py" line="94"/>
-        <location filename="../../gui/widgets/init_guess_section.py" line="192"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="191"/>
         <source>Place points…</source>
         <translation>시드점 배치…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="101"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="98"/>
         <source>Enter placement mode on the canvas. Left-click the LEFT camera,
 frame 1 to ADD a point; right-click removes the nearest; Esc exits.</source>
         <translation>캔버스 배치 모드로 들어갑니다. 왼쪽 카메라 1번 프레임을 왼쪽 클릭하여
@@ -1725,7 +1725,7 @@ frame 1 to ADD a point; right-click removes the nearest; Esc exits.</source>
         <translation>자동 배치</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="110"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="106"/>
         <source>Place one Starting Point automatically, deep inside the ROI on
 the LEFT camera, frame 1. Add more by hand for disconnected
 regions or strongly varying motion.</source>
@@ -1744,7 +1744,7 @@ regions or strongly varying motion.</source>
         <translation>FFT(상호상관)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="130"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="125"/>
         <source>Full-grid cross-correlation seeds frame 1 (and every reference
 switch in incremental mode); later frames warm-start from the
 previous solution. Robust default — the search radius is the
@@ -1760,7 +1760,7 @@ Temporal Search parameter.</source>
         <translation>이전 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="142"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="137"/>
         <source>Start every frame from the previous frame&apos;s solution — no
 cross-correlation at all. Fastest; can silently freeze on large
 motion or decorrelation — the validity gate will flag affected
@@ -1776,7 +1776,7 @@ frames.</source>
         <translation>배치 중…(클릭하여 종료)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/init_guess_section.py" line="237"/>
+        <location filename="../../gui/widgets/init_guess_section.py" line="233"/>
         <source>No point placed: the run finds the stereo offset from probe patches and seeds frame 1 by FFT. Place a point (or Auto-place) for large first-frame motion.</source>
         <translation>시드점 없음: 실행 시 프로브 패치로 스테레오 오프셋을 찾고 프레임 1을 FFT로 초기화합니다. 첫 프레임의 움직임이 크면 점을 배치(또는 자동 배치)하세요.</translation>
     </message>
@@ -1800,7 +1800,7 @@ frames.</source>
 <context>
     <name>Issues</name>
     <message>
-        <location filename="../../gui/issue_text.py" line="28"/>
+        <location filename="../../gui/issue_text.py" line="30"/>
         <source>left camera</source>
         <translation>왼쪽 카메라</translation>
     </message>
@@ -1810,52 +1810,52 @@ frames.</source>
         <translation>오른쪽 카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="38"/>
+        <location filename="../../gui/issue_text.py" line="39"/>
         <source>calibration file not set</source>
         <translation>보정 파일이 설정되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="41"/>
+        <location filename="../../gui/issue_text.py" line="42"/>
         <source>left/right sequences not set</source>
         <translation>왼쪽/오른쪽 시퀀스가 설정되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="42"/>
+        <location filename="../../gui/issue_text.py" line="45"/>
         <source>need at least 2 frames</source>
         <translation>최소 2개 프레임이 필요합니다</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="43"/>
+        <location filename="../../gui/issue_text.py" line="46"/>
         <source>ROI not set</source>
         <translation>ROI가 설정되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="46"/>
+        <location filename="../../gui/issue_text.py" line="47"/>
         <source>ROI is empty (xmin&lt;xmax, ymin&lt;ymax required)</source>
         <translation>ROI가 비어 있습니다(xmin&lt;xmax, ymin&lt;ymax 필요)</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="49"/>
+        <location filename="../../gui/issue_text.py" line="50"/>
         <source>left and right sequences use the same image files</source>
         <translation>왼쪽과 오른쪽 시퀀스가 같은 이미지 파일을 사용합니다</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="64"/>
+        <location filename="../../gui/issue_text.py" line="66"/>
         <source>sequence length mismatch: {0} vs {1}</source>
         <translation>시퀀스 길이 불일치: {0} 대 {1}</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="68"/>
+        <location filename="../../gui/issue_text.py" line="70"/>
         <source>calibration file cannot be read: {0}</source>
         <translation>캘리브레이션 파일을 읽을 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="72"/>
+        <location filename="../../gui/issue_text.py" line="74"/>
         <source>{0}: image not readable: {1}</source>
         <translation>{0}: 이미지를 읽을 수 없음: {1}</translation>
     </message>
     <message>
-        <location filename="../../gui/issue_text.py" line="76"/>
+        <location filename="../../gui/issue_text.py" line="78"/>
         <source>{0}: frame sizes differ ({1} vs {2})</source>
         <translation>{0}: 프레임 크기가 다릅니다({1} 대 {2})</translation>
     </message>
@@ -1863,6 +1863,11 @@ frames.</source>
         <location filename="../../gui/issue_text.py" line="82"/>
         <source>ROI mask is {0} but the images are {1}: redraw or import it again</source>
         <translation>ROI 마스크는 {0}이지만 이미지는 {1}입니다: 다시 그리거나 다시 가져오세요</translation>
+    </message>
+    <message>
+        <location filename="../../gui/issue_text.py" line="88"/>
+        <source>{0}: the calibration was made for {1} images, but the images are {2}. Use the calibration of this setup (binned or cropped images need their own calibration).</source>
+        <translation>{0}: 보정은 {1} 이미지용인데 이미지는 {2}입니다. 이 셋업의 보정을 사용하세요(비닝하거나 잘라 낸 이미지에는 별도의 보정이 필요합니다).</translation>
     </message>
 </context>
 <context>
@@ -1892,7 +1897,7 @@ folder or click</source>
         <translation>자연 정렬 (1, 2, …, 10)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="103"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="99"/>
         <source>Sort file names numerically (img2 before img10). Default on; turn off for strict alphabetical order. Applies to the next folder load.</source>
         <translation>파일 이름을 숫자 순으로 정렬합니다(img2가 img10보다 앞). 기본 켜짐; 끄면 엄격한 알파벳 순입니다. 다음 폴더 불러오기부터 적용됩니다.</translation>
     </message>
@@ -1933,7 +1938,7 @@ folder or click</source>
         <translation>고급 설정</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="238"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="232"/>
         <source>Incremental: each frame is compared to the previous reference frame.
 Suitable for large accumulated deformation, required for large rotations.
 
@@ -1951,7 +1956,7 @@ Accurate for small, monotonic deformation only.</source>
         <translation>Local DIC</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="260"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="252"/>
         <source>Local DIC: Independent subset matching (IC-GN). Fast,
 preserves sharp local features. Best for small
 deformations or high-quality images.
@@ -1985,7 +1990,7 @@ AL-DIC: 전역 FEM 정칙화를 갖춘 확장 라그랑주.
         <translation>경계 상자: {0}–{1}, {2}–{3} px</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="388"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="383"/>
         <source>IC-GN subset window size in pixels (odd number). Default 33.
 Larger = more robust on sparse speckle, smoother fields;
 smaller = finer spatial detail but noisier. The subset must
@@ -2010,7 +2015,7 @@ span several speckles.</source>
         <translation>추적 모드</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="321"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="318"/>
         <source>Draw on the LEFT camera, frame 1 — all later frames and the right camera follow from it.</source>
         <translation>왼쪽 카메라 1번 프레임에 그립니다 — 이후 프레임과 오른쪽 카메라는 여기서 유도됩니다.</translation>
     </message>
@@ -2020,7 +2025,7 @@ span several speckles.</source>
         <translation>서브셋 크기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="401"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="397"/>
         <source>Node spacing in pixels (power of 2). Default 16. Smaller =
 denser measurement grid and longer runs; larger = faster but
 coarser fields. Typically ¼–½ of the Subset Size.</source>
@@ -2063,7 +2068,7 @@ coarser fields. Typically ¼–½ of the Subset Size.</source>
         <translation>마스크 경계(구멍)에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="461"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="456"/>
         <source>Quadtree-subdivide mesh elements crossing interior mask
 holes so the mesh hugs the hole edges. Default off (uniform
 grid); enable when the ROI mask has cut-outs whose rims you
@@ -2077,7 +2082,7 @@ care about.</source>
         <translation>ROI 가장자리에서 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="470"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="466"/>
         <source>Quadtree-subdivide mesh elements along the outer ROI
 boundary. Default off; enable for curved / irregular ROI
 outlines where the uniform grid staircases.</source>
@@ -2085,7 +2090,7 @@ outlines where the uniform grid staircases.</source>
 기본 꺼짐; ROI 윤곽이 곡선/불규칙하여 균일 격자가 계단 모양이 될 때 켜세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="482"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="478"/>
         <source>How aggressively refined elements shrink: the minimum element
 is step / 2^level. Default 1 (light); 3 is heavy — finer
 boundary detail but many more nodes and a slower run.</source>
@@ -2098,7 +2103,7 @@ boundary detail but many more nodes and a slower run.</source>
         <translation>세분화 레벨</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="608"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="603"/>
         <source>Half-width (pixels) of the temporal FFT integer search that seeds
 each per-frame match. Set comfortably larger than the expected
 inter-frame motion; with Auto-expand on (default) the engine can
@@ -2109,7 +2114,7 @@ still grow the search past this on a boundary-clipped peak.</source>
 이 값 이상으로 넓힐 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="622"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="619"/>
         <source>Current images: the engine starts the FFT search clamped to
 {0} px (max(10, min(H, W) / 4 - subset)); Auto-expand can grow
 it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
@@ -2118,7 +2123,7 @@ it to {1} px (max(32, min(H, W) / 2)) on clipped peaks.</source>
 자동 확장이 이를 {1} px(max(32, min(H, W) / 2))까지 늘릴 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="646"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="641"/>
         <source>Inactive with the current Initial Guess / Tracking Mode: the
 temporal FFT runs only when Initial Guess = FFT, or at reference
 switches in Incremental mode; in Accumulative + Starting Point /
@@ -2129,7 +2134,7 @@ Previous frame no FFT runs, so this control has no effect.</source>
 이 컨트롤은 효과가 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="617"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="615"/>
         <source>Current images: values above {0} px cannot widen the search
 (the window is clamped at the image borders).</source>
         <translation>현재 이미지에서는 {0} px를 초과해도 탐색이 더 넓어지지 않습니다
@@ -2141,7 +2146,7 @@ Previous frame no FFT runs, so this control has no effect.</source>
         <translation>추가 필터(상관, 이상치)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="277"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="271"/>
         <source>Post-run filters: drop points whose correlation (ZNSSD),
 reprojection error or 3D-outlier distance is too poor.
 Default off (keep every tracked point); enable for noisy
@@ -2154,7 +2159,7 @@ reports how many points each filter removed.</source>
 각 필터가 제거한 점의 수는 로그에 표시됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="426"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="420"/>
         <source>Epipolar band: the left-to-right match is searched only within
 this many pixels of the line the calibration predicts for each
 node, over the Stereo Search distance along it, so a look-alike
@@ -2167,7 +2172,7 @@ than the Epipolar limit; 0 searches a square window instead.</source>
 않으며, 0이면 정사각형 창에서 탐색합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="602"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="597"/>
         <source>How far (pixels) the left-to-right stereo match searches around
 each node&apos;s expected position: along the epipolar line, or in a
 square window when the Epipolar Band is off. Set it larger than
@@ -2188,12 +2193,12 @@ the error expected in that position.</source>
         <translation>왼쪽 카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="666"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="665"/>
         <source>right camera</source>
         <translation>오른쪽 카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/left_sidebar.py" line="669"/>
+        <location filename="../../gui/panels/left_sidebar.py" line="668"/>
         <source>This folder holds both cameras ({0}): using its {1} images for the {2}</source>
         <translation>이 폴더에는 두 카메라의 이미지가 모두 있습니다({0}). {2}에 이미지 {1}개를 사용합니다</translation>
     </message>
@@ -2251,7 +2256,7 @@ the error expected in that position.</source>
         <translation>.aldic3d 파일을 pyALDIC-3D에 연결…</translation>
     </message>
     <message>
-        <location filename="../../gui/main_menu.py" line="100"/>
+        <location filename="../../gui/main_menu.py" line="97"/>
         <source>Register .aldic3d so double-clicking a project file opens pyALDIC-3D (current user only, no admin rights needed).</source>
         <translation>.aldic3d를 등록하면 프로젝트 파일을 두 번 클릭할 때 pyALDIC-3D가 열립니다(현재 사용자만, 관리자 권한 불필요).</translation>
     </message>
@@ -2303,12 +2308,12 @@ the error expected in that position.</source>
         <translation>.aldic3d 연결을 등록할 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_menu.py" line="167"/>
+        <location filename="../../gui/main_menu.py" line="165"/>
         <source>Done — double-clicking a .aldic3d file now opens it in pyALDIC-3D (registered for the current user).</source>
         <translation>완료 — 이제 .aldic3d 파일을 두 번 클릭하면 pyALDIC-3D에서 열립니다(현재 사용자에 등록됨).</translation>
     </message>
     <message>
-        <location filename="../../gui/main_menu.py" line="175"/>
+        <location filename="../../gui/main_menu.py" line="174"/>
         <source>The interface language changes to {0} after pyALDIC-3D restarts.</source>
         <translation>pyALDIC-3D를 다시 시작하면 인터페이스 언어가 {0}(으)로 바뀝니다.</translation>
     </message>
@@ -2318,7 +2323,7 @@ the error expected in that position.</source>
         <translation>웹 브라우저를 열 수 없습니다. 사용자 가이드 위치: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_menu.py" line="215"/>
+        <location filename="../../gui/main_menu.py" line="214"/>
         <source>(not reachable)</source>
         <translation>(접근 불가)</translation>
     </message>
@@ -2479,7 +2484,7 @@ the error expected in that position.</source>
         <translation>열기를 취소했습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="556"/>
+        <location filename="../../gui/main_window.py" line="554"/>
         <source>Camera {0}: {1} image(s) not found (was {2}). Results stay viewable and exportable; running again needs the images.</source>
         <translation>카메라 {0}: 이미지 {1}개를 찾을 수 없습니다(원래 위치 {2}). 결과는 보고 내보낼 수 있지만 다시 실행하려면 이미지가 필요합니다.</translation>
     </message>
@@ -2494,12 +2499,12 @@ the error expected in that position.</source>
         <translation>캘리브레이션 파일을 찾았습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="576"/>
+        <location filename="../../gui/main_window.py" line="575"/>
         <source>The calibration file was not found; using the copy saved in the project: {0}</source>
         <translation>캘리브레이션 파일을 찾지 못해 프로젝트에 저장된 사본을 사용합니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="580"/>
+        <location filename="../../gui/main_window.py" line="579"/>
         <source>The rigid motion was not removed (the results are shown as measured): {0}</source>
         <translation>강체 운동을 제거하지 않았습니다(결과는 측정값 그대로 표시): {0}</translation>
     </message>
@@ -2509,7 +2514,7 @@ the error expected in that position.</source>
         <translation>이미지를 찾을 수 없음</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="597"/>
+        <location filename="../../gui/main_window.py" line="594"/>
         <source>Some of this project&apos;s images cannot be found. Open it anyway? Results stay viewable and exportable; running again needs the images.</source>
         <translation>이 프로젝트의 일부 이미지를 찾을 수 없습니다. 그래도 열까요? 결과는 보고 내보낼 수 있지만 다시 실행하려면 이미지가 필요합니다.</translation>
     </message>
@@ -2525,12 +2530,12 @@ the error expected in that position.</source>
         <translation>이미지 위치 지정</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="614"/>
+        <location filename="../../gui/main_window.py" line="611"/>
         <source>The selected folder does not contain this project&apos;s camera {0} frames. Pick the folder holding the original image files, or cancel to abort opening.</source>
         <translation>선택한 폴더에 이 프로젝트의 카메라 {0} 프레임이 없습니다. 원본 이미지 파일이 있는 폴더를 선택하거나, 취소하여 열기를 중단하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="624"/>
+        <location filename="../../gui/main_window.py" line="621"/>
         <source>The image folder saved with this project was not found:
 {0}
 
@@ -2556,12 +2561,12 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>이 프로젝트 파일에 분석 결과를 포함하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="677"/>
+        <location filename="../../gui/main_window.py" line="674"/>
         <source>Including results (about {0} uncompressed) lets you reopen the project without recomputing. Choose No to save a small configuration-only file for sharing.</source>
         <translation>결과를 포함하면(비압축 약 {0}) 재계산 없이 프로젝트를 다시 열 수 있습니다. '아니요'를 선택하면 공유용의 작은 구성 전용 파일을 저장합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="713"/>
+        <location filename="../../gui/main_window.py" line="712"/>
         <source>unknown size</source>
         <translation>크기 알 수 없음</translation>
     </message>
@@ -2576,7 +2581,7 @@ Select the folder that now contains the camera {1} frames (file names must match
         <translation>프로젝트를 저장할 수 없습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="732"/>
+        <location filename="../../gui/main_window.py" line="730"/>
         <source>Could not save the project:
 {0}
 
@@ -2596,7 +2601,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>{0}을(를) 저장했습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/main_window.py" line="438"/>
+        <location filename="../../gui/main_window.py" line="437"/>
         <source>Untitled</source>
         <translation>제목 없음</translation>
     </message>
@@ -2662,7 +2667,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>{0} (mm)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/manual_params_dialog.py" line="90"/>
+        <location filename="../../gui/dialogs/manual_params_dialog.py" line="87"/>
         <source>Euler composition R = Rz·Ry·Rx in degrees (MatchID/OpenCorr convention); distortion order k1, k2, p1, p2, k3 (OpenCV).</source>
         <translation>오일러 조합 R = Rz·Ry·Rx(도, MatchID/OpenCorr 규약); 왜곡 계수 순서 k1, k2, p1, p2, k3(OpenCV).</translation>
     </message>
@@ -2728,17 +2733,17 @@ The previous version of the file, if any, is unchanged.</source>
 <context>
     <name>NextStepHint</name>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="50"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="49"/>
         <source>Load the left and right camera folders</source>
         <translation>왼쪽/오른쪽 카메라 폴더를 불러오세요</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="55"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
         <source>Calibrate from images or import a calibration</source>
         <translation>이미지로 보정하거나 보정을 가져오세요</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="58"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="56"/>
         <source>Draw the ROI on the left camera, frame 1</source>
         <translation>왼쪽 카메라 1번 프레임에 ROI를 그리세요</translation>
     </message>
@@ -2756,7 +2761,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>이미지 쌍 제거</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/pair_actions.py" line="74"/>
+        <location filename="../../gui/panels/pair_actions.py" line="72"/>
         <source>Removing {0} pair(s) changes the sequence — the current results will be discarded. Continue?</source>
         <translation>{0}개의 쌍을 제거하면 시퀀스가 바뀝니다 — 현재 결과가 삭제됩니다. 계속할까요?</translation>
     </message>
@@ -2892,7 +2897,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>모든 필드에 적용</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="213"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="210"/>
         <source>Apply this field&apos;s colormap, opacity and auto-range to every enabled field (each field keeps its own min/max).</source>
         <translation>이 필드의 colormap, 불투명도, 자동 범위를 활성화된 모든 필드에 적용합니다(각 필드의 min/max는 유지).</translation>
     </message>
@@ -2949,7 +2954,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>배경</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="269"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="266"/>
         <source>Add a blank border around the exported content, as a fraction of the long edge (0 = none).</source>
         <translation>내보내는 콘텐츠 주위에 여백 테두리를 추가합니다. 너비는 긴 변에 대한 비율입니다(0 = 없음).</translation>
     </message>
@@ -2975,7 +2980,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>미리보기 실패: </translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="431"/>
+        <location filename="../../gui/dialogs/export_tabs/preview_tab.py" line="430"/>
         <source>Enable a field on the Images tab to preview.</source>
         <translation>미리보려면 Images 탭에서 필드를 활성화하세요.</translation>
     </message>
@@ -2988,22 +2993,22 @@ The previous version of the file, if any, is unchanged.</source>
 <context>
     <name>Progress</name>
     <message>
-        <location filename="../../gui/progress_text.py" line="32"/>
+        <location filename="../../gui/progress_text.py" line="30"/>
         <source>Preparing: checking the images and building the mesh</source>
         <translation>준비 중: 이미지 확인 및 메시 생성</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="35"/>
+        <location filename="../../gui/progress_text.py" line="33"/>
         <source>Preparing: initial guess for the left camera</source>
         <translation>준비 중: 왼쪽 카메라 초기값</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="38"/>
+        <location filename="../../gui/progress_text.py" line="36"/>
         <source>Preparing: mesh and initial guess for the right camera</source>
         <translation>준비 중: 오른쪽 카메라 메시와 초기값</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="41"/>
+        <location filename="../../gui/progress_text.py" line="39"/>
         <source>Preparing: estimating the stereo offset</source>
         <translation>준비 중: 스테레오 오프셋 추정</translation>
     </message>
@@ -3014,13 +3019,13 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>추적 완료</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="45"/>
+        <location filename="../../gui/progress_text.py" line="43"/>
         <source>normalizing images</source>
         <translation>이미지 정규화 중</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="48"/>
-        <location filename="../../gui/progress_text.py" line="51"/>
+        <location filename="../../gui/progress_text.py" line="46"/>
+        <location filename="../../gui/progress_text.py" line="49"/>
         <source>composing displacements</source>
         <translation>변위 합성 중</translation>
     </message>
@@ -3030,12 +3035,12 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>결과 조립 중</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="63"/>
+        <location filename="../../gui/progress_text.py" line="62"/>
         <source>Left camera</source>
         <translation>왼쪽 카메라</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="65"/>
+        <location filename="../../gui/progress_text.py" line="64"/>
         <source>Right camera</source>
         <translation>오른쪽 카메라</translation>
     </message>
@@ -3050,12 +3055,12 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>프레임 {0}/{1} 추적 중</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="84"/>
+        <location filename="../../gui/progress_text.py" line="80"/>
         <source>verifying frame {0} of {1} (keeping the frames tracked before the stop)</source>
         <translation>프레임 {0}/{1} 검증 중(중지 전에 추적한 프레임 유지)</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="86"/>
+        <location filename="../../gui/progress_text.py" line="85"/>
         <source>verifying frame {0} of {1}</source>
         <translation>프레임 {0}/{1} 검증 중</translation>
     </message>
@@ -3070,7 +3075,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>변형률: 프레임 {0}/{1}</translation>
     </message>
     <message>
-        <location filename="../../gui/progress_text.py" line="101"/>
+        <location filename="../../gui/progress_text.py" line="99"/>
         <source>Preparing: matching the two cameras at {0} nodes</source>
         <translation>준비 중: 노드 {0}개에서 두 카메라 매칭</translation>
     </message>
@@ -3096,7 +3101,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>+ 추가</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="78"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="77"/>
         <source>Add region to the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>관심 영역에 도형을 추가합니다(다각형 / 사각형 / 원)</translation>
     </message>
@@ -3106,7 +3111,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>잘라내기</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="84"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="83"/>
         <source>Cut region from the Region of Interest (Polygon / Rectangle / Circle)</source>
         <translation>관심 영역에서 도형을 잘라냅니다(다각형 / 사각형 / 원)</translation>
     </message>
@@ -3116,7 +3121,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>+ 세분화</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/roi_toolbar.py" line="93"/>
+        <location filename="../../gui/widgets/roi_toolbar.py" line="90"/>
         <source>Paint extra mesh-refinement zones with a brush
 (on the LEFT camera, frame 1 — the reference mesh geometry)</source>
         <translation>브러시로 추가 메시 세분화 영역을 칠합니다
@@ -3236,7 +3241,7 @@ The previous version of the file, if any, is unchanged.</source>
         <translation>사용자 지정 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="72"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="65"/>
         <source>How often the incremental reference frame advances.
 Every Frame (default): frame k matches against k−1 — tracks
 large accumulated deformation, but drift can accumulate.
@@ -3261,7 +3266,7 @@ N 프레임마다: 기준이 N 프레임마다만 전진 — 드리프트는 줄
         <translation> 프레임</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="88"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="87"/>
         <source>Reference-update interval N: frames k use the last reference at i·N &lt; k</source>
         <translation>기준 갱신 간격 N: 프레임 k는 i·N &lt; k인 가장 최근 기준을 사용합니다</translation>
     </message>
@@ -3271,7 +3276,7 @@ N 프레임마다: 기준이 N 프레임마다만 전진 — 드리프트는 줄
         <translation>예: 5, 10, 20 (0부터 시작하는 프레임 번호)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="100"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="96"/>
         <source>Comma-separated 0-based frame indices that become reference
 frames (frame 0 always is one). The last frame cannot be a
 reference.</source>
@@ -3280,7 +3285,7 @@ reference.</source>
 될 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/ref_update_section.py" line="142"/>
+        <location filename="../../gui/widgets/ref_update_section.py" line="141"/>
         <source>Enter comma-separated 0-based frame numbers, e.g. 5, 10, 20</source>
         <translation>쉼표로 구분된 0부터 시작하는 프레임 번호를 입력하세요. 예: 5, 10, 20</translation>
     </message>
@@ -3293,8 +3298,8 @@ reference.</source>
         <translation>3D 분석 실행</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="108"/>
-        <location filename="../../gui/panels/right_sidebar.py" line="460"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="105"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="457"/>
         <source>Run the full stereo correspondence + triangulation pipeline on the loaded image pairs (F5).</source>
         <translation>불러온 이미지 쌍에 대해 전체 스테레오 대응 + 삼각측량 파이프라인을 실행합니다(F5).</translation>
     </message>
@@ -3350,7 +3355,7 @@ reference.</source>
         <translation>변형 프레임에 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="190"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="187"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>체크하면 결과를 기준 프레임 대신 변형(현재) 프레임에 겹쳐 표시합니다</translation>
     </message>
@@ -3365,7 +3370,7 @@ reference.</source>
         <translation>왼쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="206"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="203"/>
         <source>Show the LEFT camera&apos;s images (the reference view: ROI, seed and mesh live here). Default.</source>
         <translation>왼쪽 카메라의 이미지를 표시합니다(기준 뷰: ROI, 시작점, 메시가 여기에 정의됨). 기본값.</translation>
     </message>
@@ -3375,7 +3380,7 @@ reference.</source>
         <translation>오른쪽</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="213"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="210"/>
         <source>Show the RIGHT camera&apos;s images with the field warped onto them — a cross-check that the stereo match is sound.</source>
         <translation>오른쪽 카메라의 이미지에 필드를 워핑하여 표시합니다 — 스테레오 매칭이 건전한지 교차 확인용입니다.</translation>
     </message>
@@ -3390,7 +3395,7 @@ reference.</source>
         <translation>색상 맵</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="241"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="237"/>
         <source>Colormap for the field overlay and the 3D surface. Default turbo (perceptually ordered, high contrast); pick RdBu_r or coolwarm for signed fields centered on zero.</source>
         <translation>필드 오버레이와 3D 표면에 사용하는 컬러맵. 기본값 turbo(지각적 순서, 고대비). 0을 중심으로 한 부호 있는 필드에는 RdBu_r 또는 coolwarm을 선택하세요.</translation>
     </message>
@@ -3400,7 +3405,7 @@ reference.</source>
         <translation>자동 범위</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="254"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="250"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>각 프레임의 데이터 범위에 맞춰 색상 범위를 다시 조정합니다(표시 값의 2–98 백분위수). 기본 켜짐; 체크를 해제하면 모든 프레임에 유지되는 고정 최소/최대 값을 입력할 수 있습니다.</translation>
     </message>
@@ -3495,7 +3500,7 @@ reference.</source>
         <translation>로그 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="421"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="420"/>
         <source>Text files (*.txt)</source>
         <translation>텍스트 파일 (*.txt)</translation>
     </message>
@@ -3511,7 +3516,7 @@ reference.</source>
         <translation>준비되지 않음 — {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="476"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="473"/>
         <source>Ready to run. No starting point: the stereo offset is found automatically and frame 1 is seeded by FFT.</source>
         <translation>실행할 수 있습니다. 시드점 없음: 스테레오 오프셋은 자동으로 찾고 프레임 1은 FFT로 초기화합니다.</translation>
     </message>
@@ -3521,22 +3526,22 @@ reference.</source>
         <translation>실행할 준비가 되었습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="514"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="513"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>변위 및 변형률 결과를 NPZ / MAT / CSV로 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="520"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="517"/>
         <source>Compute and visualize strain in a separate post-processing window. Requires displacement results from a completed Run.</source>
         <translation>별도의 후처리 창에서 변형률을 계산·시각화합니다. 완료된 실행의 변위 결과가 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="524"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="523"/>
         <source>Available after the running analysis finishes.</source>
         <translation>실행 중인 분석이 끝나면 사용할 수 있습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="526"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="525"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>먼저 분석을 실행하세요 — 아직 결과가 없습니다.</translation>
     </message>
@@ -3577,7 +3582,7 @@ reference.</source>
         <translation>실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="122"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="118"/>
         <source>Cancel the current analysis. Frames computed so far are kept as a partial result; only when nothing was computed yet does the run return to IDLE.</source>
         <translation>현재 분석을 취소합니다. 지금까지 계산된 프레임은 부분 결과로 유지됩니다. 아직 아무것도 계산되지 않은 경우에만 실행이 대기 상태로 돌아갑니다.</translation>
     </message>
@@ -3592,7 +3597,7 @@ reference.</source>
         <translation>분석 실패</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/right_sidebar.py" line="624"/>
+        <location filename="../../gui/panels/right_sidebar.py" line="623"/>
         <source>The analysis stopped with an error:
 
 {0}
@@ -3628,17 +3633,17 @@ The log has the details.</source>
 <context>
     <name>RigidMotion</name>
     <message>
-        <location filename="../../gui/rigid_motion_text.py" line="18"/>
+        <location filename="../../gui/rigid_motion_text.py" line="17"/>
         <source>translation</source>
         <translation>병진</translation>
     </message>
     <message>
-        <location filename="../../gui/rigid_motion_text.py" line="20"/>
+        <location filename="../../gui/rigid_motion_text.py" line="19"/>
         <source>translation + rotation</source>
         <translation>병진 + 회전</translation>
     </message>
     <message>
-        <location filename="../../gui/rigid_motion_text.py" line="22"/>
+        <location filename="../../gui/rigid_motion_text.py" line="21"/>
         <source>off</source>
         <translation>끔</translation>
     </message>
@@ -3671,7 +3676,7 @@ The log has the details.</source>
         <translation>병진 + 회전</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/rigid_motion_panel.py" line="66"/>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="61"/>
         <source>Remove each frame&apos;s best-fit rigid-body motion (relative to frame 1)
 from the displacement everywhere: the field maps, the 3D view,
 the strain and every export. Green-Lagrange strain is unchanged
@@ -3702,12 +3707,12 @@ Green-Lagrange 변형률은 변하지 않지만,
         <translation>− 다각형</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/rigid_motion_panel.py" line="90"/>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="89"/>
         <source>Add an area to the fit region (drawn on frame 1)</source>
         <translation>피팅 영역에 범위 추가(프레임 1에서 그림)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/rigid_motion_panel.py" line="92"/>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="91"/>
         <source>Remove an area from the fit region</source>
         <translation>피팅 영역에서 범위 제외</translation>
     </message>
@@ -3727,9 +3732,27 @@ Green-Lagrange 변형률은 변하지 않지만,
         <translation>피팅 영역 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/rigid_motion_panel.py" line="118"/>
+        <location filename="../../gui/widgets/rigid_motion_panel.py" line="115"/>
         <source>Per frame: shift of the fitted points&apos; centroid ΔX/ΔY/ΔZ (µm), rotation θ (mrad), fit residual RMS (µm), points used N.</source>
         <translation>프레임별: 피팅 점 중심의 이동 ΔX/ΔY/ΔZ(µm), 회전 θ(mrad), 피팅 잔차 RMS(µm), 사용된 점 수 N.</translation>
+    </message>
+</context>
+<context>
+    <name>RunErrors</name>
+    <message>
+        <location filename="../../gui/run_error_text.py" line="26"/>
+        <source>No point of frame 1 could be matched between the left and right images: the stereo check rejected {0} links for their distance from the epipolar line (median {1} px). The calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
+        <translation>프레임 1의 어떤 점도 왼쪽과 오른쪽 이미지 사이에서 대응시키지 못했습니다: 스테레오 검사가 에피폴라 선과의 거리 때문에 {0}개의 대응을 제외했습니다(중앙값 {1} px). 보정이 이 이미지와 맞지 않을 가능성이 큽니다(카메라 이동, 잘못된 파일, 좌우 뒤바뀜). 보정을 확인하거나 다시 하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/run_error_text.py" line="34"/>
+        <source>No point of frame 1 could be matched between the left and right images. Likely causes, most likely first: (1) left and right are swapped: load the left camera&apos;s images as the left camera; (2) the calibration does not belong to these images (another rig or session, or binned or cropped images); (3) the region of interest has no speckle texture. Otherwise check the Starting Point and that both cameras see the region.</source>
+        <translation>프레임 1의 어떤 점도 왼쪽과 오른쪽 이미지 사이에서 대응시키지 못했습니다. 가능성이 높은 순서의 원인: (1) 좌우가 뒤바뀜: 왼쪽 카메라의 이미지를 왼쪽 카메라로 불러오세요; (2) 보정이 이 이미지의 것이 아님(다른 장비나 다른 세션, 또는 비닝하거나 잘라 낸 이미지); (3) 관심 영역에 스페클 무늬가 없음. 그 밖에는 시드점과 두 카메라 모두 그 영역을 보는지 확인하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/run_error_text.py" line="48"/>
+        <source>This run would need about {0} GB of memory, more than {1} of the {2} GB available, for {3} frames. Analyse fewer frames, choose a coarser PARAMETERS &gt; Subset Step, or draw a smaller region of interest; closing other applications also helps.</source>
+        <translation>이 실행에는 약 {0} GB의 메모리가 필요해 사용 가능한 {2} GB의 {1}을(를) 넘습니다({3}프레임). 분석할 프레임 수를 줄이거나, 매개변수 &gt; 서브셋 간격을 더 크게 하거나, 관심 영역을 더 작게 그리세요. 다른 프로그램을 닫는 것도 도움이 됩니다.</translation>
     </message>
 </context>
 <context>
@@ -3740,102 +3763,112 @@ Green-Lagrange 변형률은 변하지 않지만,
         <translation>분석 완료</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="43"/>
+        <location filename="../../gui/panels/run_summary.py" line="50"/>
         <source>Stopped early at frame {0}/{1} — kept {2} computed frames (later frames are empty)</source>
         <translation>프레임 {0}/{1}에서 조기 중단 — 계산된 {2}개 프레임을 유지했습니다(이후 프레임은 비어 있음)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="47"/>
+        <location filename="../../gui/panels/run_summary.py" line="56"/>
         <source>Run interrupted: {0}</source>
         <translation>실행이 중단되었습니다: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="51"/>
+        <location filename="../../gui/panels/run_summary.py" line="60"/>
         <source>Frame-1 stereo match: {0}/{1} points matched ({2}%)</source>
         <translation>1번 프레임 스테레오 매칭: {0}/{1}개 점 매칭됨 ({2}%)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="62"/>
+        <location filename="../../gui/panels/run_summary.py" line="69"/>
         <source>Camera {0}: validity gate removed {1} node-frames (correlation with the reference frame failed)</source>
         <translation>카메라 {0}: 유효성 게이트가 노드 프레임 {1}개를 제거함 (기준 프레임과의 상관 검증 실패)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="67"/>
+        <location filename="../../gui/panels/run_summary.py" line="76"/>
         <source>Frame {0}: only {1}% of points valid</source>
         <translation>프레임 {0}: 점의 {1}%만 유효</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="74"/>
+        <location filename="../../gui/panels/run_summary.py" line="83"/>
         <source>Quality gate (ZNSSD) removed {0} positions</source>
         <translation>품질 게이트(ZNSSD)가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="75"/>
+        <location filename="../../gui/panels/run_summary.py" line="84"/>
         <source>Reprojection gate removed {0} positions</source>
         <translation>재투영 게이트가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="76"/>
+        <location filename="../../gui/panels/run_summary.py" line="85"/>
         <source>3D outlier filter removed {0} positions</source>
         <translation>3D 이상치 필터가 위치 {0}개를 제거함</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="91"/>
+        <location filename="../../gui/panels/run_summary.py" line="96"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. If the motion between reference frames is that large, raise PARAMETERS &gt; Temporal Search.</source>
         <translation>카메라 {0}: 초기 추정 탐색 범위를 {1}개 프레임에서 넓혀야 했습니다(최대 {2} px). 실행이 느려집니다. 기준 프레임 사이의 움직임이 실제로 이만큼 크다면 매개변수 &gt; 시간 탐색을 늘리세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="99"/>
+        <location filename="../../gui/panels/run_summary.py" line="102"/>
         <source>Camera {0}: the initial-guess search had to widen on {1} frames (up to {2} px), which slows the run. In incremental mode this usually means the frame-1 region no longer covers the specimen at later reference frames: import per-frame masks (REGION OF INTEREST) or use WORKFLOW TYPE &gt; Accumulative.</source>
         <translation>카메라 {0}: 초기 추정 탐색 범위를 {1}개 프레임에서 넓혀야 했습니다(최대 {2} px). 실행이 느려집니다. 증분형에서는 보통 프레임 1 영역이 이후 기준 프레임에서 시편을 더 이상 덮지 못한다는 뜻입니다: 프레임별 마스크를 가져오거나(관심 영역) 워크플로 유형 &gt; 누적형을 사용하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="115"/>
-        <source>Validity falls from {0}% (frame 1) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
-        <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 모든 프레임을 프레임 1과 비교하는 추적은 큰 변형을 따라가지 못합니다. 워크플로 유형 &gt; 증분형을 사용해 보세요.</translation>
+        <location filename="../../gui/panels/run_summary.py" line="120"/>
+        <source>Validity falls from {0}% (frame 2) to {1}%: tracking every frame against frame 1 cannot follow large deformation. Try WORKFLOW TYPE &gt; Incremental.</source>
+        <translation>유효율이 {0}%(프레임 2)에서 {1}%로 떨어집니다: 모든 프레임을 프레임 1과 비교하는 추적은 큰 변형을 따라가지 못합니다. 워크플로 유형 &gt; 증분형을 사용해 보세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="121"/>
-        <source>Validity falls from {0}% (frame 1) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
-        <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 기준 프레임 사이의 움직임이 너무 커서 추적할 수 없습니다. 기준 프레임을 매 프레임 갱신하세요(기준 프레임 갱신 &gt; 매 프레임).</translation>
+        <location filename="../../gui/panels/run_summary.py" line="126"/>
+        <source>Validity falls from {0}% (frame 2) to {1}%: the motion between reference frames is too large to track. Update the reference every frame (Reference Update &gt; Every Frame).</source>
+        <translation>유효율이 {0}%(프레임 2)에서 {1}%로 떨어집니다: 기준 프레임 사이의 움직임이 너무 커서 추적할 수 없습니다. 기준 프레임을 매 프레임 갱신하세요(기준 프레임 갱신 &gt; 매 프레임).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="127"/>
-        <source>Validity falls from {0}% (frame 1) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
-        <translation>유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 시험 중 유효 영역이 바뀌면(균열, 파단) 프레임별 마스크를 가져오세요(관심 영역).</translation>
+        <location filename="../../gui/panels/run_summary.py" line="132"/>
+        <source>Validity falls from {0}% (frame 2) to {1}%: if the valid region changes during the test (cracks, failure), import per-frame masks (REGION OF INTEREST).</source>
+        <translation>유효율이 {0}%(프레임 2)에서 {1}%로 떨어집니다: 시험 중 유효 영역이 바뀌면(균열, 파단) 프레임별 마스크를 가져오세요(관심 영역).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="133"/>
+        <location filename="../../gui/panels/run_summary.py" line="140"/>
         <source>No valid points in ANY frame — the run produced an empty result. Check ROI, masks and seeding (details above).</source>
         <translation>어느 프레임에도 유효한 점이 없습니다 — 실행 결과가 비어 있습니다. ROI, 마스크, 시드 설정을 확인하십시오(자세한 내용은 위 참조).</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="141"/>
+        <location filename="../../gui/panels/run_summary.py" line="148"/>
+        <source>Partial result — {0} of {1} frames computed, median validity {2}%</source>
+        <translation>부분 결과 — {1}프레임 중 {0}프레임 계산됨, 유효율 중앙값 {2}%</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="156"/>
         <source>Analysis complete — {0} frames, median validity {1}%, {2} frame(s) below {3}% (see above)</source>
         <translation>분석 완료 — 프레임 {0}개, 유효율 중앙값 {1}%, {2}개 프레임이 {3}% 미만 (위 참조)</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="152"/>
+        <location filename="../../gui/panels/run_summary.py" line="169"/>
         <source>Analysis complete — {0} frames, median validity {1}%</source>
         <translation>분석 완료 — {0}프레임, 유효율 중앙값 {1}%</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="176"/>
+        <location filename="../../gui/panels/run_summary.py" line="191"/>
         <source>Stereo check removed {0} links for weak left-right correlation (ZNSSD above {1}) and {2} for epipolar distance (above {3} px).</source>
         <translation>스테레오 검사가 좌우 상관이 약한(ZNSSD {1} 초과) 대응 {0}개와 에피폴라 거리({3} px 초과) 때문에 {2}개를 제거했습니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="190"/>
+        <location filename="../../gui/panels/run_summary.py" line="203"/>
         <source>The frame-1 stereo links lie a median {0} px from their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>프레임 1의 스테레오 대응이 에피폴라 선에서 중앙값 {0} px 떨어져 있습니다: 보정이 이 이미지와 맞지 않을 가능성이 큽니다(카메라 이동, 잘못된 파일, 좌우 뒤바뀜). 보정을 확인하거나 다시 하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="198"/>
+        <location filename="../../gui/panels/run_summary.py" line="210"/>
         <source>Many frame-1 stereo links lie off their epipolar lines: the calibration probably does not match these images (a camera moved, a wrong file, or left and right swapped). Check or redo the calibration.</source>
         <translation>프레임 1의 많은 스테레오 대응이 에피폴라 선에서 벗어나 있습니다: 보정이 이 이미지와 맞지 않을 가능성이 큽니다(카메라 이동, 잘못된 파일, 좌우 뒤바뀜). 보정을 확인하거나 다시 하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/panels/run_summary.py" line="206"/>
+        <location filename="../../gui/panels/run_summary.py" line="220"/>
+        <source>The frame-1 stereo links lie a median {0} px from their epipolar lines (a calibration that fits the images gives under 0.3 px): a camera has probably moved since the calibration (bumped, refocused or re-aimed), which biases the 3D shape and displacements. Recalibrate the rig as it stands now.</source>
+        <translation>프레임 1의 스테레오 대응이 에피폴라 선에서 중앙값 {0} px 떨어져 있습니다(이미지에 맞는 보정이면 0.3 px 미만): 보정 이후 카메라가 움직였을 가능성이 큽니다(부딪힘, 초점 재조정, 방향 변경). 이는 3D 형상과 변위에 편향을 줍니다. 현재 상태의 장비로 다시 보정하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/panels/run_summary.py" line="231"/>
         <source>Correct stereo links can correlate weakly on a rough or strongly inclined surface. If points are missing, raise ADVANCED &gt; Result checks &gt; Stereo check (for example to 1.0).</source>
         <translation>거칠거나 크게 기울어진 표면에서는 올바른 스테레오 대응도 상관이 약할 수 있습니다. 점이 빠진다면 고급 설정 &gt; 결과 검사 &gt; 스테레오 검사 값을 올리세요(예: 1.0).</translation>
     </message>
@@ -3843,12 +3876,12 @@ Green-Lagrange 변형률은 변하지 않지만,
 <context>
     <name>RunWarnings</name>
     <message>
-        <location filename="../../gui/warning_text.py" line="29"/>
+        <location filename="../../gui/warning_text.py" line="24"/>
         <source>No Starting Point placed: frame 1 is seeded by an FFT search (place a point for large first-frame motion)</source>
         <translation>시드점 없음: 프레임 1은 FFT 탐색으로 초기화됩니다(첫 프레임의 움직임이 크면 점을 배치하세요)</translation>
     </message>
     <message>
-        <location filename="../../gui/warning_text.py" line="35"/>
+        <location filename="../../gui/warning_text.py" line="32"/>
         <source>FFT search range reduced from {0} to {1} px to fit the {2} × {3} px images</source>
         <translation>{2} × {3} px 이미지에 맞추어 FFT 탐색 범위를 {0} px에서 {1} px로 줄였습니다</translation>
     </message>
@@ -4037,7 +4070,7 @@ Green-Lagrange 변형률은 변하지 않지만,
 <context>
     <name>StrainParamPanel3D</name>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="88"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="81"/>
         <source>Side length, in pixels, of the square window around each node used to fit the local displacement gradient (the virtual strain gauge).
 
 • Larger window → smoother strain, lower spatial resolution.
@@ -4055,7 +4088,7 @@ Green-Lagrange 변형률은 변하지 않지만,
         <translation>VSG 윈도우</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="106"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="101"/>
         <source>Number of mesh nodes per axis inside the square strain window — the local plane fit uses every valid node in it. The mm size maps the pixel window through the median 3D spacing of adjacent nodes on the reference surface.</source>
         <translation>정사각형 변형률 윈도우 안에서 각 축 방향으로 포함되는 메시 노드 수 — 국소 평면 피팅은 윈도우 안의 모든 유효 노드를 사용합니다. mm 크기는 기준 표면에서 인접 노드 간 3D 간격의 중앙값으로 픽셀 윈도우를 환산한 것입니다.</translation>
     </message>
@@ -4075,7 +4108,7 @@ Green-Lagrange 변형률은 변하지 않지만,
         <translation>Almansi(오일러, 참 텐서)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="138"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="128"/>
         <source>Finite-strain measure derived from the SAME displacement-
 gradient fit, in the same tangent frame:
 Green-Lagrange E = ½(FᵀF − I) — finite strain, reference
@@ -4098,7 +4131,7 @@ Almansi(오일러, 참 텐서) e = ½(I − F⁻ᵀF⁻¹) — 변형 배치의 
         <translation>변형률 유형</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="156"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="148"/>
         <source>Hides low-confidence strain near invalid or missing nodes, where
 the strain window loses support on one side and the local plane
 fit becomes unreliable.
@@ -4139,7 +4172,7 @@ on the reference grid).
         <translation>강함 (σ = 2 × step) ⚠</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="203"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="197"/>
         <source>Gaussian smoothing of the displacement field before the gradient fit.
 σ is the kernel width; step = DIC node spacing.
   Light  (0.5 × step): subtle, preserves fine features.
@@ -4172,17 +4205,17 @@ on the reference grid).
         <translation>사용자 지정 (3점)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="217"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="213"/>
         <source>Per-node tangent plane fitted to the reference surface: z is the surface normal pointing toward the camera, x is the left-camera +X projected onto the plane, y = z × x. The right default for curved specimens.</source>
         <translation>참조 표면에 노드별로 피팅한 접평면: z 는 카메라를 향하는 표면 법선, x 는 왼쪽 카메라 +X 의 평면 투영, y = z × x. 곡면 시편에 적합한 기본값입니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="221"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="219"/>
         <source>Report strain in the fixed left-camera (world) axes. Meaningful for flat specimens aligned with the image plane.</source>
         <translation>고정된 왼쪽 카메라(월드) 축에서 변형률을 보고합니다. 이미지 평면과 정렬된 평판 시편에 유효합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="226"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="223"/>
         <source>A fixed specimen frame built from 3 picked points on the reference image: Origin, a point along +X, and a point on the +Y side.</source>
         <translation>참조 이미지에서 선택한 3점으로 구성되는 고정 시편 좌표계: 원점, +X 방향의 점, +Y 쪽의 점.</translation>
     </message>
@@ -4197,7 +4230,7 @@ on the reference grid).
         <translation>3점 선택…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="255"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="251"/>
         <source>Click three points on the reference image: the Origin, a point along +X, then a point on the +Y side. Each click snaps to the nearest valid mesh node. Enabled only for Custom (3 points).</source>
         <translation>기준 이미지에서 세 점을 클릭하세요: 원점, +X 방향의 점, +Y 쪽의 점. 각 클릭은 가장 가까운 유효 메시 노드에 스냅됩니다. '사용자 지정(3점)'에서만 사용할 수 있습니다.</translation>
     </message>
@@ -4207,7 +4240,7 @@ on the reference grid).
         <translation>잘라냄: 노드 {0}개 ({1}%)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="316"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="315"/>
         <source>Crack-aware: ROI barrier honored (mesh, strain, render)</source>
         <translation>균열 인식: ROI 배리어 반영(메시·변형률·렌더링)</translation>
     </message>
@@ -4222,7 +4255,7 @@ on the reference grid).
         <translation>≈ {0} × {1} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_param_panel.py" line="421"/>
+        <location filename="../../gui/widgets/strain_param_panel.py" line="419"/>
         <source>⚠ Window radius ({0} px) &lt; node spacing ({1} px); the plane fit needs a 3×3 node gauge. Use ≥ {2} px.</source>
         <translation>⚠ 윈도우 반경({0} px) &lt; 노드 간격({1} px); 평면 피팅에는 3×3 노드 게이지가 필요합니다. ≥ {2} px 를 사용하세요.</translation>
     </message>
@@ -4278,7 +4311,7 @@ on the reference grid).
         <translation>제거됨({0}), {1}개 점으로 피팅.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_rigid_motion.py" line="163"/>
+        <location filename="../../gui/strain_rigid_motion.py" line="162"/>
         <source>the fit region does not cover this run</source>
         <translation>피팅 영역이 이번 분석을 덮지 않습니다</translation>
     </message>
@@ -4298,7 +4331,7 @@ on the reference grid).
         <translation>이 프레임은 피팅되지 않음: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_rigid_motion.py" line="170"/>
+        <location filename="../../gui/strain_rigid_motion.py" line="169"/>
         <source>⚠ Rigid-motion setting changed -- click Compute Strain</source>
         <translation>⚠ 강체 운동 설정이 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
@@ -4311,12 +4344,12 @@ on the reference grid).
         <translation>변형 프레임에 표시</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="42"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="39"/>
         <source>When checked, overlay results on the deformed (current) frame instead of the reference frame</source>
         <translation>체크하면 결과를 기준 프레임 대신 변형(현재) 프레임에 겹쳐 표시합니다</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="52"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="49"/>
         <source>Colormap for the strain overlay. Default turbo; pick RdBu_r or coolwarm for signed strain centered on zero.</source>
         <translation>변형률 오버레이의 컬러맵. 기본값 turbo. 0 중심의 부호 있는 변형률에는 RdBu_r 또는 coolwarm을 선택하세요.</translation>
     </message>
@@ -4331,7 +4364,7 @@ on the reference grid).
         <translation>자동 범위</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_viz_panel.py" line="63"/>
+        <location filename="../../gui/widgets/strain_viz_panel.py" line="59"/>
         <source>Rescale the color range to each frame&apos;s data range (2–98 percentile of the visible values). Default on; uncheck to type fixed Min/Max bounds that hold across frames.</source>
         <translation>각 프레임의 데이터 범위에 맞춰 색상 범위를 다시 조정합니다(표시 값의 2–98 백분위수). 기본 켜짐; 체크를 해제하면 모든 프레임에 유지되는 고정 최소/최대 값을 입력할 수 있습니다.</translation>
     </message>
@@ -4389,8 +4422,8 @@ on the reference grid).
         <translation>결과 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="177"/>
-        <location filename="../../gui/strain_window.py" line="695"/>
+        <location filename="../../gui/strain_window.py" line="176"/>
+        <location filename="../../gui/strain_window.py" line="694"/>
         <source>Export displacement and strain results to NPZ / MAT / CSV</source>
         <translation>변위 및 변형률 결과를 NPZ / MAT / CSV로 내보내기</translation>
     </message>
@@ -4455,7 +4488,7 @@ on the reference grid).
     <message>
         <location filename="../../gui/strain_window.py" line="421"/>
         <location filename="../../gui/strain_window.py" line="562"/>
-        <location filename="../../gui/strain_window.py" line="591"/>
+        <location filename="../../gui/strain_window.py" line="590"/>
         <source>Click Origin, then +X, then +Y on the image</source>
         <translation>이미지에서 원점, +X, +Y 순서로 클릭하세요</translation>
     </message>
@@ -4495,7 +4528,7 @@ on the reference grid).
         <translation>⚠ 매개변수가 변경됨 — 「변형률 계산」을 클릭하세요</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="574"/>
+        <location filename="../../gui/strain_window.py" line="573"/>
         <source>No valid point near the click — pick on the result field</source>
         <translation>클릭한 곳 근처에 유효한 점이 없습니다 — 결과 필드 위에서 고르세요</translation>
     </message>
@@ -4526,22 +4559,22 @@ on the reference grid).
         <translation>+Y</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="680"/>
+        <location filename="../../gui/strain_window.py" line="679"/>
         <source>Run a 3D analysis first — strain needs displacement results.</source>
         <translation>먼저 3D 분석을 실행하세요 — 변형률에는 변위 결과가 필요합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="684"/>
+        <location filename="../../gui/strain_window.py" line="683"/>
         <source>Pick the 3 specimen-frame points first (Origin, +X, +Y).</source>
         <translation>먼저 시편 좌표계의 3점(원점, +X, +Y)을 선택하세요.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="691"/>
+        <location filename="../../gui/strain_window.py" line="688"/>
         <source>Compute Green-Lagrange surface strain from the displacement field with the parameters above.</source>
         <translation>위의 매개변수로 변위장에서 Green-Lagrange 표면 변형률을 계산합니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/strain_window.py" line="699"/>
+        <location filename="../../gui/strain_window.py" line="698"/>
         <source>Run an analysis first — there are no results yet.</source>
         <translation>먼저 분석을 실행하세요 — 아직 결과가 없습니다.</translation>
     </message>
@@ -4549,7 +4582,7 @@ on the reference grid).
 <context>
     <name>UnitsSection3D</name>
     <message>
-        <location filename="../../gui/widgets/units_section.py" line="41"/>
+        <location filename="../../gui/widgets/units_section.py" line="37"/>
         <source>Display unit for displacement and velocity values (colorbar,
 3D scalar bar). Display only — the data and every export stay
 in millimetres. Strain is dimensionless and unaffected.</source>
@@ -4568,7 +4601,7 @@ in millimetres. Strain is dimensionless and unaffected.</source>
         <translation>설정 안 함(프레임당)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/units_section.py" line="59"/>
+        <location filename="../../gui/widgets/units_section.py" line="54"/>
         <source>Acquisition frame rate. Used only by the Velocity field:
 velocity = |D(k) − D(k−1)| × frame rate, shown in the
 display unit per second. Leave it at &apos;not set&apos; to see the
@@ -4587,7 +4620,7 @@ velocity per frame.</source>
 <context>
     <name>View3D</name>
     <message>
-        <location filename="../../gui/widgets/view3d.py" line="157"/>
+        <location filename="../../gui/widgets/view3d.py" line="156"/>
         <source>3D view — run an analysis to see the reconstructed surface.</source>
         <translation>3D 보기 — 분석을 실행하면 재구성된 표면이 표시됩니다.</translation>
     </message>
@@ -4646,7 +4679,7 @@ velocity per frame.</source>
         <translation>자동 범위</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="116"/>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="113"/>
         <source>Like the 3D view: each frame&apos;s 2–98 percentile of the values inside the ROI. Untick to use a fixed Min/Max for every frame.</source>
         <translation>3D 뷰와 같이 각 프레임에서 ROI 안 값의 2–98 백분위수를 사용합니다. 체크를 해제하면 모든 프레임에 고정 최소/최대 값을 사용합니다.</translation>
     </message>
@@ -4706,7 +4739,7 @@ velocity per frame.</source>
         <translation>3D 뷰 내보내기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="268"/>
+        <location filename="../../gui/dialogs/export_tabs/view3d_tab.py" line="266"/>
         <source>GIF timing has 1/100 s steps: {0} fps will play at {1} fps. Choose MP4 for faster playback.</source>
         <translation>GIF의 프레임 간격은 1/100초 단위입니다: {0} fps는 {1} fps로 재생됩니다. 더 빠른 재생에는 MP4를 선택하세요.</translation>
     </message>
@@ -4789,7 +4822,7 @@ velocity per frame.</source>
         <translation>변형 배율 ×</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d_toolbar.py" line="86"/>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="82"/>
         <source>Exaggerate the displacement in the 3D geometry (reference shape plus
 factor × displacement) so a micron-scale change is visible. The
 colours always show the true values.</source>
@@ -4813,7 +4846,7 @@ colours always show the true values.</source>
         <translation>면외만</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/view3d_toolbar.py" line="101"/>
+        <location filename="../../gui/widgets/view3d_toolbar.py" line="99"/>
         <source>Exaggerate only the displacement along the specimen normal
 (in-plane noise stays at true scale)</source>
         <translation>시편 법선 방향 변위만 과장
@@ -4864,7 +4897,7 @@ colours always show the true values.</source>
         <translation>이미지를 뷰포트에 맞춤</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/strain_support.py" line="92"/>
+        <location filename="../../gui/widgets/strain_support.py" line="89"/>
         <source>Current zoom — click to reset to 100% (1:1 pixels).
 Wheel: zoom · Right/middle drag: pan · Space: pan mode</source>
         <translation>현재 확대율 — 클릭하면 100%(1:1 픽셀)로 재설정됩니다.

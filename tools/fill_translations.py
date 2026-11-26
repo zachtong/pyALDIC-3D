@@ -5144,6 +5144,10 @@ for _loc, _entries in _load_batch_file("i18n_batch_view.py").items():
 for _loc, _entries in _load_batch_file("i18n_batch_advice.py").items():
     TRANSLATIONS[_loc].update(_entries)
 
+# New-user audit (run errors, calibration image size, moved camera, partial runs).
+for _loc, _entries in _load_batch_file("i18n_batch_audit.py").items():
+    TRANSLATIONS[_loc].update(_entries)
+
 
 def main() -> int:
     ok = True

@@ -32,7 +32,7 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceSet,
 )
 from al_dic_3d.matching.diagnostics import (
-    no_stereo_links_message,
+    NoStereoLinksError,
     stereo_rows,
     temporal_rows,
 )
@@ -320,14 +320,12 @@ class TrackBothStrategy:
         right_pts = disp.right_pts  # (n_pts, 2); NaN where the stereo link failed
         base_valid = disp.valid  # (n_pts,)
         if not base_valid.any():
-            raise RuntimeError(
-                no_stereo_links_message(
-                    n_pts,
-                    self.stereo_search,
-                    stereo_offset,
-                    rejected=(n_rej_z, n_rej_e),
-                    epipolar_median_px=stereo_stats.get("epipolar_median_px"),
-                )
+            raise NoStereoLinksError(
+                n_pts,
+                self.stereo_search,
+                stereo_offset,
+                rejected=(n_rej_z, n_rej_e),
+                epipolar_median_px=stereo_stats.get("epipolar_median_px"),
             )
 
         # (2) per-camera temporal tracks. The right camera runs on an

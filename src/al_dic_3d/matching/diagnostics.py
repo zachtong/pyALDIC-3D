@@ -119,6 +119,24 @@ def stereo_rows(
 #: advice in the run log (a few rejected links are the check doing its job).
 STEREO_ADVICE_FRAC = 0.2
 
+#: A frame-1 median epipolar residual above this (px) gets a "recalibrate"
+#: warning even when the stereo check rejects few links. The healthy real runs
+#: we have measured all sit at or below 0.25 px: Challenge 1.0 S1 16 mm 0.024,
+#: Challenge 2.0 S1 0.029 / S2 0.133, Challenge 2.1 S3 0.040-0.042, the D
+#: specimen (quickstart) 0.077-0.087, and the GitHub issue #1 rig (rough
+#: surface, 29 deg stereo angle) 0.22-0.25. A right camera rotated 1.5 deg
+#: after calibration gave 0.8 px with only 5 % of the links rejected, while
+#: |D| was 8.6 % off; the 2 px rejection limit never saw it. 0.5 px is about
+#: twice the worst healthy run (4-20x the others) and still below that bumped
+#: camera.
+EPIPOLAR_DRIFT_PX = 0.5
+
+
+def no_stereo_links_cause(rejected: tuple[int, int] = (0, 0)) -> str:
+    """``"calibration"`` when the epipolar check removed the most links, else ``"no_match"``."""
+    n_z, n_e = int(rejected[0]), int(rejected[1])
+    return "calibration" if n_e and n_e >= n_z else "no_match"
+
 
 def no_stereo_links_message(
     n_pts: int,
@@ -129,33 +147,68 @@ def no_stereo_links_message(
 ) -> str:
     """The error for a frame-1 stereo match that kept no link, naming the cause.
 
-    It always said "check the seed point / disparity prior and stereo overlap",
-    also when every link was found and then rejected by the stereo check -- for
-    their distance from the epipolar line (a calibration that does not match the
-    images) or for weak left-right correlation (GitHub issue #1).
+    * Most links off their epipolar line: the calibration does not match the
+      images (GitHub issue #1).
+    * Otherwise nothing correlated between the two views. The new-user audit
+      (2026-11-25) produced this with left and right swapped, a calibration
+      from other (binned) images and a textureless ROI; the message used to
+      advise raising ``stereo_znssd_max``, and following it gave a 0 %-valid
+      "analysis complete". The likely causes now lead, in that order; the
+      threshold advice is kept for runs where SOME links pass
+      (:func:`stereo_check_advice`).
+
+    ``search_radius`` and ``offset`` are accepted for the call sites' sake;
+    the search settings are not the cause a user can act on here.
     """
+    del search_radius, offset
     head = (
-        f"frame-1 stereo match found no valid correspondences "
-        f"(0/{n_pts} candidates matched L1->R1; search_radius={search_radius}, "
-        f"disparity offset={offset})"
+        f"no point of the first frame could be matched between the left and right "
+        f"images (0 of {n_pts} points"
     )
     n_z, n_e = int(rejected[0]), int(rejected[1])
-    if n_e and n_e >= n_z:
+    if no_stereo_links_cause(rejected) == "calibration":
         median = "" if epipolar_median_px is None else f", median {epipolar_median_px:.1f} px"
         return (
-            f"{head} — the stereo check rejected {n_e} links for their distance from "
-            f"the epipolar line{median}: the calibration probably does not match these "
+            f"{head}): the stereo check rejected {n_e} links for their distance from "
+            f"the epipolar line{median}. The calibration probably does not match these "
             f"images (a camera moved, a wrong file, or left and right swapped); check "
             f"or redo the calibration."
         )
-    if n_z:
-        return (
-            f"{head} — the stereo check rejected {n_z} links for weak left-right "
-            f"correlation: if the surface correlates poorly between the two views, raise "
-            f"stereo_znssd_max (GUI: ADVANCED > Result checks > Stereo check); otherwise "
-            f"check the seed point / disparity prior and stereo overlap."
+    weak = f"; {n_z} were rejected for weak left-right correlation" if n_z else ""
+    return (
+        f"{head}{weak}). Likely causes, most likely first: (1) left and right are "
+        f"swapped: give the left camera's images as [sequence] left; (2) the calibration "
+        f"does not belong to these images (another rig or session, or binned or cropped "
+        f"images); (3) the region of interest has no speckle texture. Otherwise check "
+        f"the seed point / disparity_offset and that both cameras see the region."
+    )
+
+
+class NoStereoLinksError(RuntimeError):
+    """The frame-1 stereo match kept no link (a :class:`RuntimeError`, as before).
+
+    Carries the numbers so the GUI can word (and translate) the same advice:
+    ``cause`` is :func:`no_stereo_links_cause`, ``rejected`` the
+    ``(n_znssd, n_epipolar)`` split, ``epipolar_median_px`` the median residual.
+    """
+
+    def __init__(
+        self,
+        n_pts: int,
+        search_radius: int,
+        offset,
+        rejected: tuple[int, int] = (0, 0),
+        epipolar_median_px: float | None = None,
+    ) -> None:
+        super().__init__(
+            no_stereo_links_message(
+                n_pts, search_radius, offset, rejected, epipolar_median_px=epipolar_median_px
+            )
         )
-    return f"{head} — check the seed point / disparity prior and stereo overlap."
+        self.n_pts = int(n_pts)
+        self.rejected = (int(rejected[0]), int(rejected[1]))
+        self.epipolar_median_px = epipolar_median_px
+        self.cause = no_stereo_links_cause(rejected)
 
 
 # --- post-run summary ---------------------------------------------------------
@@ -287,13 +340,39 @@ def summarize_run(
     )
 
 
+def computed_frames(summary: RunSummary, meta: dict | None) -> RunSummary:
+    """``summary`` restricted to the frames a stopped run computed.
+
+    A run stopped early keeps frames ``[0, stopped_at_frame)``; the later ones
+    are NaN and were reported as "only 0 % of points valid", then counted in
+    the verdict and the collapse advice (new-user audit: a cancel at 10 s logged
+    a 0 %-valid frame and a green "Analysis complete"). ``n_frames`` keeps the
+    full sequence length; a run that was not stopped is returned unchanged.
+    """
+    if not (meta and meta.get("stopped_early")):
+        return summary
+    from dataclasses import replace
+
+    k = max(0, min(int(meta.get("stopped_at_frame") or 0), len(summary.valid_frac)))
+    kept = summary.valid_frac[:k]
+    return replace(
+        summary,
+        valid_frac=kept,
+        median_valid_frac=float(np.median(kept)) if kept else 0.0,
+        low_frames=tuple(f for f in summary.low_frames if f < k),
+    )
+
+
 def stereo_check_advice(summary: RunSummary, epipolar_max_px: float = 2.0) -> str | None:
-    """``"calibration"`` / ``"raise_znssd"`` when the frame-1 stereo check removed a lot.
+    """Advice code when the frame-1 stereo check points at a problem.
 
     * ``"calibration"``: at least :data:`STEREO_ADVICE_FRAC` of the converged
       frame-1 links were off their epipolar line, or the median residual alone
       exceeds the limit -- the calibration does not match the images (the issue
       #1 reporter's first calibration put every link 17.6 px off its line);
+    * ``"recalibrate"``: the links pass the check but their median residual
+      exceeds :data:`EPIPOLAR_DRIFT_PX` -- a camera has moved (bumped,
+      refocused, re-aimed) since the calibration;
     * ``"raise_znssd"``: at least that share failed the correlation check -- on a
       rough surface seen at a large stereo angle correct links correlate at
       ZNCC ~0.7, and the default check (ZNSSD 0.6) removed 810 of 2008.
@@ -305,6 +384,8 @@ def stereo_check_advice(summary: RunSummary, epipolar_max_px: float = 2.0) -> st
     median = summary.stereo_epipolar_median_px
     if n_e >= STEREO_ADVICE_FRAC * converged or (median is not None and median > epipolar_max_px):
         return "calibration"
+    if median is not None and median > EPIPOLAR_DRIFT_PX:
+        return "recalibrate"
     if n_z >= STEREO_ADVICE_FRAC * converged:
         return "raise_znssd"
     return None
@@ -372,9 +453,11 @@ def summary_lines(
     :class:`RunSummary` numbers; this stays Qt-free by contract. ``stopped``
     accepts the run meta (or any dict with ``stopped_early`` /
     ``stopped_at_frame`` / ``stop_reason``) and prepends the R2 partial-run
-    banner: frames ``[0, stopped_at_frame)`` were kept, the rest are NaN.
+    banner: frames ``[0, stopped_at_frame)`` were kept, the rest are NaN and
+    are left out of the per-frame lines and the verdict (:func:`computed_frames`).
     """
     lines: list[tuple[str, str]] = []
+    summary = computed_frames(summary, stopped)
     if stopped and stopped.get("stopped_early"):
         k = int(stopped.get("stopped_at_frame") or 0)
         lines.append(
@@ -445,6 +528,18 @@ def summary_lines(
                 f"wrong file, or left and right swapped) — check or redo the calibration",
             )
         )
+    elif advice == "recalibrate":
+        lines.append(
+            (
+                "warning",
+                f"the frame-1 stereo links lie a median "
+                f"{summary.stereo_epipolar_median_px:.1f} px from their epipolar lines "
+                f"(a calibration that fits the images gives under 0.3 px): a camera has "
+                f"probably moved since the calibration (bumped, refocused or re-aimed), "
+                f"which biases the 3D shape and displacements — recalibrate the rig as it "
+                f"stands now",
+            )
+        )
     elif advice == "raise_znssd":
         lines.append(
             (
@@ -501,6 +596,15 @@ def summary_lines(
                 "error",
                 "no valid points in ANY frame — the run produced an empty result "
                 "(check ROI/masks/seeding and the messages above)",
+            )
+        )
+    elif stopped and stopped.get("stopped_early"):
+        lines.append(
+            (
+                "warning",
+                f"partial result — {len(summary.valid_frac)} of {summary.n_frames} frames "
+                f"computed, median validity {summary.median_valid_frac * 100:.0f}%, "
+                f"{len(summary.low_frames)} frame(s) below {LOW_VALIDITY_FRAC * 100:.0f}%",
             )
         )
     else:

@@ -421,6 +421,9 @@ def from_opencv_yaml(path: str | Path) -> StereoRig:
     Expected nodes: ``cameraMatrix1``, ``distCoeffs1``, ``cameraMatrix2``,
     ``distCoeffs2``, ``R``, ``T`` — the ``cv2.stereoCalibrate`` output convention
     (``X_2 = R @ X_1 + T``), which already matches the target (cam1 = left = world).
+    Optional ``imageSize<n>`` nodes, ``[width, height]`` (written by
+    :func:`~al_dic_3d.calibration.report.to_opencv_yaml`), give each camera's
+    image size; a file without them loads with the size unknown.
     Parsing is memory-backed (:func:`al_dic_3d.pathsafe.filestorage_read`, G3):
     ``cv2.FileStorage`` cannot open non-ASCII Windows paths directly.
     """
@@ -438,8 +441,24 @@ def from_opencv_yaml(path: str | Path) -> StereoRig:
                 raise ValueError(f"OpenCV calibration file missing node {name!r}")
             return np.asarray(n.mat(), np.float64)
 
-        left = _K_matrix_to_intrinsics(node("cameraMatrix1"), node("distCoeffs1"))
-        right = _K_matrix_to_intrinsics(node("cameraMatrix2"), node("distCoeffs2"))
+        def size(n: int) -> tuple[int | None, int | None]:
+            name = f"imageSize{n}"
+            item = fs.getNode(name)
+            if item.empty():
+                return (None, None)
+            if item.isSeq():  # a cv::Size written from C++: [width, height]
+                values = [item.at(i).real() for i in range(item.size())]
+            else:
+                mat = item.mat()
+                values = [] if mat is None else np.asarray(mat, np.float64).ravel().tolist()
+            if len(values) != 2 or any(v < 1 or v != int(v) for v in values):
+                raise ValueError(
+                    f"OpenCV calibration file node {name!r} must be [width, height] in whole pixels"
+                )
+            return (int(values[0]), int(values[1]))
+
+        left = _K_matrix_to_intrinsics(node("cameraMatrix1"), node("distCoeffs1"), size(1))
+        right = _K_matrix_to_intrinsics(node("cameraMatrix2"), node("distCoeffs2"), size(2))
         return _rig(left, right, node("R"), node("T"))
     finally:
         fs.release()

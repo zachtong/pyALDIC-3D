@@ -398,7 +398,7 @@ def test_run_worker_failure_is_logged_with_its_traceback(qapp, caplog):
     worker.failed.connect(got.append)
     with caplog.at_level(logging.ERROR, logger="al_dic_3d.gui.run_worker"):
         worker.run()  # synchronous: the error path needs no thread
-    assert got == ["ValueError: boom: bad calibration matrix"]
+    assert got == ["boom: bad calibration matrix"]  # a user error: no type prefix
     rec = next(r for r in caplog.records if r.name == "al_dic_3d.gui.run_worker")
     assert rec.levelno == logging.ERROR and rec.exc_info[0] is ValueError
 
@@ -412,7 +412,7 @@ def test_run_worker_survives_a_missing_stderr(qapp, monkeypatch, caplog):
     worker.failed.connect(got.append)
     with caplog.at_level(logging.ERROR):
         worker.run()
-    assert got == ["ValueError: boom: bad calibration matrix"]
+    assert got == ["boom: bad calibration matrix"]  # a user error: no type prefix
     assert any(r.exc_info for r in caplog.records)
 
 

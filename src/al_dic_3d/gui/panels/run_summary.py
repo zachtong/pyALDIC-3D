@@ -24,16 +24,25 @@ class RunSummaryMixin:
         if result is None:
             self._append_log(self.tr("Analysis complete"), "success")
             return
-        from al_dic_3d.matching.diagnostics import LOW_VALIDITY_FRAC, summarize_run
+        from al_dic_3d.matching.diagnostics import (
+            LOW_VALIDITY_FRAC,
+            computed_frames,
+            summarize_run,
+        )
 
-        s = summarize_run(
-            result.correspondence,
-            result.reconstruction.points,
-            n_eligible=(result.meta or {}).get("n_pts_in_roi"),
+        meta = result.meta or {}
+        # Frames a stopped run never computed are left out of the per-frame
+        # lines and the verdict (they used to read "only 0% of points valid").
+        s = computed_frames(
+            summarize_run(
+                result.correspondence,
+                result.reconstruction.points,
+                n_eligible=meta.get("n_pts_in_roi"),
+            ),
+            meta,
         )
         # R2 (engine 0.7 partial results): a cancelled-but-kept run announces
         # itself FIRST — one honest line saying how many frames survived.
-        meta = result.meta or {}
         if meta.get("stopped_early"):
             k = int(meta.get("stopped_at_frame") or 0)
             self._append_log(
@@ -63,9 +72,9 @@ class RunSummaryMixin:
                 "warn",
             )
         for k in s.low_frames:
-            self._append_log(
+            self._append_log(  # frames are numbered from 1, as everywhere in the GUI
                 self.tr("Frame {0}: only {1}% of points valid").format(
-                    k, f"{s.valid_frac[k] * 100:.0f}"
+                    k + 1, f"{s.valid_frac[k] * 100:.0f}"
                 ),
                 "warn",
             )
@@ -108,19 +117,19 @@ class RunSummaryMixin:
             worst = f"{min(s.valid_frac[2:]) * 100:.0f}"
             if advice == "incremental":
                 text = self.tr(
-                    "Validity falls from {0}% (frame 1) to {1}%: tracking every frame "
+                    "Validity falls from {0}% (frame 2) to {1}%: tracking every frame "
                     "against frame 1 cannot follow large deformation. Try WORKFLOW "
                     "TYPE > Incremental."
                 )
             elif advice == "more_updates":
                 text = self.tr(
-                    "Validity falls from {0}% (frame 1) to {1}%: the motion between "
+                    "Validity falls from {0}% (frame 2) to {1}%: the motion between "
                     "reference frames is too large to track. Update the reference every "
                     "frame (Reference Update > Every Frame)."
                 )
             else:
                 text = self.tr(
-                    "Validity falls from {0}% (frame 1) to {1}%: if the valid region "
+                    "Validity falls from {0}% (frame 2) to {1}%: if the valid region "
                     "changes during the test (cracks, failure), import per-frame masks "
                     "(REGION OF INTEREST)."
                 )
@@ -132,6 +141,14 @@ class RunSummaryMixin:
                     "result. Check ROI, masks and seeding (details above)."
                 ),
                 "error",
+            )
+        elif meta.get("stopped_early"):
+            # Not a green "complete": only the frames before the stop exist.
+            self._append_log(
+                self.tr("Partial result — {0} of {1} frames computed, median validity {2}%").format(
+                    len(s.valid_frac), s.n_frames, f"{s.median_valid_frac * 100:.0f}"
+                ),
+                "warn",
             )
         elif s.low_frames:
             self._append_log(
@@ -197,6 +214,17 @@ class RunSummaryMixin:
                 )
             )
             self._append_log(text, "warn")
+        elif advice == "recalibrate":
+            self._append_log(
+                self.tr(
+                    "The frame-1 stereo links lie a median {0} px from their epipolar lines "
+                    "(a calibration that fits the images gives under 0.3 px): a camera has "
+                    "probably moved since the calibration (bumped, refocused or re-aimed), "
+                    "which biases the 3D shape and displacements. Recalibrate the rig as it "
+                    "stands now."
+                ).format(f"{s.stereo_epipolar_median_px:.1f}"),
+                "warn",
+            )
         elif advice == "raise_znssd":
             self._append_log(
                 self.tr(

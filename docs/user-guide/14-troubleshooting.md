@@ -18,9 +18,48 @@ sidebar hint name what is missing. Usual causes:
   calibration file that does not load with the selected format, left and right
   sequences that are the same files, frames of different sizes within a
   camera, unreadable images, or an ROI mask drawn for images of another size.
+- **Images of another size than the calibration** — *left camera: the
+  calibration was made for 1920x1200 images, but the images are 960x600…*.
+  Binned or cropped images need their own calibration: a calibration describes
+  the pixels it was made from, and on other pixels every 3D point comes out
+  wrong. Calibrate again from board images taken with the same binning / crop
+  (or load the full-size images). The check needs the image size in the
+  calibration file: DICe files and the YAML the built-in calibrator now
+  writes carry it. A YAML written by an earlier version has none, so the check
+  is skipped for it; calibrating again writes a file that has it.
 
 Unseeded ROI regions do **not** block the run — they are auto-seeded, so a
 partial *Starting Points* setup is fine.
+
+## "No point of frame 1 could be matched between the left and right images"
+
+The run stops at the first step, matching the two cameras on frame 1, because
+no point passed. When the message lists **likely causes**, nothing correlated
+between the two views; check them in this order:
+
+1. **Left and right are swapped.** The left camera's images must be loaded as
+   the left camera (the calibration's camera 1). Swap the two folders.
+2. **The calibration does not belong to these images**: another rig, another
+   session, or images that were binned or cropped after calibrating. Load the
+   calibration made for this setup, or calibrate again.
+3. **The region of interest has no speckle texture** (a bare or saturated
+   area). Move the ROI onto the speckle pattern.
+
+Otherwise check the Starting Point and that both cameras see the region. Do
+not raise **Stereo check** for this: with no link accepted, a looser check
+only accepts wrong links (an empty "complete" run). When the message says
+instead that the links were rejected **for their distance from the epipolar
+line**, the calibration does not match the images (a camera moved, a wrong
+file, or left and right swapped): check or redo the calibration.
+
+## "This run would need about N GB of memory"
+
+The run is refused before it starts because its projected peak memory exceeds
+70 % of the RAM currently available. Analyse fewer frames, choose a coarser
+**PARAMETERS > Subset Step**, or draw a smaller region of interest; closing
+other applications also helps. From the command line the same refusal names
+the config switch `ignore_memory_check = true` under `[advanced]`, which runs
+anyway at the risk of swapping.
 
 ## The run produced no valid points
 
@@ -50,13 +89,26 @@ The log's *Frame-1 stereo match: X/Y points matched (Z%)* and per-frame validity
 lines localize the loss. A low stereo yield has three usual causes, and the
 *Stereo check removed …* line tells them apart:
 
-- The links fail the **Stereo check** for weak left-right correlation: a rough
-  surface or a large stereo angle. Raise **Stereo check** (for example to 1.0).
+- Many links fail the **Stereo check** for weak left-right correlation while
+  others pass: a rough surface or a large stereo angle. Raise **Stereo check**
+  (for example to 1.0). When *no* link passes, see the section above instead.
 - The links fail the **Epipolar limit**, at a large median distance from their
   epipolar lines: the calibration does not match the images. Check or redo it.
   When no link survives, the run stops with that diagnosis.
 - Few links are found at all: the disparity varies more than **Stereo Search**
   covers. Placing a Starting Point helps.
+
+## "A camera has probably moved since the calibration"
+
+The log warns *The frame-1 stereo links lie a median X px from their epipolar
+lines (a calibration that fits the images gives under 0.3 px)…* when the links
+pass the stereo check but sit consistently off their epipolar lines. Healthy
+runs measure 0.02-0.25 px; the warning starts at 0.5 px. A camera that was
+bumped, refocused or re-aimed after calibrating causes it: in a test where the
+right camera was turned by 1.5 degrees, the median was 0.8 px and the
+displacement magnitudes came out 8.6 % too large, with nothing else in the log
+looking wrong. **Recalibrate the rig as it stands now** (and lock the camera
+mounts and lenses before calibrating).
 
 Temporal validity
 that decays over frames points at motion exceeding the search / seed,
@@ -134,8 +186,18 @@ known-distance board.
 
 That is by design: cancelling keeps the frames computed so far (later frames are
 `NaN`), and only a cancel before any deformed frame finished returns to IDLE with
-nothing. A cancel during strain keeps the displacement / 3D results and drops
-only the strain ([Running](09-running.md)).
+nothing. The log then ends with *Partial result — k of n frames computed,
+median validity Z%*; the frames after the stop are not counted or flagged. A
+cancel during strain keeps the displacement / 3D results and drops only the
+strain ([Running](09-running.md)).
+
+## The command line prints "error: …" and stops
+
+`al-dic-3d run` reports an input it cannot use (a missing file, images of
+another size than the calibration, a left/right frame-count mismatch, a run
+that matched nothing) in one `error:` line and exits with code 2. The message
+says what to change; the sections above explain each one. For a bug report,
+run the same command with `--debug`, which prints the full Python traceback.
 
 ## The application crashed or shows an error dialog
 
