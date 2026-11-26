@@ -8,6 +8,11 @@ and point-level undistortion. World frame = left camera (R=I, T=0).
 Layer: compute (**Qt-free**).  Lands: Phase 1 (+D12).  Spec: 01 §B.1, §E.
 """
 
+from al_dic_3d.calibration.batch_detect import (
+    FileDetections,
+    UnreadableImageError,
+    detect_files,
+)
 from al_dic_3d.calibration.boards import (
     BoardSpec,
     CharucoSpec,
@@ -68,6 +73,7 @@ __all__ = [
     "CalibrationDiagnostics",
     "CalibrationRun",
     "DiagnosticThresholds",
+    "FileDetections",
     "Finding",
     "diagnose_calibration",
     "run_calibration",
@@ -83,11 +89,13 @@ __all__ = [
     "PairQC",
     "StereoResult",
     "StereoRig",
+    "UnreadableImageError",
     "bundle_refine",
     "calibrate_mono",
     "calibrate_stereo",
     "coverage_fraction",
     "detect_board",
+    "detect_files",
     "euler_to_rotation",
     "from_dice_xml",
     "from_matchid_caldat",

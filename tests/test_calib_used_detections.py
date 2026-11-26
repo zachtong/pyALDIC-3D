@@ -109,14 +109,11 @@ def _same_objects(got, want) -> bool:
 
 def test_cli_bundle_adjusts_on_the_corrected_detections(tmp_path, monkeypatch):
     import al_dic_3d.calibration as calib
-    import al_dic_3d.pathsafe as pathsafe
     from al_dic_3d.cli import main
 
     left, right = _views(DOTS)
-    queue = iter([*left, *right])  # the CLI detects every left image, then every right one
-    monkeypatch.setattr(calib, "detect_board", lambda _img, _spec: next(queue))
-    blank = np.zeros((SIZE[1], SIZE[0]), np.uint8)
-    monkeypatch.setattr(pathsafe, "imread_unicode", lambda _f: blank)
+    # The CLI detects every left image, then every right one, in one call.
+    monkeypatch.setattr(calib, "detect_files", sp.fake_detect_files([*left, *right], SIZE))
     for i in range(len(left)):
         (tmp_path / f"L_{i:02d}.png").touch()
         (tmp_path / f"R_{i:02d}.png").touch()
