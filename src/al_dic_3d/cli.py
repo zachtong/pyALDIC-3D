@@ -480,6 +480,11 @@ def _calibrate_command(args: argparse.Namespace) -> int:
         f"baseline {res.baseline:.3f} | pairs {res.n_pairs_used}/{len(res.pairs)} | "
         f"coverage L {stats['coverage_left']:.0%} R {stats['coverage_right']:.0%}"
     )
+    # A mistyped square size scales every length: the board distances show it.
+    print(
+        f"board distance from the left camera {stats['distance_min']:.0f}-"
+        f"{stats['distance_max']:.0f} (square-size units, mm)"
+    )
     _print_diagnostics(run.diagnostics)
     meta = {
         "source": "al-dic-3d calibrate",

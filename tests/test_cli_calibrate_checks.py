@@ -60,6 +60,10 @@ def test_each_camera_is_recorded_at_its_own_size(tmp_path, monkeypatch, capsys):
     assert code == 0, err
     assert (rig.cameras["L"].width, rig.cameras["L"].height) == SIZE_L
     assert (rig.cameras["R"].width, rig.cameras["R"].height) == SIZE_R
+    # The board distances let a user check the square size against a tape measure.
+    line = next(t for t in out.splitlines() if t.startswith("board distance from the left camera"))
+    low, high = (float(v) for v in line.split()[6].split("-"))
+    assert 300.0 < low < high < 700.0
 
 
 def test_images_of_two_sizes_in_one_camera_are_refused(tmp_path, monkeypatch, capsys):
