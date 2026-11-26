@@ -28,15 +28,31 @@ from PySide6.QtWidgets import (
 from al_dic_3d.calibration import run_calibration
 
 
+def _first_image_size(path: str) -> tuple[int, int]:
+    from al_dic_3d.pathsafe import imread_unicode
+
+    image = imread_unicode(path)
+    if image is None:
+        raise ValueError(f"cannot read image: {path}")
+    return (int(image.shape[1]), int(image.shape[0]))
+
+
 class CalibWorker(QThread):
-    """Detect (unless cached; several images at a time) + solve off the GUI thread."""
+    """Detect (unless cached; several images at a time) + solve off the GUI thread.
+
+    ``detected`` carries ``(dl, dr)`` as soon as a fresh detection passed the
+    image-size check, before the solve, so the dialog can show what each image
+    gave even when the solve then fails. ``error`` holds the exception behind
+    ``failed`` (set before the signal), for messages the dialog translates.
+    """
 
     progress = Signal(str)
+    detected = Signal(object)  # (detections_l, detections_r)
     finished_ok = Signal(object)  # (detections_l, detections_r, StereoResult, stats)
     failed = Signal(str)
 
     def __init__(
-        self, files_l, files_r, spec, options, detections=None, image_size=None, parent=None
+        self, files_l, files_r, spec, options, detections=None, image_sizes=None, parent=None
     ) -> None:
         super().__init__(parent)
         self._files_l = files_l
@@ -44,14 +60,16 @@ class CalibWorker(QThread):
         self._spec = spec
         self._options = options
         self._detections = detections  # (dl, dr) to skip re-detection
-        self._image_size = image_size  # known size lets us skip reading images
+        self._image_sizes = image_sizes  # known ((w, h) left, (w, h) right): no image read
+        self.error: Exception | None = None
 
-    def _detect(self) -> tuple[list, list, tuple[int, int] | None]:
-        """Detect both cameras' images in parallel -> (dl, dr, first image's (w, h)).
+    def _detect(self) -> tuple[list, list, tuple[tuple[int, int], tuple[int, int]]]:
+        """Detect both cameras' images in parallel -> (dl, dr, (left size, right size)).
 
         Progress reads "L k/n" then "R k/n" in input order, as images finish.
+        Raises ``MixedImageSizeError`` when one camera's images differ in size.
         """
-        from al_dic_3d.calibration import detect_files
+        from al_dic_3d.calibration import detect_files, stereo_image_sizes
 
         n_l, n_r = len(self._files_l), len(self._files_r)
 
@@ -60,33 +78,32 @@ class CalibWorker(QThread):
             self.progress.emit(f"{tag} {k + 1}/{n}")
 
         self.progress.emit(f"L 0/{n_l}")  # immediate feedback: the first result can take a while
-        found = detect_files([*self._files_l, *self._files_r], self._spec, on_result=report)
-        size = found.sizes[0] if found.sizes else None
-        return list(found.detections[:n_l]), list(found.detections[n_l:]), size
+        files = [*self._files_l, *self._files_r]
+        found = detect_files(files, self._spec, on_result=report)
+        sizes = stereo_image_sizes(files, found.sizes, n_l)
+        return list(found.detections[:n_l]), list(found.detections[n_l:]), sizes
 
     def run(self) -> None:  # noqa: N802 (Qt override)
-        from al_dic_3d.pathsafe import imread_unicode
-
         try:
-            detected_size = None
             if self._detections is None:
-                dl, dr, detected_size = self._detect()
+                dl, dr, sizes = self._detect()
+                self.detected.emit((dl, dr))
             else:
                 dl, dr = self._detections
-            if self._image_size is not None:
-                image_size = self._image_size
-            elif detected_size is not None:  # no second decode of the first image
-                image_size = detected_size
-            else:
-                first = imread_unicode(self._files_l[0])
-                if first is None:
-                    raise ValueError(f"cannot read image: {self._files_l[0]}")
-                image_size = (first.shape[1], first.shape[0])
+                sizes = self._image_sizes or (
+                    _first_image_size(self._files_l[0]),
+                    _first_image_size(self._files_r[0]),
+                )
             self.progress.emit("solving")
             # One pipeline with the CLI: solve, bundle adjustment (on the points
             # the solve used), diagnostics of the final calibration, summary.
             run = run_calibration(
-                dl, dr, image_size, options=self._options, progress=self.progress.emit
+                dl,
+                dr,
+                sizes[0],
+                image_size_right=sizes[1],
+                options=self._options,
+                progress=self.progress.emit,
             )
             result, stats = run.result, run.stats
             stats["diagnostics"] = run.diagnostics
@@ -94,7 +111,8 @@ class CalibWorker(QThread):
 
             stats["pair_max"] = pair_max_errors(result, dl, dr)
             self.finished_ok.emit((dl, dr, result, stats))
-        except Exception as exc:  # noqa: BLE001 - surfaced verbatim in the dialog
+        except Exception as exc:  # noqa: BLE001 - surfaced in the dialog
+            self.error = exc
             self.failed.emit(str(exc))
 
 
@@ -206,6 +224,20 @@ def pair_strip(
     return np.ascontiguousarray(np.hstack([padded[0], gap, padded[1]]))
 
 
+def fill_pair_row(item, det_l, det_r, status: str, ok: bool) -> None:
+    """A pair's Points and Status cells, red when the pair is not used.
+
+    The status is also the cell's tooltip: the column is too narrow for a
+    detector's reason or a rejection note.
+    """
+    item.setText(3, f"{det_l.n_points}/{det_r.n_points}")
+    item.setText(6, status)
+    item.setToolTip(6, status)
+    color = QColor(COLORS.TEXT_PRIMARY if ok else COLORS.DANGER)
+    for column in range(item.columnCount()):
+        item.setForeground(column, color)
+
+
 def strip_to_pixmap(strip: np.ndarray) -> QPixmap:
     image = QImage(
         strip.data, strip.shape[1], strip.shape[0], 3 * strip.shape[1], QImage.Format_RGB888
@@ -217,8 +249,10 @@ class DetectionFilesMixin:
     """Save / load the detections of a calibration dialog (split out for the 800-line cap).
 
     Uses the dialog's ``_detections``, ``_files_l`` / ``_files_r``,
-    ``_cached_size``, ``_default_dir``, ``_set_status``, ``_refresh_table``,
-    ``_table`` and ``_recal_btn``.
+    ``_cached_sizes``, ``_default_dir``, ``_set_status``, ``_refresh_table``,
+    ``_table`` and ``_recal_btn``. A detections file stores one image size
+    (the left camera's); on load, each camera's first image, when present,
+    gives that camera's size, so a rig of two resolutions keeps both.
     """
 
     def _on_save_detections(self) -> None:
@@ -233,16 +267,25 @@ class DetectionFilesMixin:
         if not path:
             return
         from al_dic_3d.calibration import save_detections
-        from al_dic_3d.pathsafe import imread_unicode
 
         dl, dr = self._detections
-        size = self._cached_size
+        size = self._cached_sizes[0] if self._cached_sizes else None
         if size is None:
-            first = imread_unicode(self._files_l[0])
-            if first is not None:
-                size = (first.shape[1], first.shape[0])
+            try:
+                size = _first_image_size(self._files_l[0])
+            except ValueError:
+                size = None
         out = save_detections(path, self._files_l, self._files_r, dl, dr, image_size=size)
         self._set_status(self.tr("Detections saved: {0}").format(out))
+
+    def _loaded_sizes(self, files_l, files_r, stored) -> tuple | None:
+        """Each camera's size: its first image's header when readable, else ``stored``."""
+        from al_dic_3d.project.image_info import image_size
+
+        sizes = tuple(
+            (image_size(files[0]) if files else None) or stored for files in (files_l, files_r)
+        )
+        return None if None in sizes else sizes
 
     def _on_load_detections(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -262,7 +305,7 @@ class DetectionFilesMixin:
             return
         self._files_l, self._files_r = files_l, files_r
         self._detections = (dl, dr)
-        self._cached_size = size
+        self._cached_sizes = self._loaded_sizes(files_l, files_r, size)
         self._refresh_table()
         for k, (det_l, det_r) in enumerate(zip(dl, dr, strict=True)):
             item = self._table.topLevelItem(k)

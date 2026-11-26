@@ -46,6 +46,9 @@ def _headless_close_guards(monkeypatch):
     ed = sys.modules.get("al_dic_3d.gui.dialogs.export_dialog")
     if ed is not None:  # G3.12 running-export close guard
         monkeypatch.setattr(ed.ExportDialog, "_confirm_close_during_export", lambda self: True)
+    cd = sys.modules.get("al_dic_3d.gui.dialogs.calibration_dialog")
+    if cd is not None:  # unsaved-calibration discard question
+        monkeypatch.setattr(cd.CalibrationDialog, "_confirm_discard", lambda self: True)
     rs = sys.modules.get("al_dic_3d.gui.panels.right_sidebar")
     if rs is not None:  # fix batch V run-failure dialog
         monkeypatch.setattr(rs.RightSidebar3D, "_show_error", lambda self, title, message: None)
