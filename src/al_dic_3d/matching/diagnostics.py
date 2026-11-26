@@ -144,7 +144,10 @@ EPIPOLAR_DRIFT_PX = 0.5
 #: reported 100 % valid with a 1.0 mm 3D error instead of 0.05 mm. The medians
 #: of those frames rose from 0.023-0.026 px to 0.31-0.38 px (0.35 mm/frame
 #: motion) or 2.1-2.3 px (larger motion); the tracked frames of the healthy
-#: synthetic runs sit 0.02-0.03 px above frame 1.
+#: synthetic runs sit 0.02-0.03 px above frame 1. Real data stay well below:
+#: the quickstart D specimen at most +0.003 px, and a notched specimen loaded
+#: to failure (136 frames, accumulative) 0.042 px at frame 1 and at most
+#: 0.116 px on any frame (+0.074).
 EPIPOLAR_JUMP_PX = 0.2
 
 #: Pairs sampled per frame for that median (an even stride over the valid
