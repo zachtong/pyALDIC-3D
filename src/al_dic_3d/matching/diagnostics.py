@@ -121,10 +121,10 @@ STEREO_ADVICE_FRAC = 0.2
 
 #: A frame-1 median epipolar residual above this (px) gets a "recalibrate"
 #: warning even when the stereo check rejects few links. The healthy real runs
-#: we have measured all sit at or below 0.25 px: Challenge 1.0 S1 16 mm 0.024,
-#: Challenge 2.0 S1 0.029 / S2 0.133, Challenge 2.1 S3 0.040-0.042, the D
-#: specimen (quickstart) 0.077-0.087, and the GitHub issue #1 rig (rough
-#: surface, 29 deg stereo angle) 0.22-0.25. A right camera rotated 1.5 deg
+#: we have measured all sit at or below 0.25 px: 0.024-0.133 on four real rigs
+#: from stereo-DIC challenge datasets, 0.077-0.087 on the quickstart D
+#: specimen, and 0.22-0.25 on the GitHub issue #1 rig (rough surface, 29 deg
+#: stereo angle). A right camera rotated 1.5 deg
 #: after calibration gave 0.8 px with only 5 % of the links rejected, while
 #: |D| was 8.6 % off; the 2 px rejection limit never saw it. 0.5 px is about
 #: twice the worst healthy run (4-20x the others) and still below that bumped
