@@ -63,9 +63,12 @@ class RunWorker(QThread):
             if self._stop_requested:
                 self.cancelled.emit()
             else:
-                # F3.1: the user gets the exception TYPE + message in the GUI
-                # console. H2: the full traceback goes through logging -- the
+                # The user gets a plain message in GUI terms (run_error_text:
+                # errors the user can fix lose the exception type and internal
+                # terms). H2: the full traceback goes through logging -- the
                 # per-user log file in the frozen build (whose stderr is None,
                 # so traceback.print_exc() lost it) and the terminal otherwise.
+                from al_dic_3d.gui.run_error_text import run_error_text
+
                 logger.error("Pipeline run failed", exc_info=True)
-                self.failed.emit(f"{type(exc).__name__}: {exc}")
+                self.failed.emit(run_error_text(exc))

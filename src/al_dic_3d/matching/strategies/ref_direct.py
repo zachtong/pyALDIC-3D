@@ -31,8 +31,8 @@ from al_dic_3d.matching.contracts import (
     CorrespondenceSet,
 )
 from al_dic_3d.matching.diagnostics import (
+    NoStereoLinksError,
     frame_row,
-    no_stereo_links_message,
     stereo_rows,
     temporal_rows,
 )
@@ -244,14 +244,12 @@ class RefDirectStrategy:
                     epipolar_median_px=stereo_stats.get("epipolar_median_px"),
                 )
                 if not valid_m.any():
-                    raise RuntimeError(
-                        no_stereo_links_message(
-                            n_pts,
-                            self.stereo_search,
-                            stereo_offset,
-                            rejected=(n_rz, n_re),
-                            epipolar_median_px=stereo_stats.get("epipolar_median_px"),
-                        )
+                    raise NoStereoLinksError(
+                        n_pts,
+                        self.stereo_search,
+                        stereo_offset,
+                        rejected=(n_rz, n_re),
+                        epipolar_median_px=stereo_stats.get("epipolar_median_px"),
                     )
             else:
                 # Direct L1 -> R_k match at the reference nodes X_L, chain-seeded

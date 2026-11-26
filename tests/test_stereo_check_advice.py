@@ -119,7 +119,15 @@ def test_no_links_message_points_at_the_cause():
 
     epi = no_stereo_links_message(500, 48, (10.0, 0.0), rejected=(3, 480), epipolar_median_px=17.6)
     assert "calibration" in epi and "17.6 px" in epi and "seed point" not in epi
+    # Nothing correlated (new-user audit: L/R swapped, a calibration from binned
+    # images, a textureless ROI): the likely causes lead, in that order, and the
+    # threshold advice that gave a 0 %-valid "analysis complete" is gone.
     corr = no_stereo_links_message(500, 48, (10.0, 0.0), rejected=(470, 2))
-    assert "stereo_znssd_max" in corr
-    plain = no_stereo_links_message(500, 48, (10.0, 0.0))
-    assert "seed point" in plain
+    assert "stereo_znssd_max" not in corr and "470" in corr
+    order = [corr.index(k) for k in ("swapped", "calibration does not belong", "speckle")]
+    assert order == sorted(order)
+    plain = no_stereo_links_message(500, 48, None)
+    assert "swapped" in plain and "seed point" in plain
+    for text in (epi, corr, plain):  # no internal terms
+        assert "L1->R1" not in text and "disparity offset=" not in text
+        assert "search_radius" not in text

@@ -120,6 +120,12 @@ def stereo_rows(
 STEREO_ADVICE_FRAC = 0.2
 
 
+def no_stereo_links_cause(rejected: tuple[int, int] = (0, 0)) -> str:
+    """``"calibration"`` when the epipolar check removed the most links, else ``"no_match"``."""
+    n_z, n_e = int(rejected[0]), int(rejected[1])
+    return "calibration" if n_e and n_e >= n_z else "no_match"
+
+
 def no_stereo_links_message(
     n_pts: int,
     search_radius: int,
@@ -129,33 +135,68 @@ def no_stereo_links_message(
 ) -> str:
     """The error for a frame-1 stereo match that kept no link, naming the cause.
 
-    It always said "check the seed point / disparity prior and stereo overlap",
-    also when every link was found and then rejected by the stereo check -- for
-    their distance from the epipolar line (a calibration that does not match the
-    images) or for weak left-right correlation (GitHub issue #1).
+    * Most links off their epipolar line: the calibration does not match the
+      images (GitHub issue #1).
+    * Otherwise nothing correlated between the two views. The new-user audit
+      (2026-11-25) produced this with left and right swapped, a calibration
+      from other (binned) images and a textureless ROI; the message used to
+      advise raising ``stereo_znssd_max``, and following it gave a 0 %-valid
+      "analysis complete". The likely causes now lead, in that order; the
+      threshold advice is kept for runs where SOME links pass
+      (:func:`stereo_check_advice`).
+
+    ``search_radius`` and ``offset`` are accepted for the call sites' sake;
+    the search settings are not the cause a user can act on here.
     """
+    del search_radius, offset
     head = (
-        f"frame-1 stereo match found no valid correspondences "
-        f"(0/{n_pts} candidates matched L1->R1; search_radius={search_radius}, "
-        f"disparity offset={offset})"
+        f"no point of the first frame could be matched between the left and right "
+        f"images (0 of {n_pts} points"
     )
     n_z, n_e = int(rejected[0]), int(rejected[1])
-    if n_e and n_e >= n_z:
+    if no_stereo_links_cause(rejected) == "calibration":
         median = "" if epipolar_median_px is None else f", median {epipolar_median_px:.1f} px"
         return (
-            f"{head} — the stereo check rejected {n_e} links for their distance from "
-            f"the epipolar line{median}: the calibration probably does not match these "
+            f"{head}): the stereo check rejected {n_e} links for their distance from "
+            f"the epipolar line{median}. The calibration probably does not match these "
             f"images (a camera moved, a wrong file, or left and right swapped); check "
             f"or redo the calibration."
         )
-    if n_z:
-        return (
-            f"{head} — the stereo check rejected {n_z} links for weak left-right "
-            f"correlation: if the surface correlates poorly between the two views, raise "
-            f"stereo_znssd_max (GUI: ADVANCED > Result checks > Stereo check); otherwise "
-            f"check the seed point / disparity prior and stereo overlap."
+    weak = f"; {n_z} were rejected for weak left-right correlation" if n_z else ""
+    return (
+        f"{head}{weak}). Likely causes, most likely first: (1) left and right are "
+        f"swapped: give the left camera's images as [sequence] left; (2) the calibration "
+        f"does not belong to these images (another rig or session, or binned or cropped "
+        f"images); (3) the region of interest has no speckle texture. Otherwise check "
+        f"the seed point / disparity_offset and that both cameras see the region."
+    )
+
+
+class NoStereoLinksError(RuntimeError):
+    """The frame-1 stereo match kept no link (a :class:`RuntimeError`, as before).
+
+    Carries the numbers so the GUI can word (and translate) the same advice:
+    ``cause`` is :func:`no_stereo_links_cause`, ``rejected`` the
+    ``(n_znssd, n_epipolar)`` split, ``epipolar_median_px`` the median residual.
+    """
+
+    def __init__(
+        self,
+        n_pts: int,
+        search_radius: int,
+        offset,
+        rejected: tuple[int, int] = (0, 0),
+        epipolar_median_px: float | None = None,
+    ) -> None:
+        super().__init__(
+            no_stereo_links_message(
+                n_pts, search_radius, offset, rejected, epipolar_median_px=epipolar_median_px
+            )
         )
-    return f"{head} — check the seed point / disparity prior and stereo overlap."
+        self.n_pts = int(n_pts)
+        self.rejected = (int(rejected[0]), int(rejected[1]))
+        self.epipolar_median_px = epipolar_median_px
+        self.cause = no_stereo_links_cause(rejected)
 
 
 # --- post-run summary ---------------------------------------------------------
