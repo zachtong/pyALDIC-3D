@@ -2,12 +2,14 @@
 
 Detectors per board family (D12):
 
-- Chessboard: ``findChessboardCornersSB`` (NORMALIZE|EXHAUSTIVE|ACCURACY —
-  sub-pixel accurate, Duda&Frese 2018) with the classic
-  ``findChessboardCorners`` + ``cornerSubPix`` as fallback; the two are never
-  mixed silently (``method`` records which ran, the solver reports mixes).
-  Orientation is canonicalized so the 180-degree ambiguity cannot desync the
-  L/R corner indexing.
+- Chessboard (:mod:`.chessboard`): ``findChessboardCornersSB`` — on
+  downscaled copies of large frames first, then at full resolution
+  (NORMALIZE|EXHAUSTIVE|ACCURACY, sub-pixel accurate, Duda&Frese 2018) — with
+  the classic ``findChessboardCorners`` + ``cornerSubPix`` as fallback, every
+  start refined at full resolution; the two detectors are never mixed silently
+  (``method`` records which ran, the solver reports mixes). Orientation is
+  canonicalized so the 180-degree ambiguity cannot desync the L/R corner
+  indexing.
 - ChArUco: 4.7+ OO API (``CharucoDetector.detectBoard`` +
   ``board.matchImagePoints``); corners carry unique ids -> partial views OK.
 - Circle grid: ``findCirclesGrid`` with a tuned ``SimpleBlobDetector``.
@@ -35,6 +37,7 @@ from al_dic_3d.calibration.boards import (
     CircleGridSpec,
     CodedCircleGridSpec,
 )
+from al_dic_3d.calibration.chessboard import chessboard_sharpness, find_chessboard
 from al_dic_3d.calibration.dot_centre import refine_dot_centres
 
 _EMPTY2 = np.empty((0, 2), dtype=np.float64)
@@ -74,6 +77,16 @@ def to_gray_u8(image: NDArray) -> NDArray[np.uint8]:
         raise ValueError(f"expected a 2D image, got shape {arr.shape}")
     if arr.dtype == np.uint8:
         return arr
+    if arr.dtype == np.uint16:
+        # The generic min-max stretch below, evaluated once per possible value:
+        # bit-identical output without a float64 copy of the whole image
+        # (18 vs 64 ms on a 5 MP 16-bit frame).
+        lo16, hi16 = int(arr.min()), int(arr.max())
+        if hi16 <= lo16:
+            return np.zeros(arr.shape, dtype=np.uint8)
+        levels = np.arange(65536, dtype=np.float64)
+        lut = np.clip((levels - lo16) / (hi16 - lo16) * 255.0, 0, 255).astype(np.uint8)
+        return np.take(lut, arr)
     a = arr.astype(np.float64)
     lo, hi = float(np.nanmin(a)), float(np.nanmax(a))
     if not np.isfinite(lo) or hi <= lo:
@@ -100,70 +113,17 @@ def detect_board(image: NDArray, spec: BoardSpec) -> BoardDetection:
 # --------------------------------------------------------------------------- #
 
 
-def _canonicalize(corners: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Resolve the 180-degree ordering ambiguity of a plain checkerboard.
-
-    OpenCV may return the corner sequence starting from either end depending on
-    board pose. Enforce: the first corner is the one closer to the image
-    top-left (by x+y sum), so both cameras of a pair index the same physical
-    corner as long as neither camera is rotated ~90+ degrees w.r.t. the other.
-    """
-    if corners[0].sum() > corners[-1].sum():
-        return corners[::-1].copy()
-    return corners
-
-
 def _detect_chessboard(gray: NDArray[np.uint8], spec: ChessboardSpec) -> BoardDetection:
-    import cv2
-
-    flags = cv2.CALIB_CB_NORMALIZE_IMAGE | cv2.CALIB_CB_EXHAUSTIVE | cv2.CALIB_CB_ACCURACY
-    found, corners = cv2.findChessboardCornersSB(gray, spec.pattern_size, flags=flags)
-    method = "sb"
-    if not found:
-        method = "classic"
-        found, corners = cv2.findChessboardCorners(
-            gray,
-            spec.pattern_size,
-            flags=cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE,
-        )
-        if not found:
-            return _fail("chessboard not found (SB and classic detectors)", method)
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3)
-        corners = cv2.cornerSubPix(gray, np.float32(corners), (11, 11), (-1, -1), criteria)
-
-    pts = _canonicalize(np.asarray(corners, dtype=np.float64).reshape(-1, 2))
-    n = spec.cols * spec.rows
-    if pts.shape[0] != n:
-        return _fail(f"expected {n} corners, got {pts.shape[0]}", method)
-
-    # Gradient-based sub-pixel refinement on top of either detector. SB's Radon
-    # localization is tuned for sharp real images and leaves ~0.1-0.3 px of
-    # error on band-limited/blurred edges, where cornerSubPix converges to
-    # ~0.01 px (measured on the synthetic gate); on sharp images the refinement
-    # moves corners negligibly. Window adapts to the projected square size.
-    grid = pts.reshape(spec.rows, spec.cols, 2)
-    spacing = float(np.median(np.linalg.norm(np.diff(grid, axis=1), axis=2)))
-    win = int(np.clip(spacing * 0.4, 4, 15))
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 40, 1e-4)
-    pts = np.asarray(
-        cv2.cornerSubPix(gray, np.float32(pts).reshape(-1, 1, 2), (win, win), (-1, -1), criteria),
-        dtype=np.float64,
-    ).reshape(-1, 2)
-
-    try:
-        sharp = float(
-            cv2.estimateChessboardSharpness(gray, spec.pattern_size, np.float32(pts))[0][0]
-        )
-    except cv2.error:
-        sharp = float("nan")
-
+    found = find_chessboard(gray, spec)
+    if found.points is None:
+        return _fail(found.reason, found.method)
     return BoardDetection(
         ok=True,
-        image_points=pts,
+        image_points=found.points,
         object_points=spec.object_points(),
-        ids=np.arange(n, dtype=np.int64),
-        method=method,
-        sharpness=sharp,
+        ids=np.arange(spec.cols * spec.rows, dtype=np.int64),
+        method=found.method,
+        sharpness=chessboard_sharpness(gray, spec, found.points),
     )
 
 
