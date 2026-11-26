@@ -270,6 +270,23 @@ class CodedCircleGridSpec:
 BoardSpec = ChessboardSpec | CharucoSpec | CircleGridSpec | CodedCircleGridSpec
 
 
+def board_count_hint(spec: BoardSpec) -> str:
+    """What the board size counts for ``spec``'s family (English, for the CLI).
+
+    The most common reason a board is found in no image is a size counted the
+    wrong way: squares for a chessboard, whose size counts the inner corners.
+    The GUI shows translated copies of these sentences.
+    """
+    if isinstance(spec, ChessboardSpec):
+        return "For a chessboard, count the INNER corners: a board of 10 x 8 squares has 9 x 7."
+    if isinstance(spec, CharucoSpec):
+        return (
+            "For ChArUco, count the SQUARES (not the inner corners), and check the marker "
+            "size, the dictionary and the OpenCV < 4.7 (legacy) setting."
+        )
+    return "For a dot grid, count the DOTS in one row and in one column."
+
+
 def _render_dots(
     obj_mm: NDArray[np.float64],
     dot_mm: float,

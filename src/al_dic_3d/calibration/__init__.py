@@ -10,8 +10,10 @@ Layer: compute (**Qt-free**).  Lands: Phase 1 (+D12).  Spec: 01 §B.1, §E.
 
 from al_dic_3d.calibration.batch_detect import (
     FileDetections,
+    MixedImageSizeError,
     UnreadableImageError,
     detect_files,
+    stereo_image_sizes,
 )
 from al_dic_3d.calibration.boards import (
     BoardSpec,
@@ -75,6 +77,7 @@ __all__ = [
     "DiagnosticThresholds",
     "FileDetections",
     "Finding",
+    "MixedImageSizeError",
     "diagnose_calibration",
     "run_calibration",
     "BoardSpec",
@@ -112,6 +115,7 @@ __all__ = [
     "save_detections",
     "stability_jackknife",
     "spec_summary",
+    "stereo_image_sizes",
     "summarize",
     "to_opencv_yaml",
     "triangulate_pair",

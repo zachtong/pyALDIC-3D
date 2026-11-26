@@ -33,6 +33,10 @@ from al_dic_3d.calibration.model import CameraIntrinsics, StereoRig
 # (fx, fy, cx, cy, k1, k2, p1, p2, k3, k4, k5, k6, s1..s4, taux, tauy).
 _STD_KEYS = ("fx", "fy", "cx", "cy", "k1", "k2", "p1", "p2", "k3")
 
+# The fewest stereo pairs :func:`calibrate_stereo` solves from by default
+# (its ``min_pairs``); the GUI asks for at least this many pairs up front.
+MIN_STEREO_PAIRS = 6
+
 
 @dataclass(frozen=True)
 class MonoCalibration:
@@ -328,6 +332,7 @@ def calibrate_stereo(
     right: Sequence[BoardDetection],
     image_size: tuple[int, int],
     *,
+    image_size_right: tuple[int, int] | None = None,
     joint_refine: bool = False,
     fix_k3: bool = False,
     zero_tangent: bool = True,
@@ -336,12 +341,15 @@ def calibrate_stereo(
     reject_rms: float = 1.0,
     reject_factor: float = 2.5,
     max_reject_rounds: int = 25,
-    min_pairs: int = 6,
+    min_pairs: int = MIN_STEREO_PAIRS,
     dot_radius_mm: float | None = None,
 ) -> StereoResult:
     """Full stereo calibration from per-camera detection lists (index-paired).
 
     ``left[i]`` and ``right[i]`` must come from the same synchronized capture.
+    ``image_size`` is the left camera's ``(width, height)``; ``image_size_right``
+    the right camera's when it differs (default: ``image_size``). Each camera is
+    solved and recorded at its own size.
     ``dot_radius_mm`` enables the eccentricity correction for circle/dot
     targets (pass the physical dot radius): two rounds of mono-solve ->
     subtract the modeled disc-centroid bias — without it, large/tilted dots
@@ -362,8 +370,10 @@ def calibrate_stereo(
     )
     left = list(left)
     right = list(right)
-    mono_l = calibrate_mono(left, image_size, **mono_kwargs)
-    mono_r = calibrate_mono(right, image_size, **mono_kwargs)
+    size_l = (int(image_size[0]), int(image_size[1]))
+    size_r = size_l if image_size_right is None else tuple(int(v) for v in image_size_right)
+    mono_l = calibrate_mono(left, size_l, **mono_kwargs)
+    mono_r = calibrate_mono(right, size_r, **mono_kwargs)
     if dot_radius_mm is not None and dot_radius_mm > 0:
         # Fixed-point: always correct the ORIGINAL measurements with the latest
         # model (correcting corrected points would accumulate the offsets).
@@ -371,8 +381,8 @@ def calibrate_stereo(
         for _iteration in range(2):
             left = _correct_eccentricity(orig_l, mono_l, dot_radius_mm)
             right = _correct_eccentricity(orig_r, mono_r, dot_radius_mm)
-            mono_l = calibrate_mono(left, image_size, **mono_kwargs)
-            mono_r = calibrate_mono(right, image_size, **mono_kwargs)
+            mono_l = calibrate_mono(left, size_l, **mono_kwargs)
+            mono_r = calibrate_mono(right, size_r, **mono_kwargs)
 
     # Candidate pairs: both views detected and sharing >= 6 point ids.
     pairs: dict[int, PairQC] = {}
@@ -401,7 +411,6 @@ def calibrate_stereo(
     K2, d2 = mono_r.intrinsics.K, mono_r.intrinsics.dist_coeffs
     flags = cv2.CALIB_USE_INTRINSIC_GUESS if joint_refine else cv2.CALIB_FIX_INTRINSIC
     criteria = (cv2.TERM_CRITERIA_COUNT | cv2.TERM_CRITERIA_EPS, 200, 1e-9)
-    size = (int(image_size[0]), int(image_size[1]))
 
     def solve(indices: list[int]):
         obj = [np.float32(data[i][0]).reshape(-1, 1, 3) for i in indices]
@@ -415,7 +424,7 @@ def calibrate_stereo(
             d1.copy(),
             K2.copy(),
             d2.copy(),
-            size,
+            size_l,  # one size; OpenCV uses it only to initialise unseeded intrinsics
             np.eye(3),
             np.zeros(3),
             flags=flags,
@@ -459,8 +468,8 @@ def calibrate_stereo(
             distance=dist,
         )
 
-    intr_l = _intrinsics_from(K1o, d1o, size) if joint_refine else mono_l.intrinsics
-    intr_r = _intrinsics_from(K2o, d2o, size) if joint_refine else mono_r.intrinsics
+    intr_l = _intrinsics_from(K1o, d1o, size_l) if joint_refine else mono_l.intrinsics
+    intr_r = _intrinsics_from(K2o, d2o, size_r) if joint_refine else mono_r.intrinsics
     rig = StereoRig(
         cameras={"L": intr_l, "R": intr_r},
         extrinsics={
