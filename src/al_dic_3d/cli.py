@@ -119,8 +119,18 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("chessboard", "charuco", "circles", "coded"),
         help="board family",
     )
-    cal_p.add_argument("--cols", type=int, required=True, help="inner corners / dots per row")
-    cal_p.add_argument("--rows", type=int, required=True, help="inner corners / dots per column")
+    cal_p.add_argument(
+        "--cols",
+        type=int,
+        required=True,
+        help="per row: inner corners (chessboard), squares (charuco) or dots (dot grids)",
+    )
+    cal_p.add_argument(
+        "--rows",
+        type=int,
+        required=True,
+        help="per column: inner corners (chessboard), squares (charuco) or dots (dot grids)",
+    )
     cal_p.add_argument("--square", type=float, help="square size in mm (chessboard / charuco)")
     cal_p.add_argument("--marker", type=float, help="ArUco marker size in mm (charuco)")
     cal_p.add_argument(
@@ -405,8 +415,10 @@ def _calibrate_command(args: argparse.Namespace) -> int:
         detect_board,
         detect_files,
         run_calibration,
+        stereo_image_sizes,
         to_opencv_yaml,
     )
+    from al_dic_3d.calibration.batch_detect import detection_shortfall
     from al_dic_3d.pathsafe import imread_unicode
 
     def fail(msg: str) -> None:
@@ -440,7 +452,13 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     except UnreadableImageError as exc:
         fail(str(exc))
     dl, dr = list(found.detections[:n_left]), list(found.detections[n_left:])
-    image_size = found.sizes[0]
+    try:
+        size_l, size_r = stereo_image_sizes(files, found.sizes, n_left)
+    except ValueError as exc:  # a camera's images differ in size
+        fail(str(exc))
+    shortfall = detection_shortfall(dl, dr, spec, args.min_pairs)
+    if shortfall is not None:
+        fail(shortfall)
     dot_mm = getattr(spec, "dot_mm", None)
     ecc = None if args.no_ecc_correction or dot_mm is None else dot_mm / 2.0
 
@@ -457,7 +475,7 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     try:
         # One pipeline with the GUI: solve, bundle adjustment (on the points the
         # solve used), diagnostics of the final calibration, summary.
-        run = run_calibration(dl, dr, image_size, options=options)
+        run = run_calibration(dl, dr, size_l, image_size_right=size_r, options=options)
     except ValueError as exc:
         fail(str(exc))
     res, stats = run.result, run.stats
@@ -485,6 +503,11 @@ def _calibrate_command(args: argparse.Namespace) -> int:
         f"\nstereo rms {res.rms:.4f} px | epipolar {res.epipolar_rms:.4f} px | "
         f"baseline {res.baseline:.3f} | pairs {res.n_pairs_used}/{len(res.pairs)} | "
         f"coverage L {stats['coverage_left']:.0%} R {stats['coverage_right']:.0%}"
+    )
+    # A mistyped square size scales every length: the board distances show it.
+    print(
+        f"board distance from the left camera {stats['distance_min']:.0f}-"
+        f"{stats['distance_max']:.0f} (square-size units, mm)"
     )
     _print_diagnostics(run.diagnostics)
     meta = {

@@ -643,6 +643,7 @@ def diagnose_calibration(
     right: Sequence[BoardDetection],
     image_size: tuple[int, int],
     *,
+    image_size_right: tuple[int, int] | None = None,
     fix_k3: bool = False,
     zero_tangent: bool = True,
     fix_aspect: bool = False,
@@ -657,18 +658,20 @@ def diagnose_calibration(
     (``StereoResult.detections``: eccentricity-corrected for dot targets). The
     solve options are the user's. Pass ``mono=result.mono`` when the rig comes
     from ``calibrate_stereo`` with those options, so the diagnostics add one
-    mono solve per camera instead of two.
+    mono solve per camera instead of two. ``image_size`` is the left camera's
+    ``(width, height)``, ``image_size_right`` the right camera's when it differs.
     """
     t0 = time.perf_counter()
     th = thresholds or DiagnosticThresholds()
     cameras: dict[str, CameraDiagnostics] = {}
     findings: list[Finding] = []
-    for key, dets in (("L", left), ("R", right)):
+    size_r = image_size if image_size_right is None else image_size_right
+    for key, dets, size in (("L", left, image_size), ("R", right, size_r)):
         report = diagnose_camera(
             key,
             rig.cameras[key],
             dets,
-            image_size,
+            size,
             fix_k3=fix_k3,
             zero_tangent=zero_tangent,
             fix_aspect=fix_aspect,

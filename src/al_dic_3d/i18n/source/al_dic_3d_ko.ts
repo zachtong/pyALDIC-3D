@@ -272,9 +272,107 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     </message>
 </context>
 <context>
+    <name>BoardFormMixin</name>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="52"/>
+        <source>Chessboard</source>
+        <translation>체스보드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="53"/>
+        <source>ChArUco</source>
+        <translation>ChArUco</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="54"/>
+        <source>Circle grid</source>
+        <translation>도트 그리드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="55"/>
+        <source>Coded dot target (3 ring markers)</source>
+        <translation>코드화 도트 타깃(링 마커 3개)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="57"/>
+        <source>Type</source>
+        <translation>유형</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="70"/>
+        <source>Square size (mm)</source>
+        <translation>정사각형 크기(mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="75"/>
+        <source>Marker size (mm)</source>
+        <translation>마커 크기(mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="80"/>
+        <source>Dot pitch (mm)</source>
+        <translation>도트 간격(mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="85"/>
+        <source>Dot diameter (mm)</source>
+        <translation>도트 지름(mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="89"/>
+        <source>Asymmetric grid</source>
+        <translation>비대칭 그리드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="91"/>
+        <source>Board printed with OpenCV &lt; 4.7</source>
+        <translation>OpenCV &lt; 4.7로 인쇄한 보드</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="111"/>
+        <source>Inner corners (columns x rows)</source>
+        <translation>내부 코너 (열 × 행)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="113"/>
+        <source>Squares (columns x rows)</source>
+        <translation>정사각형 (열 × 행)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="115"/>
+        <source>Dots (columns x rows)</source>
+        <translation>도트 (열 × 행)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="124"/>
+        <source>For a chessboard, count the INNER corners: a board of 10 x 8 squares has 9 x 7.</source>
+        <translation>체스보드는 내부 코너를 세세요. 정사각형이 10 × 8개인 보드는 9 × 7입니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="128"/>
+        <source>For ChArUco, count the SQUARES (not the inner corners), and check the marker size and the OpenCV &lt; 4.7 setting.</source>
+        <translation>ChArUco는 정사각형을 세세요(내부 코너가 아님). 마커 크기와 'OpenCV &lt; 4.7' 설정도 확인하세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="131"/>
+        <source>For a dot grid, count the DOTS in one row and in one column.</source>
+        <translation>도트 그리드는 한 행과 한 열의 도트 개수를 세세요.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="208"/>
+        <source>The board was not found in any image.</source>
+        <translation>어느 이미지에서도 보드를 찾지 못했습니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="211"/>
+        <source>The board was found in both images of only {0} of {1} pairs (the solve needs {2}).</source>
+        <translation>양쪽 이미지 모두에서 보드를 찾은 쌍은 {1}쌍 중 {0}쌍뿐입니다(계산에는 {2}쌍이 필요합니다).</translation>
+    </message>
+</context>
+<context>
     <name>CalibrationDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="92"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="91"/>
         <source>Stereo Calibration</source>
         <translation>스테레오 캘리브레이션</translation>
     </message>
@@ -350,7 +448,7 @@ raise it only for a poor calibration; 0 turns the check off.</source>
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="175"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="408"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="315"/>
         <source>select a pair to preview detected points</source>
         <translation>쌍을 선택하면 검출 점을 미리 봅니다</translation>
     </message>
@@ -380,263 +478,219 @@ raise it only for a poor calibration; 0 turns the check off.</source>
         <translation>캘리브레이션 보드</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="220"/>
-        <source>Chessboard</source>
-        <translation>체스보드</translation>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="738"/>
+        <source>Discard calibration?</source>
+        <translation>캘리브레이션을 버릴까요?</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="221"/>
-        <source>ChArUco</source>
-        <translation>ChArUco</translation>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
+        <source>This calibration has not been saved. Close the dialog and discard it?</source>
+        <translation>이 캘리브레이션은 아직 저장되지 않았습니다. 대화 상자를 닫고 버릴까요?</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="222"/>
-        <source>Circle grid</source>
-        <translation>도트 그리드</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="223"/>
-        <source>Coded dot target (3 ring markers)</source>
-        <translation>코드화 도트 타깃(링 마커 3개)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="225"/>
-        <source>Type</source>
-        <translation>유형</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="230"/>
-        <source>Columns x Rows</source>
-        <translation>열 × 행</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="237"/>
-        <source>Square size (mm)</source>
-        <translation>정사각형 크기(mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="242"/>
-        <source>Marker size (mm)</source>
-        <translation>마커 크기(mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="247"/>
-        <source>Dot pitch (mm)</source>
-        <translation>도트 간격(mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="252"/>
-        <source>Dot diameter (mm)</source>
-        <translation>도트 지름(mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="256"/>
-        <source>Asymmetric grid</source>
-        <translation>비대칭 그리드</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="258"/>
-        <source>Board printed with OpenCV &lt; 4.7</source>
-        <translation>OpenCV &lt; 4.7로 인쇄한 보드</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="262"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="215"/>
         <source>Print board… (1:1 PDF)</source>
         <translation>보드 인쇄…(1:1 PDF)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="266"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="219"/>
         <source>SOLVER OPTIONS</source>
         <translation>솔버 옵션</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="267"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="220"/>
         <source>Jointly refine intrinsics (advanced)</source>
         <translation>내부 파라미터 공동 정밀화(고급)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="268"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="221"/>
         <source>Estimate tangential distortion p1/p2</source>
         <translation>접선 왜곡 p1/p2 추정</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="269"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="222"/>
         <source>Fix k3 = 0 (low-distortion lens)</source>
         <translation>k3 = 0 고정(저왜곡 렌즈)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="270"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="223"/>
         <source>Release-object method (printed boards)</source>
         <translation>Release-object 방법(인쇄 보드)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="271"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="224"/>
         <source>Dot eccentricity correction</source>
         <translation>도트 편심 보정</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="273"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="226"/>
         <source>Joint bundle adjustment (robust, uses mono views)</source>
         <translation>번들 조정(강건, 단안 뷰 활용)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="274"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="227"/>
         <source>Optimize board shape (printed boards)</source>
         <translation>보드 형상 최적화(인쇄 보드)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="289"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="242"/>
         <source>Calibrate</source>
         <translation>캘리브레이션</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="300"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="253"/>
         <source>RESULT</source>
         <translation>결과</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="301"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="254"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="409"/>
         <source>No calibration yet</source>
         <translation>아직 캘리브레이션 없음</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="306"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="259"/>
         <source>Verify with board images…</source>
         <translation>보드 이미지로 검증…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="318"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="271"/>
         <source>Accept &amp;&amp; Save…</source>
         <translation>적용 &amp;&amp; 저장…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="324"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="277"/>
         <source>Cancel</source>
         <translation>취소</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="383"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="289"/>
         <source>Choose {0} calibration images</source>
         <translation>{0} 캘리브레이션 이미지 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="385"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="717"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="291"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="674"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>이미지 (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="430"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="337"/>
         <source>{0} left / {1} right images</source>
         <translation>왼쪽 {0}장 / 오른쪽 {1}장</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="440"/>
-        <source>Load equal, &gt;= 3 left/right image sets first.</source>
-        <translation>좌우 동수(3쌍 이상)의 이미지를 먼저 불러오세요.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="471"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="386"/>
         <source>Working… {0}</source>
         <translation>처리 중… {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="480"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="429"/>
         <source>Calibration failed: {0}</source>
         <translation>캘리브레이션 실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="505"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="461"/>
         <source>used</source>
         <translation>사용됨</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="507"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="395"/>
         <source>L: {0}</source>
         <translation>왼쪽: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="350"/>
+        <source>Load the same number of left and right images, at least {0} pairs: the solve needs {0} usable pairs.</source>
+        <translation>왼쪽과 오른쪽 이미지를 같은 수로, 최소 {0}쌍 불러오세요. 계산에는 사용 가능한 쌍이 {0}쌍 필요합니다.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="397"/>
         <source>R: {0}</source>
         <translation>오른쪽: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="525"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="475"/>
         <source>Stereo RMS {0:.3f} px | epipolar {1:.3f} px</source>
         <translation>스테레오 RMS {0:.3f} px | 에피폴라 {1:.3f} px</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="478"/>
         <source>Baseline {0:.2f} mm | pairs {1}/{2}</source>
         <translation>기선 {0:.2f} mm | 쌍 {1}/{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="531"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="485"/>
+        <source>Board distance from the left camera {0:.0f}-{1:.0f} mm</source>
+        <translation>왼쪽 카메라에서 보드까지의 거리 {0:.0f}-{1:.0f} mm</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="488"/>
         <source>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</source>
         <translation>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="534"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="491"/>
         <source>Coverage L {0:.0%} / R {1:.0%} | tilt {2:.0f}-{3:.0f}°</source>
         <translation>커버리지 좌 {0:.0%} / 우 {1:.0%} | 기울기 {2:.0f}-{3:.0f}°</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="543"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="500"/>
         <source>Bundle adjustment: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} mono views)</source>
         <translation>번들 조정: RMS {0:.3f} -&gt; {1:.3f} px(단안 뷰 {2:.0f}개)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="506"/>
         <source>Board flatness: z-range {0:.3f} mm</source>
         <translation>보드 평탄도: z 범위 {0:.3f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="552"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
         <source>Warning: {0}</source>
         <translation>경고: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="647"/>
         <source>Save board PDF</source>
         <translation>보드 PDF 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="692"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="649"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="660"/>
         <source>Board PDF written: {0}</source>
         <translation>보드 PDF 저장됨: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="719"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="676"/>
         <source>Choose LEFT verification image</source>
         <translation>왼쪽 검증 이미지 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="681"/>
         <source>Choose RIGHT verification image</source>
         <translation>오른쪽 검증 이미지 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="733"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
         <source>Verification failed: {0}</source>
         <translation>검증 실패: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="696"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>검증: 간격 {0:.4f} mm 대 {1:g} mm — 스케일 오차 {2:.3%}, 평면 RMS {3:.4f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="753"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="710"/>
         <source>Save calibration as</source>
         <translation>캘리브레이션 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="755"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="712"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
     </message>
@@ -687,12 +741,12 @@ raise it only for a poor calibration; 0 turns the check off.</source>
 <context>
     <name>CalibrationSection3D</name>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="50"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="52"/>
         <source>Calibrate from images…</source>
         <translation>이미지에서 캘리브레이션…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="54"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="56"/>
         <source>Run the built-in stereo calibrator on your target photos
 (checkerboard / ChArUco / dot grid). Writes an opencv_yaml
 file and loads it — the recommended path when you have
@@ -701,12 +755,12 @@ calibration images.</source>
 opencv_yaml 파일을 작성하고 불러옵니다 — 보정 이미지가 있을 때 권장되는 방법입니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="65"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="67"/>
         <source>Format</source>
         <translation>형식</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="74"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="76"/>
         <source>File format of the calibration to import. Default opencv_yaml
 (written by the built-in calibrator). Pick the format matching
 your source: dice (DICe XML), matchid (MatchID .caldat),
@@ -717,12 +771,12 @@ opencorr (OpenCorr CSV), mmc (MultiDIC/MMC .mat), matlabcv
 opencorr(OpenCorr CSV), mmc(MultiDIC/MMC .mat), matlabcv(MATLAB stereoParams .mat).</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="85"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="87"/>
         <source>Import calibration…</source>
         <translation>보정 가져오기…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="88"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="90"/>
         <source>Load an existing stereo calibration file in the selected
 Format. The status line below shows fx / fy and the baseline
 as a sanity check.</source>
@@ -730,12 +784,12 @@ as a sanity check.</source>
 아래 상태 줄에 fx / fy와 기선이 표시되어 타당성 점검에 사용됩니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="96"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="98"/>
         <source>Manual parameters…</source>
         <translation>파라미터 수동 입력…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="99"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="101"/>
         <source>Type intrinsics and extrinsics by hand (fx, fy, cx, cy,
 distortion, R, T) — the fallback when no calibration file
 exists. Writes an opencv_yaml file and loads it.</source>
@@ -743,34 +797,34 @@ exists. Writes an opencv_yaml file and loads it.</source>
 — 보정 파일이 없을 때의 대안입니다. opencv_yaml 파일을 작성하고 불러옵니다.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="107"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="109"/>
         <source>No calibration loaded</source>
         <translation>보정이 로드되지 않았습니다</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="151"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="153"/>
         <source>Choose calibration file</source>
         <translation>보정 파일 선택</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="153"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="155"/>
         <source>Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</source>
         <translation>보정 파일 (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="171"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="181"/>
         <source>Error: {0}</source>
         <translation>오류: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="179"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="189"/>
         <source>{0}
 fx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm</source>
         <translation>{0}
 fx {1:.0f}  fy {2:.0f}  |  기선 {3:.1f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="185"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="195"/>
         <source>calibration loaded: baseline {0:.1f} mm</source>
         <translation>캘리브레이션을 불러왔습니다: 기준선 {0:.1f} mm</translation>
     </message>
@@ -1206,28 +1260,28 @@ with an ROI or brush tool turns it back on.</source>
 <context>
     <name>DetectionFilesMixin</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="215"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="263"/>
         <source>Save detections</source>
         <translation>검출 결과 저장</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="217"/>
-        <location filename="../../gui/dialogs/calibration_support.py" line="238"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="265"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="295"/>
         <source>NumPy detections (*.npz)</source>
         <translation>NumPy 검출 결과 (*.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="279"/>
         <source>Detections saved: {0}</source>
         <translation>검출 결과 저장됨: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="236"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="293"/>
         <source>Load detections</source>
         <translation>검출 결과 불러오기</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="260"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="317"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>검출 결과 {0}쌍을 불러왔습니다 — 재캘리브레이션으로 재검출 없이 다시 풉니다</translation>
     </message>
@@ -1235,12 +1289,12 @@ with an ROI or brush tool turns it back on.</source>
 <context>
     <name>DetectionZoomDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="331"/>
         <source>Detection preview — pair {0}</source>
         <translation>검출 미리보기 — 쌍 {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="283"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="340"/>
         <source>Wheel: zoom · Right/middle drag: pan</source>
         <translation>휠: 확대/축소 · 오른쪽/가운데 버튼 드래그: 이동</translation>
     </message>
@@ -1800,11 +1854,13 @@ frames.</source>
 <context>
     <name>Issues</name>
     <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="220"/>
         <location filename="../../gui/issue_text.py" line="30"/>
         <source>left camera</source>
         <translation>왼쪽 카메라</translation>
     </message>
     <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="222"/>
         <location filename="../../gui/issue_text.py" line="31"/>
         <source>right camera</source>
         <translation>오른쪽 카메라</translation>
@@ -2733,17 +2789,17 @@ The previous version of the file, if any, is unchanged.</source>
 <context>
     <name>NextStepHint</name>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="49"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="50"/>
         <source>Load the left and right camera folders</source>
         <translation>왼쪽/오른쪽 카메라 폴더를 불러오세요</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="55"/>
         <source>Calibrate from images or import a calibration</source>
         <translation>이미지로 보정하거나 보정을 가져오세요</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="56"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="60"/>
         <source>Draw the ROI on the left camera, frame 1</source>
         <translation>왼쪽 카메라 1번 프레임에 ROI를 그리세요</translation>
     </message>
@@ -2784,12 +2840,12 @@ The previous version of the file, if any, is unchanged.</source>
 <context>
     <name>PairBars</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="106"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="138"/>
         <source>no solve yet</source>
         <translation>아직 해 없음</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="128"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="160"/>
         <source>worst-camera RMS per pair; dashed = reject threshold</source>
         <translation>쌍별 최악 카메라 RMS; 점선 = 기각 임계값</translation>
     </message>
@@ -3091,6 +3147,14 @@ The previous version of the file, if any, is unchanged.</source>
         <location filename="../../gui/dialogs/export_tabs/common.py" line="173"/>
         <source>Exporting…</source>
         <translation>내보내는 중…</translation>
+    </message>
+</context>
+<context>
+    <name>QCoreApplication.self</name>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="225"/>
+        <source>{0}: the board images are not all the same size ({1} is {2}, {3} is {4}). Use images of one size for each camera.</source>
+        <translation>{0}: 보드 이미지의 크기가 모두 같지 않습니다({1}은(는) {2}, {3}은(는) {4}). 카메라마다 같은 크기의 이미지를 사용하세요.</translation>
     </message>
 </context>
 <context>

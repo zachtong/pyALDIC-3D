@@ -9,7 +9,7 @@ English message: a new check is never silent.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from al_dic.gui.theme import COLORS
 from PySide6.QtCore import QCoreApplication
@@ -105,8 +105,9 @@ def findings_lines(diagnostics: CalibrationDiagnostics | None) -> list[str]:
     return lines
 
 
-def result_colour(diagnostics: CalibrationDiagnostics | None) -> str:
-    """The result text colour: amber when any finding is a warning, else green."""
-    if diagnostics is not None and diagnostics.worst_severity == SEVERITY_WARNING:
+def result_colour(diagnostics: CalibrationDiagnostics | None, warnings: Sequence[str] = ()) -> str:
+    """The result text colour: amber when any finding is a warning or the solve
+    warned (``StereoResult.warnings``), else green."""
+    if warnings or (diagnostics is not None and diagnostics.worst_severity == SEVERITY_WARNING):
         return COLORS.WARNING
     return COLORS.SUCCESS

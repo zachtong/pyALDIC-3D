@@ -48,7 +48,7 @@ to one of these points, and several of them cannot be detected afterwards.
 
 **Know your board.**
 
-- Chessboard **Columns × Rows count the inner corners**, where four squares
+- A chessboard's size is counted in **inner corners**, where four squares
   meet, not the squares: a board of 10 × 8 squares has 9 × 7 inner corners. A
   board entered with the wrong count is not found in any image.
 - **Measure the printed square size** with calipers across several squares
@@ -88,13 +88,15 @@ switch with it:
 
 | Type | Code | Parameters shown |
 |------|------|------------------|
-| **Chessboard** | `chessboard` | Columns × Rows (inner corners), Square size (mm) |
-| **ChArUco** | `charuco` | Columns × Rows, Square size (mm), Marker size (mm), *Board printed with OpenCV < 4.7* (legacy) |
-| **Circle grid** | `circles` | Columns × Rows, Dot pitch (mm), Dot diameter (mm), *Asymmetric grid* |
-| **Coded dot target (3 ring markers)** | `coded` | Columns × Rows, Dot pitch (mm), Dot diameter (mm) |
+| **Chessboard** | `chessboard` | Inner corners (columns × rows), Square size (mm) |
+| **ChArUco** | `charuco` | Squares (columns × rows), Square size (mm), Marker size (mm), *Board printed with OpenCV < 4.7* (legacy) |
+| **Circle grid** | `circles` | Dots (columns × rows), Dot pitch (mm), Dot diameter (mm), *Asymmetric grid* |
+| **Coded dot target (3 ring markers)** | `coded` | Dots (columns × rows), Dot pitch (mm), Dot diameter (mm) |
 
-Defaults: Columns **9** × Rows **7**; Square size **12.0 mm**; Marker size
-**9.0 mm**; Dot pitch **12.0 mm**; Dot diameter **6.0 mm**.
+Defaults: **9** × **7**; Square size **12.0 mm**; Marker size **9.0 mm**; Dot
+pitch **12.0 mm**; Dot diameter **6.0 mm**. The dialog remembers the board type
+and its values from the last session, so check them against the board you are
+using.
 
 ### Solver options
 
@@ -134,6 +136,11 @@ The **RESULT** panel is the sanity check — read it before trusting a run:
   Sub-pixel (well under 1 px) is good.
 - **Baseline … mm | pairs used/total** — the physical distance between the two
   cameras and how many board pairs survived QC.
+- **Board distance from the left camera … mm** — the nearest and farthest
+  board position. Compare it with the distance you set up on the bench: a
+  wrongly entered square size scales it (and the baseline) by the same factor,
+  for example 447-524 mm with the right 12 mm square and 372-437 mm with
+  10 mm entered.
 - **fx fy cx cy** — the recovered intrinsics.
 - **Coverage L / R | tilt …°** — how much of each image the board views covered,
   and the range of board tilts.

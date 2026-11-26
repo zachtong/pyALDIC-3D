@@ -25,7 +25,7 @@ from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
 
-from al_dic_3d.calibration.model import CameraIntrinsics, StereoRig
+from al_dic_3d.calibration.model import CameraIntrinsics, StereoRig, rig_problem
 
 
 def _euler_zyx_deg(rx_deg: float, ry_deg: float, rz_deg: float) -> NDArray[np.float64]:
@@ -277,8 +277,19 @@ def from_matchid_caldat(path: str | Path) -> StereoRig:
 # --------------------------------------------------------------------------- #
 
 
+# Rows the OpenCorr converter cannot do without (the MATLAB
+# cameraParamsFormatConvertFromOpenCorrFormat fails without them); the skew
+# and the distortion rows default to zero.
+_OPENCORR_REQUIRED = ("Fx", "Fy", "Cx", "Cy", "Tx", "Ty", "Tz", "Rx", "Ry", "Rz")
+
+
 def from_opencorr_csv(path: str | Path) -> StereoRig:
-    """Import an OpenCorr calibration CSV (col2=Left/world, col3=Right)."""
+    """Import an OpenCorr calibration CSV (col2=Left/world, col3=Right).
+
+    Raises ``ValueError`` naming the missing rows when the focal lengths,
+    principal points or extrinsics are absent: any other text file (another
+    format's calibration, say) would otherwise import as an all-zero rig.
+    """
     left_vals: dict[str, float] = {}
     right_vals: dict[str, float] = {}
     with Path(path).open(encoding="utf-8", newline="") as fh:
@@ -291,6 +302,9 @@ def from_opencorr_csv(path: str | Path) -> StereoRig:
             left_vals[name], right_vals[name] = float(r[1]), float(r[2])
         except ValueError:
             continue
+    missing = [name for name in _OPENCORR_REQUIRED if name not in right_vals]
+    if missing:
+        raise ValueError(f"not an OpenCorr calibration CSV: no {', '.join(missing)} row")
 
     def cam(vals: dict[str, float]) -> CameraIntrinsics:
         K = np.array(
@@ -324,6 +338,16 @@ def from_opencorr_csv(path: str | Path) -> StereoRig:
 # --------------------------------------------------------------------------- #
 
 
+def _loadmat(path: str | Path) -> dict:
+    """``scipy.io.loadmat`` with a reason a user can act on when it fails."""
+    from scipy.io import loadmat
+
+    try:
+        return loadmat(str(path))
+    except Exception as exc:  # noqa: BLE001 - MatReadError, ValueError, NotImplementedError...
+        raise ValueError(f"not a MATLAB .mat file that can be read ({exc})") from exc
+
+
 def from_mmc_mat(path: str | Path) -> StereoRig:
     """Import an MMC (Multi_Camera_Calibration / MMCL, YIN Zhuoyi) ``.mat`` result.
 
@@ -339,9 +363,7 @@ def from_mmc_mat(path: str | Path) -> StereoRig:
     model, so NONZERO higher-order terms raise (re-export from MMC with
     radial count 3 and thin-prism 0) instead of being silently dropped.
     """
-    from scipy.io import loadmat
-
-    mat = loadmat(str(path))
+    mat = _loadmat(path)
     prefixes: dict[tuple[int, int], str] = {}
     for key in mat:
         m = re.fullmatch(r"(Camera_(\d+)_Group_(\d+)_)IntrinsicMatrix", key)
@@ -394,9 +416,7 @@ def from_matlabcv_mat(path: str | Path) -> StereoRig:
     ``[k1,k2,p1,p2,k3]`` or ``[k1,k2,k3]`` radial + separate is not supported here).
     ``R, T`` follow the R2022b+ ``PoseCamera2`` premultiply convention (X_R=R@X_L+T).
     """
-    from scipy.io import loadmat
-
-    mat = loadmat(str(path))
+    mat = _loadmat(path)
     missing = [
         k for k in ("K_left", "dist_left", "K_right", "dist_right", "R", "T") if k not in mat
     ]
@@ -474,8 +494,108 @@ IMPORTERS = {
 }
 
 
+# What each format is called in messages.
+FORMAT_LABELS = {
+    "dice": "DICe XML",
+    "matchid": "MatchID .caldat",
+    "opencorr": "OpenCorr CSV",
+    "mmc": "MMC .mat",
+    "matlabcv": "MATLAB stereoParameters .mat",
+    "opencv_yaml": "OpenCV YAML/XML",
+}
+_EXTENSION_FORMATS = {
+    ".caldat": "matchid",
+    ".csv": "opencorr",
+    ".yml": "opencv_yaml",
+    ".yaml": "opencv_yaml",
+}
+_MMC_VARIABLE = re.compile(r"Camera_\d+_Group_\d+_IntrinsicMatrix")
+
+
+def _xml_format(path: Path) -> str | None:
+    try:
+        with path.open(encoding="utf-8", errors="replace") as fh:
+            head = fh.read(4096)
+    except OSError:
+        return None
+    if "<opencv_storage" in head:
+        return "opencv_yaml"
+    if "DICe_xml_camera_system_file" in head or "<ParameterList" in head:
+        return "dice"
+    return None
+
+
+def _mat_format(path: Path) -> str | None:
+    from scipy.io import whosmat
+
+    try:
+        names = {entry[0] for entry in whosmat(str(path))}
+    except Exception:  # noqa: BLE001 - not a readable .mat: no guess
+        return None
+    if any(_MMC_VARIABLE.fullmatch(name) for name in names):
+        return "mmc"
+    if {"K_left", "K_right"} <= names:
+        return "matlabcv"
+    return None
+
+
+def guess_format(path: str | Path) -> str | None:
+    """The format a calibration file is in, when its name or first bytes say so.
+
+    The extension decides for ``.caldat`` / ``.csv`` / ``.yml`` / ``.yaml``.
+    An ``.xml`` file is DICe or OpenCV by its root element, and a ``.mat``
+    file MMC or MatlabCV by its variable names (read without loading the
+    data). ``None`` when the file is ambiguous, unknown or unreadable.
+    """
+    p = Path(path)
+    ext = p.suffix.lower()
+    if ext in _EXTENSION_FORMATS:
+        return _EXTENSION_FORMATS[ext]
+    if ext == ".xml":
+        return _xml_format(p)
+    if ext == ".mat":
+        return _mat_format(p)
+    return None
+
+
+def _import_reason(exc: Exception, path: Path, fmt: str) -> str:
+    """The importer's reason, with the file's full path shortened to its name."""
+    text = str(exc).strip() or type(exc).__name__
+    if fmt == "opencv_yaml" and text.startswith("cannot open OpenCV calibration file"):
+        return "not an OpenCV YAML/XML calibration file"
+    for long_form in (repr(str(path))[1:-1], str(path)):
+        text = text.replace(long_form, path.name)
+    return text
+
+
+def _with_file(reason: str, path: Path, fmt: str) -> str:
+    """``reason (file name)``, plus the format the file looks like if it is another."""
+    text = reason if path.name in reason else f"{reason} ({path.name})"
+    guessed = guess_format(path)
+    if guessed is not None and guessed != fmt:
+        text += f"; it looks like a {FORMAT_LABELS[guessed]} file: choose the format '{guessed}'"
+    return text
+
+
 def load_calibration(path: str | Path, fmt: str) -> StereoRig:
-    """Dispatch to the importer for ``fmt`` (one of :data:`IMPORTERS`)."""
+    """Import ``path`` with the importer for ``fmt`` (one of :data:`IMPORTERS`).
+
+    Every caller (sidebar, readiness check, run) loads through here, so this
+    is where a file in another format or a rig that cannot reconstruct is
+    refused: any import failure, and any :func:`rig_problem`, raises
+    ``ValueError`` with the reason first, then the file name (not its full
+    path), then the format the file looks like when it is not ``fmt``.
+    """
     if fmt not in IMPORTERS:
         raise ValueError(f"unknown calibration format {fmt!r}; choose from {sorted(IMPORTERS)}")
-    return IMPORTERS[fmt](path)
+    p = Path(path)
+    if not p.is_file():
+        raise ValueError(f"the file does not exist ({p.name})")
+    try:
+        rig = IMPORTERS[fmt](p)
+    except Exception as exc:  # noqa: BLE001 - external file content: any failure is the answer
+        raise ValueError(_with_file(_import_reason(exc, p, fmt), p, fmt)) from exc
+    problem = rig_problem(rig)
+    if problem is not None:
+        raise ValueError(_with_file(problem, p, fmt))
+    return rig

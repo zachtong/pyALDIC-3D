@@ -137,7 +137,8 @@ def test_dialog_caches_the_image_size_after_a_solve(qapp, dataset):
     dlg._files_r = sorted(str(p) for p in imgdir.glob("R_*.png"))
     dlg._refresh_table()
     _run_solve(dlg)
-    assert dlg._cached_size == (sc.IMG_W, sc.IMG_H)  # Recalibrate needs no image read
+    size = (sc.IMG_W, sc.IMG_H)
+    assert dlg._cached_sizes == (size, size)  # Recalibrate needs no image read
 
 
 def _run_solve_recal(dlg: CalibrationDialog) -> None:

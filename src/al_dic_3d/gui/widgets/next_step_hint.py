@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QLabel, QWidget
 from al_dic_3d.gui.issue_text import issue_text
 
 _IMAGE_STAGE = ("sequence length mismatch", "need at least 2 frames")
+_CALIBRATION_STAGE = "calibration file cannot be read"
 
 
 class NextStepHint(QLabel):
@@ -52,6 +53,9 @@ class NextStepHint(QLabel):
                 return issue_text(issue)  # mismatch / too-few-frames details
         if "calibration file not set" in issues:
             return self.tr("Calibrate from images or import a calibration")
+        for issue in issues:  # a calibration that does not load comes before the ROI
+            if issue.startswith(_CALIBRATION_STAGE):
+                return issue_text(issue)
         if "ROI not set" in issues or any(i.startswith("ROI is empty") for i in issues):
             return self.tr("Draw the ROI on the left camera, frame 1")
         # Content problems (fix batch V, M8): name the specific one.

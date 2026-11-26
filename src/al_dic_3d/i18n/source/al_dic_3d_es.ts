@@ -273,9 +273,107 @@ súbalo solo con una calibración deficiente; 0 desactiva la comprobación.</tra
     </message>
 </context>
 <context>
+    <name>BoardFormMixin</name>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="52"/>
+        <source>Chessboard</source>
+        <translation>Tablero de ajedrez</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="53"/>
+        <source>ChArUco</source>
+        <translation>ChArUco</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="54"/>
+        <source>Circle grid</source>
+        <translation>Malla de puntos</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="55"/>
+        <source>Coded dot target (3 ring markers)</source>
+        <translation>Objetivo de puntos codificado (3 marcadores anulares)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="57"/>
+        <source>Type</source>
+        <translation>Tipo</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="70"/>
+        <source>Square size (mm)</source>
+        <translation>Tamaño de casilla (mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="75"/>
+        <source>Marker size (mm)</source>
+        <translation>Tamaño de marcador (mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="80"/>
+        <source>Dot pitch (mm)</source>
+        <translation>Paso de puntos (mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="85"/>
+        <source>Dot diameter (mm)</source>
+        <translation>Diámetro de punto (mm)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="89"/>
+        <source>Asymmetric grid</source>
+        <translation>Malla asimétrica</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="91"/>
+        <source>Board printed with OpenCV &lt; 4.7</source>
+        <translation>Tablero impreso con OpenCV &lt; 4.7</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="111"/>
+        <source>Inner corners (columns x rows)</source>
+        <translation>Esquinas interiores (columnas × filas)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="113"/>
+        <source>Squares (columns x rows)</source>
+        <translation>Casillas (columnas × filas)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="115"/>
+        <source>Dots (columns x rows)</source>
+        <translation>Puntos (columnas × filas)</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="124"/>
+        <source>For a chessboard, count the INNER corners: a board of 10 x 8 squares has 9 x 7.</source>
+        <translation>En un tablero de ajedrez, cuente las esquinas INTERIORES: un tablero de 10 × 8 casillas tiene 9 × 7.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="128"/>
+        <source>For ChArUco, count the SQUARES (not the inner corners), and check the marker size and the OpenCV &lt; 4.7 setting.</source>
+        <translation>En ChArUco, cuente las CASILLAS (no las esquinas interiores) y compruebe el tamaño del marcador y la opción «OpenCV &lt; 4.7».</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="131"/>
+        <source>For a dot grid, count the DOTS in one row and in one column.</source>
+        <translation>En una malla de puntos, cuente los PUNTOS de una fila y de una columna.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="208"/>
+        <source>The board was not found in any image.</source>
+        <translation>No se encontró el tablero en ninguna imagen.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="211"/>
+        <source>The board was found in both images of only {0} of {1} pairs (the solve needs {2}).</source>
+        <translation>El tablero solo se encontró en ambas imágenes en {0} de {1} pares (el cálculo necesita {2}).</translation>
+    </message>
+</context>
+<context>
     <name>CalibrationDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="92"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="91"/>
         <source>Stereo Calibration</source>
         <translation>Calibración estéreo</translation>
     </message>
@@ -351,7 +449,7 @@ súbalo solo con una calibración deficiente; 0 desactiva la comprobación.</tra
     </message>
     <message>
         <location filename="../../gui/dialogs/calibration_dialog.py" line="175"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="408"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="315"/>
         <source>select a pair to preview detected points</source>
         <translation>seleccione un par para previsualizar los puntos detectados</translation>
     </message>
@@ -381,263 +479,219 @@ súbalo solo con una calibración deficiente; 0 desactiva la comprobación.</tra
         <translation>TABLERO DE CALIBRACIÓN</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="220"/>
-        <source>Chessboard</source>
-        <translation>Tablero de ajedrez</translation>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="738"/>
+        <source>Discard calibration?</source>
+        <translation>¿Descartar la calibración?</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="221"/>
-        <source>ChArUco</source>
-        <translation>ChArUco</translation>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
+        <source>This calibration has not been saved. Close the dialog and discard it?</source>
+        <translation>Esta calibración no se ha guardado. ¿Cerrar el diálogo y descartarla?</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="222"/>
-        <source>Circle grid</source>
-        <translation>Malla de puntos</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="223"/>
-        <source>Coded dot target (3 ring markers)</source>
-        <translation>Objetivo de puntos codificado (3 marcadores anulares)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="225"/>
-        <source>Type</source>
-        <translation>Tipo</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="230"/>
-        <source>Columns x Rows</source>
-        <translation>Columnas × Filas</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="237"/>
-        <source>Square size (mm)</source>
-        <translation>Tamaño de casilla (mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="242"/>
-        <source>Marker size (mm)</source>
-        <translation>Tamaño de marcador (mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="247"/>
-        <source>Dot pitch (mm)</source>
-        <translation>Paso de puntos (mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="252"/>
-        <source>Dot diameter (mm)</source>
-        <translation>Diámetro de punto (mm)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="256"/>
-        <source>Asymmetric grid</source>
-        <translation>Malla asimétrica</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="258"/>
-        <source>Board printed with OpenCV &lt; 4.7</source>
-        <translation>Tablero impreso con OpenCV &lt; 4.7</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="262"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="215"/>
         <source>Print board… (1:1 PDF)</source>
         <translation>Imprimir tablero… (PDF 1:1)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="266"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="219"/>
         <source>SOLVER OPTIONS</source>
         <translation>OPCIONES DEL SOLVER</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="267"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="220"/>
         <source>Jointly refine intrinsics (advanced)</source>
         <translation>Refinar intrínsecos conjuntamente (avanzado)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="268"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="221"/>
         <source>Estimate tangential distortion p1/p2</source>
         <translation>Estimar distorsión tangencial p1/p2</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="269"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="222"/>
         <source>Fix k3 = 0 (low-distortion lens)</source>
         <translation>Fijar k3 = 0 (lente de baja distorsión)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="270"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="223"/>
         <source>Release-object method (printed boards)</source>
         <translation>Método release-object (tableros impresos)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="271"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="224"/>
         <source>Dot eccentricity correction</source>
         <translation>Corrección de excentricidad de puntos</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="273"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="226"/>
         <source>Joint bundle adjustment (robust, uses mono views)</source>
         <translation>Ajuste de haces (robusto, usa vistas mono)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="274"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="227"/>
         <source>Optimize board shape (printed boards)</source>
         <translation>Optimizar la forma del tablero (tableros impresos)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="289"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="242"/>
         <source>Calibrate</source>
         <translation>Calibrar</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="300"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="253"/>
         <source>RESULT</source>
         <translation>RESULTADO</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="301"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="254"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="409"/>
         <source>No calibration yet</source>
         <translation>Aún sin calibración</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="306"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="259"/>
         <source>Verify with board images…</source>
         <translation>Verificar con imágenes del tablero…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="318"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="271"/>
         <source>Accept &amp;&amp; Save…</source>
         <translation>Aceptar &amp;&amp; Guardar…</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="324"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="277"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="383"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="289"/>
         <source>Choose {0} calibration images</source>
         <translation>Elegir imágenes de calibración {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="385"/>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="717"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="291"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="674"/>
         <source>Images (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</source>
         <translation>Imágenes (*.png *.tif *.tiff *.bmp *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="430"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="337"/>
         <source>{0} left / {1} right images</source>
         <translation>{0} imágenes izquierdas / {1} derechas</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="440"/>
-        <source>Load equal, &gt;= 3 left/right image sets first.</source>
-        <translation>Cargue primero conjuntos iguales (al menos 3) de imágenes izquierda/derecha.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="471"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="386"/>
         <source>Working… {0}</source>
         <translation>Procesando… {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="480"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="429"/>
         <source>Calibration failed: {0}</source>
         <translation>Falló la calibración: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="505"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="461"/>
         <source>used</source>
         <translation>usada</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="507"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="395"/>
         <source>L: {0}</source>
         <translation>I: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="350"/>
+        <source>Load the same number of left and right images, at least {0} pairs: the solve needs {0} usable pairs.</source>
+        <translation>Cargue el mismo número de imágenes izquierdas y derechas, al menos {0} pares: el cálculo necesita {0} pares utilizables.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="397"/>
         <source>R: {0}</source>
         <translation>D: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="525"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="475"/>
         <source>Stereo RMS {0:.3f} px | epipolar {1:.3f} px</source>
         <translation>RMS estéreo {0:.3f} px | epipolar {1:.3f} px</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="528"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="478"/>
         <source>Baseline {0:.2f} mm | pairs {1}/{2}</source>
         <translation>Línea base {0:.2f} mm | pares {1}/{2}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="531"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="485"/>
+        <source>Board distance from the left camera {0:.0f}-{1:.0f} mm</source>
+        <translation>Distancia del tablero a la cámara izquierda {0:.0f}-{1:.0f} mm</translation>
+    </message>
+    <message>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="488"/>
         <source>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</source>
         <translation>fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="534"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="491"/>
         <source>Coverage L {0:.0%} / R {1:.0%} | tilt {2:.0f}-{3:.0f}°</source>
         <translation>Cobertura I {0:.0%} / D {1:.0%} | inclinación {2:.0f}-{3:.0f}°</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="543"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="500"/>
         <source>Bundle adjustment: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} mono views)</source>
         <translation>Ajuste de haces: RMS {0:.3f} -&gt; {1:.3f} px ({2:.0f} vistas mono)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="549"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="506"/>
         <source>Board flatness: z-range {0:.3f} mm</source>
         <translation>Planitud del tablero: rango z {0:.3f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="552"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="509"/>
         <source>Warning: {0}</source>
         <translation>Advertencia: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="647"/>
         <source>Save board PDF</source>
         <translation>Guardar PDF del tablero</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="692"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="649"/>
         <source>PDF (*.pdf)</source>
         <translation>PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="703"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="660"/>
         <source>Board PDF written: {0}</source>
         <translation>PDF del tablero escrito: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="719"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="676"/>
         <source>Choose LEFT verification image</source>
         <translation>Elegir imagen de verificación IZQUIERDA</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="724"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="681"/>
         <source>Choose RIGHT verification image</source>
         <translation>Elegir imagen de verificación DERECHA</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="733"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="690"/>
         <source>Verification failed: {0}</source>
         <translation>Falló la verificación: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="739"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="696"/>
         <source>Verify: pitch {0:.4f} mm vs {1:g} mm — scale error {2:.3%}, plane RMS {3:.4f} mm</source>
         <translation>Verificación: paso {0:.4f} mm frente a {1:g} mm — error de escala {2:.3%}, RMS del plano {3:.4f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="753"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="710"/>
         <source>Save calibration as</source>
         <translation>Guardar calibración como</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_dialog.py" line="755"/>
+        <location filename="../../gui/dialogs/calibration_dialog.py" line="712"/>
         <source>OpenCV YAML (*.yml *.yaml *.xml)</source>
         <translation>OpenCV YAML (*.yml *.yaml *.xml)</translation>
     </message>
@@ -688,12 +742,12 @@ súbalo solo con una calibración deficiente; 0 desactiva la comprobación.</tra
 <context>
     <name>CalibrationSection3D</name>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="50"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="52"/>
         <source>Calibrate from images…</source>
         <translation>Calibrar desde imágenes…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="54"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="56"/>
         <source>Run the built-in stereo calibrator on your target photos
 (checkerboard / ChArUco / dot grid). Writes an opencv_yaml
 file and loads it — the recommended path when you have
@@ -702,12 +756,12 @@ calibration images.</source>
 Escribe un archivo opencv_yaml y lo carga — la vía recomendada cuando dispone de imágenes de calibración.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="65"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="67"/>
         <source>Format</source>
         <translation>Formato</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="74"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="76"/>
         <source>File format of the calibration to import. Default opencv_yaml
 (written by the built-in calibrator). Pick the format matching
 your source: dice (DICe XML), matchid (MatchID .caldat),
@@ -719,12 +773,12 @@ dice (DICe XML), matchid (MatchID .caldat), opencorr (OpenCorr CSV),
 mmc (MultiDIC/MMC .mat), matlabcv (MATLAB stereoParams .mat).</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="85"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="87"/>
         <source>Import calibration…</source>
         <translation>Importar calibración…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="88"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="90"/>
         <source>Load an existing stereo calibration file in the selected
 Format. The status line below shows fx / fy and the baseline
 as a sanity check.</source>
@@ -732,12 +786,12 @@ as a sanity check.</source>
 La línea de estado inferior muestra fx / fy y la línea base como comprobación de cordura.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="96"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="98"/>
         <source>Manual parameters…</source>
         <translation>Parámetros manuales…</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="99"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="101"/>
         <source>Type intrinsics and extrinsics by hand (fx, fy, cx, cy,
 distortion, R, T) — the fallback when no calibration file
 exists. Writes an opencv_yaml file and loads it.</source>
@@ -745,34 +799,34 @@ exists. Writes an opencv_yaml file and loads it.</source>
 — el recurso cuando no existe ningún archivo de calibración. Escribe un archivo opencv_yaml y lo carga.</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="107"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="109"/>
         <source>No calibration loaded</source>
         <translation>Ninguna calibración cargada</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="151"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="153"/>
         <source>Choose calibration file</source>
         <translation>Elegir archivo de calibración</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="153"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="155"/>
         <source>Calibration files (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</source>
         <translation>Archivos de calibración (*.xml *.yaml *.yml *.mat *.csv *.txt *.caldat)</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="171"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="181"/>
         <source>Error: {0}</source>
         <translation>Error: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="179"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="189"/>
         <source>{0}
 fx {1:.0f}  fy {2:.0f}  |  baseline {3:.1f} mm</source>
         <translation>{0}
 fx {1:.0f}  fy {2:.0f}  |  línea base {3:.1f} mm</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/calibration_section.py" line="185"/>
+        <location filename="../../gui/widgets/calibration_section.py" line="195"/>
         <source>calibration loaded: baseline {0:.1f} mm</source>
         <translation>calibración cargada: línea base {0:.1f} mm</translation>
     </message>
@@ -1211,28 +1265,28 @@ herramienta de ROI o el pincel la vuelve a encender.</translation>
 <context>
     <name>DetectionFilesMixin</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="215"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="263"/>
         <source>Save detections</source>
         <translation>Guardar detecciones</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="217"/>
-        <location filename="../../gui/dialogs/calibration_support.py" line="238"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="265"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="295"/>
         <source>NumPy detections (*.npz)</source>
         <translation>Detecciones NumPy (*.npz)</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="231"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="279"/>
         <source>Detections saved: {0}</source>
         <translation>Detecciones guardadas: {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="236"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="293"/>
         <source>Load detections</source>
         <translation>Cargar detecciones</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="260"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="317"/>
         <source>Loaded {0} detection pairs — Recalibrate re-solves without re-detecting</source>
         <translation>{0} pares de detecciones cargados — Recalibrar resuelve sin volver a detectar</translation>
     </message>
@@ -1240,12 +1294,12 @@ herramienta de ROI o el pincel la vuelve a encender.</translation>
 <context>
     <name>DetectionZoomDialog</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="274"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="331"/>
         <source>Detection preview — pair {0}</source>
         <translation>Vista previa de detección — par {0}</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="283"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="340"/>
         <source>Wheel: zoom · Right/middle drag: pan</source>
         <translation>Rueda: zoom · Arrastre con botón derecho/central: desplazar</translation>
     </message>
@@ -1806,11 +1860,13 @@ validez marcará los fotogramas afectados.</translation>
 <context>
     <name>Issues</name>
     <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="220"/>
         <location filename="../../gui/issue_text.py" line="30"/>
         <source>left camera</source>
         <translation>cámara izquierda</translation>
     </message>
     <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="222"/>
         <location filename="../../gui/issue_text.py" line="31"/>
         <source>right camera</source>
         <translation>cámara derecha</translation>
@@ -2746,17 +2802,17 @@ La versión anterior del archivo, si existe, no ha cambiado.</translation>
 <context>
     <name>NextStepHint</name>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="49"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="50"/>
         <source>Load the left and right camera folders</source>
         <translation>Cargue las carpetas de las cámaras izquierda y derecha</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="54"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="55"/>
         <source>Calibrate from images or import a calibration</source>
         <translation>Calibre a partir de imágenes o importe una calibración</translation>
     </message>
     <message>
-        <location filename="../../gui/widgets/next_step_hint.py" line="56"/>
+        <location filename="../../gui/widgets/next_step_hint.py" line="60"/>
         <source>Draw the ROI on the left camera, frame 1</source>
         <translation>Dibuje la ROI en la cámara izquierda, fotograma 1</translation>
     </message>
@@ -2797,12 +2853,12 @@ La versión anterior del archivo, si existe, no ha cambiado.</translation>
 <context>
     <name>PairBars</name>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="106"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="138"/>
         <source>no solve yet</source>
         <translation>aún sin solución</translation>
     </message>
     <message>
-        <location filename="../../gui/dialogs/calibration_support.py" line="128"/>
+        <location filename="../../gui/dialogs/calibration_support.py" line="160"/>
         <source>worst-camera RMS per pair; dashed = reject threshold</source>
         <translation>RMS de la peor cámara por par; discontinua = umbral de rechazo</translation>
     </message>
@@ -3104,6 +3160,14 @@ La versión anterior del archivo, si existe, no ha cambiado.</translation>
         <location filename="../../gui/dialogs/export_tabs/common.py" line="173"/>
         <source>Exporting…</source>
         <translation>Exportando…</translation>
+    </message>
+</context>
+<context>
+    <name>QCoreApplication.self</name>
+    <message>
+        <location filename="../../gui/dialogs/calibration_board.py" line="225"/>
+        <source>{0}: the board images are not all the same size ({1} is {2}, {3} is {4}). Use images of one size for each camera.</source>
+        <translation>{0}: las imágenes del tablero no tienen todas el mismo tamaño ({1} mide {2}, {3} mide {4}). Use imágenes de un solo tamaño para cada cámara.</translation>
     </message>
 </context>
 <context>

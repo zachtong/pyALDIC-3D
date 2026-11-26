@@ -51,7 +51,11 @@ def test_detect_files_parallel_matches_sequential_in_input_order(image_files):
     sequential = detect_files(image_files, SPEC, workers=1)
     for got, want, path in zip(found.detections, sequential.detections, image_files, strict=True):
         assert got.ok == want.ok, path
-        np.testing.assert_array_equal(got.image_points, want.image_points)
+        # Same corners, but not always to the last bit: OpenCV splits its own
+        # internal parallel work differently when several Python threads call
+        # it at once (6e-5 px seen in a full-suite run), far below the corner
+        # accuracy of 0.01-0.05 px.
+        np.testing.assert_allclose(got.image_points, want.image_points, rtol=0, atol=1e-3)
     assert [d.ok for d in found.detections] == [True, True, True, False, True, True]
     assert found.detections[3].reason
 

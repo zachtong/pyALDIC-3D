@@ -29,7 +29,7 @@ from al_dic_3d.calibration.diagnostics import (
     DiagnosticThresholds,
     diagnose_calibration,
 )
-from al_dic_3d.calibration.report import summarize
+from al_dic_3d.calibration.report import coverage_fraction, summarize
 from al_dic_3d.calibration.solve import StereoResult, calibrate_stereo
 
 # The solve options the diagnostics' alternative mono fits repeat.
@@ -107,12 +107,15 @@ def run_calibration(
     right: Sequence[BoardDetection],
     image_size: tuple[int, int],
     *,
+    image_size_right: tuple[int, int] | None = None,
     options: Mapping | None = None,
     thresholds: DiagnosticThresholds | None = None,
     progress: Callable[[str], None] | None = None,
 ) -> CalibrationRun:
     """Solve, optionally bundle-adjust, diagnose and summarize one stereo calibration.
 
+    ``image_size`` is the left camera's ``(width, height)``, ``image_size_right``
+    the right camera's when it differs (each camera keeps its own size).
     ``options`` holds ``calibrate_stereo``'s keywords plus ``bundle`` and
     ``board_morphology`` (both False by default). ``progress`` receives short
     English stage names. Raises ``ValueError`` like ``calibrate_stereo``.
@@ -121,7 +124,8 @@ def run_calibration(
     bundle = bool(opts.pop("bundle", False))
     morphology = bool(opts.pop("board_morphology", False))
     say = progress or (lambda _stage: None)
-    result = calibrate_stereo(left, right, image_size, **opts)
+    size_r = image_size if image_size_right is None else image_size_right
+    result = calibrate_stereo(left, right, image_size, image_size_right=size_r, **opts)
     used_l = result.detections.get("L", left)
     used_r = result.detections.get("R", right)
     info = None
@@ -151,11 +155,13 @@ def run_calibration(
         diag_l,
         diag_r,
         image_size,
+        image_size_right=size_r,
         mono=None if refined else result.mono,
         thresholds=thresholds,
         **mono_options,
     )
     stats = summarize(result, left, right, image_size, diagnostics=diagnostics)
+    stats["coverage_right"] = coverage_fraction(right, size_r)  # summarize takes one size
     if info is not None:
         stats["ba_rms_before"] = info["rms_before"]
         stats["ba_rms_after"] = info["rms_after"]

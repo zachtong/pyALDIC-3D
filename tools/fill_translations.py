@@ -5148,6 +5148,10 @@ for _loc, _entries in _load_batch_file("i18n_batch_advice.py").items():
 for _loc, _entries in _load_batch_file("i18n_batch_audit.py").items():
     TRANSLATIONS[_loc].update(_entries)
 
+# Calibration dialog new-user path (board counts, failure guidance, discard question).
+for _loc, _entries in _load_batch_file("i18n_batch_calib_setup.py").items():
+    TRANSLATIONS[_loc].update(_entries)
+
 
 def main() -> int:
     ok = True

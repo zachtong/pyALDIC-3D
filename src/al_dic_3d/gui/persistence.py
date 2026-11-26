@@ -1,4 +1,4 @@
-"""GUI persistence (G3.2) — window geometry, recent projects, last-used dirs.
+"""GUI persistence (G3.2) — window geometry, recent projects, last-used dirs, form values.
 
 Thin wrappers over ``QSettings('pyALDIC', 'pyALDIC-3D')`` so every persisted
 preference goes through ONE factory (:func:`settings`) — tests monkeypatch it
@@ -85,6 +85,35 @@ def remove_recent_project(path) -> None:
 
 def clear_recent_projects() -> None:
     settings().setValue(_RECENT_KEY, [])
+
+
+# ---- dialog form values (e.g. the last calibration board) ----------------------
+
+
+def group_values(group: str) -> dict[str, object]:
+    """Every value stored under ``group`` (empty when none).
+
+    Values may come back as strings (an INI store keeps no types): callers
+    convert them and keep their defaults when a value does not parse.
+    """
+    s = settings()
+    s.beginGroup(group)
+    try:
+        return {key: s.value(key) for key in s.childKeys()}
+    finally:
+        s.endGroup()
+
+
+def set_group_values(group: str, values: dict[str, object]) -> None:
+    """Store ``values`` under ``group``, replacing what was there."""
+    s = settings()
+    s.beginGroup(group)
+    try:
+        s.remove("")  # inside a group: clears only this group
+        for key, value in values.items():
+            s.setValue(key, value)
+    finally:
+        s.endGroup()
 
 
 # ---- last-used directories (per dialog kind) -----------------------------------

@@ -11,6 +11,13 @@ G3.7 polish: repeated Add picks dedupe + natural-sort, the detection preview
 strip enlarges into a zoomable dialog on click, and board-parameter edits
 re-run detection on the selected pair (debounced) so the preview follows the
 spec live.
+
+New-user path: the board form says what each size counts and remembers the
+last board (:mod:`.calibration_board`); the table shows every image's
+detection even when the solve fails, and a board found in too few images is
+reported as what to check first; each camera keeps its own image size; the
+result names the range of board distances (a wrong square size shows as a
+wrong distance); Cancel asks before discarding an unsaved calibration.
 """
 
 from __future__ import annotations
@@ -20,17 +27,15 @@ from pathlib import Path
 import numpy as np
 from al_dic.gui.theme import COLORS
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
-from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
-    QComboBox,
     QDialog,
     QDoubleSpinBox,
     QFileDialog,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QPushButton,
     QTreeWidget,
     QTreeWidgetItem,
@@ -38,28 +43,22 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.calibration import detect_board, to_opencv_yaml
+from al_dic_3d.calibration import MixedImageSizeError, detect_board, to_opencv_yaml
 from al_dic_3d.calibration.diagnostics import coverage_outline
+from al_dic_3d.calibration.solve import MIN_STEREO_PAIRS
 from al_dic_3d.gui import persistence
 from al_dic_3d.gui.calibration_findings import findings_lines, result_colour
+from al_dic_3d.gui.dialogs.calibration_board import BoardFormMixin
 from al_dic_3d.gui.dialogs.calibration_support import (
     CalibWorker,
     DetectionFilesMixin,
     DetectionZoomDialog,
     PairBars,
-    int_spin,
+    fill_pair_row,
     merge_picks,
-    mm_spin,
     pair_strip,
     section_label,
     strip_to_pixmap,
-)
-
-_BOARD_CHESS, _BOARD_CHARUCO, _BOARD_CIRCLES, _BOARD_CODED = (
-    "chessboard",
-    "charuco",
-    "circles",
-    "coded",
 )
 
 # Debounce for the live re-detect preview (G3.7c): board-spec spins arrive in
@@ -84,7 +83,7 @@ class _PreviewRelay(QObject):
     done = Signal(int, int, object)  # generation, pair index, (det_l, det_r)
 
 
-class CalibrationDialog(DetectionFilesMixin, QDialog):
+class CalibrationDialog(BoardFormMixin, DetectionFilesMixin, QDialog):
     """Image pairs -> board spec -> QC'd stereo solve -> opencv_yaml."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -96,7 +95,7 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
         self._files_l: list[str] = []
         self._files_r: list[str] = []
         self._detections = None  # (dl, dr) cache for fast recalibrate
-        self._cached_size = None  # (w, h) from loaded detections (images optional)
+        self._cached_sizes = None  # ((w, h) left, (w, h) right): Recalibrate reads no image
         self._result = None
         self._diagnostics = None  # the calibration diagnostics of the last solve
         self._stats = None
@@ -121,6 +120,7 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
         root.setSpacing(12)
         root.addLayout(self._build_left(), stretch=3)
         root.addLayout(self._build_right(), stretch=2)
+        self._restore_board()  # the last session's board, before the live preview listens
         self._connect_live_preview()
         self._on_board_changed()
 
@@ -210,54 +210,7 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
     def _build_right(self) -> QVBoxLayout:
         col = QVBoxLayout()
         col.addWidget(section_label(self.tr("CALIBRATION BOARD"), self))
-
-        grid_host = QWidget()
-        grid = QGridLayout(grid_host)
-        grid.setContentsMargins(0, 0, 0, 0)
-        grid.setVerticalSpacing(4)
-
-        self._board_combo = QComboBox()
-        self._board_combo.addItem(self.tr("Chessboard"), _BOARD_CHESS)
-        self._board_combo.addItem(self.tr("ChArUco"), _BOARD_CHARUCO)
-        self._board_combo.addItem(self.tr("Circle grid"), _BOARD_CIRCLES)
-        self._board_combo.addItem(self.tr("Coded dot target (3 ring markers)"), _BOARD_CODED)
-        self._board_combo.currentIndexChanged.connect(self._on_board_changed)
-        grid.addWidget(QLabel(self.tr("Type")), 0, 0)
-        grid.addWidget(self._board_combo, 0, 1)
-
-        self._cols = int_spin(3, 99, 9)
-        self._rows = int_spin(3, 99, 7)
-        grid.addWidget(QLabel(self.tr("Columns x Rows")), 1, 0)
-        cr = QHBoxLayout()
-        cr.addWidget(self._cols)
-        cr.addWidget(self._rows)
-        grid.addLayout(cr, 1, 1)
-
-        self._square = mm_spin(12.0)
-        self._sq_lbl = QLabel(self.tr("Square size (mm)"))
-        grid.addWidget(self._sq_lbl, 2, 0)
-        grid.addWidget(self._square, 2, 1)
-
-        self._marker = mm_spin(9.0)
-        self._marker_lbl = QLabel(self.tr("Marker size (mm)"))
-        grid.addWidget(self._marker_lbl, 3, 0)
-        grid.addWidget(self._marker, 3, 1)
-
-        self._spacing = mm_spin(12.0)
-        self._sp_lbl = QLabel(self.tr("Dot pitch (mm)"))
-        grid.addWidget(self._sp_lbl, 4, 0)
-        grid.addWidget(self._spacing, 4, 1)
-
-        self._dot = mm_spin(6.0)
-        self._dot_lbl = QLabel(self.tr("Dot diameter (mm)"))
-        grid.addWidget(self._dot_lbl, 5, 0)
-        grid.addWidget(self._dot, 5, 1)
-
-        self._asym = QCheckBox(self.tr("Asymmetric grid"))
-        grid.addWidget(self._asym, 6, 1)
-        self._legacy = QCheckBox(self.tr("Board printed with OpenCV < 4.7"))
-        grid.addWidget(self._legacy, 7, 1)
-        col.addWidget(grid_host)
+        col.addWidget(self._build_board_form())
 
         self._print_btn = QPushButton(self.tr("Print board… (1:1 PDF)"))
         self._print_btn.clicked.connect(self._on_print_board)
@@ -328,53 +281,6 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
         col.addLayout(buttons)
         return col
 
-    # ---- board spec -----------------------------------------------------------
-
-    def _on_board_changed(self) -> None:
-        board = self._board_combo.currentData()
-        chessy = board in (_BOARD_CHESS, _BOARD_CHARUCO)
-        for w in (self._square, self._sq_lbl):
-            w.setVisible(chessy)
-        for w in (self._marker, self._marker_lbl):
-            w.setVisible(board == _BOARD_CHARUCO)
-        self._legacy.setVisible(board == _BOARD_CHARUCO)
-        for w in (self._spacing, self._sp_lbl, self._dot, self._dot_lbl):
-            w.setVisible(not chessy)
-        self._asym.setVisible(board == _BOARD_CIRCLES)
-        self._ecc.setVisible(not chessy)
-
-    def _board_spec(self):
-        from al_dic_3d.calibration import (
-            CharucoSpec,
-            ChessboardSpec,
-            CircleGridSpec,
-            CodedCircleGridSpec,
-        )
-
-        board = self._board_combo.currentData()
-        cols, rows = self._cols.value(), self._rows.value()
-        if board == _BOARD_CHESS:
-            return ChessboardSpec(cols=cols, rows=rows, square_size=self._square.value())
-        if board == _BOARD_CHARUCO:
-            return CharucoSpec(
-                squares_x=cols,
-                squares_y=rows,
-                square_size=self._square.value(),
-                marker_size=self._marker.value(),
-                legacy_pattern=self._legacy.isChecked(),
-            )
-        if board == _BOARD_CIRCLES:
-            return CircleGridSpec(
-                cols=cols,
-                rows=rows,
-                spacing=self._spacing.value(),
-                asymmetric=self._asym.isChecked(),
-                dot_diameter=self._dot.value(),
-            )
-        return CodedCircleGridSpec(
-            cols=cols, rows=rows, spacing=self._spacing.value(), dot_diameter=self._dot.value()
-        )
-
     # ---- files ---------------------------------------------------------------
 
     def _pick_files(self, cam: str) -> None:
@@ -393,14 +299,14 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
         else:
             self._files_r = merge_picks(self._files_r, files)
         self._detections = None
-        self._cached_size = None
+        self._cached_sizes = None
         self._refresh_table()
 
     def _clear_files(self) -> None:
         self._files_l.clear()
         self._files_r.clear()
         self._detections = None
-        self._cached_size = None
+        self._cached_sizes = None
         self._result = None
         self._diagnostics = None
         self._preview_idx = None
@@ -437,14 +343,22 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
     # ---- solve ----------------------------------------------------------------
 
     def _start(self, *, recalibrate: bool) -> None:
-        if len(self._files_l) != len(self._files_r) or len(self._files_l) < 3:
-            self._set_status(self.tr("Load equal, >= 3 left/right image sets first."), warn=True)
+        n_l, n_r = len(self._files_l), len(self._files_r)
+        if n_l != n_r or n_l < MIN_STEREO_PAIRS:  # the solve needs this many usable pairs
+            self._set_status(
+                self.tr(
+                    "Load the same number of left and right images, at least {0} pairs: "
+                    "the solve needs {0} usable pairs."
+                ).format(MIN_STEREO_PAIRS),
+                warn=True,
+            )
             return
         try:
             spec = self._board_spec()
         except ValueError as exc:
             self._set_status(str(exc), warn=True)
             return
+        self._remember_board()
         dot_mm = getattr(spec, "dot_mm", None)
         options = dict(
             joint_refine=self._joint.isChecked(),
@@ -465,20 +379,58 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
             spec,
             options,
             cached,
-            image_size=(self._cached_size if recalibrate else None),
+            image_sizes=(self._cached_sizes if recalibrate else None),
             parent=self,
         )
         self._worker.progress.connect(
             lambda msg: self._set_status(self.tr("Working… {0}").format(msg))
         )
+        self._worker.detected.connect(self._on_detected)
         self._worker.finished_ok.connect(self._on_solved)
         self._worker.failed.connect(self._on_failed)
         self._worker.start()
 
+    def _detection_status(self, det_l, det_r) -> str:
+        if not det_l.ok:
+            return self.tr("L: {0}").format(det_l.reason)
+        if not det_r.ok:
+            return self.tr("R: {0}").format(det_r.reason)
+        return ""
+
+    def _on_detected(self, payload) -> None:
+        """Fresh detections, before the solve: each image's result shows even if it fails."""
+        dl, dr = payload
+        self._detections = (dl, dr)
+        self._cached_sizes = None  # the solve sets them
+        self._result = self._diagnostics = None  # a new image set: the old solve is void
+        self._accept_btn.setEnabled(False)
+        self._verify_btn.setEnabled(False)
+        self._bars.set_data((), self._thr_spin.value())
+        self._result_lbl.setText(self.tr("No calibration yet"))
+        self._result_lbl.setStyleSheet(f"color: {COLORS.TEXT_SECONDARY}; font-size: 12px;")
+        for k, (det_l, det_r) in enumerate(zip(dl, dr, strict=False)):
+            item = self._table.topLevelItem(k)
+            if item is not None:
+                for column in (4, 5):
+                    item.setText(column, "")
+                fill_pair_row(
+                    item, det_l, det_r, self._detection_status(det_l, det_r), det_l.ok and det_r.ok
+                )
+        self._save_det_btn.setEnabled(True)
+
     def _on_failed(self, msg: str) -> None:
+        error = getattr(self._worker, "error", None)
+        shortfall = None
+        if isinstance(error, MixedImageSizeError):
+            text = self._mixed_size_text(error)
+        else:
+            if self._detections is not None:
+                shortfall = self._shortfall_text(*self._detections, MIN_STEREO_PAIRS)
+            text = shortfall or self.tr("Calibration failed: {0}").format(msg)
         self._calib_btn.setEnabled(True)
-        self._recal_btn.setEnabled(self._detections is not None)
-        self._set_status(self.tr("Calibration failed: {0}").format(msg), warn=True)
+        # Re-solving detections that do not show the board would fail again.
+        self._recal_btn.setEnabled(self._detections is not None and shortfall is None)
+        self._set_status(text, warn=True)
 
     def _on_solved(self, payload) -> None:
         dl, dr, result, stats = payload
@@ -486,9 +438,10 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
         self._detections = (dl, dr)
         self._result = result
         self._stats = stats
-        # The solve's image size: Recalibrate and Save detections need not read an image.
-        cam = result.rig.cameras["L"]
-        self._cached_size = (cam.width, cam.height)
+        # Each camera's size from the solve: Recalibrate and Save detections read no image.
+        self._cached_sizes = tuple(
+            (result.rig.cameras[cam].width, result.rig.cameras[cam].height) for cam in ("L", "R")
+        )
         self._calib_btn.setEnabled(True)
         self._recal_btn.setEnabled(True)
         self._accept_btn.setEnabled(True)
@@ -500,21 +453,14 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
             if item is None:
                 continue
             det_l, det_r = dl[k], dr[k]
-            pts = f"{det_l.n_points}/{det_r.n_points}"
-            item.setText(3, pts)
             if pair.n_common and np.isfinite(pair.rms_left):
                 item.setText(4, f"{pair.rms_left:.3f}/{pair.rms_right:.3f}")
             if pair.index in pair_max:
                 item.setText(5, f"{pair_max[pair.index]:.3f}")
-            status = self.tr("used") if pair.used else pair.note
-            if not det_l.ok:
-                status = self.tr("L: {0}").format(det_l.reason)
-            elif not det_r.ok:
-                status = self.tr("R: {0}").format(det_r.reason)
-            item.setText(6, status)
-            color = QColor(COLORS.TEXT_PRIMARY if pair.used else COLORS.DANGER)
-            for c in range(7):
-                item.setForeground(c, color)
+            status = self._detection_status(det_l, det_r) or (
+                self.tr("used") if pair.used else pair.note
+            )
+            fill_pair_row(item, det_l, det_r, status, pair.used)
         self._save_det_btn.setEnabled(True)
 
         self._verify_btn.setEnabled(True)
@@ -532,6 +478,13 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
             self.tr("Baseline {0:.2f} mm | pairs {1}/{2}").format(
                 result.baseline, result.n_pairs_used, len(result.pairs)
             ),
+        ]
+        lo, hi = stats.get("distance_min", np.nan), stats.get("distance_max", np.nan)
+        if np.isfinite(lo) and np.isfinite(hi):  # a wrong square size shows as a wrong distance
+            lines.append(
+                self.tr("Board distance from the left camera {0:.0f}-{1:.0f} mm").format(lo, hi)
+            )
+        lines += [
             self.tr("fx {0:.1f}  fy {1:.1f}  cx {2:.1f}  cy {3:.1f}").format(
                 left.fx, left.fy, left.cx, left.cy
             ),
@@ -556,7 +509,7 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
             lines.append(self.tr("Warning: {0}").format(w))
         lines += findings_lines(self._diagnostics)  # WP6: translated from code + values
         self._result_lbl.setText("\n".join(lines))
-        colour = result_colour(self._diagnostics)
+        colour = result_colour(self._diagnostics, warnings=result.warnings)
         self._result_lbl.setStyleSheet(f"color: {colour}; font-size: 12px;")
 
     def _set_status(self, text: str, *, warn: bool = False) -> None:
@@ -771,3 +724,20 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
             meta.update(self._diagnostics.summary())
         self.saved_path = to_opencv_yaml(self._result.rig, path, meta=meta)
         self.accept()
+
+    def reject(self) -> None:
+        """Cancel, Esc and the close button: ask before a finished calibration is lost."""
+        if self._result is not None and self.saved_path is None and not self._confirm_discard():
+            return
+        super().reject()
+
+    def _confirm_discard(self) -> bool:
+        """True when the user agrees to discard the unsaved calibration (tests stub it)."""
+        reply = QMessageBox.question(
+            self,
+            self.tr("Discard calibration?"),
+            self.tr("This calibration has not been saved. Close the dialog and discard it?"),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        return reply == QMessageBox.StandardButton.Yes
