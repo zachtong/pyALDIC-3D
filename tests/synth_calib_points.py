@@ -17,7 +17,13 @@ from collections.abc import Callable, Sequence
 import numpy as np
 from numpy.typing import NDArray
 
-from al_dic_3d.calibration import BoardDetection, CameraIntrinsics, StereoRig, project_points
+from al_dic_3d.calibration import (
+    BoardDetection,
+    CameraIntrinsics,
+    FileDetections,
+    StereoRig,
+    project_points,
+)
 
 Field = Callable[[NDArray[np.float64], CameraIntrinsics], NDArray[np.float64]]
 
@@ -102,3 +108,23 @@ def cubic_mismatch_field(amplitude_px: float) -> Field:
         return scale * np.column_stack([x * y**2, x**2 * y])
 
     return field
+
+
+def fake_detect_files(
+    detections: Sequence[BoardDetection], size: tuple[int, int]
+) -> Callable[..., FileDetections]:
+    """Stand-in for ``detect_files`` returning ``detections`` (one per file, in order).
+
+    Monkeypatch it over ``al_dic_3d.calibration.detect_files`` to drive the CLI
+    or the GUI worker without image files. Like the real function it reports
+    each detection through ``on_result`` in input order.
+    """
+
+    def fake(paths, _spec, *, workers=None, on_result=None) -> FileDetections:
+        assert len(paths) == len(detections), "one detection per file"
+        for k, det in enumerate(detections):
+            if on_result is not None:
+                on_result(k, det)
+        return FileDetections(tuple(detections), tuple(size for _ in detections))
+
+    return fake

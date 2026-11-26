@@ -95,6 +95,51 @@ def test_calibration_dialog_end_to_end(qapp, dataset, tmp_path, monkeypatch):
     assert abs(back.cameras["L"].fx - rig.cameras["L"].fx) / rig.cameras["L"].fx < 0.01
 
 
+def test_worker_detects_in_parallel_with_ordered_progress_and_one_read_per_image(
+    qapp, dataset, monkeypatch
+):
+    import al_dic_3d.pathsafe as pathsafe
+    from al_dic_3d.gui.dialogs.calibration_support import CalibWorker
+
+    imgdir, _rig = dataset
+    files_l = sorted(str(p) for p in imgdir.glob("L_*.png"))
+    files_r = sorted(str(p) for p in imgdir.glob("R_*.png"))
+    reads: list[str] = []
+    real_read = pathsafe.imread_unicode
+
+    def counting_read(path, *args, **kwargs):
+        reads.append(str(path))
+        return real_read(path, *args, **kwargs)
+
+    monkeypatch.setattr(pathsafe, "imread_unicode", counting_read)
+    worker = CalibWorker(files_l, files_r, SPEC, {})
+    messages: list[str] = []
+    payload: list = []
+    worker.progress.connect(messages.append)
+    worker.finished_ok.connect(payload.append)
+    worker.failed.connect(lambda msg: pytest.fail(msg))
+    worker.run()  # synchronously, on this thread
+    n = len(files_l)
+    expected = [f"L {k}/{n}" for k in range(n + 1)] + [f"R {k}/{n}" for k in range(1, n + 1)]
+    assert messages[: 2 * n + 1] == expected
+    assert "solving" in messages[2 * n + 1 :]
+    assert sorted(reads) == sorted(files_l + files_r)  # each image decoded once
+    dl, dr, result, _stats = payload[0]
+    assert len(dl) == len(dr) == n
+    assert result.n_pairs_used >= 6
+    assert (result.rig.cameras["L"].width, result.rig.cameras["L"].height) == (sc.IMG_W, sc.IMG_H)
+
+
+def test_dialog_caches_the_image_size_after_a_solve(qapp, dataset):
+    imgdir, _rig = dataset
+    dlg = CalibrationDialog()
+    dlg._files_l = sorted(str(p) for p in imgdir.glob("L_*.png"))
+    dlg._files_r = sorted(str(p) for p in imgdir.glob("R_*.png"))
+    dlg._refresh_table()
+    _run_solve(dlg)
+    assert dlg._cached_size == (sc.IMG_W, sc.IMG_H)  # Recalibrate needs no image read
+
+
 def _run_solve_recal(dlg: CalibrationDialog) -> None:
     from PySide6.QtCore import QCoreApplication
 

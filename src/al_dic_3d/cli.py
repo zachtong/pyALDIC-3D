@@ -376,7 +376,13 @@ def _calibrate_command(args: argparse.Namespace) -> int:
     """Handle ``al-dic-3d calibrate`` (detect -> solve -> QC -> YAML)."""
     import glob as globlib
 
-    from al_dic_3d.calibration import detect_board, run_calibration, to_opencv_yaml
+    from al_dic_3d.calibration import (
+        UnreadableImageError,
+        detect_board,
+        detect_files,
+        run_calibration,
+        to_opencv_yaml,
+    )
     from al_dic_3d.pathsafe import imread_unicode
 
     def fail(msg: str) -> None:
@@ -395,24 +401,22 @@ def _calibrate_command(args: argparse.Namespace) -> int:
             f"(got {len(left_files)}/{len(right_files)})"
         )
 
-    def detect_all(files: list[str], tag: str):
-        dets = []
-        for f in files:
-            img = imread_unicode(f)
-            if img is None:
-                fail(f"cannot read image: {f}")
-            det = detect_board(img, spec)
-            status = f"{det.n_points} pts" if det.ok else f"FAIL ({det.reason})"
-            print(f"  [{tag}] {Path(f).name}: {status}")
-            dets.append(det)
-        return dets
+    files = [*left_files, *right_files]
+    n_left = len(left_files)
+
+    def report(index: int, det) -> None:  # input order: every left image, then every right one
+        tag = "L" if index < n_left else "R"
+        status = f"{det.n_points} pts" if det.ok else f"FAIL ({det.reason})"
+        print(f"  [{tag}] {Path(files[index]).name}: {status}", flush=True)
 
     print(f"detecting {args.board} board in {len(left_files)} pairs...")
-    dl = detect_all(left_files, "L")
-    dr = detect_all(right_files, "R")
-
-    first = imread_unicode(left_files[0])
-    image_size = (first.shape[1], first.shape[0])
+    try:
+        # Both cameras' images, several at a time; each image is decoded once.
+        found = detect_files(files, spec, on_result=report)
+    except UnreadableImageError as exc:
+        fail(str(exc))
+    dl, dr = list(found.detections[:n_left]), list(found.detections[n_left:])
+    image_size = found.sizes[0]
     dot_mm = getattr(spec, "dot_mm", None)
     ecc = None if args.no_ecc_correction or dot_mm is None else dot_mm / 2.0
 

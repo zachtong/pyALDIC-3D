@@ -7,24 +7,21 @@ calibration's ``meta_*`` nodes; ``--strict`` makes a warning fail the command
 
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 from al_dic_3d.calibration.diagnostics import EXTRAPOLATION_UNDETERMINED
+from tests.synth_calib_points import fake_detect_files
 from tests.test_calib_extrapolation import SIZE, _central_poses, _corner_poses
 from tests.test_calib_pipeline import wide_stereo
 
 
 def _run_cli(tmp_path, monkeypatch, capsys, poses, *extra):
     import al_dic_3d.calibration as calib
-    import al_dic_3d.pathsafe as pathsafe
     from al_dic_3d.cli import main
 
     left, right = wide_stereo(poses)
-    queue = iter([*left, *right])  # every left image is detected first, then every right one
-    monkeypatch.setattr(calib, "detect_board", lambda _img, _spec: next(queue))
-    blank = np.zeros((SIZE[1], SIZE[0]), np.uint8)
-    monkeypatch.setattr(pathsafe, "imread_unicode", lambda _f: blank)
+    # Every left image, then every right one, in one detection call.
+    monkeypatch.setattr(calib, "detect_files", fake_detect_files([*left, *right], SIZE))
     for i in range(len(left)):
         (tmp_path / f"L_{i:02d}.png").touch()
         (tmp_path / f"R_{i:02d}.png").touch()

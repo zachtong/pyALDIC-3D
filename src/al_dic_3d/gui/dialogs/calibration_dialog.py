@@ -393,6 +393,7 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
         else:
             self._files_r = merge_picks(self._files_r, files)
         self._detections = None
+        self._cached_size = None
         self._refresh_table()
 
     def _clear_files(self) -> None:
@@ -485,6 +486,9 @@ class CalibrationDialog(DetectionFilesMixin, QDialog):
         self._detections = (dl, dr)
         self._result = result
         self._stats = stats
+        # The solve's image size: Recalibrate and Save detections need not read an image.
+        cam = result.rig.cameras["L"]
+        self._cached_size = (cam.width, cam.height)
         self._calib_btn.setEnabled(True)
         self._recal_btn.setEnabled(True)
         self._accept_btn.setEnabled(True)

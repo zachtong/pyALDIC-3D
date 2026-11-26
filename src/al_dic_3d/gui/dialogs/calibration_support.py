@@ -25,11 +25,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from al_dic_3d.calibration import detect_board, run_calibration
+from al_dic_3d.calibration import run_calibration
 
 
 class CalibWorker(QThread):
-    """Detect (unless cached) + solve off the GUI thread."""
+    """Detect (unless cached; several images at a time) + solve off the GUI thread."""
 
     progress = Signal(str)
     finished_ok = Signal(object)  # (detections_l, detections_r, StereoResult, stats)
@@ -46,23 +46,37 @@ class CalibWorker(QThread):
         self._detections = detections  # (dl, dr) to skip re-detection
         self._image_size = image_size  # known size lets us skip reading images
 
+    def _detect(self) -> tuple[list, list, tuple[int, int] | None]:
+        """Detect both cameras' images in parallel -> (dl, dr, first image's (w, h)).
+
+        Progress reads "L k/n" then "R k/n" in input order, as images finish.
+        """
+        from al_dic_3d.calibration import detect_files
+
+        n_l, n_r = len(self._files_l), len(self._files_r)
+
+        def report(index: int, _det) -> None:
+            tag, k, n = ("L", index, n_l) if index < n_l else ("R", index - n_l, n_r)
+            self.progress.emit(f"{tag} {k + 1}/{n}")
+
+        self.progress.emit(f"L 0/{n_l}")  # immediate feedback: the first result can take a while
+        found = detect_files([*self._files_l, *self._files_r], self._spec, on_result=report)
+        size = found.sizes[0] if found.sizes else None
+        return list(found.detections[:n_l]), list(found.detections[n_l:]), size
+
     def run(self) -> None:  # noqa: N802 (Qt override)
         from al_dic_3d.pathsafe import imread_unicode
 
         try:
+            detected_size = None
             if self._detections is None:
-                dl, dr = [], []
-                for tag, files, out in (("L", self._files_l, dl), ("R", self._files_r, dr)):
-                    for k, f in enumerate(files):
-                        self.progress.emit(f"{tag} {k + 1}/{len(files)}")
-                        img = imread_unicode(f)
-                        if img is None:
-                            raise ValueError(f"cannot read image: {f}")
-                        out.append(detect_board(img, self._spec))
+                dl, dr, detected_size = self._detect()
             else:
                 dl, dr = self._detections
             if self._image_size is not None:
                 image_size = self._image_size
+            elif detected_size is not None:  # no second decode of the first image
+                image_size = detected_size
             else:
                 first = imread_unicode(self._files_l[0])
                 if first is None:
