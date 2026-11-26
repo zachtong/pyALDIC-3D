@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from al_dic.gui.theme import COLORS
+from PySide6.QtCore import QSignalBlocker
 from PySide6.QtWidgets import (
     QComboBox,
     QFileDialog,
@@ -24,6 +25,7 @@ from PySide6.QtWidgets import (
 )
 
 from al_dic_3d.calibration import IMPORTERS, load_calibration
+from al_dic_3d.calibration.importers import guess_format
 from al_dic_3d.gui.state import GuiSignals
 
 if TYPE_CHECKING:
@@ -155,7 +157,15 @@ class CalibrationSection3D(QWidget):
         if not path:
             return
         persistence.set_last_dir("calibration", path)
-        self.controller.state.draft.calibration_file = Path(path)
+        draft = self.controller.state.draft
+        draft.calibration_file = Path(path)
+        # The file's own format when its name or first bytes say so (a DICe XML
+        # read with the default opencv_yaml failed with an unhelpful message).
+        guessed = guess_format(path)
+        if guessed is not None and guessed != draft.calibration_format:
+            with QSignalBlocker(self.format_combo):  # one preview below, not two
+                self.format_combo.setCurrentText(guessed)
+            draft.calibration_format = guessed
         self.controller.state.mark_dirty()
         self.preview()
         self.signals.calibration_changed.emit()

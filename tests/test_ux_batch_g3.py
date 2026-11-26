@@ -230,7 +230,9 @@ def test_next_step_hint_transitions(qapp, tmp_path):
 
     draft.calibration_file = tmp_path / "missing.yml"
     win.signals.calibration_changed.emit()
-    assert hint.text() == hint.tr("Draw the ROI on the left camera, frame 1")
+    # A calibration that cannot be read is the next step, before the ROI (it
+    # used to skip ahead to "Draw the ROI" after a failed import).
+    assert hint.isVisible() and "calibration file cannot be read" in hint.text()
 
     draft.roi = (40, 160, 40, 160)
     win.signals.roi_changed.emit()
@@ -240,6 +242,12 @@ def test_next_step_hint_transitions(qapp, tmp_path):
     draft.calibration_file = scene["dir"] / scene["calib"]
     win.signals.calibration_changed.emit()
     assert not hint.isVisible()  # ready -> hidden
+
+    draft.roi = None  # with a good calibration the ROI is next again
+    win.signals.roi_changed.emit()
+    assert hint.text() == hint.tr("Draw the ROI on the left camera, frame 1")
+    draft.roi = (40, 160, 40, 160)
+    win.signals.roi_changed.emit()
 
     # Mismatch surfaces the translated issue detail (still the images stage).
     draft.right = right[:1]
