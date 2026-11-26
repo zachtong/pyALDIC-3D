@@ -554,18 +554,24 @@ def test_empty_result_logs_error_and_shows_canvas_notice(qapp, scene):
 
 
 def test_run_worker_failure_reports_exception_type(qapp, scene):
-    # F3.1: a worker crash surfaces the exception TYPE + message to the UI.
+    # F3.1: a worker crash surfaces its message to the UI; an unexpected
+    # exception type (a bug) keeps its TYPE, an error the user can fix
+    # (ValueError, OSError, RuntimeError) shows its plain message (new-user audit).
     from al_dic_3d.gui.panels.right_sidebar import RunWorker
 
     win = _loaded_window(scene)
 
     class Boom:
-        def run(self, progress=None, stop=None):  # noqa: ARG002
-            raise ValueError("boom: bad calibration matrix")
+        def __init__(self, exc):
+            self.exc = exc
 
-    worker = RunWorker(Boom())
+        def run(self, progress=None, stop=None):  # noqa: ARG002
+            raise self.exc
+
     got: list[str] = []
-    worker.failed.connect(got.append)
-    worker.run()  # synchronous call (no thread needed for the error path)
-    assert got == ["ValueError: boom: bad calibration matrix"]
+    for exc in (ValueError("boom: bad calibration matrix"), TypeError("boom: a bug")):
+        worker = RunWorker(Boom(exc))
+        worker.failed.connect(got.append)
+        worker.run()  # synchronous call (no thread needed for the error path)
+    assert got == ["boom: bad calibration matrix", "TypeError: boom: a bug"]
     win.close()
