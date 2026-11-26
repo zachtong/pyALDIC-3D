@@ -421,8 +421,8 @@ def from_opencv_yaml(path: str | Path) -> StereoRig:
     Expected nodes: ``cameraMatrix1``, ``distCoeffs1``, ``cameraMatrix2``,
     ``distCoeffs2``, ``R``, ``T`` — the ``cv2.stereoCalibrate`` output convention
     (``X_2 = R @ X_1 + T``), which already matches the target (cam1 = left = world).
-    Optional integer ``imageWidth<n>`` / ``imageHeight<n>`` nodes (written by
-    :func:`~al_dic_3d.calibration.report.to_opencv_yaml`) give each camera's
+    Optional ``imageSize<n>`` nodes, ``[width, height]`` (written by
+    :func:`~al_dic_3d.calibration.report.to_opencv_yaml`), give each camera's
     image size; a file without them loads with the size unknown.
     Parsing is memory-backed (:func:`al_dic_3d.pathsafe.filestorage_read`, G3):
     ``cv2.FileStorage`` cannot open non-ASCII Windows paths directly.
@@ -442,19 +442,20 @@ def from_opencv_yaml(path: str | Path) -> StereoRig:
             return np.asarray(n.mat(), np.float64)
 
         def size(n: int) -> tuple[int | None, int | None]:
-            out: list[int | None] = []
-            for name in (f"imageWidth{n}", f"imageHeight{n}"):
-                item = fs.getNode(name)
-                if item.empty():
-                    return (None, None)
-                value = item.real()
-                if not (item.isInt() or item.isReal()) or value < 1 or value != int(value):
-                    raise ValueError(
-                        f"OpenCV calibration file node {name!r} must be a positive whole "
-                        "number of pixels"
-                    )
-                out.append(int(value))
-            return (out[0], out[1])
+            name = f"imageSize{n}"
+            item = fs.getNode(name)
+            if item.empty():
+                return (None, None)
+            if item.isSeq():  # a cv::Size written from C++: [width, height]
+                values = [item.at(i).real() for i in range(item.size())]
+            else:
+                mat = item.mat()
+                values = [] if mat is None else np.asarray(mat, np.float64).ravel().tolist()
+            if len(values) != 2 or any(v < 1 or v != int(v) for v in values):
+                raise ValueError(
+                    f"OpenCV calibration file node {name!r} must be [width, height] in whole pixels"
+                )
+            return (int(values[0]), int(values[1]))
 
         left = _K_matrix_to_intrinsics(node("cameraMatrix1"), node("distCoeffs1"), size(1))
         right = _K_matrix_to_intrinsics(node("cameraMatrix2"), node("distCoeffs2"), size(2))

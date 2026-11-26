@@ -372,7 +372,7 @@ def _check_calibration_size(rig, cam: str, shape: tuple[int, int]) -> None:
     """Refuse a calibration recorded for a different image resolution.
 
     Only files that record the image size (DICe ``IMAGE_HEIGHT_WIDTH``, the
-    built-in calibrator's YAML ``imageWidth<n>`` / ``imageHeight<n>``) can be
+    built-in calibrator's YAML ``imageSize<n>``) can be
     checked; a mismatch (binned / cropped images, the other rig's file) silently
     corrupts every triangulated point, so it is an error, not a warning.
     """

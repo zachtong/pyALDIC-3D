@@ -47,10 +47,22 @@ def test_the_size_nodes_stay_readable_by_plain_opencv(tmp_path: Path):
     fs = cv2.FileStorage(str(path), cv2.FILE_STORAGE_READ)
     try:
         assert fs.getNode("cameraMatrix1").mat().shape == (3, 3)  # the stereo contract
-        assert int(fs.getNode("imageWidth1").real()) == 80
-        assert int(fs.getNode("imageHeight2").real()) == 60
+        assert fs.getNode("imageSize1").mat().ravel().tolist() == [80, 60]
+        # Every calibration node stays a matrix: code reading each with .mat() works.
+        for name in fs.root().keys():
+            if not name.startswith("meta_"):
+                assert fs.getNode(name).mat() is not None, name
     finally:
         fs.release()
+
+
+def test_a_cv_size_sequence_is_read_too(tmp_path: Path):
+    path = to_opencv_yaml(_rig(None), tmp_path / "cpp.yml")
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text + "imageSize1: [ 1920, 1200 ]\n", encoding="utf-8")
+    back = from_opencv_yaml(path)
+    assert (back.cameras["L"].width, back.cameras["L"].height) == (1920, 1200)
+    assert back.cameras["R"].width is None
 
 
 def test_a_yaml_without_a_size_keeps_working(tmp_path: Path):
@@ -59,10 +71,10 @@ def test_a_yaml_without_a_size_keeps_working(tmp_path: Path):
 
 
 def test_an_invalid_size_node_is_refused(tmp_path: Path):
-    path = to_opencv_yaml(_rig((80, 60)), tmp_path / "rig.yml")
-    text = path.read_text(encoding="utf-8").replace("imageWidth1: 80", "imageWidth1: -3")
-    path.write_text(text, encoding="utf-8")
-    with pytest.raises(ValueError, match="imageWidth1"):
+    path = to_opencv_yaml(_rig(None), tmp_path / "rig.yml")
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text + "imageSize2: [ -3, 60 ]\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="imageSize2"):
         from_opencv_yaml(path)
 
 
