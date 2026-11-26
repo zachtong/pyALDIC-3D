@@ -41,6 +41,19 @@ def test_the_gui_names_the_calibration_when_links_miss_their_epipolar_lines():
     assert "480" in text and "7.0 px" in text and "calibration" in text
 
 
+def test_the_memory_refusal_gives_gui_users_gui_actions(monkeypatch):
+    from al_dic_3d import memcheck
+
+    monkeypatch.setattr(memcheck, "available_ram_bytes", lambda: 1024**3)  # 1 GB
+    with pytest.raises(memcheck.MemoryBudgetError) as info:
+        memcheck.check_run_memory(400, 2048, 2448, 2, lazy=True, n_pts=60000)
+    assert isinstance(info.value, ValueError)
+    assert "ignore_memory_check" in str(info.value)  # the CLI / config wording keeps it
+    text = run_error_text(info.value)
+    assert "ignore_memory_check" not in text and "[advanced]" not in text
+    assert "400 frames" in text and "Subset Step" in text and "region of interest" in text
+
+
 def test_user_errors_show_their_message_and_bugs_their_type():
     assert run_error_text(ValueError("frame-count mismatch")) == "frame-count mismatch"
     assert run_error_text(FileNotFoundError("no such file: a.tif")) == "no such file: a.tif"

@@ -137,7 +137,7 @@ def check_run_memory(
     parallel: bool = False,
     fraction: float = DEFAULT_RAM_FRACTION,
 ) -> None:
-    """Raise ``ValueError`` when the projected peak exceeds available RAM.
+    """Raise :class:`MemoryBudgetError` (a ``ValueError``) when the peak exceeds RAM.
 
     The threshold is ``fraction`` (default 70%) of *currently available*
     physical memory. Silently returns when availability cannot be probed.
@@ -152,12 +152,38 @@ def check_run_memory(
     budget = fraction * available
     if projected <= budget:
         return
-    gib = 1024**3
-    raise ValueError(
-        f"Projected peak memory {projected / gib:.1f} GB exceeds "
-        f"{fraction:.0%} of available RAM ({available / gib:.1f} GB available) "
-        f"for {n_frames} frames x {img_w}x{img_h} px x {n_cameras} cameras. "
-        f"Reduce the number of frames, shrink the ROI / downsample the images, "
-        f"close other applications, or set ignore_memory_check = true under "
-        f"[advanced] in the config to run anyway."
-    )
+    raise MemoryBudgetError(projected, available, fraction, n_frames, img_w, img_h, n_cameras)
+
+
+class MemoryBudgetError(ValueError):
+    """A run whose projected peak memory exceeds the budget (a ``ValueError``).
+
+    ``str()`` is the CLI / config wording, which names the
+    ``ignore_memory_check`` override; the GUI has no such switch, so it words
+    its own message from the numbers carried here (fewer frames, a coarser
+    step, a smaller ROI).
+    """
+
+    def __init__(
+        self,
+        projected: float,
+        available: float,
+        fraction: float,
+        n_frames: int,
+        img_w: int,
+        img_h: int,
+        n_cameras: int,
+    ) -> None:
+        gib = 1024**3
+        super().__init__(
+            f"Projected peak memory {projected / gib:.1f} GB exceeds "
+            f"{fraction:.0%} of available RAM ({available / gib:.1f} GB available) "
+            f"for {n_frames} frames x {img_w}x{img_h} px x {n_cameras} cameras. "
+            f"Reduce the number of frames, use a coarser winstepsize, shrink the ROI / "
+            f"downsample the images, close other applications, or set "
+            f"ignore_memory_check = true under [advanced] in the config to run anyway."
+        )
+        self.projected_gb = projected / gib
+        self.available_gb = available / gib
+        self.fraction = float(fraction)
+        self.n_frames = int(n_frames)

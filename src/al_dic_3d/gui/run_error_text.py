@@ -42,12 +42,32 @@ def _no_stereo_links_text(exc) -> str:
     )
 
 
+def _memory_text(exc) -> str:
+    # The CLI wording names the config-only ignore_memory_check switch; a GUI
+    # user gets the GUI actions that shrink the run instead.
+    return QCoreApplication.translate(
+        "RunErrors",
+        "This run would need about {0} GB of memory, more than {1} of the {2} GB "
+        "available, for {3} frames. Analyse fewer frames, choose a coarser PARAMETERS > "
+        "Subset Step, or draw a smaller region of interest; closing other applications "
+        "also helps.",
+    ).format(
+        f"{exc.projected_gb:.1f}",
+        f"{exc.fraction:.0%}",
+        f"{exc.available_gb:.1f}",
+        exc.n_frames,
+    )
+
+
 def run_error_text(exc: BaseException) -> str:
     """The message shown for a run that raised ``exc``."""
     from al_dic_3d.matching.diagnostics import NoStereoLinksError
+    from al_dic_3d.memcheck import MemoryBudgetError
 
     if isinstance(exc, NoStereoLinksError):
         return _no_stereo_links_text(exc)
+    if isinstance(exc, MemoryBudgetError):
+        return _memory_text(exc)
     if isinstance(exc, _USER_ERRORS):
         return str(exc).strip() or type(exc).__name__
     return f"{type(exc).__name__}: {exc}"
