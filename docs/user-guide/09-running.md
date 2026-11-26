@@ -17,6 +17,9 @@ Readiness checks that the inputs are *usable*, not only that they are set:
 - the left and right sequences are not the same image files (for example
   one folder dropped on both cameras);
 - each camera's first and last frames have the same size;
+- that size is the one the calibration was made for, when the calibration
+  file records it (DICe files, the built-in calibrator's YAML): binned or
+  cropped images need their own calibration;
 - a drawn ROI mask has the size of the images.
 
 With no Starting Point placed, the **Ready** label adds an amber note that the
@@ -74,11 +77,19 @@ few points tells you *why*. Representative messages:
   or strongly inclined surface, so raise **Stereo check** (for example to 1.0).
   Mostly epipolar: the median distance of the links from their epipolar lines,
   with the hint that the calibration probably does not match the images.
+- *The frame-1 stereo links lie a median X px from their epipolar lines (a
+  calibration that fits the images gives under 0.3 px): a camera has probably
+  moved since the calibration…* — the links pass the check but sit off their
+  lines (from 0.5 px): a camera was bumped, refocused or re-aimed after
+  calibrating, which biases the 3D shape and displacements. Recalibrate the rig
+  as it stands now ([Troubleshooting](14-troubleshooting.md)).
 - *Camera L: validity gate removed N node-frames (correlation with the
   reference frame failed)* — temporal correlation failures (the reference frame
   is frame 1 in accumulative mode, the frame each step was tracked from in
   incremental mode).
 - *Frame k: only Z% of points valid* — a per-frame low-validity warning.
+  Frames are numbered from 1, as in the frame navigator (frame 1 is the
+  reference).
 - *Quality gate (ZNSSD) removed N positions* / *Reprojection gate removed N
   positions* / *3D outlier filter removed N positions* — each quality gate's
   count (only when **Extra filters** is enabled).
@@ -89,7 +100,7 @@ few points tells you *why*. Representative messages:
   moved specimen at later incremental reference frames: import per-frame masks
   or use **Accumulative**. With per-frame masks, the motion between reference
   frames really is that large: raise **Temporal Search**.
-- *Validity falls from X% (frame 1) to Y%: …* — the run kept most points at
+- *Validity falls from X% (frame 2) to Y%: …* — the run kept most points at
   first and then lost them. In accumulative mode the message suggests the
   incremental mode (tracking every frame against frame 1 cannot follow large
   deformation). In incremental mode with rare reference updates (**Every N
@@ -99,6 +110,9 @@ few points tells you *why*. Representative messages:
   such as a crack).
 - *Analysis complete — F frames, median validity Z%* — the success summary,
   with *K frame(s) below T% (see above)* when frames were flagged.
+- *Partial result — k of n frames computed, median validity Z%* — the summary
+  of a run stopped early (a warning, not a success): the frames after the stop
+  were never computed and are not counted or flagged.
 
 Percentages count the nodes inside the ROI, not the whole mesh rectangle, so a
 shaped ROI can reach 100 %.
@@ -125,6 +139,11 @@ notes it is available from the sidebar). The **Export Results** and **Open Strai
 Window** buttons enable once results exist. A run stopped early that kept frames
 counts as finished: export and strain work on the kept frames. A failed run
 leaves the previous results, if any, on screen, and shows an error dialog with
-the reason.
+the reason and what to do, for example *No point of frame 1 could be matched
+between the left and right images…* (left and right swapped, a calibration of
+other images, no speckle texture) or *This run would need about N GB of
+memory…* (fewer frames, a coarser Subset Step, a smaller ROI); see
+[Troubleshooting](14-troubleshooting.md). The full technical details go to the
+log file.
 
 Next: [Viewing results →](10-viewing-results.md)

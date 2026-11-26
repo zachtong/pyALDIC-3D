@@ -201,7 +201,10 @@ pipelines. The checks' numbers are stored in the YAML as `meta_*` entries,
 which the importer ignores.
 
 The written YAML is consumed by a run as `[calibration] file = "calibration.yml"`,
-`format = "opencv_yaml"`.
+`format = "opencv_yaml"`. It also records each camera's image size
+(`imageWidth1` / `imageHeight1`, `imageWidth2` / `imageHeight2`; other OpenCV
+readers ignore them), so a run on binned or cropped images is refused before
+it starts instead of giving wrong 3D points.
 
 ## How calibration feeds the run
 
