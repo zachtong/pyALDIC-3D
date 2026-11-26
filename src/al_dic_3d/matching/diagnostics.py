@@ -340,6 +340,29 @@ def summarize_run(
     )
 
 
+def computed_frames(summary: RunSummary, meta: dict | None) -> RunSummary:
+    """``summary`` restricted to the frames a stopped run computed.
+
+    A run stopped early keeps frames ``[0, stopped_at_frame)``; the later ones
+    are NaN and were reported as "only 0 % of points valid", then counted in
+    the verdict and the collapse advice (new-user audit: a cancel at 10 s logged
+    a 0 %-valid frame and a green "Analysis complete"). ``n_frames`` keeps the
+    full sequence length; a run that was not stopped is returned unchanged.
+    """
+    if not (meta and meta.get("stopped_early")):
+        return summary
+    from dataclasses import replace
+
+    k = max(0, min(int(meta.get("stopped_at_frame") or 0), len(summary.valid_frac)))
+    kept = summary.valid_frac[:k]
+    return replace(
+        summary,
+        valid_frac=kept,
+        median_valid_frac=float(np.median(kept)) if kept else 0.0,
+        low_frames=tuple(f for f in summary.low_frames if f < k),
+    )
+
+
 def stereo_check_advice(summary: RunSummary, epipolar_max_px: float = 2.0) -> str | None:
     """Advice code when the frame-1 stereo check points at a problem.
 
@@ -430,9 +453,11 @@ def summary_lines(
     :class:`RunSummary` numbers; this stays Qt-free by contract. ``stopped``
     accepts the run meta (or any dict with ``stopped_early`` /
     ``stopped_at_frame`` / ``stop_reason``) and prepends the R2 partial-run
-    banner: frames ``[0, stopped_at_frame)`` were kept, the rest are NaN.
+    banner: frames ``[0, stopped_at_frame)`` were kept, the rest are NaN and
+    are left out of the per-frame lines and the verdict (:func:`computed_frames`).
     """
     lines: list[tuple[str, str]] = []
+    summary = computed_frames(summary, stopped)
     if stopped and stopped.get("stopped_early"):
         k = int(stopped.get("stopped_at_frame") or 0)
         lines.append(
@@ -571,6 +596,15 @@ def summary_lines(
                 "error",
                 "no valid points in ANY frame — the run produced an empty result "
                 "(check ROI/masks/seeding and the messages above)",
+            )
+        )
+    elif stopped and stopped.get("stopped_early"):
+        lines.append(
+            (
+                "warning",
+                f"partial result — {len(summary.valid_frac)} of {summary.n_frames} frames "
+                f"computed, median validity {summary.median_valid_frac * 100:.0f}%, "
+                f"{len(summary.low_frames)} frame(s) below {LOW_VALIDITY_FRAC * 100:.0f}%",
             )
         )
     else:

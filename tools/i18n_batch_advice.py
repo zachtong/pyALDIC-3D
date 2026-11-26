@@ -18,23 +18,23 @@ _LOCALES = ("zh_CN", "zh_TW", "ja", "ko", "de", "fr", "es")
 # (source, zh_CN, zh_TW, ja, ko, de, fr, es)
 _ROWS: list[tuple[str, str, str, str, str, str, str, str]] = [
     (
-        "Validity falls from {0}% (frame 1) to {1}%: the motion between reference frames is "
+        "Validity falls from {0}% (frame 2) to {1}%: the motion between reference frames is "
         "too large to track. Update the reference every frame (Reference Update > Every Frame).",
-        "有效率从 {0}%（第 1 帧）降至 {1}%：参考帧之间的运动太大，无法跟踪。"
+        "有效率从 {0}%（第 2 帧）降至 {1}%：参考帧之间的运动太大，无法跟踪。"
         "请每帧更新参考帧（参考帧更新 > 每帧）。",
-        "有效率從 {0}%（第 1 幀）降至 {1}%：參考幀之間的運動太大，無法追蹤。"
+        "有效率從 {0}%（第 2 幀）降至 {1}%：參考幀之間的運動太大，無法追蹤。"
         "請每幀更新參考幀（參考幀更新 > 每幀）。",
-        "有効率がフレーム 1 の {0}% から {1}% に下がりました：参照フレーム間の動きが大きすぎて"
+        "有効率がフレーム 2 の {0}% から {1}% に下がりました：参照フレーム間の動きが大きすぎて"
         "追跡できません。参照フレームを毎フレーム更新してください（参照フレーム更新 > 毎フレーム）。",
-        "유효율이 {0}%(프레임 1)에서 {1}%로 떨어집니다: 기준 프레임 사이의 움직임이 너무 커서 "
+        "유효율이 {0}%(프레임 2)에서 {1}%로 떨어집니다: 기준 프레임 사이의 움직임이 너무 커서 "
         "추적할 수 없습니다. 기준 프레임을 매 프레임 갱신하세요(기준 프레임 갱신 > 매 프레임).",
-        "Die Gültigkeit fällt von {0} % (Bild 1) auf {1} %: Die Bewegung zwischen den "
+        "Die Gültigkeit fällt von {0} % (Bild 2) auf {1} %: Die Bewegung zwischen den "
         "Referenzbildern ist zu groß, um sie zu verfolgen. Die Referenz in jedem Frame "
         "aktualisieren (Referenz-Update > Jeder Frame).",
-        "La validité chute de {0} % (image 1) à {1} % : le mouvement entre images de "
+        "La validité chute de {0} % (image 2) à {1} % : le mouvement entre images de "
         "référence est trop grand pour être suivi. Mettez à jour la référence à chaque image "
         "(Mise à jour de la référence > Chaque image).",
-        "La validez cae del {0} % (fotograma 1) al {1} %: el movimiento entre fotogramas de "
+        "La validez cae del {0} % (fotograma 2) al {1} %: el movimiento entre fotogramas de "
         "referencia es demasiado grande para seguirlo. Actualice la referencia en cada "
         "fotograma (Actualización de referencia > Cada fotograma).",
     ),
