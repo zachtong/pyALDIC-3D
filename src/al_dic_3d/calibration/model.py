@@ -126,3 +126,24 @@ class StereoRig:
         """
         R, T = self.pose(cam)
         return self.cameras[cam].K @ np.hstack([R, T.reshape(3, 1)])
+
+
+def rig_problem(rig: StereoRig) -> str | None:
+    """Why ``rig`` cannot reconstruct anything (English), or ``None`` when it can.
+
+    Catches what reading the wrong kind of file produces: a focal length
+    that is zero, negative or not finite, any other parameter that is not
+    finite, and a zero baseline (both cameras at one point: no depth).
+    """
+    for key, cam in rig.cameras.items():
+        if not (np.isfinite(cam.fx) and np.isfinite(cam.fy) and cam.fx > 0 and cam.fy > 0):
+            return f"camera {key}: the focal length must be positive (fx {cam.fx:g}, fy {cam.fy:g})"
+        if not np.all(np.isfinite([cam.cx, cam.cy, cam.skew, *cam.dist_coeffs])):
+            return f"camera {key}: the principal point or the distortion is not finite"
+    for (a, b), (R, T) in rig.extrinsics.items():
+        R, T = np.asarray(R, np.float64), np.asarray(T, np.float64)
+        if not (np.all(np.isfinite(R)) and np.all(np.isfinite(T))):
+            return f"the pose of camera {b} relative to camera {a} is not finite"
+        if float(np.linalg.norm(T)) <= 0.0:
+            return f"the baseline between cameras {a} and {b} is zero"
+    return None
