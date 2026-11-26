@@ -87,8 +87,31 @@ class RunSummaryMixin:
             n = int(gates.get(key, 0))
             if n:
                 self._append_log(template.format(n), "info")
-        from al_dic_3d.matching.diagnostics import collapse_advice, widening_advice
+        from al_dic_3d.matching.diagnostics import (
+            collapse_advice,
+            frame_sync_frames,
+            widening_advice,
+        )
 
+        sync = frame_sync_frames(s)
+        if sync:
+            self._append_log(
+                self.tr(
+                    "Frame {0} is the first of {1} frames whose left-right point pairs lie "
+                    "off their epipolar lines (median up to {2} px; frame 1: {3} px): the "
+                    "two images of those frames probably do not show the same moment. "
+                    "Likely causes: an image missing from or added to one camera's "
+                    "sequence, unsynchronised cameras, or a camera that moved during the "
+                    "test. Check that the left and right image lists pair up frame by "
+                    "frame; the 3D results of those frames are not reliable."
+                ).format(
+                    sync[0] + 1,
+                    len(sync),
+                    f"{max(s.epipolar_by_frame[k] for k in sync):.2f}",
+                    f"{s.epipolar_by_frame[0]:.2f}",
+                ),
+                "warn",
+            )
         run_params = meta.get("run_params") or {}
         for cam, n in widening_advice(s).items():
             if run_params.get("per_frame_masks"):
