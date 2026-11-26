@@ -29,6 +29,18 @@ GitHub release notes for a tag are this file's section for that version.
   skipped wherever that can be proven for the mesh (refined meshes keep it).
   Measured on 20-frame runs: 34 to 28 s at 5 Mpx, 177 to 149 s at 12 Mpx; on
   a real notched specimen the 3D points are identical to the last bit.
+- **The calibration dialog guards against a wrong board description.** It
+  remembers the board type and its values between sessions, and the result
+  shows how far the board was from the left camera, so a wrongly entered
+  square size shows up as an implausible distance (447-524 mm with the right
+  12 mm square, 372-437 mm with 10 mm entered). The size fields say what they
+  count for each board type (inner corners, squares or dots), and a
+  calibration needs at least 6 pairs before it starts.
+- **A run warns when the left and right images stop belonging together.** If
+  from some frame on the matched points leave their epipolar lines (an image
+  missing from one camera, cameras out of sync), the run log names the first
+  such frame. A right image missing from the middle of a synthetic test used
+  to give 100 % valid points with 20 times the 3D error and no warning.
 - **A run warns when a camera has probably moved since the calibration.** The
   run log now warns when the matched left and right points lie a median of
   more than 0.5 px from their epipolar lines (healthy real rigs: 0.02 to
@@ -51,6 +63,28 @@ GitHub release notes for a tag are this file's section for that version.
   the likely causes**: left and right swapped, a calibration from other images,
   or no speckle texture in the region. It used to advise loosening the stereo
   check, which then produced an empty result.
+- **A calibration that finds no board says why.** Each image's detection
+  result stays in the table, and when the board is found in too few images the
+  dialog and `al-dic-3d calibrate` explain how to count it (a chessboard of
+  10 × 8 squares has 9 × 7 inner corners). It used to say only "need >= 3
+  usable views to calibrate, got 0".
+- **Board images of different sizes are refused**, naming the image that
+  differs; two cameras of different resolutions are each calibrated at their
+  own size (the left camera's size was used for both).
+- **Importing a calibration in the wrong format is refused with the reason
+  first** and the format the file looks like ("it looks like a DICe XML file:
+  choose the format 'dice'"). Picking a file selects its format when the file
+  makes it clear, and a calibration with a zero focal length or baseline is
+  refused; the OpenCorr reader used to accept any text file with all zeros.
+- **Closing the calibration dialog asks before discarding an unsaved
+  calibration**, and its warnings are shown in amber instead of green.
+- **The memory check estimates dense and incremental runs correctly.** It
+  underestimated them two to four times (5 GB predicted, 19 GB used for an
+  incremental 12 Mpx run), so such runs could push a lab computer into
+  swapping; it now predicts runs with the default settings within 15 %.
+- **Engine warnings about points whose motion had to be extrapolated or that
+  stopped being tracked now appear in the run summary**, not only in the log
+  file.
 - **The memory warning tells GUI users what to change in the GUI** (fewer
   frames, a coarser subset step, a smaller region) instead of a configuration
   key.
