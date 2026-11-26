@@ -224,20 +224,30 @@ class ProjectDraft:
         :meth:`issues` checks that every input is SET; this checks that the
         inputs are usable: the calibration loads, the two cameras are not the
         same image files, each camera's first and last frames have one size,
-        and a drawn ROI mask matches the images. Header reads and the parsed
+        that size is the one the calibration was made for (when the file
+        records it), and a drawn ROI mask matches the images. Header reads and the parsed
         calibration are cached by path, size and modification time
         (:mod:`al_dic_3d.project.image_info`), so this runs on every readiness
         refresh without slowing the interface.
         """
         import numpy as np
 
-        from al_dic_3d.project.image_info import calibration_problem, image_size
+        from al_dic_3d.project.image_info import (
+            calibration_image_sizes,
+            calibration_problem,
+            image_size,
+        )
 
         problems: list[str] = []
+        calib_sizes: dict[str, tuple[int, int]] = {}
         if self.calibration_file is not None:
             why = calibration_problem(self.calibration_file, self.calibration_format)
             if why:
                 problems.append(f"calibration file cannot be read: {why}")
+            else:
+                calib_sizes = calibration_image_sizes(
+                    self.calibration_file, self.calibration_format
+                )
         if self.left and self.right and set(map(str, self.left)) & set(map(str, self.right)):
             problems.append("left and right sequences use the same image files")
         sizes: dict[str, tuple[int, int]] = {}
@@ -255,6 +265,14 @@ class ProjectDraft:
             elif last != first:
                 problems.append(
                     f"{cam} frame sizes differ: {first[0]}x{first[1]} vs {last[0]}x{last[1]}"
+                )
+            # The run refuses a calibration made for another resolution (binned
+            # or cropped images); say so before Run, not after it.
+            made_for = calib_sizes.get("L" if cam == "left" else "R")
+            if made_for is not None and made_for != first:
+                problems.append(
+                    f"{cam} calibration was made for {made_for[0]}x{made_for[1]} images, "
+                    f"but the {cam} images are {first[0]}x{first[1]}"
                 )
         if self.roi_mask_array is not None and "left" in sizes:
             h, w = np.asarray(self.roi_mask_array).shape[:2]

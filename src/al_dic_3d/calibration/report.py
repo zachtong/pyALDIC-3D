@@ -42,6 +42,11 @@ def to_opencv_yaml(
     ``X_2 = R @ X_1 + T`` and camera 1 = left = world. Serialization is
     memory-backed (:func:`al_dic_3d.pathsafe.filestorage_write`, G3):
     ``cv2.FileStorage`` cannot open non-ASCII Windows paths directly.
+
+    A camera whose intrinsics know the image size also gets integer
+    ``imageWidth<n>`` / ``imageHeight<n>`` nodes, so a run on binned or cropped
+    images is refused instead of giving wrong results. OpenCV readers and
+    builds that predate them ignore the extra nodes.
     """
     from al_dic_3d.pathsafe import filestorage_write
 
@@ -56,6 +61,11 @@ def to_opencv_yaml(
         fs.write("distCoeffs2", rig.cameras["R"].dist_coeffs.reshape(1, -1))
         fs.write("R", np.asarray(R, np.float64))
         fs.write("T", np.asarray(T, np.float64).reshape(3, 1))
+        for n, cam in ((1, "L"), (2, "R")):
+            intr = rig.cameras[cam]
+            if intr.width and intr.height:
+                fs.write(f"imageWidth{n}", int(intr.width))
+                fs.write(f"imageHeight{n}", int(intr.height))
         for key, value in (meta or {}).items():
             node = f"meta_{key}"
             if isinstance(value, str):

@@ -49,17 +49,26 @@ def image_size(path: str | Path) -> tuple[int, int] | None:
 
 
 @lru_cache(maxsize=32)
-def _calibration_problem_cached(stamp: tuple[str, int, int], fmt: str) -> str | None:
+def _calibration_cached(
+    stamp: tuple[str, int, int], fmt: str
+) -> tuple[str | None, dict[str, tuple[int, int]]]:
+    """``(problem, {camera key: (width, height)})`` for one calibration file."""
     from al_dic_3d.calibration import load_calibration
 
     try:
         rig = load_calibration(stamp[0], fmt)
     except Exception as exc:  # noqa: BLE001 - any import failure is the answer
         text = str(exc).strip().splitlines()
-        return (text[0] if text else type(exc).__name__)[:200]
-    if len(getattr(rig, "cameras", {}) or {}) < 2:
-        return "it does not describe two cameras"
-    return None
+        return (text[0] if text else type(exc).__name__)[:200], {}
+    cameras = getattr(rig, "cameras", {}) or {}
+    if len(cameras) < 2:
+        return "it does not describe two cameras", {}
+    sizes = {
+        key: (int(intr.width), int(intr.height))
+        for key, intr in cameras.items()
+        if getattr(intr, "width", None) and getattr(intr, "height", None)
+    }
+    return None, sizes
 
 
 def calibration_problem(path: str | Path, fmt: str) -> str | None:
@@ -68,4 +77,15 @@ def calibration_problem(path: str | Path, fmt: str) -> str | None:
     stamp = _stamp(p)
     if stamp is None:
         return "the file does not exist"
-    return _calibration_problem_cached(stamp, str(fmt))
+    return _calibration_cached(stamp, str(fmt))[0]
+
+
+def calibration_image_sizes(path: str | Path, fmt: str) -> dict[str, tuple[int, int]]:
+    """``{camera key: (width, height)}`` the calibration was made for.
+
+    Only cameras whose file records the size are listed (DICe
+    ``IMAGE_HEIGHT_WIDTH``, the built-in calibrator's YAML); an unreadable file
+    gives an empty dict (:func:`calibration_problem` reports why).
+    """
+    stamp = _stamp(Path(path))
+    return {} if stamp is None else dict(_calibration_cached(stamp, str(fmt))[1])

@@ -20,6 +20,9 @@ _CALIB_RE = re.compile(r"^calibration file cannot be read: (.*)$", re.S)
 _UNREADABLE_RE = re.compile(r"^(left|right) image not readable: (.*)$")
 _SIZES_RE = re.compile(r"^(left|right) frame sizes differ: (\S+) vs (\S+)$")
 _MASK_RE = re.compile(r"^ROI mask is (\S+) but the images are (\S+)$")
+_CALIB_SIZE_RE = re.compile(
+    r"^(left|right) calibration was made for (\S+) images, but the \1 images are (\S+)$"
+)
 
 
 def _camera(cam: str) -> str:
@@ -80,6 +83,14 @@ def issue_text(issue: str) -> str:
             "Issues", "ROI mask is {0} but the images are {1}: redraw or import it again"
         )
         return template.format(m.group(1), m.group(2))
+    m = _CALIB_SIZE_RE.match(issue)
+    if m:
+        template = QCoreApplication.translate(
+            "Issues",
+            "{0}: the calibration was made for {1} images, but the images are {2}. Use the "
+            "calibration of this setup (binned or cropped images need their own calibration).",
+        )
+        return template.format(_camera(m.group(1)), m.group(2), m.group(3))
     return issue
 
 
