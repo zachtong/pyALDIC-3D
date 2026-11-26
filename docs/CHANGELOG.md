@@ -22,6 +22,37 @@ GitHub release notes for a tag are this file's section for that version.
   detected several at a time, in the dialog and in `al-dic-3d calibrate`, and
   the full-resolution search is limited in memory: it needed up to 6 GB per
   20 MP image, which could slow a 16 GB computer to a crawl.
+- **A run warns when a camera has probably moved since the calibration.** The
+  run log now warns when the matched left and right points lie a median of
+  more than 0.5 px from their epipolar lines (healthy real rigs: 0.02 to
+  0.25 px). A right camera turned by 1.5° after calibrating gave 0.8 px and
+  8.6 % too large displacements, with no warning before.
+- **The user guide has a checklist for calibrating your own rig**: lock the
+  optics and leave the rig alone, keep the two views roughly symmetric, count
+  a chessboard's inner corners, measure the printed square with calipers, and
+  how to take the pictures. The guide no longer presents **Verify** as a check
+  of the absolute scale: it compares against the square size you entered, so a
+  wrongly entered size passes it.
+
+### Fixed
+
+- **A run on images that do not match the calibration is refused before it
+  starts.** The built-in calibration now records each camera's image size, and
+  Run is blocked when the images differ (binned or cropped images need their
+  own calibration). Such runs used to finish with wrong 3D points.
+- **When no point can be matched between the two cameras, the message names
+  the likely causes**: left and right swapped, a calibration from other images,
+  or no speckle texture in the region. It used to advise loosening the stereo
+  check, which then produced an empty result.
+- **The memory warning tells GUI users what to change in the GUI** (fewer
+  frames, a coarser subset step, a smaller region) instead of a configuration
+  key.
+- **The GUI run log numbers frames from 1**, like the rest of the GUI. A
+  cancelled run ends with a partial-result warning instead of "Analysis
+  complete", and frames it never computed are no longer listed as 0 % valid.
+- **`al-dic-3d run` prints a one-line error for mistakes in the input** (a
+  missing file, mismatched images) instead of a Python traceback; `--debug`
+  shows the traceback.
 
 ## [1.4.2] — 2026-11-25
 
