@@ -197,6 +197,17 @@ class RunSummaryMixin:
                 )
             )
             self._append_log(text, "warn")
+        elif advice == "recalibrate":
+            self._append_log(
+                self.tr(
+                    "The frame-1 stereo links lie a median {0} px from their epipolar lines "
+                    "(a calibration that fits the images gives under 0.3 px): a camera has "
+                    "probably moved since the calibration (bumped, refocused or re-aimed), "
+                    "which biases the 3D shape and displacements. Recalibrate the rig as it "
+                    "stands now."
+                ).format(f"{s.stereo_epipolar_median_px:.1f}"),
+                "warn",
+            )
         elif advice == "raise_znssd":
             self._append_log(
                 self.tr(

@@ -119,6 +119,18 @@ def stereo_rows(
 #: advice in the run log (a few rejected links are the check doing its job).
 STEREO_ADVICE_FRAC = 0.2
 
+#: A frame-1 median epipolar residual above this (px) gets a "recalibrate"
+#: warning even when the stereo check rejects few links. The healthy real runs
+#: we have measured all sit at or below 0.25 px: Challenge 1.0 S1 16 mm 0.024,
+#: Challenge 2.0 S1 0.029 / S2 0.133, Challenge 2.1 S3 0.040-0.042, the D
+#: specimen (quickstart) 0.077-0.087, and the GitHub issue #1 rig (rough
+#: surface, 29 deg stereo angle) 0.22-0.25. A right camera rotated 1.5 deg
+#: after calibration gave 0.8 px with only 5 % of the links rejected, while
+#: |D| was 8.6 % off; the 2 px rejection limit never saw it. 0.5 px is about
+#: twice the worst healthy run (4-20x the others) and still below that bumped
+#: camera.
+EPIPOLAR_DRIFT_PX = 0.5
+
 
 def no_stereo_links_cause(rejected: tuple[int, int] = (0, 0)) -> str:
     """``"calibration"`` when the epipolar check removed the most links, else ``"no_match"``."""
@@ -329,12 +341,15 @@ def summarize_run(
 
 
 def stereo_check_advice(summary: RunSummary, epipolar_max_px: float = 2.0) -> str | None:
-    """``"calibration"`` / ``"raise_znssd"`` when the frame-1 stereo check removed a lot.
+    """Advice code when the frame-1 stereo check points at a problem.
 
     * ``"calibration"``: at least :data:`STEREO_ADVICE_FRAC` of the converged
       frame-1 links were off their epipolar line, or the median residual alone
       exceeds the limit -- the calibration does not match the images (the issue
       #1 reporter's first calibration put every link 17.6 px off its line);
+    * ``"recalibrate"``: the links pass the check but their median residual
+      exceeds :data:`EPIPOLAR_DRIFT_PX` -- a camera has moved (bumped,
+      refocused, re-aimed) since the calibration;
     * ``"raise_znssd"``: at least that share failed the correlation check -- on a
       rough surface seen at a large stereo angle correct links correlate at
       ZNCC ~0.7, and the default check (ZNSSD 0.6) removed 810 of 2008.
@@ -346,6 +361,8 @@ def stereo_check_advice(summary: RunSummary, epipolar_max_px: float = 2.0) -> st
     median = summary.stereo_epipolar_median_px
     if n_e >= STEREO_ADVICE_FRAC * converged or (median is not None and median > epipolar_max_px):
         return "calibration"
+    if median is not None and median > EPIPOLAR_DRIFT_PX:
+        return "recalibrate"
     if n_z >= STEREO_ADVICE_FRAC * converged:
         return "raise_znssd"
     return None
@@ -484,6 +501,18 @@ def summary_lines(
                 f"the frame-1 stereo links lie{where} from their epipolar lines: the "
                 f"calibration probably does not match these images (a camera moved, a "
                 f"wrong file, or left and right swapped) — check or redo the calibration",
+            )
+        )
+    elif advice == "recalibrate":
+        lines.append(
+            (
+                "warning",
+                f"the frame-1 stereo links lie a median "
+                f"{summary.stereo_epipolar_median_px:.1f} px from their epipolar lines "
+                f"(a calibration that fits the images gives under 0.3 px): a camera has "
+                f"probably moved since the calibration (bumped, refocused or re-aimed), "
+                f"which biases the 3D shape and displacements — recalibrate the rig as it "
+                f"stands now",
             )
         )
     elif advice == "raise_znssd":
