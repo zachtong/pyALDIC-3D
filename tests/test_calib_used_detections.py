@@ -148,7 +148,7 @@ def test_gui_worker_bundle_adjusts_on_the_corrected_detections(monkeypatch):
     seen = _capture_bundle(monkeypatch)
     options = dict(zero_tangent=True, fix_k3=False, dot_radius_mm=DOTS.dot_mm / 2.0, bundle=True)
     worker = calibration_support.CalibWorker(
-        [], [], DOTS, options, detections=(left, right), image_size=SIZE
+        [], [], DOTS, options, detections=(left, right), image_sizes=(SIZE, SIZE)
     )
     errors: list[str] = []
     worker.failed.connect(errors.append)
