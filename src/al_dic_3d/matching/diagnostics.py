@@ -83,6 +83,11 @@ def temporal_rows(cam: str, tf: TemporalField) -> list[dict]:
         row = frame_row(k, cam, n_pts, int(tf.valid[k].sum()), n_gated=n_gated, note=note)
         search = int((getattr(tf, "fft_widened", None) or {}).get(k, 0))
         rows.append({**row, "search_px": search} if search else row)
+    # The engine's tracking warnings ride on the row of the frame they name.
+    for w in getattr(tf, "engine_warnings", ()) or ():
+        k = min(max(int(w.get("frame", 0)), 0), len(rows) - 1) if rows else -1
+        if k >= 0:
+            rows[k] = {**rows[k], "engine_warnings": [*rows[k].get("engine_warnings", []), dict(w)]}
     return rows
 
 
@@ -312,6 +317,9 @@ class RunSummary:
     # Per-frame median epipolar residual of the final pairs (px; None: no
     # median for that frame, empty: a result saved before the check).
     epipolar_by_frame: tuple[float | None, ...] = ()
+    # The 2D engine's tracking warnings (engine_log.tracking_warnings), each
+    # with its camera under "cam".
+    engine_warnings: tuple[dict, ...] = ()
 
     def to_meta(self) -> dict:
         """Plain JSON-serializable dict for ``RunResult.meta['summary']``."""
@@ -338,6 +346,7 @@ class RunSummary:
             "epipolar_by_frame": [
                 None if m is None else round(float(m), 4) for m in self.epipolar_by_frame
             ],
+            "engine_warnings": [dict(w) for w in self.engine_warnings],
         }
 
 
@@ -373,8 +382,10 @@ def summarize_run(
     max_search = 0
     rej_z = rej_e = 0
     epipolar: list[float | None] = [None] * int(n_frames)
+    engine: list[dict] = []
     for r in rows:
         cam = str(r.get("cam", "?"))
+        engine.extend({**w, "cam": cam} for w in r.get("engine_warnings", ()) or ())
         if cam == EPIPOLAR_ROW_CAM:
             k = int(r.get("frame", -1))
             if 0 <= k < n_frames and r.get("epipolar_median_px") is not None:
@@ -424,7 +435,35 @@ def summarize_run(
         epipolar_by_frame=(
             tuple(epipolar) if any(r.get("cam") == EPIPOLAR_ROW_CAM for r in rows) else ()
         ),
+        engine_warnings=tuple(engine),
     )
+
+
+def engine_warning_text(w: dict) -> str | None:
+    """English line for one engine tracking warning (``None``: a key not worded).
+
+    Frames are numbered from 1 here, as in the GUI.
+    """
+    cam, frame = w.get("cam", "?"), int(w.get("frame", 0)) + 1
+    if w.get("key") == "grid_miss":
+        far = w.get("far_px")
+        return (
+            f"camera {cam}: on frame {frame}, {w['count']} points lay more than "
+            f"{0.0 if far is None else far:.1f} px from the nearest point measured on "
+            f"reference frame {int(w.get('ref_frame', 0)) + 1}; their displacement was "
+            f"copied from that point and may be wrong ({w.get('n_frames', 1)} frame(s) "
+            f"affected). Give each reference frame a region of interest that covers the "
+            f"specimen (per-frame masks)"
+        )
+    if w.get("key") == "material_loss":
+        return (
+            f"camera {cam}: {w['count']} of {w.get('n_material', 0)} points "
+            f"({100.0 * float(w.get('fraction', 0.0)):.0f}%) stopped being tracked by "
+            f"frame {frame}: they moved onto pixels outside the region of interest or "
+            f"where nothing was measured. Check that each frame's region of interest "
+            f"covers the specimen"
+        )
+    return None
 
 
 def computed_frames(summary: RunSummary, meta: dict | None) -> RunSummary:
@@ -652,6 +691,10 @@ def summary_lines(
                 f"frames are not reliable",
             )
         )
+    for w in summary.engine_warnings:
+        text = engine_warning_text(w)
+        if text is not None:
+            lines.append(("warning", text))
     for cam, n in widening_advice(summary).items():
         head = (
             f"camera {cam}: the initial-guess search had to widen on {n} frames "

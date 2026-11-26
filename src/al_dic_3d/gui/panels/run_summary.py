@@ -112,6 +112,7 @@ class RunSummaryMixin:
                 ),
                 "warn",
             )
+        self._log_engine_warnings(s)
         run_params = meta.get("run_params") or {}
         for cam, n in widening_advice(s).items():
             if run_params.get("per_frame_masks"):
@@ -257,3 +258,39 @@ class RunSummaryMixin:
                 ),
                 "warn",
             )
+
+    def _log_engine_warnings(self, s) -> None:
+        """The 2D engine's tracking warnings, which used to reach the log file only."""
+        for w in s.engine_warnings:
+            if w.get("key") == "grid_miss":
+                far = w.get("far_px")
+                text = self.tr(
+                    "Camera {0}: on frame {1}, {2} points lay more than {3} px from the "
+                    "nearest point measured on reference frame {4}; their displacement was "
+                    "copied from that point and may be wrong ({5} frames affected). Give "
+                    "each reference frame a region of interest that covers the specimen "
+                    "(per-frame masks, REGION OF INTEREST)."
+                ).format(
+                    w.get("cam", "?"),
+                    int(w.get("frame", 0)) + 1,
+                    w.get("count", 0),
+                    f"{0.0 if far is None else far:.1f}",
+                    int(w.get("ref_frame", 0)) + 1,
+                    w.get("n_frames", 1),
+                )
+            elif w.get("key") == "material_loss":
+                text = self.tr(
+                    "Camera {0}: {1} of {2} points ({3}%) stopped being tracked by frame "
+                    "{4}: they moved onto pixels outside the region of interest or where "
+                    "nothing was measured. Check that each frame's region of interest "
+                    "covers the specimen."
+                ).format(
+                    w.get("cam", "?"),
+                    w.get("count", 0),
+                    w.get("n_material", 0),
+                    f"{100.0 * float(w.get('fraction', 0.0)):.0f}",
+                    int(w.get("frame", 0)) + 1,
+                )
+            else:
+                continue
+            self._append_log(text, "warn")

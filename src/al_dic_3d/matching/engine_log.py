@@ -59,3 +59,49 @@ def record_fft_widening(frame: Callable[[], int]) -> Iterator[FftWideningRecorde
         yield recorder
     finally:
         logger.removeHandler(recorder)
+
+
+#: Engine tracking findings the run summary words (al-dic >= 1.0.4,
+#: ``al_dic.core.tracking_diagnostics``); other keys stay in the log file.
+TRACKING_WARNING_KEYS = ("grid_miss", "material_loss")
+
+_log = logging.getLogger(__name__)
+
+
+def tracking_warnings(result: object) -> tuple[dict, ...]:
+    """The engine's WARNING tracking findings of one run, as plain dicts.
+
+    ``run_aldic`` assesses how its nodes were carried through the cumulative
+    transform (``PipelineResult.tracking_diagnostics``) and says so only
+    through :mod:`logging` ("their displacement was copied from that node and
+    may be wrong"), which never reached the GUI log. Each dict holds the
+    finding's numbers (``key``; ``frame`` / ``ref_frame`` as 0-based image
+    indices; ``count``, ``fraction``, ``max_px``, ``n_frames``) plus the run's
+    ``far_px`` and ``n_material``. Never raises: an unreadable record only
+    loses the lines, and says so in the log file.
+    """
+    diag = getattr(result, "tracking_diagnostics", None)
+    if diag is None:
+        return ()
+    try:
+        from al_dic.core.tracking_diagnostics import SEVERITY_WARNING, assess_tracking
+
+        far = getattr(diag, "far_extrapolation_px", None)
+        return tuple(
+            {
+                "key": str(f.key),
+                "frame": int(f.frame),
+                "ref_frame": int(f.ref_frame),
+                "count": int(f.count),
+                "fraction": float(f.fraction),
+                "max_px": float(f.max_px),
+                "n_frames": int(f.n_frames),
+                "far_px": None if far is None else float(far),
+                "n_material": int(diag.n_material),
+            }
+            for f in assess_tracking(diag)
+            if f.severity == SEVERITY_WARNING and f.key in TRACKING_WARNING_KEYS
+        )
+    except Exception:  # an advisory record must never cost the run
+        _log.warning("engine tracking diagnostics could not be read", exc_info=True)
+        return ()

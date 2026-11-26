@@ -26,7 +26,7 @@ from al_dic.mesh.mesh_setup import mesh_setup
 from al_dic.solver.seed_prop_pipeline import build_grid_for_roi
 from numpy.typing import NDArray
 
-from al_dic_3d.matching.engine_log import record_fft_widening
+from al_dic_3d.matching.engine_log import record_fft_widening, tracking_warnings
 from al_dic_3d.matching.gate import (  # noqa: F401
     _GATE_MAX_WORKERS,
     _gate_workers,
@@ -163,6 +163,9 @@ class TemporalField:
     # Frames on which the engine widened its FFT initial-guess search (frame ->
     # widest search, px): reported by the run summary, never changes a result.
     fft_widened: dict[int, int] = field(default_factory=dict)
+    # The engine's WARNING tracking findings (engine_log.tracking_warnings):
+    # reported by the run summary, never changes a result.
+    engine_warnings: tuple[dict, ...] = ()
     stopped_early: bool = False  # a cooperative stop cut the track short
     stopped_at_frame: int | None = None  # 0-based first UNTRACKED frame
     stop_reason: str = ""  # engine's reason string (English)
@@ -389,6 +392,7 @@ class EngineTrack:
     verify_partial: bool
     fft_widened: dict[int, int]
     masks: object = None  # the {0,1} mask stream the engine ran with (reference masks)
+    engine_warnings: tuple[dict, ...] = ()  # engine_log.tracking_warnings
 
     @property
     def n_tracked(self) -> int:
@@ -583,6 +587,7 @@ def track_engine(
         verify_partial=verify_partial,
         fft_widened=dict(widening.widened),
         masks=masks,
+        engine_warnings=tracking_warnings(result),
     )
 
 
@@ -666,6 +671,7 @@ def finish_track(et: EngineTrack) -> TemporalField:
         znssd=gate_z,
         zero_filled=zero_filled_frames,
         fft_widened=dict(et.fft_widened),
+        engine_warnings=tuple(et.engine_warnings),
     )
 
 
