@@ -80,6 +80,11 @@ def build_parser() -> argparse.ArgumentParser:
             "(default: npz,mat; a parameters JSON is always written)"
         ),
     )
+    run_p.add_argument(
+        "--debug",
+        action="store_true",
+        help="on an error, print the full Python traceback (for bug reports)",
+    )
 
     gui_p = subparsers.add_parser(
         "gui",
@@ -219,6 +224,22 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# Errors the pipeline raises for inputs the user can fix: a missing file
+# (OSError), a mismatched size or frame count, a bad config value (ValueError),
+# a run that matched nothing (RuntimeError). They get one "error:" line instead
+# of a traceback (new-user audit); any other exception type is a bug and keeps
+# its traceback, as does every error under --debug.
+_USER_ERRORS = (OSError, ValueError, RuntimeError)
+
+
+def _user_error(exc: BaseException, args: argparse.Namespace) -> int:
+    """Print ``error: <message>`` for a user error (re-raise under ``--debug``)."""
+    if getattr(args, "debug", False):
+        raise exc
+    _say(f"error: {str(exc).strip() or type(exc).__name__}", err=True)
+    return 2
+
+
 def _run_command(args: argparse.Namespace) -> int:
     """Handle ``al-dic-3d run <config.toml>``."""
     from dataclasses import replace
@@ -235,7 +256,10 @@ def _run_command(args: argparse.Namespace) -> int:
         )
         return 2
 
-    cfg = load_config(args.config)
+    try:
+        cfg = load_config(args.config)
+    except _USER_ERRORS as exc:  # a missing / malformed config (TOML errors are ValueErrors)
+        return _user_error(exc, args)
     if args.output:
         cfg = replace(cfg, output_dir=Path(args.output))
 
@@ -268,11 +292,11 @@ def _run_command(args: argparse.Namespace) -> int:
             result = run_pipeline(
                 cfg, progress=progress, stop=stop_event.is_set, complete_partial=True
             )
-        except RuntimeError as exc:
-            if stop_event.is_set() and str(exc) == "cancelled":
+        except _USER_ERRORS as exc:
+            if isinstance(exc, RuntimeError) and stop_event.is_set() and str(exc) == "cancelled":
                 print("interrupted before any frame finished: nothing to write", file=sys.stderr)
                 return 130
-            raise
+            return _user_error(exc, args)
     finally:
         signal.signal(signal.SIGINT, previous)
 
